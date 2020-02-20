@@ -369,13 +369,13 @@ namespace Tolk.BusinessLogic.Services
 
         private string GetOccurences(IEnumerable<Order> orders)
         {
-            var texts = orders.Select(o => $"\t\t{o.OrderNumber}: {o.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToSwedishString("HH:mm")}").ToArray();
+            var texts = orders.Select(o => $"\t\t{o.OrderNumber}: {o.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToSwedishString("HH:mm") + (o.IsExtraInterpreterForOrderId.HasValue ? " Extra tolk" : "")}").ToArray();
             return string.Join("\n", texts);
         }
 
         private string GetOccurencesAsHtmlList(IEnumerable<Order> orders)
         {
-            var texts = orders.Select(o => $"<li>{o.OrderNumber}: {o.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToSwedishString("HH:mm")}").ToArray();
+            var texts = orders.Select(o => $"<li>{o.OrderNumber}: {o.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToSwedishString("HH:mm") + (o.IsExtraInterpreterForOrderId.HasValue ? " Extra tolk" : "")}").ToArray();
             return $"<ul>{string.Join("\n", texts)}</ul>";
         }
 
@@ -442,7 +442,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                 GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
             if (requestGroup.HasExtraInterpreter)
             {
-                body += $"\nExtra tolk: \n" + GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter);
+                body += GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter, true);
             }
             CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
                 $"Förmedling har accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
@@ -900,7 +900,7 @@ Sammanställning:
                 GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
             if (requestGroup.HasExtraInterpreter)
             {
-                body += $"\nExtra tolk: \n" + GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter);
+                body += GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter, true);
             }
             CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
                 $"Förmedling har accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
@@ -1218,12 +1218,13 @@ Sammanställning:
             return true;
         }
 
-        private string GetPossibleInfoNotValidatedInterpreter(Request request)
+        private string GetPossibleInfoNotValidatedInterpreter(Request request, bool isExtraInterpreter = false)
         {
+            var interpreter = isExtraInterpreter ? "tillsatt extra tolk" : "tillsatt tolk";
             var shouldCheckValidationCode = _tolkBaseOptions.Tellus.IsActivated && request.InterpreterCompetenceVerificationResultOnAssign.HasValue;
             bool isInterpreterValidationError = shouldCheckValidationCode && (request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.UnknownError || request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.ConnectionError);
             bool isInterpreterVerified = request.InterpreterCompetenceVerificationResultOnAssign == VerificationResult.Validated;
-            return isInterpreterValidationError ? "\n\nObservera att tolkens kompetensnivå inte har gått att kontrollera mot Kammarkollegiets tolkregister pga att det inte gick att nå tolkregistret. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : (shouldCheckValidationCode && !isInterpreterVerified) ? "\n\nObservera att tillsatt tolk för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : string.Empty;
+            return isInterpreterValidationError ? $"\n\nObservera att {interpreter}s kompetensnivå inte har gått att kontrollera mot Kammarkollegiets tolkregister pga att det inte gick att nå tolkregistret. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : (shouldCheckValidationCode && !isInterpreterVerified) ? $"\n\nObservera att {interpreter} för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : string.Empty;
         }
 
         private static string GetRequireApprovementText(DateTimeOffset? latestAnswerDate, bool? isInterpreterChangeInGroup = false) => latestAnswerDate.HasValue ?
