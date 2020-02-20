@@ -11,5 +11,6 @@
         public ExternalLinksSettings ExternalLinks { get; set; }
         public bool AllowDeclineExtraInterpreterOnRequestGroups { get; set; } = false;
         public bool RoundPriceDecimals { get; set; } = true;
+        public bool EnableSetLatestAnswerTimeForCustomer { get; set; } = false;
     }
 }

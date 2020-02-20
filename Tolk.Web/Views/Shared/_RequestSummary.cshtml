@@ -1,4 +1,6 @@
 ﻿@model RequestModel
+@inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> TolkOptions
+@using Microsoft.Extensions.Options;
 @using Tolk.BusinessLogic.Enums
 @using Tolk.BusinessLogic.Utilities
 @{
@@ -181,20 +183,20 @@
 
         @if (Model.DisplayExpectedTravelCostInfo && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
         {
-    <div class="row">
-        <div class="col-sm-4">
-            <display-entry asp-for="ExpectedTravelCosts" />
-        </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="ExpectedTravelCostInfo" />
-        </div>
-        @if (requestIsAnswered && !(Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered))
-        {
-            <div class="col-sm-4">
-                <display-entry asp-for="LatestAnswerTimeForCustomer" />
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="ExpectedTravelCosts" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="ExpectedTravelCostInfo" />
+                </div>
+                @if (TolkOptions.Value.EnableSetLatestAnswerTimeForCustomer && requestIsAnswered && !(Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered))
+                {
+                    <div class="col-sm-4">
+                        <display-entry asp-for="LatestAnswerTimeForCustomer" />
+                    </div>
+                }
             </div>
-        }
-    </div>
         }
         <div class="row">
             @if (requestIsAnswered)
