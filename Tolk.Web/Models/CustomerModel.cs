@@ -50,6 +50,9 @@ namespace Tolk.Web.Models
 
         public CustomerUserFilterModel UserFilterModel { get; set; }
 
+        [Display(Name = "Använd sammanhållen bokning")]
+        public bool UseOrderGroups { get; set; }
+
         internal static CustomerModel GetModelFromCustomer(CustomerOrganisation customer, string message = null)
         {
             return new CustomerModel
@@ -70,8 +73,8 @@ namespace Tolk.Web.Models
                     BackController = "Customer",
                     BackAction = "View",
                     BackId = customer.CustomerOrganisationId.ToSwedishString()
-                }
-
+                },
+                UseOrderGroups = customer.UseOrderGroups
             };
         }
 
@@ -81,6 +84,7 @@ namespace Tolk.Web.Models
             customer.ParentCustomerOrganisationId = ParentId;
             customer.EmailDomain = EmailDomain;
             customer.OrganisationNumber = OrganisationNumber;
+            customer.UseOrderGroups = UseOrderGroups;
         }
     }
 }

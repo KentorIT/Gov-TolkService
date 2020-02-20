@@ -260,6 +260,8 @@ namespace Tolk.Web.Models
 
         public DefaultSettingsModel UserDefaultSettings { get; set; }
 
+        public bool EnableOrderGroups { get; set; }
+
         #region methods
 
         internal void UpdateOrderGroup(OrderGroup orderGroup)

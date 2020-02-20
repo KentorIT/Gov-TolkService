@@ -35,6 +35,7 @@ namespace Tolk.Web.Controllers
         private readonly INotificationService _notificationService;
         private readonly UserManager<AspNetUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly CacheService _cacheService;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -46,7 +47,8 @@ namespace Tolk.Web.Controllers
             IOptions<TolkOptions> options,
             INotificationService notificationService,
             UserManager<AspNetUser> usermanager,
-            IMapper mapper
+            IMapper mapper,
+            CacheService cacheService
             )
         {
             _dbContext = dbContext;
@@ -59,6 +61,7 @@ namespace Tolk.Web.Controllers
             _notificationService = notificationService;
             _userManager = usermanager;
             _mapper = mapper;
+            _cacheService = cacheService;
         }
 
         public IActionResult List()
@@ -417,8 +420,9 @@ namespace Tolk.Web.Controllers
                 LastTimeForRequiringLatestAnswerBy = panicTime.ToSwedishString("yyyy-MM-dd"),
                 NextLastTimeForRequiringLatestAnswerBy = nextPanicTime.ToSwedishString("yyyy-MM-dd"),
                 CreatedByName = user.FullName,
-                UserDefaultSettings = DefaultSettingsModel.GetModel(user)
-            };
+                UserDefaultSettings = DefaultSettingsModel.GetModel(user),
+                EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UseOrderGroups)
+        };
             model.UpdateModelWithDefaultSettings(user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList());
             return View(model);
         }

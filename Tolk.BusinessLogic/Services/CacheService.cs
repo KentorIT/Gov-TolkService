@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
@@ -29,6 +30,7 @@ namespace Tolk.BusinessLogic.Services
             await _cache.RemoveAsync(CacheKeys.BrokerFees);
             await _cache.RemoveAsync(CacheKeys.BrokerSettings);
             await _cache.RemoveAsync(CacheKeys.Holidays);
+            await _cache.RemoveAsync(CacheKeys.Customers);
         }
 
         public async Task Flush(string id)
@@ -117,6 +119,26 @@ namespace Tolk.BusinessLogic.Services
             return priceListBrokerFee;
         }
 
+        public IEnumerable<CustomerSettingsModel> CustomerSettings
+        {
+            get
+            {
+                var customers = _cache.Get(CacheKeys.Customers).FromByteArray<IEnumerable<CustomerSettingsModel>>();
+
+                if (customers == null)
+                {
+                    customers = _dbContext.CustomerOrganisations
+                        .Select(c => new CustomerSettingsModel
+                        {
+                            CustomerOrganisationId = c.CustomerOrganisationId,
+                            UseOrderGroups = c.UseOrderGroups
+                        })
+                        .ToList().AsReadOnly();
+                    _cache.Set(CacheKeys.Customers, customers.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
+                }
+                return customers;
+            }
+        }
     }
 }
 

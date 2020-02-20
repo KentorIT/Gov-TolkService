@@ -32,6 +32,7 @@ namespace Tolk.Web.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly VerificationService _verificationService;
         private readonly TolkOptions _options;
+        private readonly CacheService _cacheService;
 
         public HomeController(
             TolkDbContext dbContext,
@@ -40,7 +41,8 @@ namespace Tolk.Web.Controllers
             IAuthorizationService authorizationService,
             ILogger<HomeController> logger,
             VerificationService verificationService,
-            IOptions<TolkOptions> options
+            IOptions<TolkOptions> options,
+            CacheService cacheService
             )
         {
             _dbContext = dbContext;
@@ -50,6 +52,7 @@ namespace Tolk.Web.Controllers
             _logger = logger;
             _verificationService = verificationService;
             _options = options?.Value;
+            _cacheService = cacheService;
         }
 
         public async Task<IActionResult> Index(string message, string errorMessage)
@@ -181,7 +184,7 @@ namespace Tolk.Web.Controllers
                     OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
                 }));
             //Accepted order groups to approve 
-            if (_options.EnableOrderGroups)
+            if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UseOrderGroups))
             {
                 actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Include(og => og.Language)
@@ -279,7 +282,7 @@ namespace Tolk.Web.Controllers
                     ButtonAction = "View",
                     ButtonController = "Order"
                 }));
-            if (_options.EnableOrderGroups)
+            if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UseOrderGroups))
             {
                 actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Include(og => og.Language)
@@ -403,7 +406,7 @@ namespace Tolk.Web.Controllers
                     OrderNumber = o.OrderNumber,
                     Status = o.ReplacingOrderId.HasValue ? StartListItemStatus.ReplacementOrderCreated : StartListItemStatus.OrderCreated
                 }).ToList();
-            if (_options.EnableOrderGroups)
+            if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UseOrderGroups))
             {
                 sentOrders.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Include(og => og.Orders).ThenInclude(o => o.Language)

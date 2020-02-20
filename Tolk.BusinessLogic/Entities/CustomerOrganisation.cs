@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Tolk.BusinessLogic.Enums;
@@ -38,5 +39,7 @@ namespace Tolk.BusinessLogic.Entities
 
         [Required]
         public TravelCostAgreementType TravelCostAgreementType { get; set; }
+
+        public bool UseOrderGroups { get; set; }
     }
 }

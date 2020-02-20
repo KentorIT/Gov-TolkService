@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
@@ -24,6 +25,8 @@ namespace Tolk.Web.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly INotificationService _notificationService;
+        private readonly CacheService _cacheService;
+
         private int CentralAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
         private int CentralOrderHandlerRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
 
@@ -32,13 +35,15 @@ namespace Tolk.Web.Controllers
             TolkDbContext dbContext,
             IAuthorizationService authorizationService,
             RoleManager<IdentityRole<int>> roleManager,
-            INotificationService notificationService
+            INotificationService notificationService,
+            CacheService cacheService
         )
         {
             _dbContext = dbContext;
             _authorizationService = authorizationService;
             _roleManager = roleManager;
             _notificationService = notificationService;
+            _cacheService = cacheService;
         }
 
         public ActionResult Index()
@@ -102,6 +107,7 @@ namespace Tolk.Web.Controllers
                 {
                     model.UpdateCustomer(customer);
                     await _dbContext.SaveChangesAsync();
+                    await _cacheService.Flush(CacheKeys.Customers);
                     return RedirectToAction(nameof(View), new { Id = model.CustomerId, Message = "Myndighet har uppdaterats" });
                 }
                 return View(model);
@@ -126,6 +132,7 @@ namespace Tolk.Web.Controllers
                 customer.OrganisationPrefix = model.OrganisationPrefix;
                 customer.TravelCostAgreementType = model.TravelCostAgreementType.Value;
                 _dbContext.Add(customer);
+                await _cacheService.Flush(CacheKeys.Customers);
                 await _dbContext.SaveChangesAsync();
                 customer = await _dbContext.CustomerOrganisations
                     .Include(c => c.ParentCustomerOrganisation)
