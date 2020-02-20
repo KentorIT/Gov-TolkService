@@ -148,7 +148,7 @@ namespace Tolk.Web.Api.Controllers
                         new List<RequestAttachment>(),
                         model.ExpectedTravelCosts,
                         model.ExpectedTravelCostInfo,
-                        model.LatestAnswerTimeForCustomer //check if answer contains interpreter location with travel, else give error message or set to null?
+                        model.LatestAnswerTimeForCustomer
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service

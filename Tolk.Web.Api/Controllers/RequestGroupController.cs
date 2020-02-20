@@ -119,7 +119,7 @@ namespace Tolk.Web.Api.Controllers
                         extraInterpreterAnswer,
                         //Does not handle attachments yet.
                         new List<RequestGroupAttachment>(),
-                        model.LatestAnswerTimeForCustomer //check if answer contains interpreter location with travel, else give error message or set to null?
+                        model.LatestAnswerTimeForCustomer
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service

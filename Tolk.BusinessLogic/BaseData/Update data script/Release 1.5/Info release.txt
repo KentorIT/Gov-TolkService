@@ -12,3 +12,5 @@ UserNotificationSettings
 OBS! lägg INTE till nummer 25 eftersom vi inte sagt något om 
 
 "EnableOrderUpdate"  har vi förmodligen inte kvar men om vi har det så tänk till hur den ska vara
+
+"EnableSetLatestAnswerTimeForCustomer" ska sättas till False i både web och web.api

@@ -139,7 +139,7 @@ namespace Tolk.Web.Controllers
             var userId = User.GetUserId();
             var customerOrganisationId = User.GetCustomerOrganisationId();
             var customerUnits = User.TryGetAllCustomerUnits();
-            //Accepted orders to approve, Cancelled by broker, orders awaiting deadline
+            //Accepted orders to approve, orders awaiting deadline
             actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
                 .Include(o => o.Language)
                 .Include(o => o.Requests)
@@ -156,7 +156,7 @@ namespace Tolk.Web.Controllers
                     Language = o.OtherLanguage ?? o.Language.Name,
                     OrderNumber = o.OrderNumber,
                     Status = GetStartListStatusForCustomer(o.Status, o.ReplacingOrderId ?? 0),
-                    LatestDate = o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.HasValue ? (DateTime?)o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.Value.DateTime : null,
+                    LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.Value.DateTime : null,
                     ButtonAction = "View",
                     ButtonController = "Order"
                 }));
@@ -178,7 +178,7 @@ namespace Tolk.Web.Controllers
                     Language = o.OtherLanguage ?? o.Language.Name,
                     OrderNumber = o.OrderNumber,
                     Status = GetStartListStatusForCustomer(o.Status, o.ReplacingOrderId ?? 0),
-                    LatestDate = o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.HasValue ? (DateTime?)o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.Value.DateTime : null,
+                    LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.Value.DateTime : null,
                     ButtonAction = "View",
                     ButtonController = "Order",
                     OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
@@ -206,7 +206,7 @@ namespace Tolk.Web.Controllers
                     Language = og.OtherLanguage ?? og.Language.Name,
                     OrderNumber = og.OrderGroupNumber,
                     Status = GetStartListStatusForCustomer(og.Status, 0, true),
-                    LatestDate = og.RequestGroups.Where(req => req.Status == RequestStatus.Accepted).First().LatestAnswerTimeForCustomer.HasValue ? (DateTime?)og.RequestGroups.Where(req => req.Status == RequestStatus.Accepted).First().LatestAnswerTimeForCustomer.Value.DateTime : null,
+                    LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && og.RequestGroups.Where(req => req.Status == RequestStatus.Accepted).First().LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)og.RequestGroups.Where(req => req.Status == RequestStatus.Accepted).First().LatestAnswerTimeForCustomer.Value.DateTime : null,
                     ButtonAction = "View",
                     ButtonController = "OrderGroup",
                     IsSingleOccasion = og.IsSingleOccasion,
@@ -308,6 +308,7 @@ namespace Tolk.Web.Controllers
                     HasExtraInterpreter = og.HasExtraInterpreter,
                 }));
             }
+            //Cancelled by broker
             actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
                 .Include(o => o.Language)
                 .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations)

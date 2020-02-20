@@ -63,7 +63,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Accept), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(Accept), nameof(RequestService));
-
+            CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(Accept));
             AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel), latestAnswerTimeForCustomer: latestAnswerTimeForCustomer);
             //Create notification
             switch (request.Status)
@@ -94,6 +94,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(AcceptGroup), nameof(RequestService));
+            CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(AcceptGroup));
             if (requestGroup.HasExtraInterpreter)
             {
                 NullCheckHelper.ArgumentCheckNull(extraInterpreter, nameof(AcceptGroup), nameof(RequestService));
@@ -104,7 +105,6 @@ namespace Tolk.BusinessLogic.Services
             bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
             ValidateInterpreters(interpreter, extraInterpreter, hasExtraInterpreter);
 
-            //TODO check if travelcost > 0 when AllowExceedingTravelCost == No or if InterpreterLocation is Phone or Video
             bool hasTravelCosts = (interpreter.ExpectedTravelCosts ?? 0) > 0 || (extraInterpreter?.ExpectedTravelCosts ?? 0) > 0;
             var travelCostsShouldBeApproved = hasTravelCosts && requestGroup.OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved;
             bool partialAnswer = false;
@@ -211,6 +211,7 @@ namespace Tolk.BusinessLogic.Services
         )
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptReplacement), nameof(RequestService));
+            CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(AcceptReplacement));
             request.AcceptReplacementOrder(
                 acceptTime,
                 userId,
@@ -291,6 +292,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(ChangeInterpreter), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(ChangeInterpreter), nameof(RequestService));
+            CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(ChangeInterpreter));
             if (interpreter.InterpreterBrokerId == GetOtherInterpreterIdForSameOccasion(request) && !(interpreter.Interpreter?.IsProtected ?? false))
             {
                 throw new InvalidOperationException("Det går inte att tillsätta samma tolk som redan är tillsatt som extra tolk för samma tillfälle.");
@@ -550,6 +552,15 @@ namespace Tolk.BusinessLogic.Services
                     Answer = answer.Answer,
                     CanSatisfyRequirement = answer.CanSatisfyRequirement,
                 };
+            }
+        }
+
+        private void CheckSetLatestAnswerTimeForCustomerValid(DateTimeOffset? latestAnswerTimeForCustomer, string methodName)
+        {
+            if (!_tolkBaseOptions.EnableSetLatestAnswerTimeForCustomer && latestAnswerTimeForCustomer != null)
+            {
+                _logger.LogError("SetLatestAnswerTimeForCustomer in not enabled but has a value {methodName}", methodName);
+                throw new InvalidOperationException("SetLatestAnswerTimeForCustomer in not enabled but has a value!");
             }
         }
 

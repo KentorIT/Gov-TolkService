@@ -1,6 +1,8 @@
 ﻿@model RequestGroupProcessModel
 @inject SelectListService SelectListService
 @inject HelpLinkService HelpLinkService
+@inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> TolkOptions
+@using Microsoft.Extensions.Options;
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Utilities
 @{
@@ -426,7 +428,7 @@
                         <div class="no-value-info">Här bör det stå något bra om att det finns fler tillfällen kopplade till denna sammanhållna bokning, men att dessa inte skall tillsättas av denna förmedling, typ.</div>
                     }
                 }
-                @if (Model.OrderHasAllowExceedingTravelCost)
+                @if (TolkOptions.Value.EnableSetLatestAnswerTimeForCustomer && Model.OrderHasAllowExceedingTravelCost)
                 {
                     <div id="latestAnswerTimeForCustomer-panel" class="row collapse in">
                         <div class="col-sm-4">

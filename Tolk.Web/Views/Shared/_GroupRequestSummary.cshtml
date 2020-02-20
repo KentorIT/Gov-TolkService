@@ -1,4 +1,6 @@
 ﻿@model RequestGroupViewModel
+@inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> TolkOptions
+@using Microsoft.Extensions.Options;
 @using Tolk.BusinessLogic.Enums
 @using Tolk.BusinessLogic.Utilities
 @{
@@ -90,7 +92,7 @@
             </div>
         }
 
-        @if (Model.RequestIsAnswered && !(Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered))
+        @if (TolkOptions.Value.EnableSetLatestAnswerTimeForCustomer && Model.RequestIsAnswered && !(Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered))
         {
             <div class="row">
                 <div class="col-sm-8">

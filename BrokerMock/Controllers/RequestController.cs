@@ -460,13 +460,12 @@ namespace BrokerMock.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> InformationUpdated([FromBody] RequestInformationUpdatedModel payload)
+        public async Task<JsonResult> Updated([FromBody] RequestUpdatedModel payload)
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Informationen på Boknings-ID: {payload.OrderNumber} har uppdaterats.");
             }
-
             return new JsonResult("Success");
         }
 

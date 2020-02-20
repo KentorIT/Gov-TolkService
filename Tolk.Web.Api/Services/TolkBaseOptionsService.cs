@@ -34,5 +34,7 @@ namespace Tolk.Web.Api.Services
         public bool AllowDeclineExtraInterpreterOnRequestGroups => _options.AllowDeclineExtraInterpreterOnRequestGroups;
 
         public bool RoundPriceDecimals => _options.RoundPriceDecimals;
+
+        public bool EnableSetLatestAnswerTimeForCustomer => _options.EnableSetLatestAnswerTimeForCustomer;
     }
 }
