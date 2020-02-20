@@ -113,9 +113,11 @@
     };
 
     var setLatestAnswerDateTimeSpan = function () {
-        var startTime = new Date($("#OccasionList_FirstStartDateTime").val().replace(" ", "T").replace(" ", ""));
-        $("#LatestAnswerTimeForCustomer_Date").datepicker("setStartDate", new Date($("#now").val()).zeroTime());
-        $("#LatestAnswerTimeForCustomer_Date").datepicker("setEndDate", startTime.zeroTime());
+        if ($("#OccasionList_FirstStartDateTime").val() !== undefined) {
+            var startTime = new Date($("#OccasionList_FirstStartDateTime").val().replace(" ", "T").replace(" ", ""));
+            $("#LatestAnswerTimeForCustomer_Date").datepicker("setStartDate", new Date($("#now").val()).zeroTime());
+            $("#LatestAnswerTimeForCustomer_Date").datepicker("setEndDate", startTime.zeroTime());
+        }
     };
 
     function checkLatestAnswerTime(latestAnswerTime) {
