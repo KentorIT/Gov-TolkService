@@ -1,7 +1,10 @@
 ﻿@using Tolk.BusinessLogic
 @using Tolk.BusinessLogic.Helpers
+@using Tolk.BusinessLogic.Services
+@using Tolk.Web.Helpers
 @using Microsoft.Extensions.Options
 @inject IOptions<TolkOptions> options
+@inject Tolk.BusinessLogic.Services.ISwedishClock Clock
 @{
     ViewData["Title"] = Constants.SystemName;
 }
@@ -13,18 +16,25 @@
     I @Constants.SystemName kan avropsberättigade myndigheter boka tolktjänster, och ramavtalsleverantörer (tolkförmedlingar) kan hantera bokningsförfrågningar.
 </p>
 
-<br />
 <h2>Registrera användarkonto</h2>
 
 @if (options.Value.EnableRegisterUser)
 {
-<p>
-    Som användare hos en avropsberättigad myndighet eller tolkförmedling är det möjligt att själv registrera ett användarkonto. Vid frågor kontakta <a href="mailto:@options.Value.Support.FirstLineEmail">@options.Value.Support.FirstLineEmail</a>
-</p>
+    <p>
+        Som användare hos en avropsberättigad myndighet eller tolkförmedling är det möjligt att själv registrera ett användarkonto. Vid frågor kontakta <a href="mailto:@options.Value.Support.FirstLineEmail">@options.Value.Support.FirstLineEmail</a>
+    </p>
 }
 else
 {
-<p>
-    Just nu är det inte möjligt att registrera sig själv i avropstjänsten. För mer information eller önskemål om att få ett konto kontakta <a href="mailto:@options.Value.Support.UserAccountEmail">@options.Value.Support.UserAccountEmail</a>
-</p>
+    <p>
+        Just nu är det inte möjligt att registrera sig själv i avropstjänsten. För mer information eller önskemål om att få ett konto kontakta <a href="mailto:@options.Value.Support.UserAccountEmail">@options.Value.Support.UserAccountEmail</a>
+    </p>
 }
+<br />
+<p>
+    <small>
+        &copy; 2018-@(((TimeTravelClock)Clock).SwedenNow.Year) - Kammarkollegiet
+        (Version @GitHelper.Version)
+    </small>
+</p>
+
