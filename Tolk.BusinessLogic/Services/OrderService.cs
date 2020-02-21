@@ -914,7 +914,8 @@ namespace Tolk.BusinessLogic.Services
                     try
                     {
                         var request = await _tolkDbContext.Requests.NonAnsweredRespondedRequests(_clock.SwedenNow)
-                        .Include(r => r.Order)
+                        .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                        .Include(r => r.Ranking)
                         .SingleOrDefaultAsync(r => r.RequestId == requestId);
                         if (request == null)
                         {
@@ -960,6 +961,8 @@ namespace Tolk.BusinessLogic.Services
                     {
                         var requestGroup = await _tolkDbContext.RequestGroups.NonAnsweredRespondedRequestGroups(_clock.SwedenNow)
                         .Include(rg => rg.Requests)
+                        .Include(rg => rg.Ranking)
+                        .Include(rg => rg.OrderGroup).ThenInclude(og => og.CustomerOrganisation)
                         .Include(rg => rg.OrderGroup).ThenInclude(og => og.Orders)
                         .SingleOrDefaultAsync(rg => rg.RequestGroupId == requestGroupId);
                         if (requestGroup == null)
