@@ -1,16 +1,18 @@
 ﻿@model Tolk.Web.Models.UpdateOrderModel
 @inject SelectListService SelectListService
+@inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Utilities
 @{
     ViewData["Title"] = "Ändra bokning " + Model.OrderNumber;
     var competenceInfo = Model.SpecificCompetenceLevelRequired ? "Krav på kompetensnivå tolk" : "Önskemål om kompetensnivå tolk";
+    HelpLinkService.PageName = "myndighet-andra-bokning";
 }
 <section aria-label="@ViewData["Title"]">
     <div class="row">
         <form method="post">
             <div class="col-sm-12">
-                <h1 class="normal-weight">@ViewData["Title"]</h1>
+                <h1 class="normal-weight">@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
                 <hr />
                 <div class="row">
                     <div class="col-sm-4">

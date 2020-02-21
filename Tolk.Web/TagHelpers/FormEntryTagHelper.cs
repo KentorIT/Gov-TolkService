@@ -410,8 +410,11 @@ namespace Tolk.Web.TagHelpers
             {
                 htmlBuilder.AppendHtml(InformationSpan.FormatSwedish(For.Metadata.Description));
             }
+            if (!string.IsNullOrEmpty(HelpLink))
+            {
+                htmlBuilder.AppendHtml(HelpAnchor.FormatSwedish(HelpLink));
+            }
             htmlBuilder.AppendHtml(labelBuilder.RenderEndTag());
-
             WritePrefix(writer, PrefixAttribute.Position.Value);
             htmlBuilder.WriteTo(writer, _htmlEncoder);
         }
