@@ -250,7 +250,7 @@
                 </div>
             </form>
         }
-        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" }, { "id", "EventLog_Order" } })
+        @await Html.PartialAsync("_EventLog", null, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" }, { "id", "EventLog_Order" }, { "loadDynamically", true }, {"dynamicLoadUrl","Order/GetEventLog/" + Model.OrderId} })
     </div>
     <div id="requisition" class="tab-pane fade">
     </div>
@@ -353,12 +353,14 @@
         <script src="~/js/Order/Process.js" asp-append-version="true"></script>
         <script src="~/js/Complaint/View.js" asp-append-version="true"></script>
         <script src="~/js/Files.js" asp-append-version="true"></script>
+        <script src="~/js/EvenLogLoading.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
         <script src="~/js/Order/SetExpiry.min.js" asp-append-version="true"></script>
         <script src="~/js/Order/Process.min.js" asp-append-version="true"></script>
         <script src="~/js/Complaint/View.min.js" asp-append-version="true"></script>
         <script src="~/js/Files.min.js" asp-append-version="true"></script>
+        <script src="~/js/EvenLogLoading.min.js" asp-append-version="true"></script>
     </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

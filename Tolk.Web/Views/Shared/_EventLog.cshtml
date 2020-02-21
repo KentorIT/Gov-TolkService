@@ -3,7 +3,10 @@
 @{
     string header = (string)ViewData["header"] ?? "Händelser";
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
+    bool loadDynamically = (bool?)ViewData["loadDynamically"] ?? false;
+    string dynamicLoadUrl = (string)ViewData["dynamicLoadUrl"] ?? string.Empty;
     var divClass = isCollapsible ? "collapse" : "";
+    var isDynamicClass = loadDynamically ? "load-dynamically" : string.Empty;
     var divId = (string)ViewData["id"] ?? "EventLog";
 }
 <section aria-label="@header">
@@ -18,9 +21,9 @@
         <h1 class="normal-weight">@header</h1>
     }
     <hr />
-    <div id="@divId" class="@divClass collapsible-div">
+    <div id="@divId" class="@divClass @isDynamicClass collapsible-div" data-dynamic-load-url="@dynamicLoadUrl">
         <div class="table-responsive">
-            @if (Model != null && Model.Entries.Any())
+            @if (!loadDynamically && Model != null && Model.Entries.Any())
             {
                 <table class="table table-striped">
                     <thead>
@@ -46,7 +49,14 @@
             }
             else
             {
-                <p>Inga händelser registrerade</p>
+                if (loadDynamically)
+                {
+                    <p>Laddar...</p>
+                }
+                else
+                {
+                    <p>Inga händelser registrerade</p>
+                }
             }
         </div>
     </div>

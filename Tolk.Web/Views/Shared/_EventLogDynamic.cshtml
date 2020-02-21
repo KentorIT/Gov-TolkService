@@ -1,0 +1,31 @@
+﻿@model EventLogModel
+<div class="table-responsive">
+    @if (Model != null && Model.Entries.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tidpunkt</th>
+                    <th>Händelse</th>
+                    <th>Aktör</th>
+                    <th>Organisation</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Model.Entries)
+                {
+                    <tr>
+                        <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@entry.EventDetails</td>
+                        <td title="@entry.ActorContactInfo">@entry.Actor</td>
+                        <td>@(string.IsNullOrEmpty(entry.Organization) ? "-" : entry.Organization)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>Inga händelser registrerade</p>
+    }
+</div>

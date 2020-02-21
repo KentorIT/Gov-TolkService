@@ -192,5 +192,11 @@
     "inputFiles": [
       "wwwroot/js/OrderGroup/View.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/EvenLogLoading.min.js",
+    "inputFiles": [
+      "wwwroot/js/EvenLogLoading.js"
+    ]
   }
 ]

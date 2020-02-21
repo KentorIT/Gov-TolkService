@@ -184,8 +184,6 @@ namespace Tolk.Web.Models
         || RankedInterpreterLocationSecond == InterpreterLocation.OnSite || RankedInterpreterLocationSecond == InterpreterLocation.OffSiteDesignatedLocation
         || RankedInterpreterLocationThird == InterpreterLocation.OnSite || RankedInterpreterLocationThird == InterpreterLocation.OffSiteDesignatedLocation;
 
-        public EventLogModel EventLog { get; set; }
-
         public IEnumerable<InterpreterLocation> RankedInterpreterLocations
         {
             get
