@@ -571,6 +571,7 @@ namespace Tolk.Web.Controllers
                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
                     OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList());
+            //non answered responded requests 
             actionList.AddRange(_dbContext.Requests
                 .Include(r => r.Order)
                 .Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status != RequestStatus.ResponseNotAnsweredByCreator)) && r.Status == RequestStatus.ResponseNotAnsweredByCreator &&
@@ -596,18 +597,24 @@ namespace Tolk.Web.Controllers
                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
                     OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList());
+            //changed non confirmed orders(requests)
             actionList.AddRange(_dbContext.Requests
-                .Include(r => r.Order)
+                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.Group)
+                .Include(r => r.RequestViews)
                 .Where(r => (r.Status == RequestStatus.Approved || r.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
                     r.Ranking.BrokerId == brokerId && r.Order.EndAt > _clock.SwedenNow &&
-                    r.Order.OrderChangeLogEntries.Any(oc => oc.BrokerId == brokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null))
+                    r.Order.OrderChangeLogEntries.Any(oc => oc.BrokerId == brokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null)).ToList()
                 .Select(r => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
                     DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View",
                     DefaulListController = "Request",
                     DefaultItemId = r.RequestId,
-                    InfoDate = r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : r.Order.StartAt.DateTime,
+                    InfoDate = r.Order.OrderChangeLogEntries.Where(oc => oc.BrokerId == brokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null)
+                        .OrderBy(oc => oc.OrderChangeLogEntryId).Last().LoggedAt.DateTime,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.Order.CustomerOrganisation.Name,
                     ButtonItemId = r.RequestId,
@@ -616,8 +623,7 @@ namespace Tolk.Web.Controllers
                     Status = StartListItemStatus.OrderChanged,
                     ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View",
                     ButtonController = "Request",
-                    LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
-                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault()?.ViewedBy,
                     OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList());
 
@@ -632,7 +638,7 @@ namespace Tolk.Web.Controllers
                     DefaulListAction = "View",
                     DefaulListController = "RequestGroup",
                     DefaultItemId = r.RequestGroupId,
-                    InfoDate = r.Status == RequestStatus.ResponseNotAnsweredByCreator ? (r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : 
+                    InfoDate = r.Status == RequestStatus.ResponseNotAnsweredByCreator ? (r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime :
                         r.OrderGroup.Orders.OrderBy(v => v.StartAt).First().StartAt.DateTime) : (r.Status != RequestStatus.DeniedByCreator && r.RequestGroupUpdateLatestAnswerTime != null) ? r.RequestGroupUpdateLatestAnswerTime.UpdatedAt.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = r.Status == RequestStatus.DeniedByCreator ?
                         (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.DeniedByCreator && !req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter,
