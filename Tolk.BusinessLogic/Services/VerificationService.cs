@@ -311,7 +311,7 @@ namespace Tolk.BusinessLogic.Services
         private async Task<IEnumerable<StatusVerificationItem>> GetStatusChecks()
         {
             int delay = -1;
-            return new List<StatusVerificationItem>
+            var checks = new List<StatusVerificationItem>
             {
                 new StatusVerificationItem
                 {
@@ -349,13 +349,18 @@ namespace Tolk.BusinessLogic.Services
                 {
                     Test = "Koppla mot tellus språklista",
                     Success = (await GetLaguagesFromTellus()).Status == 200
-                },
-                new StatusVerificationItem
+                }
+            };
+            if (_tolkBaseOptions.StatusChecker.CheckUptimeRobot)
+            {
+                checks.Add(new StatusVerificationItem
                 {
                     Test = "Koppla mot uptime robot",
                     Success = (await GetMonitorsFromUptimeRobot()).Status == 200
-                }
-            };
+                });
+            }
+
+            return checks;
         }
 
         private static VerificationResult CheckInterpreter(CompetenceAndSpecialistLevel competenceLevel, Order order, TellusInterpreterResponse information)
