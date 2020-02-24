@@ -79,11 +79,11 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id, string message = null, string errorMessage = null)
         {
-            //TODO: GET A SMALLER SET
             Order order = GetOrder(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
+                var allowEdit = (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 //TODO: Handle this better. Preferably with a list that you can use contains on
                 var request = order.Requests.SingleOrDefault(r =>
                                         r.Status != RequestStatus.InterpreterReplaced &&
@@ -98,17 +98,17 @@ namespace Tolk.Web.Controllers
                     (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
                 model.TimeIsValidForOrderReplacement = model.AllowOrderCancellation && TimeIsValidForOrderReplacement(order.StartAt);
                 model.AllowReplacementOnCancel = model.AllowOrderCancellation && request != null && request.CanCreateReplacementOrderOnCancel && model.TimeIsValidForOrderReplacement;
-                model.AllowNoAnswerConfirmation = order.Status == OrderStatus.NoBrokerAcceptedOrder && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
-                model.AllowConfirmCancellation = order.Status == OrderStatus.CancelledByBroker && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
+                model.AllowNoAnswerConfirmation = order.Status == OrderStatus.NoBrokerAcceptedOrder && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder) && allowEdit;
+                model.AllowConfirmCancellation = order.Status == OrderStatus.CancelledByBroker && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker) && allowEdit;
                 model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(order);
                 model.RequestStatus = request?.Status;
                 model.BrokerName = request?.Ranking.Broker.Name;
                 model.BrokerOrganizationNumber = request?.Ranking.Broker.OrganizationNumber;
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
-                model.AllowUpdateExpiry = order.OrderGroupId == null && order.Status == OrderStatus.AwaitingDeadlineFromCustomer && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
+                model.AllowUpdateExpiry = order.OrderGroupId == null && order.Status == OrderStatus.AwaitingDeadlineFromCustomer && allowEdit;
                 model.AllowEditContactPerson = order.Status != OrderStatus.CancelledByBroker && order.Status != OrderStatus.CancelledByCreator && order.Status != OrderStatus.NoBrokerAcceptedOrder && order.Status != OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded;
-                model.AllowUpdate = _options.EnableOrderUpdate && order.Status == OrderStatus.ResponseAccepted && order.StartAt > _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
+                model.AllowUpdate = _options.EnableOrderUpdate && order.Status == OrderStatus.ResponseAccepted && order.StartAt > _clock.SwedenNow && allowEdit;
                 //don't use AnsweredBy since request for replacement order can have interpreter etc but not is answered
                 model.ActiveRequestIsAnswered = request?.InterpreterBrokerId != null && (request?.Status != RequestStatus.Created && request?.Status != RequestStatus.Received);
                 model.AllowRequestPrint = (request?.CanPrint ?? false) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded;
@@ -192,7 +192,6 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)
         {
-            //TODO: GET A SMALLER SET
             var order = GetOrder(replacingOrderId);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
@@ -234,7 +233,6 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                //TODO: GET A SMALLER SET
                 Order order = GetOrder(model.ReplacingOrderId.Value);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
                 {
@@ -262,7 +260,6 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Update(int id)
         {
-            //TODO: GET A SMALLER SET(PROBABLY SAME AS VIEW)
             var order = GetOrder(id);
 
             if (_options.EnableOrderUpdate && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
@@ -315,7 +312,6 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Update(UpdateOrderModel model)
         {
-            //TODO: GET A SMALLER SET (SAME AS CREATE?)
             if (ModelState.IsValid)
             {
                 Order order = GetOrder(model.OrderId.Value);
@@ -376,7 +372,6 @@ namespace Tolk.Web.Controllers
 
                         }
                         await _dbContext.SaveChangesAsync();
-                        //TODO: GET A SMALLER SET
                         order = GetOrder(model.OrderId.Value);
                         if (orderFieldsUpdated || attachmentChanged)
                         {
@@ -401,7 +396,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {
-            Order order = GetEventLogOrder(id);
+            Order order = GetOrder(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
@@ -654,7 +649,6 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Sent(int id)
         {
-            //TODO: GET A SMALLER SET
             Order order = GetOrder(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
@@ -670,7 +664,6 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Print(int id)
         {
-            //TODO: GET A SMALLER SET
             Order order = GetOrder(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded)
@@ -876,7 +869,6 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
         {
-            //TODO: GET A SMALLER SET
             var order = GetOrder(model.OrderId);
             var oldContactPerson = order.ContactPersonUser;
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded)
@@ -913,7 +905,6 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> UpdateExpiry(int orderId, DateTimeOffset latestAnswerBy)
         {
-            //TODO: GET A SMALLER SET
             var order = GetOrder(orderId);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
@@ -1043,49 +1034,6 @@ namespace Tolk.Web.Controllers
         }
 
         private Order GetOrder(int id)
-        {
-            return _dbContext.Orders
-                .Include(o => o.ReplacedByOrder)
-                .Include(o => o.ReplacingOrder)
-                .Include(o => o.ReplacingOrder).ThenInclude(o => o.CreatedByUser)
-                .Include(o => o.CreatedByUser)
-                .Include(o => o.ContactPersonUser)
-                .Include(o => o.Region)
-                .Include(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(o => o.CustomerOrganisation)
-                .Include(o => o.Language)
-                .Include(o => o.CustomerUnit)
-                .Include(o => o.InterpreterLocations)
-                .Include(o => o.CompetenceRequirements)
-                .Include(o => o.Group).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
-                .Include(o => o.OrderStatusConfirmations).ThenInclude(os => os.ConfirmedByUser)
-                .Include(o => o.Attachments).ThenInclude(o => o.Attachment)
-                .Include(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
-                .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(o => o.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(o => o.Requests).ThenInclude(r => r.Requisitions).ThenInclude(r => r.CreatedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.AnsweringUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
-                .Include(o => o.Requests).ThenInclude(r => r.AnsweringUser)
-                .Include(o => o.Requests).ThenInclude(r => r.ReceivedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.ProcessingUser)
-                .Include(o => o.Requests).ThenInclude(r => r.CancelledByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Ranking).ThenInclude(ra => ra.Broker)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions).ThenInclude(u => u.CreatedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints).ThenInclude(u => u.CreatedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
-                .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.RequestUpdateLatestAnswerTime).ThenInclude(ru => ru.UpdatedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
-                .Include(o => o.Requests).ThenInclude(r => r.RequestGroup).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
-                .Include(o => o.Requests).ThenInclude(r => r.Order)
-                .Single(o => o.OrderId == id);
-        }
-        private Order GetEventLogOrder(int id)
         {
             return _dbContext.Orders
                 .Include(o => o.ReplacedByOrder)
