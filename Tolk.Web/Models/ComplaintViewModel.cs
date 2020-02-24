@@ -59,7 +59,7 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        internal static ComplaintViewModel GetViewModelFromComplaint(Complaint complaint)
+        internal static ComplaintViewModel GetViewModelFromComplaint(Complaint complaint, string eventLogPath)
         {
             string customerName = complaint.Request.Order.CustomerOrganisation.Name;
             string brokerName = complaint.Request.Ranking.Broker.Name;
@@ -77,7 +77,12 @@ namespace Tolk.Web.Models
                 Status = complaint.Status,
                 DisputeMessage = complaint.AnswerMessage,
                 AnswerDisputedMessage = complaint.AnswerDisputedMessage,
-                EventLog = new EventLogModel { Entries = EventLogHelper.GetEventLog(complaint, customerName, brokerName).OrderBy(e => e.Timestamp).ToList() },
+                EventLog = new EventLogModel
+                {
+                    Header = "Reklamationshändelser",
+                    Id = "EventLog_Complaints",
+                    DynamicLoadPath = eventLogPath,
+                },
             };
         }
 

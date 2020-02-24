@@ -1,63 +1,12 @@
 ﻿@model EventLogModel
-
-@{
-    string header = (string)ViewData["header"] ?? "Händelser";
-    bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
-    bool loadDynamically = (bool?)ViewData["loadDynamically"] ?? false;
-    string dynamicLoadUrl = (string)ViewData["dynamicLoadUrl"] ?? string.Empty;
-    var divClass = isCollapsible ? "collapse" : "";
-    var isDynamicClass = loadDynamically ? "load-dynamically" : string.Empty;
-    var divId = (string)ViewData["id"] ?? "EventLog";
-}
-<section aria-label="@header">
-    @if (isCollapsible)
-    {
-        <a class="collapsible-section" data-toggle="collapse" data-target="#@divId">
-            <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h2>
-        </a>
-    }
-    else
-    {
-        <h1 class="normal-weight">@header</h1>
-    }
+<section aria-label="@Model.Header">
+    <a class="collapsible-section" data-toggle="collapse" data-target="#@Model.Id">
+        <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @Model.Header</h2>
+    </a>
     <hr />
-    <div id="@divId" class="@divClass @isDynamicClass collapsible-div" data-dynamic-load-url="@dynamicLoadUrl">
+    <div id="@Model.Id" class="collapse collapsible-div load-dynamically" data-dynamic-load-url="@Model.DynamicLoadPath">
         <div class="table-responsive">
-            @if (!loadDynamically && Model != null && Model.Entries.Any())
-            {
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Tidpunkt</th>
-                            <th>Händelse</th>
-                            <th>Aktör</th>
-                            <th>Organisation</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var entry in Model.Entries)
-                        {
-                            <tr>
-                                <td>@entry.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
-                                <td>@entry.EventDetails</td>
-                                <td title="@entry.ActorContactInfo">@entry.Actor</td>
-                                <td>@(string.IsNullOrEmpty(entry.Organization) ? "-" : entry.Organization)</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-            else
-            {
-                if (loadDynamically)
-                {
-                    <p>Laddar...</p>
-                }
-                else
-                {
-                    <p>Inga händelser registrerade</p>
-                }
-            }
+            <p>Laddar...</p>
         </div>
     </div>
 </section>

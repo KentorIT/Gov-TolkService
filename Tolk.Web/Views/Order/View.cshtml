@@ -250,7 +250,7 @@
                 </div>
             </form>
         }
-        @await Html.PartialAsync("_EventLog", null, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" }, { "id", "EventLog_Order" }, { "loadDynamically", true }, {"dynamicLoadUrl","Order/GetEventLog/" + Model.OrderId} })
+        @await Html.PartialAsync("_EventLog", Model.EventLog)
     </div>
     <div id="requisition" class="tab-pane fade">
     </div>

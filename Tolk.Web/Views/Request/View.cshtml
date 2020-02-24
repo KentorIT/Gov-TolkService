@@ -172,7 +172,7 @@
                         </div>
                     </div>
                 </div>
-                @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Bokningshändelser" }, { "id", "EventLog_Request" } })
+                @await Html.PartialAsync("_EventLog", Model.EventLog)
             </div>
         </div>
     </div>
@@ -186,11 +186,13 @@
         <script src="~/js/Request/View.js" asp-append-version="true"></script>
         <script src="~/js/Complaint/View.js" asp-append-version="true"></script>
         <script src="~/js/Files.js" asp-append-version="true"></script>
+        <script src="~/js/EvenLogLoading.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
         <script src="~/js/Request/View.min.js" asp-append-version="true"></script>
         <script src="~/js/Complaint/View.min.js" asp-append-version="true"></script>
         <script src="~/js/Files.min.js" asp-append-version="true"></script>
+        <script src="~/js/EvenLogLoading.min.js" asp-append-version="true"></script>
     </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

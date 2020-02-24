@@ -183,6 +183,8 @@ namespace Tolk.Web.Models
         public bool HasOnsiteLocation => RankedInterpreterLocationFirst == InterpreterLocation.OnSite || RankedInterpreterLocationFirst == InterpreterLocation.OffSiteDesignatedLocation
         || RankedInterpreterLocationSecond == InterpreterLocation.OnSite || RankedInterpreterLocationSecond == InterpreterLocation.OffSiteDesignatedLocation
         || RankedInterpreterLocationThird == InterpreterLocation.OnSite || RankedInterpreterLocationThird == InterpreterLocation.OffSiteDesignatedLocation;
+        
+        public EventLogModel EventLog { get; set; }
 
         public IEnumerable<InterpreterLocation> RankedInterpreterLocations
         {

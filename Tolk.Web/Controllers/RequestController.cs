@@ -612,6 +612,22 @@ namespace Tolk.Web.Controllers
                 model.ConfirmedOrderChangeLogEntries = request.Order.OrderChangeLogEntries.Where(oc => oc.BrokerId == request.Ranking.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null).Select(oc => oc.OrderChangeLogEntryId).ToList();
                 model.EventLog = new EventLogModel
                 {
+                    Header = "Bokningshändelser",
+                    Id = "EventLog_Request",
+                    DynamicLoadPath = $"Request/{nameof(GetEventLog)}/{request.RequestId}",
+                };
+            }
+            return model;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetEventLog(int id)
+        {
+            var request = await GetRequestToView(id);
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
+            {
+                return PartialView("_EventLogDynamic", new EventLogModel
+                {
                     Entries = EventLogHelper.GetEventLog(request, request.Order.CustomerOrganisation.Name, request.Ranking.Broker.Name,
                     previousRequests: _dbContext.Requests
                         .Include(r => r.ReceivedByUser)
@@ -632,10 +648,11 @@ namespace Tolk.Web.Controllers
                         .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
                         .Where(r => r.OrderId == request.OrderId && r.RequestId != request.RequestId))
                     .OrderBy(e => e.Timestamp).ToList()
-                };
+                });
             }
-            return model;
+            return Forbid();
         }
+
 
         private bool DisplayOrderChange(Request request) => (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.EndAt > _clock.SwedenNow &&
             request.Order.OrderChangeLogEntries.Any(oc => oc.BrokerId == request.Ranking.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null);

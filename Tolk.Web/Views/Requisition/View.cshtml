@@ -93,7 +93,7 @@
 }
 <div class="row">
     <div class="col-sm-12">
-        @await Html.PartialAsync("_EventLog", Model.EventLog, new ViewDataDictionary(ViewData) { { "header", "Rekvisitionshändelser" }, { "id", "EventLog_Requisition" } })
+        @await Html.PartialAsync("_EventLog", Model.EventLog)
     </div>
 </div>
 <div id="commentReqMessageDialog" class="modal fade" role="dialog">

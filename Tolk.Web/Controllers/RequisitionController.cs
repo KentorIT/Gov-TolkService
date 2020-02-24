@@ -114,24 +114,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id, bool returnPartial = false)
         {
-            var requisition = _dbContext.Requisitions
-                .Include(r => r.CreatedByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.ProcessedUser)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows).ThenInclude(plr => plr.PriceListRow)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.CreatedByUser)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(req => req.Attachments).ThenInclude(a => a.Attachment)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(req => req.MealBreaks)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
-                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-                .Include(r => r.MealBreaks)
-              .Single(o => o.RequisitionId == id);
+            var requisition = GetRequisition(id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
             {
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
@@ -151,8 +134,9 @@ namespace Tolk.Web.Controllers
                     .ToList();
                 model.EventLog = new EventLogModel
                 {
-                    Entries = EventLogHelper.GetEventLog(requisition.Request.Requisitions, requisition.Request.Order.CustomerOrganisation.Name, requisition.Request.Ranking.Broker.Name)
-                        .OrderBy(e => e.Timestamp).ToList()
+                    Header = "Rekvisitionshändelser",
+                    Id = "EventLog_Requisition",
+                    DynamicLoadPath = $"Requisition/{nameof(GetEventLog)}/{id}",
                 };
                 if (returnPartial) { return PartialView(model); }
                 return View(model);
@@ -337,6 +321,43 @@ namespace Tolk.Web.Controllers
                 return Forbid();
             }
             return RedirectToAction(nameof(View), new { id = model.RequisitionId });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetEventLog(int id)
+        {
+            var requisition = GetRequisition(id);
+            if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
+            {
+                return PartialView("_EventLogDynamic", new EventLogModel
+                {
+                    Entries = EventLogHelper.GetEventLog(requisition.Request.Requisitions, requisition.Request.Order.CustomerOrganisation.Name, requisition.Request.Ranking.Broker.Name)
+                        .OrderBy(e => e.Timestamp).ToList()
+                });
+            }
+            return Forbid();
+        }
+
+        private Requisition GetRequisition(int id)
+        {
+            return _dbContext.Requisitions
+                .Include(r => r.CreatedByUser).ThenInclude(u => u.Broker)
+                .Include(r => r.ProcessedUser)
+                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows).ThenInclude(plr => plr.PriceListRow)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.CreatedByUser)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(req => req.Attachments).ThenInclude(a => a.Attachment)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(req => req.MealBreaks)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
+                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
+                .Include(r => r.MealBreaks)
+                .Single(o => o.RequisitionId == id);
         }
 
         private static PriceInformationModel GetRequisitionPriceInformation(Requisition requisition, bool useDisplayHideInfo = false)

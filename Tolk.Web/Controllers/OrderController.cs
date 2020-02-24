@@ -153,6 +153,12 @@ namespace Tolk.Web.Controllers
                     model.AllowProcessing = AllowProcessing(order, model) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
                     model.TerminateOnDenial = request.TerminateOnDenial;
                 }
+                model.EventLog = new EventLogModel
+                {
+                    Header = "Bokningshändelser",
+                    Id = "EventLog_Order",
+                    DynamicLoadPath = $"Order/{nameof(GetEventLog)}/{id}",
+                };
                 if (request != null)
                 {
                     model.ActiveRequest = RequestModel.GetModelFromRequest(request, true);
@@ -367,7 +373,7 @@ namespace Tolk.Web.Controllers
                                 SelectedInterpreterLocation = model.SelectedInterpreterLocation,
                                 Attachments = updatedAttachments
                             });
-                            
+
                         }
                         await _dbContext.SaveChangesAsync();
                         //TODO: GET A SMALLER SET
@@ -437,7 +443,7 @@ namespace Tolk.Web.Controllers
                 CreatedByName = user.FullName,
                 UserDefaultSettings = DefaultSettingsModel.GetModel(user),
                 EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UseOrderGroups)
-        };
+            };
             model.UpdateModelWithDefaultSettings(user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList());
             return View(model);
         }

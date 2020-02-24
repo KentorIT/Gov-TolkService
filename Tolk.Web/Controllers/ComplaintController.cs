@@ -104,7 +104,7 @@ namespace Tolk.Web.Controllers
             if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
             {
                 var isCustomer = User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId);
-                ComplaintViewModel model = ComplaintViewModel.GetViewModelFromComplaint(complaint);
+                ComplaintViewModel model = ComplaintViewModel.GetViewModelFromComplaint(complaint, $"Complaint/{nameof(GetEventLog)}/{id}");
                 model.IsBroker = User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId);
                 model.IsCustomer = isCustomer;
                 model.IsAdmin = User.IsInRole(Roles.SystemAdministrator);
@@ -265,6 +265,21 @@ namespace Tolk.Web.Controllers
                 return Forbid();
             }
             return RedirectToAction("View", "Order", new { id = complaint.Request.OrderId, tab = "complaint" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetEventLog(int id)
+        {
+            var complaint = GetComplaint(id);
+            if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
+            {
+                return PartialView("_EventLogDynamic", new EventLogModel
+                {
+                    Entries = EventLogHelper.GetEventLog(complaint, complaint.Request.Order.CustomerOrganisation.Name, complaint.Request.Ranking.Broker.Name)
+                        .OrderBy(e => e.Timestamp).ToList()
+                });
+            }
+            return Forbid();
         }
 
         private Request GetRequest(int id)
