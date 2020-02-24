@@ -95,8 +95,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                name: "IX_OrderContactPersonHistory_OrderId",
                table: "OrderContactPersonHistory");
 
-
             migrationBuilder.Sql(@"
+            Exec('
             INSERT INTO OrderChangeLogEntries(OrderChangeLogType, OrderId, UpdatedByUserId, LoggedAt, UpdatedByImpersonatorId)
             SELECT 2, OrderId, ChangedBy, ChangedAt, ImpersonatingChangeUserId 
             FROM OrderContactPersonHistory
@@ -104,9 +104,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
             UPDATE OrderContactPersonHistory SET OrderId = oc.OrderChangeLogEntryId
             FROM OrderContactPersonHistory ocp
             JOIN OrderChangeLogEntries oc
-                ON oc.LoggedAt = ocp.ChangedAt AND oc.OrderId = ocp.OrderId"
+                ON oc.LoggedAt = ocp.ChangedAt AND oc.OrderId = ocp.OrderId')"
             );
-
 
             migrationBuilder.DropForeignKey(
                 name: "FK_OrderContactPersonHistory_AspNetUsers_ChangedBy",
