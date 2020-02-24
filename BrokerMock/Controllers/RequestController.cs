@@ -465,6 +465,7 @@ namespace BrokerMock.Controllers
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Informationen på Boknings-ID: {payload.OrderNumber} har uppdaterats.");
+                await ConfirmUpdate(payload.OrderNumber);
             }
             return new JsonResult("Success");
         }
@@ -853,6 +854,30 @@ namespace BrokerMock.Controllers
                     else
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoAnswer] FAILED:: Boknings-ID: {orderNumber} tagit del av obesvarad förfrågan");
+                    }
+                }
+                return true;
+            }
+        }
+
+        private async Task<bool> ConfirmUpdate(string orderNumber)
+        {
+            var payload = new ConfirmChangeModel
+            {
+                OrderNumber = orderNumber,
+                CallingUser = "regular-user@formedling1.se"
+            };
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            {
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmChange"), content))
+                {
+                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmChange]:: Boknings-ID: {orderNumber} tagit del av ändrad förfrågan");
+                    }
+                    else
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmChange] FAILED:: Boknings-ID: {orderNumber} tagit del av ändrad förfrågan");
                     }
                 }
                 return true;
