@@ -105,10 +105,16 @@ namespace BrokerMock.Controllers
                     if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
                     {
                         var interpreter = interpreters?.FirstOrDefault();
-
+                        DateTimeOffset? latestAnswerAt = null;
+                        decimal? expectedTravelCosts = null;
                         if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
                         {
                             interpreter = GetNewInterpreter();
+                        }
+                        if (extraInstructions.Contains("SETLATESTANSWERAT"))
+                        {
+                            latestAnswerAt = payload.StartAt.AddMinutes(-60);
+                            expectedTravelCosts = 300;
                         }
                         if (extraInstructions.Contains("BADLOCATION"))
                         {
@@ -125,7 +131,9 @@ namespace BrokerMock.Controllers
                                     Answer = "Japp",
                                     CanMeetRequirement = true,
                                     RequirementId = r.RequirementId
-                                })
+                                }),
+                                expectedTravelCosts,
+                                latestAnswerAt
                             );
                         }
                         else
@@ -140,7 +148,9 @@ namespace BrokerMock.Controllers
                                     Answer = "Japp",
                                     CanMeetRequirement = true,
                                     RequirementId = r.RequirementId
-                                })
+                                }),
+                                expectedTravelCosts,
+                                latestAnswerAt
                             );
                         }
                     }
@@ -632,7 +642,7 @@ namespace BrokerMock.Controllers
             return description.ToSwedishUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
         }
 
-        private async Task<bool> AssignInterpreter(string orderNumber, InterpreterModel interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
+        private async Task<bool> AssignInterpreter(string orderNumber, InterpreterModel interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers, decimal? expectedTravelCosts = null, DateTimeOffset? latestAnswerAt = null)
         {
             var payload = new RequestAnswerModel
             {
@@ -640,9 +650,10 @@ namespace BrokerMock.Controllers
                 Interpreter = interpreter,
                 Location = location,
                 CompetenceLevel = competenceLevel,
-                ExpectedTravelCosts = 0,
+                ExpectedTravelCosts = expectedTravelCosts,
                 CallingUser = "regular-user@formedling1.se",
-                RequirementAnswers = requirementAnswers
+                RequirementAnswers = requirementAnswers,
+                LatestAnswerTimeForCustomer = latestAnswerAt
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
