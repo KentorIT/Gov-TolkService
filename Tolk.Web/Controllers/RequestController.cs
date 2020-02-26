@@ -422,7 +422,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> ConfirmNoRequisition(int requestId)
@@ -488,6 +487,39 @@ namespace Tolk.Web.Controllers
                 _dbContext.SaveChanges();
             }
             return Json(new { success = true });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GetEventLog(int id)
+        {
+            var request = await GetRequestToView(id);
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
+            {
+                return PartialView("_EventLogDynamic", new EventLogModel
+                {
+                    Entries = EventLogHelper.GetEventLog(request, request.Order.CustomerOrganisation.Name, request.Ranking.Broker.Name,
+                    previousRequests: _dbContext.Requests
+                        .Include(r => r.ReceivedByUser)
+                        .Include(r => r.AnsweringUser)
+                        .Include(r => r.ProcessingUser)
+                        .Include(r => r.CancelledByUser)
+                        .Include(r => r.Interpreter)
+                        .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.AnsweringUser)
+                        .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.Interpreter)
+                        .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(ru => ru.UpdatedByUser)
+                        .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
+                        .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser)
+                        .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)
+                        .Include(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
+                        .Include(r => r.Complaints).ThenInclude(c => c.AnsweringUser)
+                        .Include(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
+                        .Include(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
+                        .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                        .Where(r => r.OrderId == request.OrderId && r.RequestId != request.RequestId))
+                    .OrderBy(e => e.Timestamp).ToList()
+                });
+            }
+            return Forbid();
         }
 
         private async Task<Request> GetRequestToProcess(int requestId)
@@ -619,40 +651,6 @@ namespace Tolk.Web.Controllers
             }
             return model;
         }
-
-        [HttpPost]
-        public async Task<IActionResult> GetEventLog(int id)
-        {
-            var request = await GetRequestToView(id);
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
-            {
-                return PartialView("_EventLogDynamic", new EventLogModel
-                {
-                    Entries = EventLogHelper.GetEventLog(request, request.Order.CustomerOrganisation.Name, request.Ranking.Broker.Name,
-                    previousRequests: _dbContext.Requests
-                        .Include(r => r.ReceivedByUser)
-                        .Include(r => r.AnsweringUser)
-                        .Include(r => r.ProcessingUser)
-                        .Include(r => r.CancelledByUser)
-                        .Include(r => r.Interpreter)
-                        .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.AnsweringUser)
-                        .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.Interpreter)
-                        .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(ru => ru.UpdatedByUser)
-                        .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                        .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser)
-                        .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)
-                        .Include(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
-                        .Include(r => r.Complaints).ThenInclude(c => c.AnsweringUser)
-                        .Include(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
-                        .Include(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
-                        .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
-                        .Where(r => r.OrderId == request.OrderId && r.RequestId != request.RequestId))
-                    .OrderBy(e => e.Timestamp).ToList()
-                });
-            }
-            return Forbid();
-        }
-
 
         private bool DisplayOrderChange(Request request) => (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.EndAt > _clock.SwedenNow &&
             request.Order.OrderChangeLogEntries.Any(oc => oc.BrokerId == request.Ranking.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null);
