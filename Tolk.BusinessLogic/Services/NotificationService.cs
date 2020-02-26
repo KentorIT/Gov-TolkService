@@ -1617,8 +1617,21 @@ Sammanställning:
             {
                 CreatedAt = requestGroup.CreatedAt,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
-                Customer = orderGroup.CustomerOrganisation.Name,
-                CustomerOrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
+                CustomerInformation = new CustomerInformationModel
+                {
+                    Name = orderGroup.CustomerOrganisation.Name,
+                    Key = orderGroup.CustomerOrganisation.OrganisationPrefix,
+                    OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
+                    ContactName = orderGroup.CreatedByUser.FullName,
+                    ContactPhone = orderGroup.ContactPhone,
+                    ContactEmail = orderGroup.ContactEmail,
+                    InvoiceReference = order.InvoiceReference,
+                    PriceListType = orderGroup.CustomerOrganisation.PriceListType.GetCustomName(),
+                    TravelCostAgreementType = orderGroup.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
+                    ReferenceNumber = order.CustomerReferenceNumber,
+                    UnitName = orderGroup.CustomerUnit?.Name,
+                    DepartmentName = order.UnitName
+                },
                 //D2 pads any single digit with a zero 1 -> "01"
                 Region = orderGroup.Region.RegionId.ToSwedishString("D2"),
                 Language = new LanguageModel
@@ -1640,7 +1653,7 @@ Sammanställning:
                     Key = EnumHelper.GetCustomName(c.CompetenceLevel),
                     Rank = c.Rank ?? 0
                 }),
-                AllowExceedingTravelCost = orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
+                AllowMoreThanTwoHoursTravelTime = orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 CreatorIsInterpreterUser = orderGroup.CreatorIsInterpreterUser,
                 AssignmentType = EnumHelper.GetCustomName(orderGroup.AssignmentType),
                 Description = order.Description,

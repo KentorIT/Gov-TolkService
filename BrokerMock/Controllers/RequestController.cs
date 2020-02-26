@@ -226,7 +226,7 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Sammanhållen Boknings-ID: {payload.OrderGroupNumber} skapad av {payload.Customer} i {payload.Region}");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Sammanhållen Boknings-ID: {payload.OrderGroupNumber} skapad av {payload.CustomerInformation.Name} i {payload.Region}");
             }
             if (_cache.Get<List<ListItemResponse>>("LocationTypes") == null)
             {

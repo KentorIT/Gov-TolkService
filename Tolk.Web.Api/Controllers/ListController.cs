@@ -121,6 +121,12 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
+        public ActionResult<IEnumerable<ListItemResponse>> OrderChangeTypes()
+        {
+            return DescriptionsAsJson<OrderChangeLogType>();
+        }
+
+        [HttpGet]
         [Authorize(Policies.Broker)]
         public async Task<ActionResult<IEnumerable<ListItemResponse>>> BrokerInterpreters()
         {
