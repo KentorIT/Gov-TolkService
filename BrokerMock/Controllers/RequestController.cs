@@ -540,7 +540,7 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Sammanhållen Boknings-ID: {payload.OrderNumber} Tiden för det tillsatta tolkuppdraget har passerat, det finns nu möjlighet att registrera rekvisition elternativt att arkivera bokningen.");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} Tiden för det tillsatta tolkuppdraget har passerat, det finns nu möjlighet att registrera rekvisition alternativt att arkivera bokningen.");
                 await ConfirmNoRequisition(payload.OrderNumber);
             }
 
