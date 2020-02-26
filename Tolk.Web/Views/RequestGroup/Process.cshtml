@@ -432,9 +432,7 @@
                 {
                     <div id="latestAnswerTimeForCustomer-panel" class="row collapse in">
                         <div class="col-sm-4">
-                        </div>
-                        <div class="col-sm-4">
-                            <form-entry asp-for="SetLatestAnswerTimeForCustomer" asp-items="SelectListService.BoolList" />
+                            <form-entry asp-for="SetLatestAnswerTimeForCustomer" asp-items="SelectListService.BoolList" layout-option="row"/>
                             <div id="SetLatestAnswerTimeForCustomerValidator" class="d-none text-danger body">Ange om du vill sätta sista svarstid eller inte</div>
                         </div>
                         <div class="col-sm-4 d-none" id="latestAnswerTimeForCustomer">
