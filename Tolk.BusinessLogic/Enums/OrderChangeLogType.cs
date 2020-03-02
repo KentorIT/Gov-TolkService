@@ -9,8 +9,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Bifogade filer")]
         Attachment = 1,
 
-        [CustomName("contact_person")]
-        [Description("Kontaktperson")]
+        [CustomName("not_used", false)]
+        [Description("Person med rätt att granska rekvisition")]
         ContactPerson = 2,
 
         [CustomName("information_fields")]
