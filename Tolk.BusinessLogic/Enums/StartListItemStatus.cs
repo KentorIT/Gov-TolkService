@@ -34,7 +34,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Förfrågan mottagen")]
         RequestReceived = 10,
 
-        [Description("Uppdrag utfört")]
+        [Description("Uppdrag har utförts")]
         RequisitionToBeCreated = 11,
 
         [Description("Rekvisition har kommenterats av myndighet")]
