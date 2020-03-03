@@ -525,7 +525,7 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ConfirmChange([FromBody] ConfirmChangeModel model)
+        public async Task<IActionResult> ConfirmUpdate([FromBody] ConfirmUpdateModel model)
         {
             if (model == null)
             {
@@ -541,7 +541,7 @@ namespace Tolk.Web.Api.Controllers
                 Request request = await GetOrderChangedRequest(model.OrderNumber, brokerId);
                 var allNonConfirmedOrderChanges = request.Order.OrderChangeLogEntries.Where(oc => oc.BrokerId == brokerId && oc.OrderChangeConfirmation == null && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson).ToList();
                 await _requestService.ConfirmOrderChange(request, allNonConfirmedOrderChanges.Select(c => c.OrderChangeLogEntryId).ToList(), _timeService.SwedenNow, user?.Id ?? apiUserId, user != null ? (int?)apiUserId : null);
-                return Ok(new ConfirmChangeResponse { ConfirmedChanges = allNonConfirmedOrderChanges.Select(o => new ConfirmedChangeModel { ChangedAt = o.LoggedAt, ChangeType = o.OrderChangeLogType.GetCustomName() }) });
+                return Ok(new ConfirmUpdateResponse { ConfirmedUpdates = allNonConfirmedOrderChanges.Select(o => new ConfirmedUpdateModel { UpdatedAt = o.LoggedAt, RequestUpdateType = o.OrderChangeLogType.GetCustomName() }) });
             }
             catch (InvalidApiCallException ex)
             {

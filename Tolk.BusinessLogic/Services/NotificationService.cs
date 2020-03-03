@@ -1513,10 +1513,12 @@ Sammanställning:
             };
         }
 
-        private static RequestUpdatedModel GetRequestUpdatedModel(Order order, bool attachmentChanged, bool orderFieldsUpdated, OrderChangeLogEntry lastChange, InterpreterLocation interpreterLocationFromAnswer, string interpreterLocationText)
+        private static RequestUpdatedModel GetRequestUpdatedModel(Order order, bool attachmentUpdated, bool orderFieldsUpdated, OrderChangeLogEntry lastChange, InterpreterLocation interpreterLocationFromAnswer, string interpreterLocationText)
         {
             RequestUpdatedModel updatedModel = new RequestUpdatedModel { OrderNumber = order.OrderNumber };
-            var attachments = attachmentChanged ? order.Attachments.Select(a => new AttachmentInformationModel
+            updatedModel.RequestUpdateType = (orderFieldsUpdated && attachmentUpdated) ? OrderChangeLogType.AttachmentAndOrderInformationFields.GetCustomName() : attachmentUpdated ? OrderChangeLogType.Attachment.GetCustomName() : OrderChangeLogType.OrderInformationFields.GetCustomName();
+
+            var attachments = attachmentUpdated ? order.Attachments.Select(a => new AttachmentInformationModel
             {
                 AttachmentId = a.AttachmentId,
                 FileName = a.Attachment.FileName
@@ -1563,30 +1565,30 @@ Sammanställning:
                 }
                 if (customerReferenceNumberUpdated || customerDepartmentNumberUpdated || invoiceReferenceUpdated)
                 {
-                    updatedModel.CustomerInformation = new CustomerInformationModel();
+                    updatedModel.CustomerInformationUpdated = new CustomerInformationUpdatedModel();
                     if (customerReferenceNumberUpdated)
                     {
-                        updatedModel.CustomerInformation.ReferenceNumber = order.CustomerReferenceNumber ?? string.Empty;
+                        updatedModel.CustomerInformationUpdated.ReferenceNumber = order.CustomerReferenceNumber ?? string.Empty;
                     }
                     if (invoiceReferenceUpdated)
                     {
-                        updatedModel.CustomerInformation.InvoiceReference = order.InvoiceReference;
+                        updatedModel.CustomerInformationUpdated.InvoiceReference = order.InvoiceReference;
                     }
                     if (customerDepartmentNumberUpdated)
                     {
-                        updatedModel.CustomerInformation.DepartmentName = order.UnitName ?? string.Empty;
+                        updatedModel.CustomerInformationUpdated.DepartmentName = order.UnitName ?? string.Empty;
                     }
                 }
                 if (interpreterLocationUpdated)
                 {
-                    updatedModel.Location = new LocationModel();
+                    updatedModel.LocationUpdated = new LocationUpdatedModel();
                     if (interpreterLocationFromAnswer == InterpreterLocation.OffSitePhone || interpreterLocationFromAnswer == InterpreterLocation.OffSiteVideo)
                     {
-                        updatedModel.Location.OffsiteContactInformation = interpreterLocationText;
+                        updatedModel.LocationUpdated.OffsiteContactInformation = interpreterLocationText;
                     }
                     else
                     {
-                        updatedModel.Location.Street = interpreterLocationText;
+                        updatedModel.LocationUpdated.Street = interpreterLocationText;
                     }
                 }
                 if (descriptionUpdated)
@@ -1594,7 +1596,7 @@ Sammanställning:
                     updatedModel.Description = order.Description ?? string.Empty;
                 }
             }
-            if (attachmentChanged)
+            if (attachmentUpdated)
             {
                 updatedModel.Attachments = attachments;
             }

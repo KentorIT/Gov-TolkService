@@ -120,10 +120,10 @@ namespace BrokerMock.Services
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get tax card types: {items.Count}");
             _cache.Set("TaxCardTypes", items);
 
-            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/OrderChangeTypes/"));
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/RequestUpdateTypes/"));
             items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
-            await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get order change types: {items.Count}");
-            _cache.Set("OrderChangeTypes", items);
+            await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get request update types: {items.Count}");
+            _cache.Set("RequestUpdateTypes", items);
 
             response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/ErrorCodes/"));
             var errors = JsonConvert.DeserializeObject<List<ErrorResponse>>(await response.Content.ReadAsStringAsync());

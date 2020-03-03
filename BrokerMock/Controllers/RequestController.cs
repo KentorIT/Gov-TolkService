@@ -873,22 +873,22 @@ namespace BrokerMock.Controllers
 
         private async Task<bool> ConfirmUpdate(string orderNumber)
         {
-            var payload = new ConfirmChangeModel
+            var payload = new ConfirmUpdateModel
             {
                 OrderNumber = orderNumber,
                 CallingUser = "regular-user@formedling1.se"
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmChange"), content))
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmUpdate"), content))
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmChange]:: Boknings-ID: {orderNumber} tagit del av ändrad förfrågan");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmUpdate]:: Boknings-ID: {orderNumber} tagit del av ändrad förfrågan");
                     }
                     else
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmChange] FAILED:: Boknings-ID: {orderNumber} tagit del av ändrad förfrågan");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmUpdate] FAILED:: Boknings-ID: {orderNumber} tagit del av ändrad förfrågan");
                     }
                 }
                 return true;

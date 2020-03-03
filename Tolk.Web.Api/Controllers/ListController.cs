@@ -12,7 +12,6 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Authorization;
-using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
 
 namespace Tolk.Web.Api.Controllers
@@ -121,7 +120,7 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ListItemResponse>> OrderChangeTypes()
+        public ActionResult<IEnumerable<ListItemResponse>> RequestUpdateTypes()
         {
             return DescriptionsAsJson<OrderChangeLogType>();
         }

@@ -2,7 +2,7 @@
 
 namespace Tolk.Api.Payloads.ApiPayloads
 {
-    public class ConfirmChangeModel : ApiPayloadBaseModel
+    public class ConfirmUpdateModel : ApiPayloadBaseModel
     {
         [Required]
         public string OrderNumber { get; set; }
