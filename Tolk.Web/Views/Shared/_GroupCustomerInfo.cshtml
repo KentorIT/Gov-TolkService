@@ -1,4 +1,7 @@
 ﻿@model CustomerInformationModel
+@{
+    bool hasPossibleChanges = (bool?)ViewData["hasPossibleChanges"] ?? false;
+}
 
 <section aria-label="Myndighetens uppgifter">
     <a class="collapsible-section" data-toggle="collapse" data-target="#customerInfo">
@@ -9,23 +12,33 @@
         <div class="row">
             <div class="col-sm-4">
                 <display-entry asp-for="Name" />
-                <display-entry asp-for="InvoiceReference" />
-                <display-entry asp-for="CreatedBy" />
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="UnitName" />
-                <display-entry asp-for="DepartmentName" />
-                @if (Model.IsCustomer)
+                @if (!hasPossibleChanges)
                 {
-                    <div class="important-info">
-                        För att se och hantera person med rätt att granska rekvisition så gå in på de enskilda tolktillfällena.
-                    </div>
+                    <display-entry asp-for="InvoiceReference" />
                 }
             </div>
             <div class="col-sm-4">
                 <display-entry asp-for="OrganisationNumber" />
-                <display-entry asp-for="ReferenceNumber" />
+                @if (!hasPossibleChanges)
+                {
+                    <display-entry asp-for="UnitName" />
+                    <display-entry asp-for="DepartmentName" />
+                }
+
             </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="CreatedBy" />
+                @if (!hasPossibleChanges)
+                {
+                    <display-entry asp-for="ReferenceNumber" />
+                }
+            </div>
+            @if (Model.IsCustomer)
+            {
+                <div class="col-sm-12 important-info">
+                    För att se och hantera person med rätt att granska rekvisition så gå in på de enskilda tolktillfällena.
+                </div>
+            }
         </div>
     </div>
 </section>

@@ -8,6 +8,7 @@
     bool showHeader = (bool?)ViewData["showHeader"] ?? true;
     bool isBroker = (bool?)ViewData["isBroker"] ?? false;
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? false;
+    bool hasPossibleChanges = (bool?)ViewData["hasPossibleChanges"] ?? false;
     var divClass = isCollapsible ? "collapse" : "";
     var divId = (string)ViewData["id"] ?? "RequestSummary";
 }
@@ -83,209 +84,88 @@
                 <display-entry asp-for="BrokerOrganizationNumber" />
             </div>
         </div>
-        @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
+        @if (!hasPossibleChanges)
         {
-            <div class="row">
-                <div class="col-sm-4">
-                    @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-                </div>
-            </div>
-        }
-
-        @if (TolkOptions.Value.EnableSetLatestAnswerTimeForCustomer && Model.RequestIsAnswered && !(Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered))
-        {
-            <div class="row">
-                <div class="col-sm-8">
-                    <display-entry asp-for="LatestAnswerTimeForCustomer" />
-                </div>
-            </div>
-        }
-        <div class="row">
-            @if (!Model.RequestIsAnswered && !isBroker)
+            @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
             {
-                <div class="col-sm-4">
-                    <label>Tolk ej tillsatt</label>
+                <div class="row">
+                    <div class="col-sm-4">
+                        @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+                    </div>
                 </div>
             }
-            else
+
+            @if (TolkOptions.Value.EnableSetLatestAnswerTimeForCustomer && Model.RequestIsAnswered && !(Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered))
             {
-                <div class="col-sm-4">
-                    <display-entry asp-for="Interpreter" asp-empty="Tolk ej tillsatt" />
+                <div class="row">
+                    <div class="col-sm-8">
+                        <display-entry asp-for="LatestAnswerTimeForCustomer" />
+                    </div>
                 </div>
-                <div class="col-sm-4">
-                    @if (Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker)
-                    {
-                        <display-entry asp-for="InterpreterCompetenceLevel" />
-                    }
-                    @if (Model.IsInterpreterVerified.HasValue)
-                    {
-                        if (Model.IsInterpreterVerified.Value)
-                        {
-                            <div class="system-action-info">
-                                <span class="glyphicon glyphicon-ok"></span>
-                                <span role="status" class="info-message">
-                                    @Model.InterpreterVerificationMessage
-                                </span>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="warning-info-home">
-                                <span class="glyphicon glyphicon-exclamation-sign"></span>
-                                <span role="alert" class="info-message">
-                                    @Model.InterpreterVerificationMessage
-                                </span>
-                                <span title="" class="form-entry-information glyphicon glyphicon-info-sign"
-                                      data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
-                            </div>
-                        }
-                    }
-                </div>
-                @if (Model.DisplayExpectedTravelCostInfo && (Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker))
+            }
+            <div class="row">
+                @if (!Model.RequestIsAnswered && !isBroker)
                 {
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <display-entry asp-for="ExpectedTravelCosts" />
-                            <display-entry asp-for="ExpectedTravelCostInfo" />
-                        </div>
+                    <div class="col-sm-4">
+                        <label>Tolk ej tillsatt</label>
                     </div>
                 }
-            }
-        </div>
-        @if (Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker)
-        {
-            <div class="row">
-                @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.RequiredRequirementAnswers != null)
+                else
                 {
-                    @if (Model.InterpreterAnswerModel.RequiredRequirementAnswers.Any())
+                    <div class="col-sm-4">
+                        <display-entry asp-for="Interpreter" asp-empty="Tolk ej tillsatt" />
+                    </div>
+                    <div class="col-sm-4">
+                        @if (Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker)
+                        {
+                            <display-entry asp-for="InterpreterCompetenceLevel" />
+                        }
+                        @if (Model.IsInterpreterVerified.HasValue)
+                        {
+                            if (Model.IsInterpreterVerified.Value)
+                            {
+                                <div class="system-action-info">
+                                    <span class="glyphicon glyphicon-ok"></span>
+                                    <span role="status" class="info-message">
+                                        @Model.InterpreterVerificationMessage
+                                    </span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="warning-info-home">
+                                    <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                    <span role="alert" class="info-message">
+                                        @Model.InterpreterVerificationMessage
+                                    </span>
+                                    <span title="" class="form-entry-information glyphicon glyphicon-info-sign"
+                                          data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
+                                </div>
+                            }
+                        }
+                    </div>
+                    @if (Model.DisplayExpectedTravelCostInfo && (Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker))
                     {
-                        <div class="col-sm-4">
-                            <label>Tillkommande krav</label>
-                            <ul>
-                                @foreach (var req in Model.InterpreterAnswerModel.RequiredRequirementAnswers.Where(r => r.IsRequired))
-                                {
-                                    <li class="detail-text">
-                                        @EnumHelper.GetDescription(req.RequirementType): @req.Description
-                                        @if (!string.IsNullOrEmpty(req.Answer))
-                                        {
-                                            <br />
-                                            <span class="requirement-answer">- Svar: @req.Answer</span>
-                                        }
-                                    </li>
-                                }
-                            </ul>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <display-entry asp-for="ExpectedTravelCosts" />
+                                <display-entry asp-for="ExpectedTravelCostInfo" />
+                            </div>
                         </div>
-                    }
-                }
-                @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.DesiredRequirementAnswers != null)
-                {
-                    @if (Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any())
-                    {
-                        @if (Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any(r => r.CanMeetRequirement))
-                        {
-                            <div class="col-sm-4">
-                                <label>Uppfyllda tillkommande önskemål</label>
-                                <ul>
-                                    @foreach (var req in Model.InterpreterAnswerModel.DesiredRequirementAnswers.Where(r => r.CanMeetRequirement))
-                                    {
-                                        <li class="detail-text">
-                                            @EnumHelper.GetDescription(req.RequirementType): @req.Description
-                                            @if (!string.IsNullOrEmpty(req.Answer))
-                                            {
-                                                <br />
-                                                <span class="requirement-answer">- Svar: @req.Answer</span>
-                                            }
-                                        </li>
-                                    }
-                                </ul>
-                            </div>
-                        }
-                        @if (Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any(r => !r.CanMeetRequirement))
-                        {
-                            <div class="col-sm-4">
-                                <label>Ej uppfyllda tillkommande önskemål</label>
-                                <ul>
-                                    @foreach (var req in Model.InterpreterAnswerModel.DesiredRequirementAnswers.Where(r => !r.CanMeetRequirement))
-                                    {
-                                        <li class="detail-text">
-                                            @EnumHelper.GetDescription(req.RequirementType): @req.Description
-                                            @if (!string.IsNullOrEmpty(req.Answer))
-                                            {
-                                                <br />
-                                                <span class="requirement-answer">- Svar: @req.Answer</span>
-                                            }
-                                        </li>
-                                    }
-                                </ul>
-                            </div>
-                        }
                     }
                 }
             </div>
-            @if (Model.HasExtraInterpreter)
+            @if (Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker)
             {
-                <div class="row bg-gray">
-                    <br />
-                    @if (!Model.ExtraInterpreterRequestIsAnswered && !isBroker)
+                <div class="row">
+                    @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.RequiredRequirementAnswers != null)
                     {
-                        <div class="col-sm-4">
-                            <label>Extra tolk ej tillsatt</label>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="col-sm-4">
-                            <display-entry asp-for="ExtraInterpreter" asp-empty="Extra tolk ej tillsatt" />
-                        </div>
-                        <div class="col-sm-4">
-                            @if (Model.ExtraInterpreterRequestIsAnswered && !Model.ExtraInterpreterRequestIsDeclinedByBroker)
-                            {
-                                <display-entry asp-for="ExtraInterpreterCompetenceLevel" />
-                            }
-                            @if (Model.IsExtraInterpreterVerified.HasValue)
-                            {
-                                if (Model.IsExtraInterpreterVerified.Value)
-                                {
-                                    <div class="system-action-info">
-                                        <span class="glyphicon glyphicon-ok"></span>
-                                        <span role="status" class="info-message">
-                                            @Model.ExtraInterpreterVerificationMessage
-                                        </span>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <div class="warning-info-home">
-                                        <span class="glyphicon glyphicon-exclamation-sign"></span>
-                                        <span role="alert" class="info-message">
-                                            @Model.ExtraInterpreterVerificationMessage
-                                        </span>
-                                        <span title="" class="form-entry-information glyphicon glyphicon-info-sign"
-                                              data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
-                                    </div>
-                                }
-                            }
-                        </div>
-                        @if (Model.DisplayExpectedTravelCostInfo && (Model.ExtraInterpreterRequestIsAnswered && !Model.ExtraInterpreterRequestIsDeclinedByBroker))
-                        {
-                            <div class="row">
-                                <div class="col-sm-4">
-                                    <display-entry asp-for="ExtraInterpreterExpectedTravelCosts" />
-                                    <display-entry asp-for="ExtraInterpreterExpectedTravelCostInfo" />
-                                </div>
-                            </div>
-                        }
-                    }
-                </div>
-                <div class="row bg-gray">
-                    @if (Model.ExtraInterpreterAnswerModel != null && Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers != null)
-                    {
-                        @if (Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers.Any())
+                        @if (Model.InterpreterAnswerModel.RequiredRequirementAnswers.Any())
                         {
                             <div class="col-sm-4">
                                 <label>Tillkommande krav</label>
                                 <ul>
-                                    @foreach (var req in Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers.Where(r => r.IsRequired))
+                                    @foreach (var req in Model.InterpreterAnswerModel.RequiredRequirementAnswers.Where(r => r.IsRequired))
                                     {
                                         <li class="detail-text">
                                             @EnumHelper.GetDescription(req.RequirementType): @req.Description
@@ -300,16 +180,16 @@
                             </div>
                         }
                     }
-                    @if (Model.ExtraInterpreterAnswerModel != null && Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers != null)
+                    @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.DesiredRequirementAnswers != null)
                     {
-                        @if (Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Any())
+                        @if (Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any())
                         {
-                            @if (Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Any(r => r.CanMeetRequirement))
+                            @if (Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any(r => r.CanMeetRequirement))
                             {
                                 <div class="col-sm-4">
                                     <label>Uppfyllda tillkommande önskemål</label>
                                     <ul>
-                                        @foreach (var req in Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Where(r => r.CanMeetRequirement))
+                                        @foreach (var req in Model.InterpreterAnswerModel.DesiredRequirementAnswers.Where(r => r.CanMeetRequirement))
                                         {
                                             <li class="detail-text">
                                                 @EnumHelper.GetDescription(req.RequirementType): @req.Description
@@ -323,12 +203,12 @@
                                     </ul>
                                 </div>
                             }
-                            @if (Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Any(r => !r.CanMeetRequirement))
+                            @if (Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any(r => !r.CanMeetRequirement))
                             {
                                 <div class="col-sm-4">
                                     <label>Ej uppfyllda tillkommande önskemål</label>
                                     <ul>
-                                        @foreach (var req in Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Where(r => !r.CanMeetRequirement))
+                                        @foreach (var req in Model.InterpreterAnswerModel.DesiredRequirementAnswers.Where(r => !r.CanMeetRequirement))
                                         {
                                             <li class="detail-text">
                                                 @EnumHelper.GetDescription(req.RequirementType): @req.Description
@@ -345,8 +225,131 @@
                         }
                     }
                 </div>
+                @if (Model.HasExtraInterpreter)
+                {
+                    <div class="row bg-gray">
+                        <br />
+                        @if (!Model.ExtraInterpreterRequestIsAnswered && !isBroker)
+                        {
+                            <div class="col-sm-4">
+                                <label>Extra tolk ej tillsatt</label>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-sm-4">
+                                <display-entry asp-for="ExtraInterpreter" asp-empty="Extra tolk ej tillsatt" />
+                            </div>
+                            <div class="col-sm-4">
+                                @if (Model.ExtraInterpreterRequestIsAnswered && !Model.ExtraInterpreterRequestIsDeclinedByBroker)
+                                {
+                                    <display-entry asp-for="ExtraInterpreterCompetenceLevel" />
+                                }
+                                @if (Model.IsExtraInterpreterVerified.HasValue)
+                                {
+                                    if (Model.IsExtraInterpreterVerified.Value)
+                                    {
+                                        <div class="system-action-info">
+                                            <span class="glyphicon glyphicon-ok"></span>
+                                            <span role="status" class="info-message">
+                                                @Model.ExtraInterpreterVerificationMessage
+                                            </span>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="warning-info-home">
+                                            <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                            <span role="alert" class="info-message">
+                                                @Model.ExtraInterpreterVerificationMessage
+                                            </span>
+                                            <span title="" class="form-entry-information glyphicon glyphicon-info-sign"
+                                                  data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            @if (Model.DisplayExpectedTravelCostInfo && (Model.ExtraInterpreterRequestIsAnswered && !Model.ExtraInterpreterRequestIsDeclinedByBroker))
+                            {
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <display-entry asp-for="ExtraInterpreterExpectedTravelCosts" />
+                                        <display-entry asp-for="ExtraInterpreterExpectedTravelCostInfo" />
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="row bg-gray">
+                        @if (Model.ExtraInterpreterAnswerModel != null && Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers != null)
+                        {
+                            @if (Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers.Any())
+                            {
+                                <div class="col-sm-4">
+                                    <label>Tillkommande krav</label>
+                                    <ul>
+                                        @foreach (var req in Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers.Where(r => r.IsRequired))
+                                        {
+                                            <li class="detail-text">
+                                                @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                                                @if (!string.IsNullOrEmpty(req.Answer))
+                                                {
+                                                    <br />
+                                                    <span class="requirement-answer">- Svar: @req.Answer</span>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        }
+                        @if (Model.ExtraInterpreterAnswerModel != null && Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers != null)
+                        {
+                            @if (Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Any())
+                            {
+                                @if (Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Any(r => r.CanMeetRequirement))
+                                {
+                                    <div class="col-sm-4">
+                                        <label>Uppfyllda tillkommande önskemål</label>
+                                        <ul>
+                                            @foreach (var req in Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Where(r => r.CanMeetRequirement))
+                                            {
+                                                <li class="detail-text">
+                                                    @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                                                    @if (!string.IsNullOrEmpty(req.Answer))
+                                                    {
+                                                        <br />
+                                                        <span class="requirement-answer">- Svar: @req.Answer</span>
+                                                    }
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                                @if (Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Any(r => !r.CanMeetRequirement))
+                                {
+                                    <div class="col-sm-4">
+                                        <label>Ej uppfyllda tillkommande önskemål</label>
+                                        <ul>
+                                            @foreach (var req in Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Where(r => !r.CanMeetRequirement))
+                                            {
+                                                <li class="detail-text">
+                                                    @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                                                    @if (!string.IsNullOrEmpty(req.Answer))
+                                                    {
+                                                        <br />
+                                                        <span class="requirement-answer">- Svar: @req.Answer</span>
+                                                    }
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            }
+                        }
+                    </div>
+                }
             }
         }
-
     </div>
 </section>

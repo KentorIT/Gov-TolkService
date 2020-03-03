@@ -6,6 +6,7 @@
 
 @{
     ViewData["Title"] = "Sammanhållen bokning " + Model.OrderGroupNumber;
+    var hasPossibleChanges = Model.Status == OrderStatus.DeliveryAccepted || Model.Status == OrderStatus.ResponseAccepted || Model.Status == OrderStatus.Delivered;
 }
 <section aria-label="@ViewData["Title"]">
     <section aria-label="Bokningshuvud">
@@ -46,6 +47,12 @@
         <div class="row">
             <div class="col-sm-12">
                 <h1>@ViewData["Title"]</h1>
+                @if (hasPossibleChanges)
+                {
+                    <div class="row warning-info-home">
+                        <div role="alert" class="col-sm-12"><span class="glyphicon glyphicon-exclamation-sign"></span> Det kan ha skett ändringar för enskilda tillfällen i den sammanhållna bokningen. För aktuell information om tillsatt tolk, myndighetens uppgifter, inställelsesätt mm, se varje enskilt tillfälle.</div>
+                    </div>
+                }
                 @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder || Model.Status == OrderStatus.NoDeadlineFromCustomer)
                 {
                     <div class="row">
@@ -73,7 +80,7 @@
                 }
                 else
                 {
-                    @await Html.PartialAsync("_GroupRequestSummary", Model.ActiveRequestGroup, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", false } })
+                    @await Html.PartialAsync("_GroupRequestSummary", Model.ActiveRequestGroup, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", false }, { "hasPossibleChanges", hasPossibleChanges } })
                 }
                 @if (Model.PreviousRequestGroups.Any())
                 {
@@ -101,9 +108,9 @@
                     </div>
                 }
                 @await Html.PartialAsync("_OccasionList", Model.OccasionList)
-                @await Html.PartialAsync("_GroupOrderSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", true }, { "displayGeneralOrderInfo", (Model.Status == OrderStatus.NoBrokerAcceptedOrder || Model.Status == OrderStatus.NoDeadlineFromCustomer) }, { "helplink", "myndighet-sammanfattning-sammanhallen-bokning/" } })
+                @await Html.PartialAsync("_GroupOrderSummary", Model, new ViewDataDictionary(ViewData) { { "isCollapsible", true }, { "displayGeneralOrderInfo", (Model.Status == OrderStatus.NoBrokerAcceptedOrder || Model.Status == OrderStatus.NoDeadlineFromCustomer) }, { "helplink", "myndighet-sammanfattning-sammanhallen-bokning/" }, { "hasPossibleChanges", hasPossibleChanges } })
                 <div class="padding-top-10"></div>
-                @await Html.PartialAsync("_GroupCustomerInfo", Model.CustomerInformationModel)
+                @await Html.PartialAsync("_GroupCustomerInfo", Model.CustomerInformationModel, new ViewDataDictionary(ViewData) { { "hasPossibleChanges", hasPossibleChanges } })
 
                 @if (Model.AllowProcessing)
                 {

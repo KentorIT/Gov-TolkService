@@ -18,6 +18,7 @@
     var divClass = isCollapsible ? "collapse" : "";
     var divId = (string)ViewData["id"] ?? "OrderSummary";
 
+    bool hasPossibleChanges = (bool?)ViewData["hasPossibleChanges"] ?? false;
     bool displayGeneralOrderInfo = (bool?)ViewData["displayGeneralOrderInfo"] ?? true;
 
     HelpLinkService.PageName = (string)ViewData["helplink"];
@@ -113,13 +114,16 @@ else
             @if (Model.RankedInterpreterLocationFirstAddressModel != null)
             {
                 <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.InterpreterLocation" label-override="Inställelsesätt i första hand" />
-                @if (!string.IsNullOrEmpty(Model.RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation))
+                @if (!hasPossibleChanges)
                 {
-                    <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation" />
-                }
-                else
-                {
-                    <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.Address" />
+                    @if (!string.IsNullOrEmpty(Model.RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation))
+                    {
+                        <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation" />
+                    }
+                    else
+                    {
+                        <display-entry asp-for="RankedInterpreterLocationFirstAddressModel.Address" />
+                    }
                 }
             }
             else
@@ -132,13 +136,16 @@ else
             @if (Model.RankedInterpreterLocationSecondAddressModel != null)
             {
                 <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.InterpreterLocation" label-override="Inställelsesätt i andra hand" />
-                @if (!string.IsNullOrEmpty(Model.RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation))
+                @if (!hasPossibleChanges)
                 {
-                    <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation" />
-                }
-                else
-                {
-                    <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.Address" />
+                    @if (!string.IsNullOrEmpty(Model.RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation))
+                    {
+                        <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation" />
+                    }
+                    else
+                    {
+                        <display-entry asp-for="RankedInterpreterLocationSecondAddressModel.Address" />
+                    }
                 }
             }
             else
@@ -151,13 +158,16 @@ else
             @if (Model.RankedInterpreterLocationThirdAddressModel != null)
             {
                 <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.InterpreterLocation" label-override="Inställelsesätt i tredje hand" />
-                @if (!string.IsNullOrEmpty(Model.RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation))
+                @if (!hasPossibleChanges)
                 {
-                    <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation" />
-                }
-                else
-                {
-                    <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.Address" />
+                    @if (!string.IsNullOrEmpty(Model.RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation))
+                    {
+                        <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation" />
+                    }
+                    else
+                    {
+                        <display-entry asp-for="RankedInterpreterLocationThirdAddressModel.Address" />
+                    }
                 }
             }
             else
@@ -244,17 +254,6 @@ else
     </div>
     <div class="row">
         <div class="col-sm-4">
-            @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
-            {
-                @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-            }
-            else
-            {
-                <label>Bifogade filer</label>
-                <div class="no-value-info">Inga filer har bifogats</div>
-            }
-        </div>
-        <div class="col-sm-4">
             @if (Model.CreatorIsInterpreterUser != null && Model.CreatorIsInterpreterUser.SelectedItem != null)
             {
                 <display-entry asp-for="CreatorIsInterpreterUser" />
@@ -265,9 +264,23 @@ else
                 <div class="no-value-info">Ej angivet</div>
             }
         </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="Description" />
-        </div>
+        @if (!hasPossibleChanges)
+        {
+            <div class="col-sm-4">
+                <display-entry asp-for="Description" />
+            </div>
+            <div class="col-sm-4">
+                @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
+                {
+                    @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+                }
+                else
+                {
+                    <label>Bifogade filer</label>
+                    <div class="no-value-info">Inga filer har bifogats</div>
+                }
+            </div>
+        }
     </div>
     <br />
 </div>

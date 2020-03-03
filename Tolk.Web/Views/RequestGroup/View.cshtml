@@ -1,6 +1,8 @@
-﻿@model RequestGroupViewModel
+﻿@using Tolk.BusinessLogic.Enums;
+@model RequestGroupViewModel
 @{
     ViewData["Title"] = "Sammanhållen bokning - " + Model.OrderGroupNumber;
+    var hasPossibleChanges = Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered;
 }
 <section aria-label="@ViewData["Title"]">
     <div class="row">
@@ -23,11 +25,17 @@
                 </form>
                 <br /><br />
             }
-            @await Html.PartialAsync("_GroupRequestSummary", Model, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", true } })
+            @if (hasPossibleChanges)
+            {
+                <div class="row warning-info-home">
+                    <div role="alert" class="col-sm-12"><span class="glyphicon glyphicon-exclamation-sign"></span> Det kan ha skett ändringar för enskilda tillfällen i den sammanhållna bokningen. För aktuell information om tillsatt tolk, myndighetens uppgifter, inställelsesätt mm, se varje enskilt tillfälle.</div>
+                </div>
+            }
+            @await Html.PartialAsync("_GroupRequestSummary", Model, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", true }, { "hasPossibleChanges", hasPossibleChanges } })
             @await Html.PartialAsync("_OccasionList", Model.OccasionList)
-            @await Html.PartialAsync("_GroupOrderSummary", Model.OrderGroupModel, new ViewDataDictionary(ViewData) { { "isCollapsible", true }, { "displayGeneralOrderInfo", false }, { "helplink", "formedling-sammanfattning-sammanhallen-bokning/" } })
+            @await Html.PartialAsync("_GroupOrderSummary", Model.OrderGroupModel, new ViewDataDictionary(ViewData) { { "isCollapsible", true }, { "displayGeneralOrderInfo", false }, { "helplink", "formedling-sammanfattning-sammanhallen-bokning/" }, { "hasPossibleChanges", hasPossibleChanges } })
             <div class="padding-top-10"></div>
-            @await Html.PartialAsync("_GroupCustomerInfo", Model.CustomerInformationModel)
+            @await Html.PartialAsync("_GroupCustomerInfo", Model.CustomerInformationModel, new ViewDataDictionary(ViewData) { { "hasPossibleChanges", hasPossibleChanges } })
         </div>
     </div>
 </section>
