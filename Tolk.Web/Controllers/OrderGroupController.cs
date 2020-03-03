@@ -61,11 +61,11 @@ namespace Tolk.Web.Controllers
                     ReferenceNumber = model.CustomerReferenceNumber,
                     InvoiceReference = model.InvoiceReference
                 };
-                model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;
                 model.ActiveRequestGroup = RequestGroupViewModel.GetModelFromRequestGroup(activeRequestGroup);
-                model.AllowOrderGroupCancellation = false;
-                model.AllowNoAnswerConfirmation = orderGroup.Status == OrderStatus.NoBrokerAcceptedOrder && !orderGroup.StatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder) && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
-                model.AllowUpdateExpiry = orderGroup.Status == OrderStatus.AwaitingDeadlineFromCustomer && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
+                model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;
+                model.AllowCancellation = orderGroup.AllowCancellation && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Cancel)).Succeeded;
+                model.AllowNoAnswerConfirmation = orderGroup.AllowNoAnswerConfirmation && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
+                model.AllowUpdateExpiry = orderGroup.AllowUpdateExpiry && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
                 return View(model);
             }
             return Forbid();
@@ -112,13 +112,20 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Cancel)).Succeeded)
             {
-                if (orderGroup.CanCancel(_clock.SwedenNow))
+                if (!orderGroup.AllowCancellation)
                 {
                     return RedirectToAction("Index", "Home", new { ErrorMessage = "Det går inte att avboka den sammanhållna bokningen." });
                 }
-                //_orderService.CancelOrderGroup(orderGroup, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
-                //await _dbContext.SaveChangesAsync();
-                return RedirectToAction("Index", "Home", new { errorMessage = "Det funkar inte att avboka en sammanhållen bokning än" });
+                try
+                {
+                    _orderService.CancelOrderGroup(orderGroup, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
+                    await _dbContext.SaveChangesAsync();
+                    return RedirectToAction("Index", "Home", new { Message = "Den sammanhållna bokningen är nu avbokad" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = ex.Message });
+                }
             }
             return Forbid();
         }

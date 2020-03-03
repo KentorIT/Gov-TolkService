@@ -43,7 +43,7 @@ namespace Tolk.Web.Models
         [Placeholder("Beskriv anledning tydligt.")]
         public string DenyMessage { get; set; }
 
-        [Display(Name = "Anledning till att bokningen avbokas")]
+        [Display(Name = "Orsak till avbokning")]
         [DataType(DataType.MultilineText)]
         public string CancelMessage { get; set; }
 

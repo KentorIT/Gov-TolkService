@@ -68,20 +68,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderGroupStatusConfirmation> StatusConfirmations { get; set; }
 
-        public bool CanCancel(DateTimeOffset now)
-        {
-            return
-            (Status == OrderStatus.AwaitingDeadlineFromCustomer ||
-            Status == OrderStatus.GroupAwaitingPartialResponse ||
-            Status == OrderStatus.RequestAwaitingPartialAccept ||
-            Status == OrderStatus.Requested ||
-            Status == OrderStatus.RequestResponded ||
-            Status == OrderStatus.ResponseAccepted) &&
-            Orders.Any(o => o.StartAt > now && (o.Status == OrderStatus.AwaitingDeadlineFromCustomer ||
-                Status == OrderStatus.Requested ||
-                Status == OrderStatus.RequestResponded ||
-                Status == OrderStatus.ResponseAccepted));
-        }
         #endregion
 
         #region methods and read only properties
@@ -106,6 +92,12 @@ namespace Tolk.BusinessLogic.Entities
         public bool IsSingleOccasion => (Orders == null) || (Orders.Count <= 2 && HasExtraInterpreter);
 
         public bool HasExtraInterpreter => Orders == null ? false : Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
+
+        public bool AllowCancellation => Status == OrderStatus.Requested;
+
+        public bool AllowNoAnswerConfirmation => Status == OrderStatus.NoBrokerAcceptedOrder && !StatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
+
+        public bool AllowUpdateExpiry => Status == OrderStatus.AwaitingDeadlineFromCustomer;
 
         public void SetStatus(OrderStatus status, bool updateOrders = true)
         {

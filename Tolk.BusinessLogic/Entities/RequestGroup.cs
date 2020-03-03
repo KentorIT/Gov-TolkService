@@ -172,11 +172,26 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (!IsAccepted)
             {
-                throw new InvalidOperationException($"Request {RequestGroupId} is {Status}. Only Accepted requests can be approved");
+                throw new InvalidOperationException($"RequestGroup {RequestGroupId} is {Status}. Only Accepted RequestGroups can be approved");
             }
             base.Approve(approveTime, userId, impersonatorId);
             Requests.ForEach(r => r.Approve(approveTime, userId, impersonatorId));
             OrderGroup.SetStatus(OrderStatus.ResponseAccepted, false);
+        }
+
+        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message)
+        {
+            if (!IsToBeProcessedByBroker)
+            {
+                throw new InvalidOperationException($"RequestGroup {RequestGroupId} is {Status}. Only Received and Created RequestGroups can be cancelled");
+            }
+            Requests.ForEach(r => r.Cancel(cancelledAt, userId, impersonatorId, message, isCancelledFromGroup : true));
+            Status = RequestStatus.CancelledByCreator;
+            CancelledAt = cancelledAt;
+            CancelledBy = userId;
+            ImpersonatingCanceller = impersonatorId;
+            CancelMessage = message;
+            OrderGroup.Status = OrderStatus.CancelledByCreator;
         }
 
         public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool hasTravelCosts, bool partialAnswer, DateTimeOffset? latestAnswerTimeForCustomer)

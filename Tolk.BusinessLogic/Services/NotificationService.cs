@@ -94,6 +94,38 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        public void OrderGroupCancelledByCustomer(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(OrderGroupCancelledByCustomer), nameof(NotificationService));
+            string orderNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            //notify broker
+            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCancelledByCustomer, NotificationChannel.Email);
+            if (email != null)
+            {
+                
+                    var body = $"Sammanhållen bokningsförfrågan med boknings-ID {orderNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{requestGroup.CancelMessage}\n" +
+                        $"Första tillfället skulle ha startat {requestGroup.OrderGroup.FirstOrder.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}.";
+                    CreateEmail(email.ContactInformation, $"Avbokad sammanhållen bokningsförfrågan boknings-ID {orderNumber}",
+                        body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
+                        HtmlHelper.ToHtmlBreak(body) + GoToRequestGroupButton(requestGroup.RequestGroupId),
+                        true);
+            }
+            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCancelledByCustomer, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                   new RequestGroupCancelledByCustomerModel
+                   {
+                       OrderGroupNumber = orderNumber,
+                       Message = requestGroup.CancelMessage
+                   },
+                   webhook.ContactInformation,
+                   NotificationType.RequestGroupCancelledByCustomer,
+                   webhook.RecipientUserId
+               );
+            }
+        }
+
         public void OrderContactPersonChanged(Order order, AspNetUser previousContactUser)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(OrderContactPersonChanged), nameof(NotificationService));

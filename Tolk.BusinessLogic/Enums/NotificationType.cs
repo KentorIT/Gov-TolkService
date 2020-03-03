@@ -17,9 +17,9 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_cancelled_by_customer")]
         RequestCancelledByCustomer = 3,
 
-        [Description("Detta är en notifieringshook, som inte är i bruk än...")]
-        [CustomName("request_cancelled_by_broker", false)]
-        RequestCancelledByBroker = 4,
+        [Description("Sammanhållen förfrågan avbokad av myndighet")]
+        [CustomName("request_group_cancelled_by_customer")]
+        RequestGroupCancelledByCustomer = 4,
 
         [Description("Svar på förfrågan har accepterats")]
         [CustomName("request_answer_approved")]

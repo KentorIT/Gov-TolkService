@@ -15,6 +15,7 @@ namespace Tolk.BusinessLogic.Services
         void CustomerCreated(CustomerOrganisation customer);
         void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition);
         void OrderContactPersonChanged(Order order, AspNetUser previousContactUser);
+        void OrderGroupCancelledByCustomer(RequestGroup requestGroup);
         void OrderTerminated(Order order);
         void OrderReplacementCreated(Order order);
         void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup);

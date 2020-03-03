@@ -428,8 +428,7 @@ namespace Tolk.BusinessLogic.Services
                 throw new InvalidOperationException($"Order {order.OrderId} has no active requests that can be cancelled");
             }
             var now = _clock.SwedenNow;
-            //If this is an approved request, and the cancellation is done to late, a requisition with full compensation will be created
-            // But only if the order has not been replaced!
+            //If approved request (status check in request.Cancel) and cancellation is done to late, a requisition with full compensation will be created (not if replaced)
             bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2;
             request.Cancel(now, userId, impersonatorId, message, createFullCompensationRequisition, isReplaced);
 
@@ -449,16 +448,17 @@ namespace Tolk.BusinessLogic.Services
             {
                 throw new InvalidOperationException($"Order group {orderGroup.OrderGroupId} has no active request group that can be cancelled");
             }
-            var now = _clock.SwedenNow;
-            //If this is an approved request, and the cancellation is done to late, a requisition with full compensation will be created
-            // But only if the order has not been replaced!
-            foreach (var order in orderGroup.Orders.Where(o => o.StartAt > _clock.SwedenNow))
-            //Add filter for correct statuses, only "active" orders can be cancelled.
+            try
             {
-                CancelOrder(order, userId, impersonatorId, message);
+                requestGroup.Cancel(_clock.SwedenNow, userId, impersonatorId, message);
+                _logger.LogInformation("Order group {orderGroupId} cancelled by customer {userId}.", orderGroup.OrderGroupId, userId);
+                _notificationService.OrderGroupCancelledByCustomer(requestGroup);
             }
-            //Add code for canceling the actual order group and also the underlying (might be more than one) requestGroups.
-            _logger.LogInformation("Order group {orderGroupId} cancelled by customer {userId}.", orderGroup.OrderGroupId, userId);
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogError("Failed cancelling of Order group {orderGroupId} by user {userId}.", orderGroup.OrderGroupId, userId);
+                throw new InvalidOperationException(ex.Message);
+            }
         }
 
         public void SetRequestExpiryManually(Request request, DateTimeOffset expiry, int userId, int? impersonatingUserId)

@@ -127,6 +127,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCancel => CanCancelRequestBelongsToGroup || CanCancelRequestNotBelongsToGroup;
 
+        public bool CanCancelFromGroup => Order.Status == OrderStatus.Requested && IsToBeProcessedByBroker && Order.OrderGroupId.HasValue;
+
         private bool CanCancelRequestNotBelongsToGroup => !Order.OrderGroupId.HasValue &&
             (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestResponded
             || Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted) &&
@@ -499,11 +501,11 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.Requested;
         }
 
-        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false)
+        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false, bool isCancelledFromGroup = false)
         {
-            if (!CanCancel)
+            if ((!isCancelledFromGroup && !CanCancel) || (isCancelledFromGroup && !CanCancelFromGroup))
             {
-                throw new InvalidOperationException($"Order {OrderId} is {Order.Status}, and request {RequestId} is {Status}. Only Orders waiting to be delivered with active requests can be cancelled");
+                throw new InvalidOperationException($"Order {OrderId} is {Order.Status}, and request {RequestId} is {Status}. Order or request has wrong status to be cancelled");
             }
             if (Order.StartAt < cancelledAt)
             {

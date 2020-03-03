@@ -155,13 +155,13 @@
                         </div>
                     }
                 }
-                @if (Model.AllowOrderGroupCancellation)
+                @if (Model.AllowCancellation)
                 {
                     <div class="col-sm-4">
                         <form method="post" class="cancel-form" action="@Url.Action("Cancel", "OrderGroup", new { OrderGroupId = Model.OrderGroupId })" asp-antiforgery="true">
                             <input name="CancelMessage" type="hidden" />
-                            <button class="btn cancel-button btn-warning btn-large">Avboka alla ej utförda uppdrag för sammanhållen bokning</button>
-                            @HelpLinkService.ButtonHelpIcon("myndighet-avboka-uppdrag")
+                            <button class="btn cancel-button btn-warning btn-large">Avboka samtliga tillfällen</button>
+                            @HelpLinkService.ButtonHelpIcon("myndighet-avboka-sammanhallen")
                         </form>
                     </div>
                 }
@@ -218,6 +218,7 @@
                 </div>
                 <div class="modal-body">
                     <form class="do-not-check-dirty">
+                        <div class="important-info">Observera att samtliga tillfällen för den sammanhållna bokningen kommer att avbokas</div>
                         <form-entry asp-for="CancelMessage" />
                     </form>
                 </div>

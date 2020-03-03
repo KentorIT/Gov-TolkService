@@ -27,11 +27,11 @@ namespace Tolk.Web.Models
 
         public string ColorClassName => CssClassHelper.GetColorClassNameForOrderStatus(Status);
 
-        [Display(Name = "Anledning till att bokningen avbokas")]
+        [Display(Name = "Anledning till att den sammanhållna bokningen avbokas")]
         [DataType(DataType.MultilineText)]
         [ClientRequired]
         [StringLength(1000)]
-        [Placeholder("Beskriv anledning till avbokning.")]
+        [Placeholder("Beskriv anledning till avbokning")]
         public string CancelMessage { get; set; }
 
         public bool AllowNoAnswerConfirmation { get; set; } = false;
@@ -45,7 +45,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string ExtraInterpreterExpectedTravelCostInfo { get; set; }
 
-        public bool AllowOrderGroupCancellation { get; set; } = false;
+        public bool AllowCancellation { get; set; } = false;
         public bool AllowPrint { get; set; } = false;
         public bool AllowDenial { get; set; } = false;
         public bool AllowUpdateExpiry { get; set; } = false;
