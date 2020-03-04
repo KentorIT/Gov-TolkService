@@ -383,6 +383,17 @@ namespace Tolk.BusinessLogic.Services
             await _tolkDbContext.SaveChangesAsync();
         }
 
+        public async Task ConfirmGroupCancellation(
+            RequestGroup requestGroup,
+            DateTimeOffset confirmedAt,
+            int userId,
+            int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(ConfirmGroupCancellation), nameof(RequestService));
+            requestGroup.ConfirmCancellation(confirmedAt, userId, impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
+        }
+
         public async Task ConfirmNoRequisition(
             Request request,
             DateTimeOffset confirmedAt,

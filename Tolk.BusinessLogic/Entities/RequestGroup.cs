@@ -162,6 +162,15 @@ namespace Tolk.BusinessLogic.Entities
             AddStatusConfirmations(confirmedAt, userId, impersonatorId);
         }
 
+        public void ConfirmCancellation(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != RequestStatus.CancelledByCreator)
+            {
+                throw new InvalidOperationException($"Förfrågan med boknings-id {OrderGroup.OrderGroupNumber} är inte i rätt status för att kunna konfirmera avbokad.");
+            }
+            AddStatusConfirmations(confirmedAt, userId, impersonatorId);
+        }
+
         private void AddStatusConfirmations(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
         {
             Requests.Where(r => !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == Status) && r.Status == Status).ToList().ForEach(r => r.RequestStatusConfirmations.Add(new RequestStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt }));

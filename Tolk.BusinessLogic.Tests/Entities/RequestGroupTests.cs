@@ -321,6 +321,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.PartiallyAccepted)]
         [InlineData(RequestStatus.PartiallyApproved)]
         [InlineData(RequestStatus.Received)]
+        [InlineData(RequestStatus.Delivered)]
         [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
         [InlineData(RequestStatus.ToBeProcessedByBroker)]
         public void ConfirmDenial_Invalid(RequestStatus status)
@@ -329,6 +330,44 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var requestGroup = orderGroup.RequestGroups.First();
             requestGroup.SetStatus(status, false);
             Assert.Throws<InvalidOperationException>(() => requestGroup.ConfirmDenial(DateTimeOffset.Now, 1, null));
+        }
+
+        [Theory]
+        [InlineData(RequestStatus.CancelledByCreator)]
+        public void ConfirmCancellation(RequestStatus status)
+        {
+            var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTSJUSTCREATED");
+            var requestGroup = orderGroup.RequestGroups.First();
+            requestGroup.SetStatus(status);
+            requestGroup.ConfirmCancellation(DateTimeOffset.Now, 1, null);
+            Assert.Equal(1, requestGroup.StatusConfirmations.Count(r => r.RequestStatus == RequestStatus.CancelledByCreator));
+            requestGroup.Requests.ForEach(r => Assert.Equal(1, r.RequestStatusConfirmations.Count(rs => rs.RequestStatus == RequestStatus.CancelledByCreator)));
+        }
+
+        // Invalid request status
+        [Theory]
+        [InlineData(RequestStatus.Accepted)]
+        [InlineData(RequestStatus.Approved)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.Created)]
+        [InlineData(RequestStatus.DeniedByCreator)]
+        [InlineData(RequestStatus.Delivered)]
+        [InlineData(RequestStatus.DeclinedByBroker)]
+        [InlineData(RequestStatus.DeniedByTimeLimit)]
+        [InlineData(RequestStatus.LostDueToQuarantine)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer)]
+        [InlineData(RequestStatus.PartiallyAccepted)]
+        [InlineData(RequestStatus.PartiallyApproved)]
+        [InlineData(RequestStatus.Received)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker)]
+        public void ConfirmCancellation_Invalid(RequestStatus status)
+        {
+            var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTSJUSTCREATED");
+            var requestGroup = orderGroup.RequestGroups.First();
+            requestGroup.SetStatus(status, false);
+            Assert.Throws<InvalidOperationException>(() => requestGroup.ConfirmCancellation(DateTimeOffset.Now, 1, null));
         }
 
         [Fact]

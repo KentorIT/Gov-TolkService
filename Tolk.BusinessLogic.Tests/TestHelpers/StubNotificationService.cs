@@ -30,6 +30,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void OrderGroupTerminated(OrderGroup terminatedOrderGroup) { }
 
+        public void OrderGroupCancelledByCustomer(RequestGroup requestGroup) { }
+
         public void OrderTerminated(Order order) { }
 
         public void OrderReplacementCreated(Order order) { }

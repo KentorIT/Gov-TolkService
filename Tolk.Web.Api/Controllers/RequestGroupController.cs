@@ -255,11 +255,40 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
-                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
+                var orderGroup = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
                 //Get User, if any...
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 RequestGroup requestGroup = await GetConfirmedRequestGroup(model.OrderGroupNumber, brokerId, new[] { RequestStatus.ResponseNotAnsweredByCreator });
                 await _requestService.ConfirmGroupNoAnswer(
+                    requestGroup,
+                    _timeService.SwedenNow,
+                    user?.Id ?? apiUserId,
+                    user != null ? (int?)apiUserId : null
+                );
+                return Ok(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ConfirmCancellation([FromBody] ConfirmGroupCancellationModel model)
+        {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
+            try
+            {
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var orderGroup = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
+                //Get User, if any...
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+                RequestGroup requestGroup = await GetConfirmedRequestGroup(model.OrderGroupNumber, brokerId, new[] { RequestStatus.CancelledByCreator });
+                await _requestService.ConfirmGroupCancellation(
                     requestGroup,
                     _timeService.SwedenNow,
                     user?.Id ?? apiUserId,

@@ -438,8 +438,20 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} har blivit avbokats, med meddelande: '{payload.Message}'");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} har blivit avbokad, med meddelande: '{payload.Message}'");
                 await ConfirmCancellation(payload.OrderNumber);
+            }
+
+            return new JsonResult("Success");
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> GroupCancelledByCustomer([FromBody] RequestGroupCancelledByCustomerModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderGroupNumber} har blivit avbokad, med meddelande: '{payload.Message}'");
+                await ConfirmGroupCancellation(payload.OrderGroupNumber);
             }
 
             return new JsonResult("Success");
@@ -822,6 +834,31 @@ namespace BrokerMock.Controllers
             }
         }
 
+        private async Task<bool> ConfirmGroupCancellation(string orderGroupNumber)
+        {
+            var payload = new ConfirmGroupCancellationModel
+            {
+                OrderGroupNumber = orderGroupNumber,
+                CallingUser = "regular-user@formedling1.se"
+            };
+            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            {
+                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmCancellation"), content))
+                {
+                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmCancellation]:: Boknings-ID: {orderGroupNumber} konfirmerat gruppavbokning");
+                    }
+                    else
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmCancellation] FAILED:: Boknings-ID: {orderGroupNumber} konfirmerat gruppavbokning");
+                    }
+                }
+
+                return true;
+            }
+        }
+
         private async Task<bool> ConfirmCancellation(string orderNumber)
         {
             var payload = new ConfirmDenialModel
@@ -835,11 +872,11 @@ namespace BrokerMock.Controllers
                 {
                     if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmCancellation]:: Boknings-ID: {orderNumber} accat avbokning");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmCancellation]:: Boknings-ID: {orderNumber} konfirmerat avbokning");
                     }
                     else
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmCancellation] FAILED:: Boknings-ID: {orderNumber} accat avbokning");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmCancellation] FAILED:: Boknings-ID: {orderNumber} konfirmerat avbokning");
                     }
                 }
 

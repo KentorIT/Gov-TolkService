@@ -453,9 +453,9 @@ namespace Tolk.Web.Helpers
                 }
             }
             // Request cancellation confirmation
-            if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved))
+            if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved || rs.RequestStatus == RequestStatus.CancelledByCreator))
             {
-                RequestStatusConfirmation rsc = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved);
+                RequestStatusConfirmation rsc = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved || rs.RequestStatus == RequestStatus.CancelledByCreator);
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = rsc.ConfirmedAt,
