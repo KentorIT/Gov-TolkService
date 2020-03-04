@@ -795,18 +795,10 @@ namespace Tolk.BusinessLogic.Services
                             else if (expiredRequest.LatestAnswerTimeForCustomer.HasValue && expiredRequest.LatestAnswerTimeForCustomer <= _clock.SwedenNow)
                             {
                                 _notificationService.RequestExpiredDueToNoAnswerFromCustomer(expiredRequest);
-                                if (expiredRequest.TerminateOnLatestAnswerTimeForCustomerExpire)
-                                {
-                                    expiredRequest.Status = RequestStatus.ResponseNotAnsweredByCreator;
-                                    expiredRequest.Order.Status = OrderStatus.ResponseNotAnsweredByCreator;
-                                    await TerminateOrder(expiredRequest.Order);
-                                }
-                                else
-                                {
-                                    expiredRequest.Status = RequestStatus.ResponseNotAnsweredByCreator;
-                                    expiredRequest.Order.Status = OrderStatus.Requested;
-                                    await CreateRequest(expiredRequest.Order, expiredRequest);
-                                }
+                                //always terminate order if customer not answers within LatestAnswerTime set by broker 
+                                expiredRequest.Status = RequestStatus.ResponseNotAnsweredByCreator;
+                                expiredRequest.Order.Status = OrderStatus.ResponseNotAnsweredByCreator;
+                                await TerminateOrder(expiredRequest.Order);
                             }
                             else
                             {
@@ -869,10 +861,10 @@ namespace Tolk.BusinessLogic.Services
                             }
                             else if (expiredRequestGroup.LatestAnswerTimeForCustomer.HasValue && expiredRequestGroup.LatestAnswerTimeForCustomer <= _clock.SwedenNow)
                             {
-                                expiredRequestGroup.SetStatus(RequestStatus.ResponseNotAnsweredByCreator);
                                 _notificationService.RequestGroupExpiredDueToNoAnswerFromCustomer(expiredRequestGroup);
-                                expiredRequestGroup.OrderGroup.SetStatus(OrderStatus.Requested);
-                                await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
+                                expiredRequestGroup.SetStatus(RequestStatus.ResponseNotAnsweredByCreator);
+                                expiredRequestGroup.OrderGroup.SetStatus(OrderStatus.ResponseNotAnsweredByCreator);
+                                await TerminateOrderGroup(expiredRequestGroup.OrderGroup);
                             }
                             else
                             {

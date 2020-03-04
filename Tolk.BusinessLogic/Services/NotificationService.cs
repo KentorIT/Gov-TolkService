@@ -1051,7 +1051,7 @@ Sammanställning:
                 OrderReferenceNumberInfo(request) +
                 $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                 $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
-                $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" + GetRequireApprovementText(request.LatestAnswerTimeForCustomer, request.RequestGroupId.HasValue)
+                $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" + GetRequireApprovementText(request.LatestAnswerTimeForCustomer)
                 + GetPossibleInfoNotValidatedInterpreter(request);
             CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
                 $"{body} {GoToOrderPlain(request.Order.OrderId)}",
@@ -1259,8 +1259,8 @@ Sammanställning:
             return isInterpreterValidationError ? $"\n\nObservera att {interpreter}s kompetensnivå inte har gått att kontrollera mot Kammarkollegiets tolkregister pga att det inte gick att nå tolkregistret. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : (shouldCheckValidationCode && !isInterpreterVerified) ? $"\n\nObservera att {interpreter} för tolkuppdraget inte finns registrerad i Kammarkollegiets tolkregister med kravställd/önskad kompetensnivå för detta språk. Risk finns att ställda krav på kompetensnivå inte uppfylls. Mer information finns i Kammarkollegiets tolkregister." : string.Empty;
         }
 
-        private static string GetRequireApprovementText(DateTimeOffset? latestAnswerDate, bool? isInterpreterChangeInGroup = false) => latestAnswerDate.HasValue ?
-            $"Observera att ni måste godkänna tillsatt tolk för tolkuppdraget eftersom ni har begärt att få förhandsgodkänna resekostnader. Senaste svarstid för att godkänna tillsättning är {latestAnswerDate.Value.ToSwedishString("yyyy-MM-dd HH:mm")}. " + ((isInterpreterChangeInGroup ?? false) ? "Om tillsättning inte besvarats vid denna tidpunkt kommer bokningen att annulleras." : "Om tillsättning inte besvarats vid denna tidpunkt skickas bokningsförfrågan vidare till nästa förmedling enligt rangordningen förutsatt att det finns ytterligare förmedlingar att fråga. I annat fall annulleras bokningen.") :
+        private static string GetRequireApprovementText(DateTimeOffset? latestAnswerDate) => latestAnswerDate.HasValue ?
+            $"Observera att ni måste godkänna tillsatt tolk för tolkuppdraget eftersom ni har begärt att få förhandsgodkänna resekostnader. Senaste svarstid för att godkänna tillsättning är {latestAnswerDate.Value.ToSwedishString("yyyy-MM-dd HH:mm")}. Om tillsättning inte besvarats vid denna tidpunkt kommer bokningen att annulleras." : 
             "Observera att ni måste godkänna tillsatt tolk för tolkuppdraget eftersom ni har begärt att få förhandsgodkänna resekostnader. Om godkännande inte görs kommer bokningen att annulleras.";
 
         private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true)

@@ -150,8 +150,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool TerminateOnDenial => Status == RequestStatus.AcceptedNewInterpreterAppointed && RequestGroupId.HasValue;
 
-        public bool TerminateOnLatestAnswerTimeForCustomerExpire => Status == RequestStatus.AcceptedNewInterpreterAppointed && RequestGroupId.HasValue;
-
         public bool RequiresAccept => Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && InterpreterLocation.HasValue
             && (InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation || InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite)
             && ((PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0) > 0);
