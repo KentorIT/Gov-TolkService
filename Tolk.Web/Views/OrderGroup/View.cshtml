@@ -60,7 +60,7 @@
                         <div class="col-sm-6">
                             @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder)
                             {
-                                <span>Bokningsförfrågan avböjd av samtliga förmedlingar, bokningsförfrågan avslutad.</span>
+                            <span>Bokningsförfrågan fick ingen bekräftad tolktillsättning, bokningsförfrågan avslutad.</span>
                             }
                             else if (Model.Status == OrderStatus.NoDeadlineFromCustomer)
                             {

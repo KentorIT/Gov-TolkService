@@ -39,7 +39,7 @@ namespace Tolk.BusinessLogic.Enums
         ResponseNotAnsweredByCreator = 15,
         [Description("Sista svarstid ej satt")]
         AwaitingDeadlineFromCustomer = 16,
-        [Description("Uppdrag avbokat, sista svarstid ej satt")]
+        [Description("Uppdrag annullerat, sista svarstid ej satt")]
         NoDeadlineFromCustomer = 17,
         [Description("Tolk är tillsatt och väntar på godkännande i grupp med två tolkar")]
         RequestAwaitingPartialAccept = 18,
