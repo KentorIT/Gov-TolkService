@@ -16,7 +16,7 @@ namespace Tolk.Web.Helpers
         static GitHelper()
         {
             var gitDir = "../.git";
-            if (Directory.Exists(gitDir))
+            if (Directory.Exists(gitDir) && File.Exists($"{gitDir}/HEAD"))
             {
                 string versionNumber = File.ReadAllText($"../VersionNumber.txt");
 
@@ -26,7 +26,14 @@ namespace Tolk.Web.Helpers
                 if (head.StartsWithSwedish("ref: "))
                 {
                     var refFile = head.Substring(5).TrimEnd('\n');
-                    gitInfo = File.ReadAllText($"{gitDir}/{refFile}").FormatVersion();
+                    if (File.Exists($"{gitDir}/{refFile}"))
+                    {
+                        gitInfo = File.ReadAllText($"{gitDir}/{refFile}").FormatVersion();
+                    }
+                    else
+                    {
+                        gitInfo = head.FormatVersion();
+                    }
                 }
                 else
                 {
