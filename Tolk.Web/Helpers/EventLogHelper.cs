@@ -386,7 +386,7 @@ namespace Tolk.Web.Helpers
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.LatestAnswerTimeForCustomer ?? request.Order.StartAt,
-                    EventDetails = $"Obesvarad tillsättning tiden gick ut",
+                    EventDetails = $"Obesvarad tillsättning tiden gick ut, bokning avslutad",
                     Actor = "Systemet",
                 });
                 // Request no answer confirmations
