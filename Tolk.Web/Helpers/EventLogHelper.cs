@@ -150,6 +150,28 @@ namespace Tolk.Web.Helpers
                     ActorContactInfo = GetContactinfo(order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder).ConfirmedByUser),
                 });
             }
+            if (order.Status == OrderStatus.ResponseNotAnsweredByCreator)
+            {
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = order.Requests.OrderBy(r => r.RequestId).Last().LatestAnswerTimeForCustomer ?? order.StartAt,
+                    EventDetails = $"Obesvarad tillsättning tiden gick ut, bokning avslutad",
+                    Actor = "Systemet",
+                });
+                // Check if confirmed
+                if (order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator))
+                {
+                    OrderStatusConfirmation osc = order.OrderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator);
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = osc.ConfirmedAt,
+                        EventDetails = $"Obesvarad tillsättning bekräftad av myndighet",
+                        Actor = osc.ConfirmedByUser?.FullName ?? "Systemet",
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(osc.ConfirmedByUser),
+                    });
+                }
+            }
             return eventLog;
         }
 
@@ -381,7 +403,7 @@ namespace Tolk.Web.Helpers
                     }
                 }
             }
-            else if (request.Status == RequestStatus.ResponseNotAnsweredByCreator)
+            else if (isRequestDetailView && request.Status == RequestStatus.ResponseNotAnsweredByCreator)
             {
                 eventLog.Add(new EventLogEntryModel
                 {
@@ -390,14 +412,14 @@ namespace Tolk.Web.Helpers
                     Actor = "Systemet",
                 });
                 // Request no answer confirmations
-                if (isRequestDetailView && request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator))
+                if (request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator))
                 {
                     RequestStatusConfirmation rsc = request.RequestStatusConfirmations.First(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator);
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = rsc.ConfirmedAt,
                         EventDetails = $"Obesvarad tillsättning bekräftad av förmedling",
-                        Actor = rsc.ConfirmedByUser?.FullName ?? "Systemet", //MUST HANDLE THAT WE INSERT FROM SCRIPT
+                        Actor = rsc.ConfirmedByUser?.FullName ?? "Systemet",
                         Organization = brokerName,
                         ActorContactInfo = GetContactinfo(rsc.ConfirmedByUser),
                     });
@@ -672,17 +694,19 @@ namespace Tolk.Web.Helpers
 
         private static string GetContactinfo(AspNetUser user)
         {
+            if (user == null)
+            {
+                return string.Empty;
+            }
             string contactInfo = string.Empty;
             if (!string.IsNullOrEmpty(user.Email))
             {
                 contactInfo += $"Email: {user.Email}\n";
             }
-
             if (!string.IsNullOrEmpty(user.PhoneNumber))
             {
                 contactInfo += $"Telefon: {user.PhoneNumber}\n";
             }
-
             if (!string.IsNullOrEmpty(user.PhoneNumberCellphone))
             {
                 contactInfo += $"Mobil: {user.PhoneNumberCellphone}\n";

@@ -65,6 +65,7 @@ namespace Tolk.Web.Controllers
                 model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;
                 model.AllowCancellation = orderGroup.AllowCancellation && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Cancel)).Succeeded;
                 model.AllowNoAnswerConfirmation = orderGroup.AllowNoAnswerConfirmation && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
+                model.AllowResponseNotAnsweredConfirmation = orderGroup.AllowResponseNotAnsweredConfirmation && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
                 model.AllowUpdateExpiry = orderGroup.AllowUpdateExpiry && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
                 return View(model);
             }
@@ -144,6 +145,30 @@ namespace Tolk.Web.Controllers
                 try
                 {
                     await _orderService.ConfirmGroupNoAnswer(orderGroup, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Sammanhållen bokningsförfrågan arkiverad" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = ex.Message });
+                }
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> ConfirmResponseNotAnswered(int orderGroupId)
+        {
+            var orderGroup = await _dbContext.OrderGroups
+                .Include(og => og.StatusConfirmations)
+                .Include(og => og.Orders).ThenInclude(o => o.OrderStatusConfirmations)
+                .SingleAsync(og => og.OrderGroupId == orderGroupId);
+            if (orderGroup.Status == OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
+            {
+                try
+                {
+                    await _orderService.ConfirmGroupResponeNotAnswered(orderGroup, User.GetUserId(), User.TryGetImpersonatorId());
                     return RedirectToAction("Index", "Home", new { message = "Sammanhållen bokningsförfrågan arkiverad" });
                 }
                 catch (InvalidOperationException ex)

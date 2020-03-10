@@ -378,6 +378,19 @@ namespace Tolk.BusinessLogic.Entities
             OrderStatusConfirmations.Add(new OrderStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, OrderStatus = Status, ConfirmedAt = confirmedAt });
         }
 
+        public void ConfirmResponseNotAnswered(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != OrderStatus.ResponseNotAnsweredByCreator)
+            {
+                throw new InvalidOperationException($"Bokning med boknings-id {OrderNumber} hade ingen tillsättning som var obesvarad av myndighet.");
+            }
+            if (OrderStatusConfirmations.Any(o => o.OrderStatus == Status))
+            {
+                throw new InvalidOperationException($"Bokning med boknings-id {OrderNumber} har redan bekräftats som obesvarad av myndighet.");
+            }
+            OrderStatusConfirmations.Add(new OrderStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, OrderStatus = Status, ConfirmedAt = confirmedAt });
+        }
+
         internal Request CreateQuarantinedRequest(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
         {
             var request = new Request(ranking, creationTime, quarantine);

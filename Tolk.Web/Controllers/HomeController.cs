@@ -262,46 +262,55 @@ namespace Tolk.Web.Controllers
                         HasExtraInterpreter = og.HasExtraInterpreter,
                     }));
             }
-            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
+            //not answered by creator or no broker accepted order (must include groups since change of interpreter can handle LatestAnswerTimeForCustomer)
+            actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
                 .Include(o => o.Language)
                 .Include(o => o.Requests)
+                .Include(o => o.Group)
                 .Include(o => o.OrderStatusConfirmations)
-                .Where(o => o.Status == OrderStatus.NoBrokerAcceptedOrder && !o.OrderStatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder)).ToList()
+                .Where(o => (!o.OrderGroupId.HasValue && o.Status == OrderStatus.NoBrokerAcceptedOrder && !o.OrderStatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder)) || 
+                    (_options.EnableSetLatestAnswerTimeForCustomer &&
+                    (!o.OrderGroupId.HasValue || o.Group.Status != OrderStatus.ResponseNotAnsweredByCreator) &&
+                     o.Status == OrderStatus.ResponseNotAnsweredByCreator &&
+                    !o.OrderStatusConfirmations.Any(s => s.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator))).ToList()
                 .Select(o => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
                     DefaulListAction = "View",
                     DefaulListController = "Order",
                     DefaultItemId = o.OrderId,
-                    InfoDate = GetInfoDateForCustomer(o)?.DateTime,
-                    CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
+                    InfoDate = (o.Status == OrderStatus.ResponseNotAnsweredByCreator) ? o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer?.DateTime ?? o.StartAt.DateTime : GetInfoDateForCustomer(o)?.DateTime,
+                    CompetenceLevel = o.Status == OrderStatus.ResponseNotAnsweredByCreator ? (CompetenceAndSpecialistLevel?)o.Requests.OrderByDescending(r => r.RequestId).First().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter,
                     ButtonItemId = o.OrderId,
                     Language = o.OtherLanguage ?? o.Language.Name,
                     OrderNumber = o.OrderNumber,
-                    Status = o.ReplacingOrderId != null ? StartListItemStatus.ReplacementOrderNotAnswered : StartListItemStatus.OrderNotAnswered,
+                    Status = o.Status == OrderStatus.ResponseNotAnsweredByCreator ? StartListItemStatus.RespondedRequestNotAnswered : o.ReplacingOrderId != null ? StartListItemStatus.ReplacementOrderNotAnswered : StartListItemStatus.OrderNotAnswered,
                     ButtonAction = "View",
-                    ButtonController = "Order"
+                    ButtonController = "Order",
+                    OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
                 }));
             if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UseOrderGroups))
             {
-                actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
+            actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
                 .Include(og => og.Language)
-                .Include(og => og.RequestGroups)
+                .Include(og => og.RequestGroups).ThenInclude(rg => rg.Requests)
                 .Include(og => og.StatusConfirmations)
                 .Include(og => og.Orders)
-                .Where(og => og.Status == OrderStatus.NoBrokerAcceptedOrder && !og.StatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder)).ToList()
+                .Where(og => (og.Status == OrderStatus.NoBrokerAcceptedOrder && !og.StatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder))
+                    || (_options.EnableSetLatestAnswerTimeForCustomer && og.Status == OrderStatus.ResponseNotAnsweredByCreator && !og.StatusConfirmations.Any(s => s.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator))).ToList()
                 .Select(og => new StartListItemModel
                 {
                     Orderdate = og.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
                     DefaulListAction = "View",
                     DefaulListController = "OrderGroup",
                     DefaultItemId = og.OrderGroupId,
-                    InfoDate = GetInfoDateForCustomer(og)?.DateTime,
-                    CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
+                    InfoDate = og.Status == OrderStatus.ResponseNotAnsweredByCreator ? og.RequestGroups.OrderBy(req => req.RequestGroupId).Last().LatestAnswerTimeForCustomer?.DateTime ?? og.Orders.OrderBy(v => v.StartAt).First().StartAt.DateTime : GetInfoDateForCustomer(og)?.DateTime,
+                    CompetenceLevel = og.Status == OrderStatus.ResponseNotAnsweredByCreator ? (CompetenceAndSpecialistLevel?)og.RequestGroups.OrderBy(req => req.RequestGroupId).Last()
+                        .Requests.OrderBy(req => req.RequestId).Last().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter,
                     ButtonItemId = og.OrderGroupId,
                     Language = og.OtherLanguage ?? og.Language.Name,
                     OrderNumber = og.OrderGroupNumber,
-                    Status = StartListItemStatus.OrderGroupNotAnswered,
+                    Status = og.Status == OrderStatus.ResponseNotAnsweredByCreator ? StartListItemStatus.RespondedRequestGroupNotAnswered : StartListItemStatus.OrderGroupNotAnswered,
                     ButtonAction = "View",
                     ButtonController = "OrderGroup",
                     IsSingleOccasion = og.IsSingleOccasion,

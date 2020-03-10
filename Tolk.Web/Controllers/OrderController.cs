@@ -90,8 +90,7 @@ namespace Tolk.Web.Controllers
                                         r.Status != RequestStatus.DeniedByTimeLimit &&
                                         r.Status != RequestStatus.DeniedByCreator &&
                                         r.Status != RequestStatus.DeclinedByBroker &&
-                                        r.Status != RequestStatus.LostDueToQuarantine &&
-                                        r.Status != RequestStatus.ResponseNotAnsweredByCreator);
+                                        r.Status != RequestStatus.LostDueToQuarantine);
                 var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
                 model.AllowOrderCancellation = request != null && request.CanCancel &&
                     order.StartAt > _clock.SwedenNow &&
@@ -99,6 +98,7 @@ namespace Tolk.Web.Controllers
                 model.TimeIsValidForOrderReplacement = model.AllowOrderCancellation && TimeIsValidForOrderReplacement(order.StartAt);
                 model.AllowReplacementOnCancel = model.AllowOrderCancellation && request != null && request.CanCreateReplacementOrderOnCancel && model.TimeIsValidForOrderReplacement;
                 model.AllowNoAnswerConfirmation = order.Status == OrderStatus.NoBrokerAcceptedOrder && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder) && allowEdit;
+                model.AllowResponseNotAnsweredConfirmation = order.Status == OrderStatus.ResponseNotAnsweredByCreator && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator) && allowEdit;
                 model.AllowConfirmCancellation = order.Status == OrderStatus.CancelledByBroker && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker) && allowEdit;
                 model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(order);
                 model.RequestStatus = request?.Status;
@@ -830,6 +830,27 @@ namespace Tolk.Web.Controllers
                 try
                 {
                     await _orderService.ConfirmNoAnswer(order, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
+            }
+            return Forbid();
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> ConfirmResponseNotAnswered(int orderId)
+        {
+            var order = await _dbContext.Orders.Include(o => o.OrderStatusConfirmations).SingleAsync(o => o.OrderId == orderId);
+            if (order.Status == OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
+            {
+                try
+                {
+                    await _orderService.ConfirmResponeNotAnswered(order, User.GetUserId(), User.TryGetImpersonatorId());
                     return RedirectToAction("Index", "Home", new { message = "Bokningsförfrågan arkiverad" });
                 }
                 catch (InvalidOperationException ex)

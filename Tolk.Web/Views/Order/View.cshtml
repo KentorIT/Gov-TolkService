@@ -68,9 +68,34 @@
                 {
                     <br />
                     <div class="col-sm-4 pull-right">
-                        <form method="post" action="@Url.Action("ConfirmCancellation", "Order", new { RequestId = Model.RequestId })" asp-antiforgery="true">
+                        <form method="post" action="@Url.Action("ConfirmCancellation", new { RequestId = Model.RequestId })" asp-antiforgery="true">
                             <button class="btn btn-primary btn-large pull-right">Bekräfta avbokning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                         </form>
+                    </div>
+                }
+                @if (Model.Status == OrderStatus.ResponseNotAnsweredByCreator)
+                {
+                    <div class="row">
+                        <br />
+                        <div class="col-sm-6">
+                            @if (Model.ActiveRequest.LatestAnswerTimeForCustomer.HasValue)
+                            {
+                                <span>Obesvarad tillsättning, tid för godkännande av resekostnader gick ut, bokningsförfrågan avslutad</span>
+                            }
+                            else
+                            {
+                                <span>Obesvarad tillsättning, tid för uppdragsstart har passerat, bokningsförfrågan avslutad</span>
+                            }
+                        </div>
+                        @if (Model.AllowResponseNotAnsweredConfirmation)
+                        {
+                            <div class="col-sm-6">
+                                <form method="post" action="@Url.Action("ConfirmResponseNotAnswered", new { OrderId = Model.OrderId })" asp-antiforgery="true">
+                                    <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                                </form>
+                                <br />
+                            </div>
+                        }
                     </div>
                 }
                 @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder || Model.Status == OrderStatus.NoDeadlineFromCustomer)
@@ -80,17 +105,17 @@
                         <div class="col-sm-6">
                             @if (Model.Status == OrderStatus.NoBrokerAcceptedOrder)
                             {
-                                <span>Bokningsförfrågan fick ingen bekräftad tolktillsättning, bokningsförfrågan avslutad.</span>
+                                <span>Bokningsförfrågan fick ingen bekräftad tolktillsättning, bokningsförfrågan avslutad</span>
                             }
                             else if (Model.Status == OrderStatus.NoDeadlineFromCustomer)
                             {
-                                <span>Ingen sista svarstid satt av myndighet, bokningsförfrågan avslutad.</span>
+                                <span>Ingen sista svarstid satt av myndighet, bokningsförfrågan avslutad</span>
                             }
                         </div>
                         @if (Model.AllowNoAnswerConfirmation)
                         {
                             <div class="col-sm-6">
-                                <form method="post" action="@Url.Action("ConfirmNoAnswer", "Order", new { OrderId = Model.OrderId })" asp-antiforgery="true">
+                                <form method="post" action="@Url.Action("ConfirmNoAnswer", new { OrderId = Model.OrderId })" asp-antiforgery="true">
                                     <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                                 </form>
                                 <br />

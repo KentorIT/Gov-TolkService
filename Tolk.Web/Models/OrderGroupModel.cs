@@ -35,6 +35,9 @@ namespace Tolk.Web.Models
         public string CancelMessage { get; set; }
 
         public bool AllowNoAnswerConfirmation { get; set; } = false;
+
+        public bool AllowResponseNotAnsweredConfirmation { get; set; } = false;
+
         public bool ActiveRequestIsAnswered { get; set; } = false;
 
         [Display(Name = "Angiven bedömd resekostnad för extra tolk (exkl. moms)")]
@@ -169,8 +172,7 @@ namespace Tolk.Web.Models
                       r.Status == RequestStatus.DeclinedByBroker ||
                       r.Status == RequestStatus.DeniedByTimeLimit ||
                       r.Status == RequestStatus.DeniedByCreator ||
-                      r.Status == RequestStatus.LostDueToQuarantine ||
-                      r.Status == RequestStatus.ResponseNotAnsweredByCreator
+                      r.Status == RequestStatus.LostDueToQuarantine
                 ).Select(r => new BrokerListModel
                 {
                     Status = r.Status,

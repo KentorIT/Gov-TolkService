@@ -97,6 +97,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool AllowNoAnswerConfirmation => Status == OrderStatus.NoBrokerAcceptedOrder && !StatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
 
+        public bool AllowResponseNotAnsweredConfirmation => Status == OrderStatus.ResponseNotAnsweredByCreator && !StatusConfirmations.Any(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator);
+
         public bool AllowUpdateExpiry => Status == OrderStatus.AwaitingDeadlineFromCustomer;
 
         public void SetStatus(OrderStatus status, bool updateOrders = true)
@@ -190,7 +192,20 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Status != OrderStatus.NoBrokerAcceptedOrder)
             {
-                throw new InvalidOperationException($"Sammanhållen bokning med boknings-id {OrderGroupNumber} var inte avböjd/obesvarad av samtliga förmedlingar..");
+                throw new InvalidOperationException($"Sammanhållen bokning med boknings-id {OrderGroupNumber} var inte avböjd/obesvarad av samtliga förmedlingar.");
+            }
+            if (StatusConfirmations.Any(o => o.OrderStatus == Status))
+            {
+                throw new InvalidOperationException($"Sammanhållen bokning med boknings-id {OrderGroupNumber} har redan bekräftats som obesvarad.");
+            }
+            AddStatusConfirmations(confirmedAt, userId, impersonatorId);
+        }
+
+        public void ConfirmResponseNotAnswered(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (Status != OrderStatus.ResponseNotAnsweredByCreator)
+            {
+                throw new InvalidOperationException($"Sammanhållen bokning med boknings-id {OrderGroupNumber} var inte tillsatt och obesvarad av myndighet.");
             }
             if (StatusConfirmations.Any(o => o.OrderStatus == Status))
             {

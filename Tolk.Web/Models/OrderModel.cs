@@ -166,6 +166,8 @@ namespace Tolk.Web.Models
 
         public bool AllowNoAnswerConfirmation { get; set; } = false;
 
+        public bool AllowResponseNotAnsweredConfirmation { get; set; } = false;
+
         public bool AllowUpdateExpiry { get; set; } = false;
 
         public bool AllowConfirmCancellation { get; set; } = false;
@@ -624,8 +626,7 @@ namespace Tolk.Web.Models
                        r.Status == BusinessLogic.Enums.RequestStatus.DeclinedByBroker ||
                        r.Status == BusinessLogic.Enums.RequestStatus.DeniedByTimeLimit ||
                        r.Status == BusinessLogic.Enums.RequestStatus.DeniedByCreator ||
-                       r.Status == BusinessLogic.Enums.RequestStatus.LostDueToQuarantine ||
-                       r.Status == BusinessLogic.Enums.RequestStatus.ResponseNotAnsweredByCreator
+                       r.Status == BusinessLogic.Enums.RequestStatus.LostDueToQuarantine
                 ).Select(r => new BrokerListModel
                 {
                     Status = r.Status,

@@ -412,10 +412,24 @@ namespace Tolk.BusinessLogic.Services
             await _tolkDbContext.SaveChangesAsync();
         }
 
+        public async Task ConfirmResponeNotAnswered(Order order, int userId, int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(ConfirmResponeNotAnswered), nameof(OrderService));
+            order.ConfirmResponseNotAnswered(_clock.SwedenNow, userId, impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
+        }
+
         public async Task ConfirmGroupNoAnswer(OrderGroup orderGroup, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(ConfirmGroupNoAnswer), nameof(OrderService));
             orderGroup.ConfirmNoAnswer(_clock.SwedenNow, userId, impersonatorId);
+            await _tolkDbContext.SaveChangesAsync();
+        }
+
+        public async Task ConfirmGroupResponeNotAnswered(OrderGroup orderGroup, int userId, int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(ConfirmGroupResponeNotAnswered), nameof(OrderService));
+            orderGroup.ConfirmResponseNotAnswered(_clock.SwedenNow, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
         }
 
