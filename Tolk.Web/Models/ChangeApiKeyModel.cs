@@ -14,7 +14,7 @@ namespace Tolk.Web.Models
 
         [Required]
         [NoAutoComplete]
-        [Display(Name = "Apinyckel", Description = "Lagra informationen noga, för detta blir enda gången du får se nyckeln.")]
+        [Display(Name = "API-nyckel", Description = "Lagra informationen noga, för detta blir enda gången du får se nyckeln.")]
         [StringLength(255)]
         public string ApiKey { get; set; }
     }

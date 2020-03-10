@@ -1,10 +1,13 @@
 ﻿@model List<NotificationSettingsModel>
 @using Tolk.BusinessLogic.Utilities
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
 @{
     ViewData["Title"] = "Organisationens notifieringsinställningar";
+    HelpLinkService.PageName = "formedling-notifieringar";
 }
 <section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"] </h1>
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     <div class="row">
         <div class="col-md-12">
             Välj om er förmedling vill notifieras via e-post och/eller webhooks för respektive notifieringstyp.

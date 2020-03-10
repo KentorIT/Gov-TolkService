@@ -1,9 +1,12 @@
 ﻿@model ChangeApiKeyModel;
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
 @{
-    ViewData["Title"] = "Ändra Api-nyckel";
+    ViewData["Title"] = "Ändra API-nyckel";
+    HelpLinkService.PageName = "formedling-andra-nyckel";
 }
 <section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"]</h1>
+    <h1>@ViewData["Title"]  @HelpLinkService.HeaderAnchor()</h1>
     <form method="post" class="do-not-check-dirty">
         <div class="row">
             <div class="col-sm-4">

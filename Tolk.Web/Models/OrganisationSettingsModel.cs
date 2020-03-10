@@ -7,8 +7,10 @@ namespace Tolk.Web.Models
     {
         public string Message { get; set; }
 
-        [Display(Name = "Användarnamnet kopplat till apinyckel-inloggning")]
+        [Display(Name = "Användarnamnet kopplat till inloggning med API-nyckel")]
         public string UserName { get; set; }
+
+        [Display(Name = "E-postadress")]
         [Required]
         [EmailAddress]
         [RegularExpression(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$", ErrorMessage = "Felaktig e-postadress")]
@@ -17,7 +19,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Autentisera med certifikat")]
         public bool UseCertificateAuthentication { get; set; }
 
-        [Display(Name = "Autentisera med apinyckel")]
+        [Display(Name = "Autentisera med API-nyckel")]
         public bool UseApiKeyAuthentication { get; set; }
 
         [Display(Name = "Certifikatets serienummer")]
@@ -27,8 +29,8 @@ namespace Tolk.Web.Models
         [Required]
         public string OrganisationNumber { get; set; }
 
-        [Display(Name = "Apinyckel i webhook anrop", Description = "Denna nyckel kommer läggas till som header i alla webhook anrop från systemet till er.")]
-        [RegularExpression(@"[ -~]*$", ErrorMessage = "Apinyckeln kan bara innehålla ascii-tecken")]
+        [Display(Name = "API-nyckel i webhook-anrop", Description = "Denna nyckel kommer läggas till som header i alla webhook-anrop från systemet till er.")]
+        [RegularExpression(@"[ -~]*$", ErrorMessage = "API-nyckeln kan bara innehålla ascii-tecken")]
         [StringLength(1000)]
         public string CallbackApiKey { get; set; }
 

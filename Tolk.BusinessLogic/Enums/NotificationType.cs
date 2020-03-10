@@ -49,7 +49,7 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("complaint_created")]
         ComplaintCreated = 11,
 
-        [Description("Reklamation är återtagits av myndighet")]
+        [Description("Reklamation har återtagits av myndighet")]
         [CustomName("complaint_disputed_accepted")]
         ComplaintDisputedAccepted = 12,
 
@@ -81,7 +81,7 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("error_notification")]
         ErrorNotification = 19,
 
-        [Description("En ny kund har lagts upp i systemet")]
+        [Description("En ny myndighet har lagts upp i systemet")]
         [CustomName("customer_added")]
         CustomerAdded = 20,
 

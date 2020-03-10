@@ -1,9 +1,12 @@
 ﻿@model OrganisationSettingsModel
+@using Tolk.Web.Services
+@inject HelpLinkService HelpLinkService
 @{
-    ViewData["Title"] = "Organisationens inställningar";
+    ViewData["Title"] = "Ändra organisationsinställningar";
+    HelpLinkService.PageName = "formedling-andra-installningar";
 }
 <section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"]</h1>
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     <form method="post">
         <h2>Allmänna inställningar</h2>
         <div class="row">
