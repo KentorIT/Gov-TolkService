@@ -96,11 +96,11 @@ namespace Tolk.Web.Models
 
         public OccasionListModel OccasionList { get; set; }
 
-        [Display(Name = "Vill du ange en sista tid för att besvara tillsättning för myndighet", Description = "Ange om du vill sätta en tid för när myndigheten senast ska besvara tillsättningen. Om du anger en tid och myndigheten inte svarar inom angiven tid avslutas förfrågan och går vidare till nästa förmedling i rangordningen.")]
+        [Display(Name = "Vill du ange en sista tid för att besvara tillsättning för myndighet", Description = "Ange om du vill sätta en tid för när myndigheten senast ska besvara tillsättningen. Om du anger en tid och myndigheten inte svarar inom angiven tid avslutas förfrågan.")]
         [ClientRequired]
         public RadioButtonGroup SetLatestAnswerTimeForCustomer { get; set; }
 
-        [Display(Name = "Sista tid att besvara tillsättning", Description = "Här har förmedlingen möjlighet att ange en tid för när myndigheten senast ska besvara tillsättningen. Om myndigheten inte svarar inom angiven tid avslutas förfrågan och går vidare till nästa förmedling i rangordningen.")]
+        [Display(Name = "Sista tid att besvara tillsättning", Description = "Här har förmedlingen möjlighet att ange en tid för när myndigheten senast ska besvara tillsättningen. Om myndigheten inte svarar inom angiven tid avslutas förfrågan.")]
         [ClientRequired]
         public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
 

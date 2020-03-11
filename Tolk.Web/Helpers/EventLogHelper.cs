@@ -155,7 +155,7 @@ namespace Tolk.Web.Helpers
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = order.Requests.OrderBy(r => r.RequestId).Last().LatestAnswerTimeForCustomer ?? order.StartAt,
-                    EventDetails = $"Obesvarad tillsättning tiden gick ut, bokning avslutad",
+                    EventDetails = "Obesvarad tillsättning, tiden gick ut, bokning avslutad",
                     Actor = "Systemet",
                 });
                 // Check if confirmed
@@ -408,7 +408,7 @@ namespace Tolk.Web.Helpers
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.LatestAnswerTimeForCustomer ?? request.Order.StartAt,
-                    EventDetails = $"Obesvarad tillsättning tiden gick ut, bokning avslutad",
+                    EventDetails = "Obesvarad tillsättning, tiden gick ut, bokning avslutad",
                     Actor = "Systemet",
                 });
                 // Request no answer confirmations
