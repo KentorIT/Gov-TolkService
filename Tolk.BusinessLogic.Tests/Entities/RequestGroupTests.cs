@@ -424,5 +424,69 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Equal(1, requestGroup.Views.Count(r => r.ViewedBy == 1));
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Cancel_Valid(bool receive)
+        {
+            var startAt = DateTime.Now.AddDays(1);
+            var endAt = startAt.AddHours(1);
+
+            var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTSJUSTCREATED");
+            var requestGroup = orderGroup.RequestGroups.First();
+            orderGroup.Orders.ForEach(o => { o.StartAt = startAt; o.EndAt = endAt; });
+            var expectedRequestStatus = RequestStatus.CancelledByCreator;
+            var expectedOrderStatus = OrderStatus.CancelledByCreator;
+            var cancelledAt = DateTime.Now;
+            var userId = 10;
+            var impersonatorId = (int?)null;
+            var message = "Cancelled because of reasons.";
+
+            if (receive)
+            {
+                requestGroup.Received(cancelledAt, userId, impersonatorId);
+            }
+            requestGroup.Cancel(cancelledAt, userId, impersonatorId, message);
+
+            Assert.Equal(expectedRequestStatus, requestGroup.Status);
+            Assert.Equal(expectedOrderStatus, requestGroup.OrderGroup.Status);
+            Assert.Equal(cancelledAt, requestGroup.CancelledAt);
+            Assert.Equal(userId, requestGroup.CancelledBy);
+            Assert.Equal(impersonatorId, requestGroup.ImpersonatingCanceller);
+            Assert.Equal(message, requestGroup.CancelMessage);
+            foreach (var request in requestGroup.Requests)
+            {
+                Assert.Equal(expectedRequestStatus, request.Status);
+                Assert.Equal(expectedOrderStatus, request.Order.Status);
+                Assert.Equal(cancelledAt, request.CancelledAt);
+                Assert.Equal(userId, request.CancelledBy);
+                Assert.Equal(impersonatorId, request.ImpersonatingCanceller);
+                Assert.Equal(message, request.CancelMessage);
+            }
+        }
+
+        [Theory]
+        [InlineData(RequestStatus.Accepted)]
+        [InlineData(RequestStatus.Approved)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
+        [InlineData(RequestStatus.CancelledByCreator)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.DeclinedByBroker)]
+        [InlineData(RequestStatus.DeniedByCreator)]
+        [InlineData(RequestStatus.DeniedByTimeLimit)]
+        [InlineData(RequestStatus.LostDueToQuarantine)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer)]
+        [InlineData(RequestStatus.PartiallyAccepted)]
+        [InlineData(RequestStatus.PartiallyApproved)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker)]
+        public void Cancel_Invalid(RequestStatus status)
+        {
+            var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTSJUSTCREATED");
+            var requestGroup = orderGroup.RequestGroups.First();
+            requestGroup.SetStatus(status, false);
+            Assert.Throws<InvalidOperationException>(() => requestGroup.Cancel(DateTime.Now, 10, null, "apa"));
+        }
+
     }
 }
