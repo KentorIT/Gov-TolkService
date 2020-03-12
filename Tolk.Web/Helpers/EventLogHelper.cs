@@ -457,7 +457,7 @@ namespace Tolk.Web.Helpers
                         Timestamp = request.CancelledAt.Value,
                         EventDetails = "Uppdrag avbokat av förmedling",
                         Actor = request.CancelledByUser.FullName,
-                        Organization = customerName,
+                        Organization = brokerName,
                         ActorContactInfo = GetContactinfo(request.CancelledByUser),
                     });
                 }
@@ -701,7 +701,7 @@ namespace Tolk.Web.Helpers
             string contactInfo = string.Empty;
             if (!string.IsNullOrEmpty(user.Email))
             {
-                contactInfo += $"Email: {user.Email}\n";
+                contactInfo += $"E-post: {user.Email}\n";
             }
             if (!string.IsNullOrEmpty(user.PhoneNumber))
             {
