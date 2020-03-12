@@ -102,9 +102,10 @@ namespace Tolk.BusinessLogic.Services
             var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCancelledByCustomer, NotificationChannel.Email);
             if (email != null)
             {
-                
-                    var body = $"Sammanhållen bokningsförfrågan med boknings-ID {orderNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{requestGroup.CancelMessage}\n" +
-                        $"Första tillfället skulle ha startat {requestGroup.OrderGroup.FirstOrder.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}.";
+                var occasionText = requestGroup.OrderGroup.IsSingleOccasion ? "Tillfället skulle ha startat " : "Första tillfället skulle ha startat ";
+                var body = $"Sammanhållen bokningsförfrågan med boknings-ID {orderNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{requestGroup.CancelMessage}\n" +
+                     $"{occasionText + requestGroup.OrderGroup.FirstOrder.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}.";
+                    
                     CreateEmail(email.ContactInformation, $"Avbokad sammanhållen bokningsförfrågan boknings-ID {orderNumber}",
                         body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
                         HtmlHelper.ToHtmlBreak(body) + GoToRequestGroupButton(requestGroup.RequestGroupId),
