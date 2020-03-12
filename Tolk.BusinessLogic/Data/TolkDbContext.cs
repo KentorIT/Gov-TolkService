@@ -469,6 +469,21 @@ namespace Tolk.BusinessLogic.Data
                .HasOne(occ => occ.OrderChangeLogEntry)
                .WithOne(oc => oc.OrderChangeConfirmation)
                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<TemporaryChangedEmailEntry>()
+               .HasOne(t => t.User)
+               .WithOne(u => u.TemporaryChangedEmailEntry)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<TemporaryChangedEmailEntry>()
+                .HasOne(t => t.UpdatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<TemporaryChangedEmailEntry>()
+                .HasOne(t => t.ImpersonatingUpdatedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Region> Regions { get; set; }

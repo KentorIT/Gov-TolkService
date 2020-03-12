@@ -185,7 +185,6 @@ namespace Tolk.Web.Controllers
 
             if (await _userManager.HasPasswordAsync(user))
             {
-                // Check here for modelstate, if no password - there are no password entries.
                 if (ModelState.IsValid)
                 {
                     if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
@@ -195,18 +194,8 @@ namespace Tolk.Web.Controllers
                     }
                     if (_userService.IsUniqueEmail(model.NewEmailAddress, user.Id))
                     {
-                        var emailUser = _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).Single(u => u.Id == User.GetUserId());
-
-                        if (emailUser.TemporaryChangedEmailEntry != null)
-                        {
-                            emailUser.TemporaryChangedEmailEntry.EmailAddress = model.NewEmailAddress;
-                            emailUser.TemporaryChangedEmailEntry.ExpirationDate = _clock.SwedenNow.AddDays(7);
-                        }
-                        else
-                        {
-                            user.TemporaryChangedEmailEntry = new TemporaryChangedEmailEntry { EmailAddress = model.NewEmailAddress, User = user, ExpirationDate = _clock.SwedenNow.AddDays(7) };
-                        }
-                        _dbContext.SaveChanges();
+                        var emailUser = await _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).SingleAsync(u => u.Id == User.GetUserId());
+                        await _userService.SetTemporaryEmail(user, model.NewEmailAddress, User.GetUserId(), User.TryGetImpersonatorId());
                         return await SendChangedEmailLink(user, model.NewEmailAddress);
                     }
                     ModelState.AddModelError(nameof(model.NewEmailAddress), "Denna adress används redan");

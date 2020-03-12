@@ -9,6 +9,11 @@ namespace Tolk.BusinessLogic.Entities
         [Key]
         public int UserId { get; set; }
 
+        //SET THIS TO USER ID ON CREATE IN MIGRATION!!!!!!
+        public int UpdatedByUserId { get; set; }
+
+        public int? ImpersonatingUpdatedByUserId { get; set; }
+
         [Required]
         public string EmailAddress { get; set; }
 
@@ -18,6 +23,12 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(UserId))]
         public AspNetUser User { get; set; }
+
+        [ForeignKey(nameof(UpdatedByUserId))]
+        public AspNetUser UpdatedByUser { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingUpdatedByUserId))]
+        public AspNetUser ImpersonatingUpdatedByUser { get; set; }
 
         #endregion
     }

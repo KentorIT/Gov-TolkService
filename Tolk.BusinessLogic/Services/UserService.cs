@@ -69,20 +69,16 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogInformation("Sent account confirmation link to {userId} ({email})", user.Id, user.Email);
         }
 
-        public async Task SetTemporaryEmail(AspNetUser user, string newEmail)
+        public async Task SetTemporaryEmail(AspNetUser user, string newEmail, int updatedById, int? impersonatingCreatorId = null)
         {
             NullCheckHelper.ArgumentCheckNull(user, nameof(SetTemporaryEmail), nameof(UserService));
             var emailUser = await _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).SingleAsync(u => u.Id == user.Id);
-
-            if (emailUser.TemporaryChangedEmailEntry != null)
-            {
-                emailUser.TemporaryChangedEmailEntry.EmailAddress = newEmail;
-                emailUser.TemporaryChangedEmailEntry.ExpirationDate = _clock.SwedenNow.AddDays(7);
-            }
-            else
-            {
-                user.TemporaryChangedEmailEntry = new TemporaryChangedEmailEntry { EmailAddress = newEmail, User = user, ExpirationDate = _clock.SwedenNow.AddDays(7) };
-            }
+            var entry = emailUser.TemporaryChangedEmailEntry ?? new TemporaryChangedEmailEntry();
+            entry.EmailAddress = newEmail;
+            entry.ExpirationDate = _clock.SwedenNow.AddDays(7);
+            entry.UpdatedByUserId = updatedById;
+            entry.ImpersonatingUpdatedByUserId = impersonatingCreatorId;
+            emailUser.TemporaryChangedEmailEntry = entry;
             await _dbContext.SaveChangesAsync();
         }
         private (string, string) CreateInterpreterInvite()

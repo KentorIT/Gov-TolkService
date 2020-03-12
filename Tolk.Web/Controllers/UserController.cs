@@ -941,7 +941,7 @@ namespace Tolk.Web.Controllers
                     }
                     else
                     {
-                        await _userService.SetTemporaryEmail(user, model.Email);
+                        await _userService.SetTemporaryEmail(user, model.Email, User.GetUserId(), User.TryGetImpersonatorId());
                         var code = await _userManager.GenerateChangeEmailTokenAsync(user, model.Email);
                         await _userService.SendChangedEmailLink(user, model.Email, Url.ChangeEmailCallbackLink(user.Id.ToSwedishString(), code), true);
                         messageToUser = "För att slutföra ändringen, be användaren att följa instruktionerna i meddelandet som skickats till den nya e-postadressen";
