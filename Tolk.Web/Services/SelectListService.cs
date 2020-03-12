@@ -5,12 +5,8 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -32,7 +28,7 @@ namespace Tolk.Web.Services
         private const string brokersSelectListKey = nameof(brokersSelectListKey);
         private const string customersSelectListKey = nameof(customersSelectListKey);
         private const string organisationsSelectListKey = nameof(organisationsSelectListKey);
-        private static readonly DistributedCacheEntryOptions cacheOptions = new DistributedCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(15));
+        private static readonly DistributedCacheEntryOptions cacheOptions = new DistributedCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(15));
 
         public SelectListService(
             IDistributedCache cache,
