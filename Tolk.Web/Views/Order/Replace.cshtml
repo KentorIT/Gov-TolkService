@@ -127,52 +127,44 @@
                         <h2 class="no-padding-margin">Inställelsesätt <span class="form-entry-information glyphicon glyphicon-info-sign" title="Om du bara väljer ett inställelsesätt så betraktas det som ett krav. Om du väljer flera alternativa sätt så betraktas det översta som ditt primära val, men förmedlingen kan välja något av de du tillhandahåller."></span></h2>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-sm-4">
-                        <div class="ranked-InterpreterLocation">
-                            <div class="location-group">
-                                <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
-                                <div class="address-RankedInterpreterLocationFirst grouped-form-boxes">
-                                    <div class="address-information">
-                                        <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationStreet" />
-                                        <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationCity" />
-                                    </div>
-                                    <div class="off-site-information">
-                                        <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation" />
-                                    </div>
-                                </div>
+                <div class="row  ranked-InterpreterLocation">
+                    <div class="col-sm-4 location-group">
+                        <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                        <div class="address-RankedInterpreterLocationFirst grouped-form-boxes">
+                            <div class="address-information">
+                                <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationStreet" />
+                                <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.LocationCity" />
+                            </div>
+                            <div class="off-site-information">
+                                <form-entry asp-for="RankedInterpreterLocationFirstAddressModel.OffSiteContactInformation" />
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-4">
-                        <div class="interpreter-location-second location-group">
-                            <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
-                            <div class="address-RankedInterpreterLocationSecond">
-                                <div class="address-information">
-                                    <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationStreet" />
-                                    <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationCity" />
-                                </div>
-                                <div class="off-site-information">
-                                    <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation" />
-                                </div>
+                    <div class="col-sm-4 interpreter-location-second location-group bg-gray">
+                        <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                        <div class="address-RankedInterpreterLocationSecond">
+                            <div class="address-information">
+                                <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationStreet" />
+                                <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.LocationCity" />
+                            </div>
+                            <div class="off-site-information">
+                                <form-entry asp-for="RankedInterpreterLocationSecondAddressModel.OffSiteContactInformation" />
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-4">
-                        <div class="interpreter-location-third location-group">
-                            <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
-                            <div class="address-RankedInterpreterLocationThird">
-                                <div class="address-information">
-                                    <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationStreet" />
-                                    <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationCity" />
-                                </div>
-                                <div class="off-site-information">
-                                    <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation" />
-                                </div>
+                    <div class="col-sm-4 interpreter-location-third location-group">
+                        <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear interpreter-group" />
+                        <div class="address-RankedInterpreterLocationThird">
+                            <div class="address-information">
+                                <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationStreet" />
+                                <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.LocationCity" />
+                            </div>
+                            <div class="off-site-information">
+                                <form-entry asp-for="RankedInterpreterLocationThirdAddressModel.OffSiteContactInformation" />
                             </div>
                         </div>
-                        <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
                     </div>
+                    <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
                 </div>
                 <input asp-for="AssignmentType" type="hidden" />
                 <input asp-for="RegionId" type="hidden" />

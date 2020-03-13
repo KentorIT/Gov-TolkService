@@ -41,7 +41,27 @@ $(function () {
                 }
             }
         }
+        var isOnsiteSelected = false;
+        $(".location-group select[id^=RankedInterpreterLocation]:visible").each(function () {
+            switch ($(this).val()) {
+                default:
+                    break;
+                case "OnSite":
+                case "OffSiteDesignatedLocation":
+                    isOnsiteSelected = true;
+                    break;
+            }
+        });
+
+        if (isOnsiteSelected) {
+            $(".allow-more-travel-cost").show();
+        }
+        else {
+            $(".allow-more-travel-cost").hide();
+        }
+
     });
+
     $("#RankedInterpreterLocationFirst, #RankedInterpreterLocationSecond, #RankedInterpreterLocationThird").trigger("change");
 });
 

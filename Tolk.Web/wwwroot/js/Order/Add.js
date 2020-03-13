@@ -531,27 +531,6 @@ $(function () {
         toggleSeveralOccasions();
     });
 
-    $("body").on("change", ".location-group", function () {
-        var isOnsiteSelected = false;
-        $("select[id^=RankedInterpreterLocation]").each(function () {
-            switch ($(this).val()) {
-                default:
-                    break;
-                case "OnSite":
-                case "OffSiteDesignatedLocation":
-                    isOnsiteSelected = true;
-                    break;
-            }
-        });
-
-        if (isOnsiteSelected) {
-            $(".allow-more-travel-cost").show();
-        }
-        else {
-            $(".allow-more-travel-cost").hide();
-        }
-    });
-
     $("body").on("click", ".wizard-forward-button", function () {
         document.body.scrollTop = 0;
         document.documentElement.scrollTop = 0;
