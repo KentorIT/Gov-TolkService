@@ -321,6 +321,7 @@ namespace Tolk.Web.Controllers
             actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
                 .Include(o => o.Language)
                 .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations)
+                .Include(o => o.Group)
                 .Where(o => o.Status == OrderStatus.CancelledByBroker && o.Requests.Any(r => r.Status == RequestStatus.CancelledByBroker &&
                     !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker))).ToList()
                 .Select(o => new StartListItemModel
