@@ -823,7 +823,7 @@ namespace Tolk.Web.Controllers
                     OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
                 }).ToList();
 
-            count = approvedRequestAnswers.Any() ? answeredRequests.Count : 0;
+            count = approvedRequestAnswers.Any() ? approvedRequestAnswers.Count : 0;
             approvedRequestAnswers.ForEach(l => l.ViewedByUser = l.ViewedBy.HasValue && l.ViewedBy != userId ? allOtherUsersInBroker.Single(a => a.Id == l.ViewedBy).Name + " håller på med detta ärende" : string.Empty);
 
             yield return new StartList
