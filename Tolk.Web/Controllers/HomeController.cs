@@ -616,36 +616,65 @@ namespace Tolk.Web.Controllers
                     Name = u.NameFirst + " " + u.NameFamily,
                     u.Id
                 }).ToList();
-            //Requests with status received, created, denied, cancelled by customer, not answered by customer
+            //Requests with status received, created
             try
             {
                 actionList.AddRange(_dbContext.Requests
                 .Where(r => r.RequestGroupId == null &&
-                    (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.DeniedByCreator) &&
-                    r.Ranking.BrokerId == brokerId &&
-                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator))
+                    (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) &&
+                    r.Ranking.BrokerId == brokerId)
                 .Select(r => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
-                    DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    DefaulListAction = "Process",
                     DefaulListController = "Request",
                     DefaultItemId = r.RequestId,
-                    InfoDate = (r.Status != RequestStatus.DeniedByCreator && r.RequestUpdateLatestAnswerTime != null) ? r.RequestUpdateLatestAnswerTime.UpdatedAt.DateTime : GetInfoDateForBroker(r).Value,
+                    InfoDate = r.RequestUpdateLatestAnswerTime != null ? r.RequestUpdateLatestAnswerTime.UpdatedAt.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.Order.CustomerOrganisation.Name,
                     ButtonItemId = r.RequestId,
                     Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
                     OrderNumber = r.Order.OrderNumber,
                     Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0, false),
-                    ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    ButtonAction = "Process",
                     ButtonController = "Request",
-                    LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
+                    LatestDate = r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null,
                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy
                 }).ToList());
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Unexpected error occured for Requests with status received, created, denied, cancelled by customer, not answered by customer in method {nameof(GetBrokerStartLists)}");
+                _logger.LogError(ex, $"Unexpected error occured for Requests with status received, created in method {nameof(GetBrokerStartLists)}");
+            }
+            //Denied requests 
+            try
+            {
+                actionList.AddRange(_dbContext.Requests
+                .Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status != RequestStatus.DeniedByCreator)) &&
+                    r.Status == RequestStatus.DeniedByCreator && r.Ranking.BrokerId == brokerId &&
+                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator))
+                .Select(r => new StartListItemModel
+                {
+                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
+                    DefaulListAction = "View",
+                    DefaulListController = "Request",
+                    DefaultItemId = r.RequestId,
+                    InfoDate = GetInfoDateForBroker(r).Value,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    CustomerName = r.Order.CustomerOrganisation.Name,
+                    ButtonItemId = r.RequestId,
+                    Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
+                    OrderNumber = r.Order.OrderNumber,
+                    Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0, false),
+                    ButtonAction = "View",
+                    ButtonController = "Request",
+                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
+                    OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
+                }).ToList());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unexpected error occured for Denied requests in method {nameof(GetBrokerStartLists)}");
             }
             //Requests with status CancelledByCreatorWhenApproved
             try
