@@ -601,7 +601,7 @@ namespace Tolk.BusinessLogic.Services
                 return true;
             }
             decimal largestApprovedAmount = request.Order.Requests
-                .Where(req => (req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced) && req.AnswerProcessedAt.HasValue)
+                .Where(req => (req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced) && req.AnswerProcessedAt.HasValue && req.RankingId == request.RankingId)
                 .Select(r => r.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.TravelCost).Sum(pr => pr.Price) as decimal?)
                 .Max() ?? 0;
             return largestApprovedAmount >= expectedTravelCosts.Value;
