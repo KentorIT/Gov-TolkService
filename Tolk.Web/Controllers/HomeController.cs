@@ -300,7 +300,7 @@ namespace Tolk.Web.Controllers
                         .Include(o => o.Requests)
                         .Include(o => o.Group)
                         .Include(o => o.OrderStatusConfirmations)
-                        .Where(o => (!o.OrderGroupId.HasValue && o.Status == OrderStatus.NoBrokerAcceptedOrder && !o.OrderStatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder)) ||
+                        .Where(o => ((!o.OrderGroupId.HasValue || o.Group.Status != OrderStatus.NoBrokerAcceptedOrder) && o.Status == OrderStatus.NoBrokerAcceptedOrder && !o.OrderStatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder)) ||
                             (_options.EnableSetLatestAnswerTimeForCustomer &&
                             (!o.OrderGroupId.HasValue || o.Group.Status != OrderStatus.ResponseNotAnsweredByCreator) &&
                              o.Status == OrderStatus.ResponseNotAnsweredByCreator &&
