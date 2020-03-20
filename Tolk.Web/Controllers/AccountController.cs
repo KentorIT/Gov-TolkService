@@ -635,7 +635,7 @@ namespace Tolk.Web.Controllers
             {
                 if (!_userService.IsUniqueEmail(model.Email))
                 {
-                    ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten.");
+                    ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten");
                 }
                 else
                 {

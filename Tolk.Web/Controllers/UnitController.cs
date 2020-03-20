@@ -83,11 +83,11 @@ namespace Tolk.Web.Controllers
             {
                 if (!IsUniqueName(model.Name))
                 {
-                    ModelState.AddModelError(nameof(model.Name), $"Namnet används redan för en annan enhet för denna myndighet.");
+                    ModelState.AddModelError(nameof(model.Name), $"Namnet används redan för en annan enhet för denna myndighet");
                 }
-                else if (!IsUniqueEmail(model.Email))
+                else if (!_userService.IsUniqueEmail(model.Email))
                 {
-                    ModelState.AddModelError(nameof(model.Email), $"E-postadressen används redan för en annan enhet för denna myndighet.");
+                    ModelState.AddModelError(nameof(model.Email), $"E-postadressen används redan i tjänsten");
                 }
                 else
                 {
@@ -299,11 +299,11 @@ namespace Tolk.Web.Controllers
             {
                 if (!IsUniqueName(model.Name, model.CustomerUnitId))
                 {
-                    ModelState.AddModelError(nameof(model.Name), $"Namnet används redan för en annan enhet för denna myndighet.");
+                    ModelState.AddModelError(nameof(model.Name), $"Namnet används redan för en annan enhet för denna myndighet");
                 }
-                else if (!IsUniqueEmail(model.Email, model.CustomerUnitId))
+                else if (!_userService.IsUniqueEmail(model.Email, customerUnitId: model.CustomerUnitId))
                 {
-                    ModelState.AddModelError(nameof(model.Email), $"E-postadressen används redan för en annan enhet för denna myndighet.");
+                    ModelState.AddModelError(nameof(model.Email), $"E-postadressen används redan i tjänsten");
                 }
                 else
                 {
@@ -320,12 +320,6 @@ namespace Tolk.Web.Controllers
                 model.IsCentralAdministrator = User.IsInRole(Roles.CentralAdministrator);
             }
             return View(model);
-        }
-
-        private bool IsUniqueEmail(string email, int? customerUnitId = null)
-        {
-            return !_dbContext.CustomerUnits.Any(u => u.CustomerOrganisationId == User.GetCustomerOrganisationId()
-                && u.Email.ToSwedishUpper() == email.ToSwedishUpper() && u.CustomerUnitId != customerUnitId);
         }
 
         private bool IsUniqueName(string name, int? customerUnitId = null)
