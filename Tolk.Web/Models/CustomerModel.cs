@@ -53,6 +53,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Använd sammanhållen bokning")]
         public bool UseOrderGroups { get; set; }
 
+        [Display(Name = "Tolken fakturerar själv tolkarvode")]
+        public bool UseSelfInvoicingInterpreter { get; set; }
+
         internal static CustomerModel GetModelFromCustomer(CustomerOrganisation customer, string message = null)
         {
             return new CustomerModel
@@ -74,7 +77,8 @@ namespace Tolk.Web.Models
                     BackAction = "View",
                     BackId = customer.CustomerOrganisationId.ToSwedishString()
                 },
-                UseOrderGroups = customer.UseOrderGroups
+                UseOrderGroups = customer.UseOrderGroups,
+                UseSelfInvoicingInterpreter = customer.UseSelfInvoicingInterpreter
             };
         }
 
@@ -85,6 +89,7 @@ namespace Tolk.Web.Models
             customer.EmailDomain = EmailDomain;
             customer.OrganisationNumber = OrganisationNumber;
             customer.UseOrderGroups = UseOrderGroups;
+            customer.UseSelfInvoicingInterpreter = UseSelfInvoicingInterpreter;
         }
     }
 }

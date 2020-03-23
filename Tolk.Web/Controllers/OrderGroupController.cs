@@ -59,7 +59,8 @@ namespace Tolk.Web.Controllers
                     UnitName = model.CustomerUnitName,
                     DepartmentName = model.UnitName,
                     ReferenceNumber = model.CustomerReferenceNumber,
-                    InvoiceReference = model.InvoiceReference
+                    InvoiceReference = model.InvoiceReference,
+                    UseSelfInvoicingInterpreter = model.CustomerUseSelfInvoicingInterpreter
                 };
                 model.ActiveRequestGroup = RequestGroupViewModel.GetModelFromRequestGroup(activeRequestGroup);
                 model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;

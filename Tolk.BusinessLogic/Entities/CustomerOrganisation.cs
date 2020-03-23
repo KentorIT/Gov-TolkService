@@ -41,5 +41,7 @@ namespace Tolk.BusinessLogic.Entities
         public TravelCostAgreementType TravelCostAgreementType { get; set; }
 
         public bool UseOrderGroups { get; set; }
+
+        public bool UseSelfInvoicingInterpreter { get; set; }
     }
 }

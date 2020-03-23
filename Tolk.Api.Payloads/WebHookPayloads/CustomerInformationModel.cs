@@ -10,5 +10,6 @@
         public string ContactEmail { get; set; }
         public string PriceListType { get; set; }
         public string TravelCostAgreementType { get; set; }
+        public bool UseSelfInvoicingInterpreter { get; set; }
     }
 }

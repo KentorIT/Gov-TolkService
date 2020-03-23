@@ -555,6 +555,7 @@ namespace Tolk.Web.Models
                 InvoiceReference = order.InvoiceReference,
                 CustomerName = order.CustomerOrganisation.Name,
                 CustomerOrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
+                CustomerUseSelfInvoicingInterpreter = order.CustomerOrganisation.UseSelfInvoicingInterpreter,
                 LanguageName = order.OtherLanguage ?? order.Language?.Name ?? "-",
                 CustomerUnitName = order.CustomerUnit?.Name ?? string.Empty,
                 Dialect = order.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? order.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,

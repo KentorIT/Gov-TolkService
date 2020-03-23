@@ -1493,7 +1493,8 @@ Sammanställning:
                     TravelCostAgreementType = order.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
                     ReferenceNumber = order.CustomerReferenceNumber,
                     UnitName = order.CustomerUnit?.Name,
-                    DepartmentName = order.UnitName
+                    DepartmentName = order.UnitName,
+                    UseSelfInvoicingInterpreter = order.CustomerOrganisation.UseSelfInvoicingInterpreter
                 },
                 //D2 pads any single digit with a zero 1 -> "01"
                 Region = order.Region.RegionId.ToSwedishString("D2"),
@@ -1665,7 +1666,8 @@ Sammanställning:
                     TravelCostAgreementType = orderGroup.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
                     ReferenceNumber = order.CustomerReferenceNumber,
                     UnitName = orderGroup.CustomerUnit?.Name,
-                    DepartmentName = order.UnitName
+                    DepartmentName = order.UnitName,
+                    UseSelfInvoicingInterpreter = orderGroup.CustomerOrganisation.UseSelfInvoicingInterpreter
                 },
                 //D2 pads any single digit with a zero 1 -> "01"
                 Region = orderGroup.Region.RegionId.ToSwedishString("D2"),

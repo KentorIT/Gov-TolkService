@@ -431,6 +431,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<bool>("UseOrderGroups");
 
+                    b.Property<bool>("UseSelfInvoicingInterpreter");
+
                     b.HasKey("CustomerOrganisationId");
 
                     b.HasIndex("ParentCustomerOrganisationId");

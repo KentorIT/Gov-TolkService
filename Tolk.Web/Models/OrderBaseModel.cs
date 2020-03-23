@@ -54,6 +54,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighetens organisationsnummer")]
         public string CustomerOrganisationNumber { get; set; }
 
+        [Display(Name = "Tolken fakturerar själv tolkarvode")]
+        public bool CustomerUseSelfInvoicingInterpreter { get; set; }
+
         [Display(Name = "Myndighetens avdelning")]
         [StringLength(100)]
         public string UnitName { get; set; }

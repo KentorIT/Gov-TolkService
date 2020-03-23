@@ -83,7 +83,8 @@ namespace Tolk.Web.Api.Services
                     TravelCostAgreementType = request.Order.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
                     ReferenceNumber = request.Order.CustomerReferenceNumber,
                     UnitName = request.Order.CustomerUnit?.Name,
-                    DepartmentName = request.Order.UnitName
+                    DepartmentName = request.Order.UnitName,
+                    UseSelfInvoicingInterpreter = request.Order.CustomerOrganisation.UseSelfInvoicingInterpreter
                 },
                 Region = request.Order.Region.Name,
                 ExpiresAt = request.ExpiresAt,
@@ -189,6 +190,7 @@ namespace Tolk.Web.Api.Services
                     PriceListType = orderGroup.CustomerOrganisation.PriceListType.GetCustomName(),
                     TravelCostAgreementType = orderGroup.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
                     UnitName = orderGroup.CustomerUnit?.Name,
+                    UseSelfInvoicingInterpreter = orderGroup.CustomerOrganisation.UseSelfInvoicingInterpreter
                 },
                 Region = orderGroup.Region.Name,
                 ExpiresAt = requestGroup.ExpiresAt,

@@ -9,5 +9,6 @@ namespace Tolk.BusinessLogic.Helpers
     {
         public int CustomerOrganisationId { get; set; }
         public bool UseOrderGroups { get; set; }
+        public bool UseSelfInvoicingInterpreter { get; set; }
     }
 }

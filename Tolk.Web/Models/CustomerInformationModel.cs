@@ -22,6 +22,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighetens ärendenummer")]
         public string ReferenceNumber { get; set; }
 
+        [Display(Name = "Tolken fakturerar själv tolkarvode")]
+        public bool UseSelfInvoicingInterpreter { get; set; }
+
         [Display(Name = "Bokning skapad av")]
         [DataType(DataType.MultilineText)]
         public string CreatedBy { get; set; }

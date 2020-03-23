@@ -131,7 +131,8 @@ namespace Tolk.BusinessLogic.Services
                         .Select(c => new CustomerSettingsModel
                         {
                             CustomerOrganisationId = c.CustomerOrganisationId,
-                            UseOrderGroups = c.UseOrderGroups
+                            UseOrderGroups = c.UseOrderGroups,
+                            UseSelfInvoicingInterpreter = c.UseSelfInvoicingInterpreter
                         })
                         .ToList().AsReadOnly();
                     _cache.Set(CacheKeys.Customers, customers.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));

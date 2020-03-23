@@ -16,7 +16,11 @@
                 {
                     <display-entry asp-for="InvoiceReference" />
                 }
-            </div>
+                @if (!Model.IsCustomer)
+                {
+                    <display-entry asp-for="UseSelfInvoicingInterpreter" />
+                }
+                </div>
             <div class="col-sm-4">
                 <display-entry asp-for="OrganisationNumber" />
                 @if (!hasPossibleChanges)

@@ -147,6 +147,7 @@ namespace Tolk.Web.Models
                 CustomerName = orderGroup.CustomerOrganisation.Name,
                 CustomerOrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
                 CustomerReferenceNumber = orderGroup.FirstOrder.CustomerReferenceNumber,
+                CustomerUseSelfInvoicingInterpreter = orderGroup.CustomerOrganisation.UseSelfInvoicingInterpreter,
                 LanguageName = orderGroup.OtherLanguage ?? orderGroup.Language?.Name ?? "-",
                 CustomerUnitName = orderGroup.CustomerUnit?.Name ?? string.Empty,
                 UnitName = orderGroup.FirstOrder.UnitName,
