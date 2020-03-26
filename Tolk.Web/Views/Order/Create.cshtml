@@ -346,46 +346,6 @@
     </div>
 }
 
-@if (Model.UserDefaultSettings.SavedOrderRequirements.Any())
-{
-    <table id="savedRequirements" class="d-none">
-        @foreach (var req in Model.UserDefaultSettings.SavedOrderRequirements)
-        {
-            <tr>
-                <td class="UserDefaultSettingOrderRequirementId">@req.UserDefaultSettingOrderRequirementId</td>
-                <td class="RequirementType">@req.RequirementType</td>
-                <td class="RequirementDescription">@req.RequirementDescription</td>
-                <td class="SavedReqTypeName">@EnumHelper.GetDescription(req.RequirementType)</td>
-            </tr>
-        }
-    </table>
-}
-@if (Model.UserDefaultSettings.SavedOrderDesiredRequirements.Any())
-{
-    <table id="savedDesiredRequirements" class="d-none">
-        @foreach (var req in Model.UserDefaultSettings.SavedOrderDesiredRequirements)
-        {
-            <tr>
-                <td class="UserDefaultSettingOrderRequirementId">@req.UserDefaultSettingOrderRequirementId</td>
-                <td class="DesiredRequirementType">@req.DesiredRequirementType</td>
-                <td class="DesiredRequirementDescription">@req.DesiredRequirementDescription</td>
-                <td class="SavedReqTypeName">@EnumHelper.GetDescription(req.DesiredRequirementType)</td>
-            </tr>
-        }
-    </table>
-}
-
-<span id="baseRequirement" class="d-none">
-    <input asp-for="OrderRequirements[0].UserDefaultSettingOrderRequirementId" type="hidden" />
-    <input asp-for="OrderRequirements[0].RequirementType" type="hidden" />
-    <input asp-for="OrderRequirements[0].RequirementIsRequired" type="hidden" />
-    <input asp-for="OrderRequirements[0].RequirementDescription" type="hidden" />
-</span>
-<span id="baseDesiredRequirement" class="d-none">
-    <input asp-for="OrderDesiredRequirements[0].UserDefaultSettingOrderRequirementId" type="hidden" />
-    <input asp-for="OrderDesiredRequirements[0].DesiredRequirementType" type="hidden" />
-    <input asp-for="OrderDesiredRequirements[0].DesiredRequirementDescription" type="hidden" />
-</span>
 <span id="basefile" class="d-none">
     <input asp-for="Files[0].Id" type="hidden" />
 </span>
@@ -395,55 +355,7 @@
     <input asp-for="Occasions[0].OccasionEndDateTime" type="hidden" />
     <input asp-for="Occasions[0].ExtraInterpreter" type="hidden" />
 </span>
-<span id="baseRequirement" class="d-none">
-    <input asp-for="OrderRequirements[0].OrderRequirementId" type="hidden" />
-    <input asp-for="OrderRequirements[0].RequirementType" type="hidden" />
-    <input asp-for="OrderRequirements[0].RequirementIsRequired" type="hidden" />
-    <input asp-for="OrderRequirements[0].RequirementDescription" type="hidden" />
-</span>
-<span id="baseDesiredRequirement" class="d-none">
-    <input asp-for="OrderDesiredRequirements[0].DesiredRequirementType" type="hidden" />
-    <input asp-for="OrderDesiredRequirements[0].DesiredRequirementDescription" type="hidden" />
-</span>
 @await Html.PartialAsync("_UploadFileDialog")
-<section aria-label="Lägg till krav">
-    <div id="addRequirement" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h2 class="modal-title">Lägg till krav</h2>
-                </div>
-                <div class="modal-body" id="req">
-                    @await Html.PartialAsync("_Requirement", new OrderRequirementModel { RequirementIsRequired = true })
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
-                    <button type="button" class="btn btn-default right-md-button save-requirement">Spara</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<section aria-label="Lägg till önskemål">
-    <div id="addDesiredRequirement" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h2 class="modal-title">Lägg till önskemål</h2>
-                </div>
-                <div class="modal-body" id="des">
-                    @await Html.PartialAsync("_DesiredRequirement", new OrderDesiredRequirementModel())
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
-                    <button type="button" class="btn btn-default right-md-button save-desiredRequirement">Spara</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+@await Html.PartialAsync("../Shared/_OrderRequirementAndDesires", Model.UserDefaultSettings)
+
 
