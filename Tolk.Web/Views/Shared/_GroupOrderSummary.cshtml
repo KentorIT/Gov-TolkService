@@ -219,7 +219,7 @@ else
             <label>Tillkommande krav</label>
             @if (Model.OrderRequirements.Any(r => r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
             {
-                <ul class="order-requiremnt-view-list">
+                <ul class="order-requirement-view-list">
                     @foreach (var req in Model.OrderRequirements.Where(r => r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
                     {
                         <li class="detail-text">
@@ -237,7 +237,7 @@ else
             <label>Tillkommande önskemål</label>
             @if (Model.OrderRequirements.Any(r => !r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
             {
-                <ul class="order-requiremnt-view-list">
+                <ul class="order-requirement-view-list">
                     @foreach (var req in Model.OrderRequirements.Where(r => !r.RequirementIsRequired && r.RequirementType != RequirementType.Dialect))
                     {
                         <li class="detail-text">

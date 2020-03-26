@@ -1,6 +1,7 @@
 ﻿@model Tolk.Web.Models.OrderModel
 @using Microsoft.Extensions.Options;
 @using Tolk.BusinessLogic.Enums;
+@using Tolk.BusinessLogic.Utilities
 @inject SelectListService SelectListService
 @inject HelpLinkService HelpLinkService
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> TolkOptions
@@ -23,6 +24,7 @@
             <script src="~/js/Wizard/validate.js" asp-append-version="true"></script>
             <script src="~/js/Order/Add.js" asp-append-version="true"></script>
             <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
+            <script src="~/js/OrderRequirements.js" asp-append-version="true"></script>
         </environment>
         <environment exclude="Development">
             <script src="~/js/Files.min.js" asp-append-version="true"></script>
@@ -30,6 +32,7 @@
             <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
             <script src="~/js/Wizard/wizard.min.js" asp-append-version="true"></script>
             <script src="~/js/Wizard/validate.min.js" asp-append-version="true"></script>
+            <script src="~/js/OrderRequirements.min.js" asp-append-version="true"></script>
         </environment>
         @await Html.PartialAsync("_ValidationScriptsPartial")
     }
@@ -258,7 +261,7 @@
                                     <form-entry asp-for="CreatorIsInterpreterUser" asp-items="SelectListService.BoolList" checked-value="@creatorIsInterpreterUser" />
                                     <div id="CreatorIsNotInterpreterUserInfo" class="d-none warning-info-yellow"><span class="glyphicon message-icon glyphicon-exclamation-sign yellow-glyphicon"></span><span class="info-message-small" role="alert">Du kan fylla i namn och eventuell kontaktinformation till tolkanvändaren i fältet för Övrig information om uppdraget.</span></div>
                                 </div>
-                                <div class="col-sm-6"> 
+                                <div class="col-sm-6">
                                     <form-entry asp-for="Description" help-link="@HelpLinkService.GenerateUrl("nybokning_extrainfo")" />
                                 </div>
                             </div>
@@ -342,6 +345,47 @@
         </div>
     </div>
 }
+
+@if (Model.UserDefaultSettings.SavedOrderRequirements.Any())
+{
+    <table id="savedRequirements" class="d-none">
+        @foreach (var req in Model.UserDefaultSettings.SavedOrderRequirements)
+        {
+            <tr>
+                <td class="UserDefaultSettingOrderRequirementId">@req.UserDefaultSettingOrderRequirementId</td>
+                <td class="RequirementType">@req.RequirementType</td>
+                <td class="RequirementDescription">@req.RequirementDescription</td>
+                <td class="SavedReqTypeName">@EnumHelper.GetDescription(req.RequirementType)</td>
+            </tr>
+        }
+    </table>
+}
+@if (Model.UserDefaultSettings.SavedOrderDesiredRequirements.Any())
+{
+    <table id="savedDesiredRequirements" class="d-none">
+        @foreach (var req in Model.UserDefaultSettings.SavedOrderDesiredRequirements)
+        {
+            <tr>
+                <td class="UserDefaultSettingOrderRequirementId">@req.UserDefaultSettingOrderRequirementId</td>
+                <td class="DesiredRequirementType">@req.DesiredRequirementType</td>
+                <td class="DesiredRequirementDescription">@req.DesiredRequirementDescription</td>
+                <td class="SavedReqTypeName">@EnumHelper.GetDescription(req.DesiredRequirementType)</td>
+            </tr>
+        }
+    </table>
+}
+
+<span id="baseRequirement" class="d-none">
+    <input asp-for="OrderRequirements[0].UserDefaultSettingOrderRequirementId" type="hidden" />
+    <input asp-for="OrderRequirements[0].RequirementType" type="hidden" />
+    <input asp-for="OrderRequirements[0].RequirementIsRequired" type="hidden" />
+    <input asp-for="OrderRequirements[0].RequirementDescription" type="hidden" />
+</span>
+<span id="baseDesiredRequirement" class="d-none">
+    <input asp-for="OrderDesiredRequirements[0].UserDefaultSettingOrderRequirementId" type="hidden" />
+    <input asp-for="OrderDesiredRequirements[0].DesiredRequirementType" type="hidden" />
+    <input asp-for="OrderDesiredRequirements[0].DesiredRequirementDescription" type="hidden" />
+</span>
 <span id="basefile" class="d-none">
     <input asp-for="Files[0].Id" type="hidden" />
 </span>

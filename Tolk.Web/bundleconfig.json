@@ -198,5 +198,11 @@
     "inputFiles": [
       "wwwroot/js/EvenLogLoading.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/OrderRequirements.min.js",
+    "inputFiles": [
+      "wwwroot/js/OrderRequirements.js"
+    ]
   }
 ]

@@ -8,6 +8,8 @@ namespace Tolk.Web.Models
     {
         public int? OrderRequirementId { get; set; }
 
+        public int? UserDefaultSettingOrderRequirementId { get; set; }
+
         [Required]
         [NoDisplayName]
         [Display(Name = "Typ")]

@@ -99,6 +99,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<UserDefaultSetting> DefaultSettings { get; set; }
 
+        public List<UserDefaultSettingOrderRequirement> DefaultSettingOrderRequirements { get; set; }
+
         [NotMapped]
         public IEnumerable<CustomerUnitUser> CustomerUnitsLocalAdmin => CustomerUnits.Where(cu => cu.IsLocalAdmin);
 

@@ -1,5 +1,6 @@
 ﻿@model DefaultSettingsModel
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Utilities
 @inject SelectListService SelectListService
 @inject HelpLinkService HelpLinkService
 @{
@@ -7,108 +8,213 @@
     ViewData["Title"] = Model.IsFirstTimeUser ? "Ange bokningsinställningar" : "Ändra bokningsinställningar";
     var customerUnitItems = SelectListService.ActiveCustomerUnitsForUser(false);
 }
-<section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
-    <div class="row">
-        <div class="col-md-12 important-info">
-            <span>Här kan du ange dina personliga bokningsinställningar. Dessa förifylls när du gör en bokning i tjänsten. Du kan förstås ändra på de värden som förifylls på bokningen om det skulle vara tillfällen då du inte vill använda dig av det du angivit här.</span>
-        </div>
-    </div>
-    <form method="post">
+    <section aria-label="@ViewData["Title"]">
+        <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
         <div class="row">
-            <input type="hidden" asp-for="IsFirstTimeUser" />
-            <div class="col-sm-4">
-                <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
+            <div class="col-md-12 important-info">
+                <span>Här kan du ange dina personliga bokningsinställningar. Dessa förifylls när du gör en bokning i tjänsten. Du kan förstås ändra på de värden som förifylls på bokningen om det skulle vara tillfällen då du inte vill använda dig av det du angivit här.</span>
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="InvoiceReference" />
-            </div>
-            @if (customerUnitItems != null && customerUnitItems.Any())
-            {
+        </div>
+        <form method="post">
+            <div class="row">
+                <input type="hidden" asp-for="IsFirstTimeUser" />
                 <div class="col-sm-4">
-                    <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" class="allow-clear" />
+                    <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
                 </div>
-            }
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
-            </div>
-            <div id="interpreterLocationValidator" class="col-sm-8 d-none text-danger body"></div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <fieldset>
-                    <legend>Adress till tolkning på plats</legend>
-                    <form-entry asp-for="OnSiteLocationStreet" />
-                    <form-entry asp-for="OnSiteLocationCity" />
-                </fieldset>
-            </div>
-            <div class="col-sm-4">
-                <fieldset>
-                    <legend>Adress till anvisad lokal</legend>
-                    <form-entry asp-for="OffSiteDesignatedLocationStreet" />
-                    <form-entry asp-for="OffSiteDesignatedLocationCity" />
-                </fieldset>
-            </div>
-            <div class="col-sm-4">
-                <fieldset>
-                    <legend>Kontaktuppgifter vid distanstolkning</legend>
-                    <form-entry asp-for="OffSitePhoneContactInformation" />
-                    <form-entry asp-for="OffSiteVideoContactInformation" />
-                </fieldset>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-8">
-                <form-entry asp-for="AllowExceedingTravelCost" type="select" asp-items="SelectListService.AllowExceedingTravelCost" class="allow-clear" />
-                <form-entry asp-for="CreatorIsInterpreterUser" type="select" asp-items="SelectListService.BoolList" class="allow-clear" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-8">
-                @if (!Model.IsFirstTimeUser)
+                <div class="col-sm-4">
+                    <form-entry asp-for="InvoiceReference" />
+                </div>
+                @if (customerUnitItems != null && customerUnitItems.Any())
                 {
-                    <a class="btn btn-warning btn-large pull-left do-not-check-dirty" asp-action="ViewDefaultSettings">Avbryt <span class="btn-remove-times">&times;</span></a>
+                    <div class="col-sm-4">
+                        <form-entry asp-for="CustomerUnitId" type="select" asp-items="customerUnitItems" class="allow-clear" />
+                    </div>
                 }
             </div>
-            <div class="col-sm-4">
-                <button type="submit" class="save-defaultsettings btn btn-large btn-default pull-right">Spara</button>
-            </div>
-        </div>
-    </form>
-    @if (Model.IsFirstTimeUser)
-    {
-        <br />
-        <div class="border">
             <div class="row">
-                <div class="col-sm-12">
-                    <div class="medium-header">Vill du inte ange bokningsinställningar nu? </div>Då kan du när som helst göra detta senare genom att klicka på ditt användarnamn högst upp till höger och istället börja använda tjänsten:
+                <div class="col-sm-4">
+                    <form-entry asp-for="RankedInterpreterLocationFirst" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="RankedInterpreterLocationSecond" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="RankedInterpreterLocationThird" type="select" asp-items="SelectListService.InterpreterLocations" class="allow-clear" />
+                </div>
+                <div id="interpreterLocationValidator" class="col-sm-8 d-none text-danger body"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <fieldset>
+                        <legend>Adress till tolkning på plats</legend>
+                        <form-entry asp-for="OnSiteLocationStreet" />
+                        <form-entry asp-for="OnSiteLocationCity" />
+                    </fieldset>
+                </div>
+                <div class="col-sm-4">
+                    <fieldset>
+                        <legend>Adress till anvisad lokal</legend>
+                        <form-entry asp-for="OffSiteDesignatedLocationStreet" />
+                        <form-entry asp-for="OffSiteDesignatedLocationCity" />
+                    </fieldset>
+                </div>
+                <div class="col-sm-4">
+                    <fieldset>
+                        <legend>Kontaktuppgifter vid distanstolkning</legend>
+                        <form-entry asp-for="OffSitePhoneContactInformation" />
+                        <form-entry asp-for="OffSiteVideoContactInformation" />
+                    </fieldset>
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-12">
-                    <a class="btn btn-primary btn-large pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Gå till startsida <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a>
-                    <a class="btn btn-primary btn-large pull-right do-not-check-dirty" asp-controller="Order" asp-action="Create">Boka tolk <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a>
+                <div class="col-sm-6">
+                    <form-entry asp-for="AllowExceedingTravelCost" type="select" asp-items="SelectListService.AllowExceedingTravelCost" class="allow-clear" />
+                </div>
+                <div class="col-sm-6">
+                    <form-entry asp-for="CreatorIsInterpreterUser" type="select" asp-items="SelectListService.BoolList" class="allow-clear" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <label>Tillkommande krav <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till krav som du brukar använda i dina bokningar, så läggs de automatiskt till i bokningen nästa gång."></span></label>
+                    <br />
+                    <a href="#" class="add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till krav</a>
                     <br /><br />
+                    <div class="d-none order-requirement-list no-padding">
+                        <table class="table order-requirement-table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <label>Tillkommande önskemål <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till önskemål som du brukar använda i dina bokningar, så läggs de automatiskt till i bokningen nästa gång."></span></label>
+                    <br />
+                    <a href="#" class="add-desiredRequirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addDesiredRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till önskemål</a>
+                    <br /> <br />
+                    <div class="d-none order-desiredRequirement-list no-padding">
+                        <table class="table order-desiredRequirement-table">
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-8">
+                    @if (!Model.IsFirstTimeUser)
+                    {
+                        <a class="btn btn-warning btn-large pull-left do-not-check-dirty" asp-action="ViewDefaultSettings">Avbryt <span class="btn-remove-times">&times;</span></a>
+                    }
+                </div>
+                <div class="col-sm-4">
+                    <button type="submit" class="save-defaultsettings btn btn-large btn-default pull-right">Spara</button>
+                </div>
+            </div>
+        </form>
+        @if (Model.SavedOrderRequirements.Any())
+        {
+            <table id="savedRequirements" class="d-none">
+                @foreach (var req in Model.SavedOrderRequirements)
+                {
+                    <tr>
+                        <td class="UserDefaultSettingOrderRequirementId">@req.UserDefaultSettingOrderRequirementId</td>
+                        <td class="RequirementType">@req.RequirementType</td>
+                        <td class="RequirementDescription">@req.RequirementDescription</td>
+                        <td class="SavedReqTypeName">@EnumHelper.GetDescription(req.RequirementType)</td>
+                    </tr>
+                }
+            </table>
+        }
+        @if (Model.SavedOrderDesiredRequirements.Any())
+        {
+            <table id="savedDesiredRequirements" class="d-none">
+                @foreach (var req in Model.SavedOrderDesiredRequirements)
+                {
+                    <tr>
+                        <td class="UserDefaultSettingOrderRequirementId">@req.UserDefaultSettingOrderRequirementId</td>
+                        <td class="DesiredRequirementType">@req.DesiredRequirementType</td>
+                        <td class="DesiredRequirementDescription">@req.DesiredRequirementDescription</td>
+                        <td class="SavedReqTypeName">@EnumHelper.GetDescription(req.DesiredRequirementType)</td>
+                    </tr>
+                }
+            </table>
+        }
+        <span id="baseRequirement" class="d-none">
+            <input asp-for="OrderRequirements[0].UserDefaultSettingOrderRequirementId" type="hidden" />
+            <input asp-for="OrderRequirements[0].RequirementType" type="hidden" />
+            <input asp-for="OrderRequirements[0].RequirementIsRequired" type="hidden" />
+            <input asp-for="OrderRequirements[0].RequirementDescription" type="hidden" />
+        </span>
+        <span id="baseDesiredRequirement" class="d-none">
+            <input asp-for="OrderDesiredRequirements[0].UserDefaultSettingOrderRequirementId" type="hidden" />
+            <input asp-for="OrderDesiredRequirements[0].DesiredRequirementType" type="hidden" />
+            <input asp-for="OrderDesiredRequirements[0].DesiredRequirementDescription" type="hidden" />
+        </span>
+        @if (Model.IsFirstTimeUser)
+        {
+            <br />
+            <div class="border">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="medium-header">Vill du inte ange bokningsinställningar nu? </div>Då kan du när som helst göra detta senare genom att klicka på ditt användarnamn högst upp till höger och istället börja använda tjänsten:
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <a class="btn btn-primary btn-large pull-left do-not-check-dirty" asp-controller="Home" asp-action="Index">Gå till startsida <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a>
+                        <a class="btn btn-primary btn-large pull-right do-not-check-dirty" asp-controller="Order" asp-action="Create">Boka tolk <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a>
+                        <br /><br />
+                    </div>
+                </div>
+            </div>
+            <br /><br />
+        }
+    </section>
+<section aria-label="Lägg till krav">
+    <div id="addRequirement" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h2 class="modal-title">Lägg till krav</h2>
+                </div>
+                <div class="modal-body" id="req">
+                    @await Html.PartialAsync("../Order/_Requirement", new OrderRequirementModel { RequirementIsRequired = true })
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                    <button type="button" class="btn btn-default right-md-button save-requirement">Spara</button>
                 </div>
             </div>
         </div>
-        <br /><br />
-    }
+    </div>
+</section>
+<section aria-label="Lägg till önskemål">
+    <div id="addDesiredRequirement" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h2 class="modal-title">Lägg till önskemål</h2>
+                </div>
+                <div class="modal-body" id="des">
+                    @await Html.PartialAsync("../Order/_DesiredRequirement", new OrderDesiredRequirementModel())
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                    <button type="button" class="btn btn-default right-md-button save-desiredRequirement">Spara</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 @section Scripts {
     <environment include="Development">
         <script src="~/js/Account/Edit.js" asp-append-version="true"></script>
+        <script src="~/js/OrderRequirements.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
         <script src="~/js/Account/Edit.min.js" asp-append-version="true"></script>
+        <script src="~/js/OrderRequirements.min.js" asp-append-version="true"></script>
     </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }

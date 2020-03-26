@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Entities;
@@ -60,6 +61,14 @@ namespace Tolk.Web.Models
         [Display(Name = "Fakturareferens")]
         public string InvoiceReference { get; set; }
 
+        [Display(Name = "Tillkommande krav")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
+        public List<OrderRequirementModel> OrderRequirements { get; set; }
+
+        [Display(Name = "Tillkommande önskemål")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
+        public List<OrderDesiredRequirementModel> OrderDesiredRequirements { get; set; }
+
         public string Message { get; set; }
         public bool ShowUnitSelection { get; set; }
 
@@ -87,6 +96,19 @@ namespace Tolk.Web.Models
                 AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
                 InvoiceReference = user.GetValue(DefaultSettingsType.InvoiceReference),
                 CreatorIsInterpreterUser = !string.IsNullOrWhiteSpace(creatorIsInterpreterUser) ? (bool?)(creatorIsInterpreterUser == "Yes") : null,
+                OrderRequirements = user.DefaultSettingOrderRequirements.Where(r => r.IsRequired).Select(n => new OrderRequirementModel
+                {
+                    UserDefaultSettingOrderRequirementId = n.UserDefaultSettingOrderRequirementId,
+                    RequirementDescription = n.Description,
+                    //RequirementIsRequired = true,
+                    RequirementType = n.RequirementType
+                }).ToList(),
+                OrderDesiredRequirements = user.DefaultSettingOrderRequirements.Where(r => !r.IsRequired).Select(n => new OrderDesiredRequirementModel
+                {
+                    UserDefaultSettingOrderRequirementId = n.UserDefaultSettingOrderRequirementId,
+                    DesiredRequirementDescription = n.Description,
+                    DesiredRequirementType = n.RequirementType
+                }).ToList()
             };
         }
     }

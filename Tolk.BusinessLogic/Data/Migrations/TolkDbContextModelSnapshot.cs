@@ -2220,6 +2220,48 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("UserDefaultSettingHistoryEntries");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSettingOrderRequirement", b =>
+                {
+                    b.Property<int>("UserDefaultSettingOrderRequirementId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Description");
+
+                    b.Property<bool>("IsRequired");
+
+                    b.Property<int>("RequirementType");
+
+                    b.Property<int>("UserId");
+
+                    b.HasKey("UserDefaultSettingOrderRequirementId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserDefaultSettingOrderRequirements");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSettingsOrderRequirementHistoryEntry", b =>
+                {
+                    b.Property<int>("UserDefaultSettingsOrderRequirementHistoryEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Description");
+
+                    b.Property<bool>("IsRequired");
+
+                    b.Property<int>("RequirementType");
+
+                    b.Property<int>("UserAuditLogEntryId");
+
+                    b.HasKey("UserDefaultSettingsOrderRequirementHistoryEntryId");
+
+                    b.HasIndex("UserAuditLogEntryId");
+
+                    b.ToTable("UserDefaultSettingsOrderRequirementHistoryEntries");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserLoginLogEntry", b =>
                 {
                     b.Property<int>("UserLoginLogEntryId")
@@ -3317,6 +3359,22 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
                         .WithMany("DefaultsHistory")
+                        .HasForeignKey("UserAuditLogEntryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSettingOrderRequirement", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
+                        .WithMany("DefaultSettingOrderRequirements")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSettingsOrderRequirementHistoryEntry", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
+                        .WithMany("DefaultOrderRequirementsHistory")
                         .HasForeignKey("UserAuditLogEntryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

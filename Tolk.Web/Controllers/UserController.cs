@@ -860,6 +860,7 @@ namespace Tolk.Web.Controllers
         {
             var user = await _userManager.Users
                 .Include(u => u.DefaultSettings)
+                .Include(u => u.DefaultSettingOrderRequirements)
                 .Include(u => u.CustomerUnits).ThenInclude(c => c.CustomerUnit)
                 .SingleOrDefaultAsync(u => u.Id == id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.ViewDefaultSettings)).Succeeded)

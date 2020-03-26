@@ -37,6 +37,10 @@ namespace Tolk.BusinessLogic.Entities
         public List<UserNotificationSettingHistoryEntry> NotificationsHistory { get; set; }
 
         public List<CustomerUnitUserHistoryEntry> CustomerUnitUsersHistory { get; set; }
+
         public List<UserDefaultSettingHistoryEntry> DefaultsHistory { get; set; }
+
+        public List<UserDefaultSettingsOrderRequirementHistoryEntry> DefaultOrderRequirementsHistory { get; set; }
+
     }
 }

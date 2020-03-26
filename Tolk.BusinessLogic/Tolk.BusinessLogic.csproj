@@ -43,6 +43,8 @@
     <Compile Remove="Data\Migrations\20200114135933_AddColumnBrokerIdToOrderChangeLogEntries.Designer.cs" />
     <Compile Remove="Data\Migrations\20200131080842_NewTableOrderChangeConfirmation.cs" />
     <Compile Remove="Data\Migrations\20200131080842_NewTableOrderChangeConfirmation.Designer.cs" />
+    <Compile Remove="Data\Migrations\20200325170835_AddTableUserDefaultSettingOrderRequirementHistoryEntry.cs" />
+    <Compile Remove="Data\Migrations\20200325170835_AddTableUserDefaultSettingOrderRequirementHistoryEntry.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

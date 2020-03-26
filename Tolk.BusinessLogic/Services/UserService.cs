@@ -240,6 +240,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         {
             AspNetUser currentUserInformation = _dbContext.Users
                             .Include(u => u.DefaultSettings)
+                            .Include(u => u.DefaultSettingOrderRequirements)
                             .SingleOrDefault(u => u.Id == userId);
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
@@ -252,6 +253,12 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 {
                     DefaultSettingType = n.DefaultSettingType,
                     Value = n.Value
+                }).ToList(),
+                DefaultOrderRequirementsHistory = currentUserInformation.DefaultSettingOrderRequirements.Select(n => new UserDefaultSettingsOrderRequirementHistoryEntry
+                {
+                    RequirementType = n.RequirementType,
+                    Description = n.Description,
+                    IsRequired = n.IsRequired
                 }).ToList(),
             });
             await _dbContext.SaveChangesAsync();

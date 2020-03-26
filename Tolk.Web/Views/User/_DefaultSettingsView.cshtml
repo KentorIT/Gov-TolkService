@@ -1,5 +1,5 @@
 ﻿@model DefaultSettingsViewModel
-
+@using Tolk.BusinessLogic.Utilities
 @{
     ViewData["Title"] = "Bokningsinställningar";
 }
@@ -69,10 +69,48 @@
     </div>
     <div class="row">
         <div class="col-sm-4">
-            <display-entry asp-for="AllowExceedingTravelCost" />
+            <label>Tillkommande krav</label>
+            @if (Model.OrderRequirements.Any())
+            {
+                <ul class="order-requirement-view-list">
+                    @foreach (var req in Model.OrderRequirements)
+                    {
+                        <li class="detail-text">
+                            @EnumHelper.GetDescription(req.RequirementType): @req.RequirementDescription
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div>-</div>
+            }
+        </div>
+        <div class="col-sm-4">
+            <label>Tillkommande önskemål</label>
+            @if (Model.OrderDesiredRequirements.Any())
+            {
+                <ul class="order-requirement-view-list">
+                    @foreach (var req in Model.OrderDesiredRequirements)
+                    {
+                        <li class="detail-text">
+                            @EnumHelper.GetDescription(req.DesiredRequirementType): @req.DesiredRequirementDescription
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div>-</div>
+            }
         </div>
         <div class="col-sm-4">
             <display-entry asp-for="CreatorIsInterpreterUser" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-8">
+            <display-entry asp-for="AllowExceedingTravelCost" />
         </div>
     </div>
 </section>

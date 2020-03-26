@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
@@ -64,7 +66,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden", Description = "Vid tolkning med inställelsesätt På plats eller Distans i anvisad lokal har förmedlingen rätt att debitera kostnader för tolkens resor upp till ramavtalets gränsvärden på 2 timmars restid eller 100 km resväg. Resekostnader som överskrider gränsvärdena måste godkännas av myndighet i förväg. Genom att du markerat denna ruta måste förmedlingen ange bedömd resekostnad för tillsatt tolk i sin bekräftelse. Du får ett e-postmeddelande när bekräftelsen kommit. Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen.")]
         public AllowExceedingTravelCost? AllowExceedingTravelCost { get; set; }
 
-        [Display(Name = "Är tolkanvändare samma person som bokar", Description = "Om du brukar boka tolk åt en annan person så kryssa i ja, annars nej")]
+        [Display(Name = "Är tolkanvändare samma person som bokar", Description = "Om du brukar boka tolk åt en annan person så välj ja, annars nej")]
         public TrueFalse? CreatorIsInterpreterUser { get; set; }
 
         [Display(Name = "Fakturareferens", Description = "Här anger du den beställarreferens enligt era interna instruktioner som krävs för att fakturan för tolkuppdraget ska komma till rätt mottagare i er myndighet.")]
@@ -72,7 +74,17 @@ namespace Tolk.Web.Models
         [Placeholder("Er fakturareferens...")]
         public string InvoiceReference { get; set; }
 
-        public UserPageMode UserPageMode { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
+        public List<OrderRequirementModel> OrderRequirements { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
+        public List<OrderDesiredRequirementModel> OrderDesiredRequirements { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
+        public List<OrderRequirementModel> SavedOrderRequirements { get; set; }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
+        public List<OrderDesiredRequirementModel> SavedOrderDesiredRequirements { get; set; }
 
         public bool IsFirstTimeUser { get; set; }
 
@@ -95,7 +107,19 @@ namespace Tolk.Web.Models
                 AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
                 InvoiceReference = user.GetValue(DefaultSettingsType.InvoiceReference),
                 CreatorIsInterpreterUser = !string.IsNullOrWhiteSpace(creatorIsInterpreterUser) ? (creatorIsInterpreterUser == "Yes") ? (TrueFalse?)TrueFalse.Yes : (TrueFalse?)TrueFalse.No : null,
-                IsFirstTimeUser = isFirstTimeUser
+                IsFirstTimeUser = isFirstTimeUser,
+                SavedOrderRequirements = user.DefaultSettingOrderRequirements.Where(r => r.IsRequired).Select(n => new OrderRequirementModel
+                {
+                    UserDefaultSettingOrderRequirementId = n.UserDefaultSettingOrderRequirementId,
+                    RequirementDescription = n.Description,
+                    RequirementType = n.RequirementType
+                }).ToList(),
+                SavedOrderDesiredRequirements = user.DefaultSettingOrderRequirements.Where(r => !r.IsRequired).Select(n => new OrderDesiredRequirementModel
+                {
+                    UserDefaultSettingOrderRequirementId = n.UserDefaultSettingOrderRequirementId,
+                    DesiredRequirementDescription = n.Description,
+                    DesiredRequirementType = n.RequirementType
+                }).ToList()
             };
         }
 

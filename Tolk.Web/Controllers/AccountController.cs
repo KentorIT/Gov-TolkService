@@ -766,11 +766,45 @@ namespace Tolk.Web.Controllers
                     UpdateDefaultSetting(user, DefaultSettingsType.InvoiceReference, model.InvoiceReference);
                     UpdateDefaultSetting(user, DefaultSettingsType.CreatorIsInterpreterUser, model.CreatorIsInterpreterUser.HasValue ? model.CreatorIsInterpreterUser.ToString() : null);
 
+                    List<UserDefaultSettingOrderRequirement> updatedOrderRequirements = new List<UserDefaultSettingOrderRequirement>();
+
+                    if (model.OrderRequirements != null)
+                    {
+                        // add all extra requirements
+                        foreach (var req in model.OrderRequirements)
+                        {
+                            UserDefaultSettingOrderRequirement requirement = new UserDefaultSettingOrderRequirement
+                            {
+                                UserDefaultSettingOrderRequirementId = req.UserDefaultSettingOrderRequirementId ?? 0,
+                                RequirementType = req.RequirementType.Value,
+                                IsRequired = true,
+                                Description = req.RequirementDescription
+                            };
+                            updatedOrderRequirements.Add(requirement);
+                        }
+                    }
+                    if (model.OrderDesiredRequirements != null)
+                    {
+                        // add all extra desired requirements
+                        foreach (var req in model.OrderDesiredRequirements)
+                        {
+                            UserDefaultSettingOrderRequirement requirement = new UserDefaultSettingOrderRequirement
+                            {
+                                UserDefaultSettingOrderRequirementId = req.UserDefaultSettingOrderRequirementId ?? 0,
+                                RequirementType = req.DesiredRequirementType.Value,
+                                IsRequired = false,
+                                Description = req.DesiredRequirementDescription
+                            };
+                            updatedOrderRequirements.Add(requirement);
+                        }
+                    }
+                    UpdateDefaultSettingOrderRequirement(user, updatedOrderRequirements);
+
                     await _dbContext.SaveChangesAsync();
 
                     return model.IsFirstTimeUser ?
                         RedirectToAction(nameof(Index), "Home", new { message = "Bokningsinställningar sparade. Du kan nu börja använda tjänsten!" }) :
-                        RedirectToAction(nameof(ViewDefaultSettings), new { message = "Ändringarna sparades" });
+                        RedirectToAction(nameof(ViewDefaultSettings), new { message = "Ändringar sparade" });
                 }
                 return Forbid();
             }
@@ -778,6 +812,7 @@ namespace Tolk.Web.Controllers
         }
 
         private Task<AspNetUser> UserForDefaultSettings => _userManager.Users.Include(u => u.DefaultSettings)
+            .Include(u => u.DefaultSettingOrderRequirements)
             .Include(u => u.CustomerUnits).ThenInclude(c => c.CustomerUnit)
             .SingleOrDefaultAsync(u => u.Id == User.GetUserId());
 
@@ -799,6 +834,40 @@ namespace Tolk.Web.Controllers
             else if (setting != null && string.IsNullOrEmpty(value))
             {
                 _dbContext.UserDefaultSettings.Remove(setting);
+            }
+        }
+
+        private void UpdateDefaultSettingOrderRequirement(AspNetUser user, List<UserDefaultSettingOrderRequirement> orderRequirements)
+        {
+            //kolla om de är ändrade??
+            //eftersom de inte går att editera så borde man bara kunna jämföra med UserDefaultSettingOrderRequirementId?
+            //om den har id är det samma om den inte har det så är det en ny
+
+            //also save history
+            var requiredOrderSettings = user.DefaultSettingOrderRequirements;
+            var idsToRemove = requiredOrderSettings.Select(r => r.UserDefaultSettingOrderRequirementId).Except(orderRequirements.Select(ur => ur.UserDefaultSettingOrderRequirementId));
+            var itemsToRemove = requiredOrderSettings.Where(r => idsToRemove.Contains(r.UserDefaultSettingOrderRequirementId));
+            if (orderRequirements.Any())
+            {
+                foreach (UserDefaultSettingOrderRequirement req in orderRequirements)
+                {
+                    if (req.UserDefaultSettingOrderRequirementId == 0)
+                    {
+                        user.DefaultSettingOrderRequirements.Add(req);
+                    }
+                }
+                if (itemsToRemove.Any())
+                {
+                    _dbContext.UserDefaultSettingOrderRequirements.RemoveRange(itemsToRemove);
+                }
+            }
+            else
+            {
+         
+                if (requiredOrderSettings.Any())
+                {
+                    _dbContext.UserDefaultSettingOrderRequirements.RemoveRange(requiredOrderSettings);
+                }
             }
         }
 

@@ -604,6 +604,10 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<UserDefaultSettingHistoryEntry> UserDefaultSettingHistoryEntries { get; set; }
 
+        public DbSet<UserDefaultSettingOrderRequirement> UserDefaultSettingOrderRequirements { get; set; }
+
+        public DbSet<UserDefaultSettingsOrderRequirementHistoryEntry> UserDefaultSettingsOrderRequirementHistoryEntries { get; set; }
+
         public DbSet<OrderHistoryEntry> OrderHistoryEntries { get; set; }
 
         public DbSet<OrderChangeLogEntry> OrderChangeLogEntries { get; set; }
