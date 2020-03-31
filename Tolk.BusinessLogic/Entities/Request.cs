@@ -145,9 +145,11 @@ namespace Tolk.BusinessLogic.Entities
             ((!RequestGroupId.HasValue && IsAcceptedOrApproved) ||
             (RequestGroupId.HasValue && (Status == RequestStatus.Approved || Status == RequestStatus.AcceptedNewInterpreterAppointed)));
 
-        public bool CanCreateRequisition => !Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) && (Status == RequestStatus.Approved || Status == RequestStatus.Delivered);
+        public bool CanCreateRequisition => !Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) && IsApprovedOrDelivered;
 
-        public bool CanCreateComplaint => !Complaints.Any() && (Status == RequestStatus.Approved || Status == RequestStatus.Delivered);
+        public bool CanCreateComplaint => !Complaints.Any() && IsApprovedOrDelivered;
+
+        public bool IsApprovedOrDelivered => (Status == RequestStatus.Approved || Status == RequestStatus.Delivered);
 
         public bool TerminateOnDenial => Status == RequestStatus.AcceptedNewInterpreterAppointed && RequestGroupId.HasValue;
 

@@ -106,7 +106,7 @@ namespace Tolk.Web.Models
         public AttachmentListModel AttachmentListModel { get; set; }
 
         [Display(Name = "Kompetensnivå är ett krav")]
-        public bool SpecificCompetenceLevelRequired => CompetenceLevelDesireType == null ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement;
+        public virtual bool SpecificCompetenceLevelRequired => CompetenceLevelDesireType == null ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement;
 
         public decimal TotalPrice => OrderOccasionDisplayModels?.Sum(o => o.PriceInformationModel.TotalPriceToDisplay) ?? 0;
 

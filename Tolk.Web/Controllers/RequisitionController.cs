@@ -112,7 +112,7 @@ namespace Tolk.Web.Controllers
             return Json(definition);
         }
 
-        public async Task<IActionResult> View(int id, bool returnPartial = false)
+        public async Task<IActionResult> View(int id)
         {
             var requisition = GetRequisition(id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
@@ -139,8 +139,7 @@ namespace Tolk.Web.Controllers
                     Id = "EventLog_Requisition",
                     DynamicLoadPath = $"Requisition/{nameof(GetEventLog)}/{id}",
                 };
-                if (returnPartial) { return PartialView(model); }
-                return View(model);
+                return PartialView(model);
             }
             return Forbid();
         }

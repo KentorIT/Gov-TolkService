@@ -98,7 +98,7 @@ namespace Tolk.Web.Controllers
             return Json(definition);
         }
 
-        public async Task<IActionResult> View(int id, bool returnPartial = false)
+        public async Task<IActionResult> View(int id)
         {
             var complaint = GetComplaint(id);
             if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
@@ -112,8 +112,7 @@ namespace Tolk.Web.Controllers
                     complaint.Status == ComplaintStatus.Disputed &&
                     isCustomer &&
                     (await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded;
-                if (returnPartial) { return PartialView(model); }
-                return View(model);
+                return PartialView(model);
             }
             return Forbid();
         }

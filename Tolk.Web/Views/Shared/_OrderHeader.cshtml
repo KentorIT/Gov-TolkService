@@ -1,4 +1,4 @@
-﻿@model OrderModel
+﻿@model OrderViewModel
 @using Tolk.Web.Services
 @inject HelpLinkService HelpLinkService
 @{
@@ -17,9 +17,9 @@
             </div>
         </div>
     </div>
-    @if (!string.IsNullOrEmpty(Model.ActiveRequest.ViewedByUser))
+    @if (!string.IsNullOrEmpty(Model.ViewedByUser))
     {
-        <span class="glyphicon glyphicon-user color-red" title="@Model.ActiveRequest.ViewedByUser"> </span><span class="normal-weight color-red"> @Model.ActiveRequest.ViewedByUser</span>
+        <span class="glyphicon glyphicon-user color-red" title="@Model.ViewedByUser"> </span><span class="normal-weight color-red"> @Model.ViewedByUser</span>
         <br /><br />
     }
     <div class="row">
@@ -44,7 +44,7 @@
                     location = " - " + Tolk.BusinessLogic.Utilities.EnumHelper.GetDescription(Model.InterpreterLocationAnswer);
                 }
             }
-            <display-entry asp-for="AssignmentType" text-append="@location" />
+            <display-entry asp-for="AssignmentTypeName" text-append="@location" />
         </div>
 
         <div class="col-sm-3">

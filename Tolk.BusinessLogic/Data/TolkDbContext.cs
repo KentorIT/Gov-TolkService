@@ -504,6 +504,7 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<CustomerOrganisation> CustomerOrganisations { get; set; }
 
         public DbSet<OrderRequirement> OrderRequirements { get; set; }
+        public DbSet<OrderRequirementRequestAnswer> OrderRequirementRequestAnswer { get; set; }
 
         public DbSet<OrderGroupRequirement> OrderGroupRequirements { get; set; }
 

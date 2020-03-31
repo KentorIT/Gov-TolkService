@@ -1,8 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Enums;
 
 namespace Tolk.Web.Models
 {
@@ -36,11 +38,16 @@ namespace Tolk.Web.Models
             {
                 return GetPriceinformationToDisplay(order.Requests.OrderBy(r => r.RequestId).Last(), initialCollapse);
             }
+            return GetPriceinformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList(), PriceInformationType.Order, initialCollapse);
+        }
+
+        internal static PriceInformationModel GetPriceinformationToDisplay(IEnumerable<PriceRowBase> priceRows, PriceInformationType type, bool initialCollapse = true)
+        {
             return new PriceInformationModel
             {
-                MealBreakIsNotDetucted = order.MealBreakIncluded ?? false,
-                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris enligt ursprunglig bokningsförfrågan",
+                Header = type.GetDescription(),
+				MealBreakIsNotDetucted = order.MealBreakIncluded ?? false,
+				PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(priceRows),
                 UseDisplayHideInfo = true,
                 InitialCollapse = initialCollapse
             };
@@ -52,7 +59,10 @@ namespace Tolk.Web.Models
             {
                 return null;
             }
-            return new PriceInformationModel
+            };
+FELFELFEL saknar meal break!
+return GetPriceinformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), PriceInformationType.Request, initialCollapse);
+            return GetPriceinformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), PriceInformationType.Request, initialCollapse);
             {
                 MealBreakIsNotDetucted = request.Order.MealBreakIncluded ?? false,
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
