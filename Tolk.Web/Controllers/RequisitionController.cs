@@ -123,7 +123,8 @@ namespace Tolk.Web.Controllers
                 model.AllowCreation = !isAdmin && !customerId.HasValue
                     && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.Commented)
                     && requisition.Request.Requisitions.OrderBy(r => r.CreatedAt).Last().RequisitionId == requisition.RequisitionId;
-                model.AllowProcessing = customerId.HasValue && requisition.Status == RequisitionStatus.Created && (await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded;
+                model.AllowProcessing = customerId.HasValue && requisition.ProcessAllowed && (await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded;
+                model.AllowConfirmNoReview = customerId.HasValue && requisition.CofirmNoReviewAllowed && (await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded;
                 model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
                 model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
                 model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
@@ -282,14 +283,46 @@ namespace Tolk.Web.Controllers
             {
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
-                    if (!requisition.ProcessAllowed)
+                    try
                     {
-                        _logger.LogWarning("Wrong status when trying to Review requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
-
-                        return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
+                        _requisitionService.Review(requisition, User.GetUserId(), User.TryGetImpersonatorId());
                     }
-                    _requisitionService.Review(requisition, User.GetUserId(), User.TryGetImpersonatorId());
+                    catch (InvalidOperationException ex)
+                    {
+                        _logger.LogWarning("{Message}, RequisitionId: {requisition.RequisitionId}", ex.Message, requisition.RequisitionId);
+                        return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, errormessage = ex.Message });
+                    }
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
+                }
+                return Forbid();
+            }
+            return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<IActionResult> ConfirmNoReview(int requisitionId)
+        {
+            var requisition = _dbContext.Requisitions
+                .Include(r => r.Request).ThenInclude(r => r.Order)
+                    .Include(r => r.Request).ThenInclude(r => r.Order)
+                    .Include(r => r.RequisitionStatusConfirmations)
+                .Single(r => r.RequisitionId == requisitionId);
+            if (ModelState.IsValid)
+            {
+                if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
+                {
+                    try
+                    {
+                        _requisitionService.ConfirmNoReview(requisition, User.GetUserId(), User.TryGetImpersonatorId());
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        _logger.LogWarning("{Message}, RequisitionId: {requisition.RequisitionId}", ex.Message, requisition.RequisitionId);
+                        return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, errormessage = ex.Message });
+                    }
+                    return RedirectToAction("Index", "Home", new { Message = "Rekvisitionen är nu arkiverad" });
                 }
                 return Forbid();
             }
@@ -307,15 +340,19 @@ namespace Tolk.Web.Controllers
                     .Include(r => r.Request).ThenInclude(r => r.Order)
                     .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.CreatedByUser)
+                    .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                     .Single(r => r.RequisitionId == model.RequisitionId);
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
-                    if (!requisition.ProcessAllowed)
+                    try
                     {
-                        _logger.LogWarning("Wrong status when trying to Comment requisition. Status: {requisition.Status}, RequisitionId: {requisition.RequisitionId}", requisition.Status, requisition.RequisitionId);
-                        return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
+                        _requisitionService.Comment(requisition, User.GetUserId(), User.TryGetImpersonatorId(), model.CustomerComment);
                     }
-                    _requisitionService.Comment(requisition, User.GetUserId(), User.TryGetImpersonatorId(), model.CustomerComment);
+                    catch (InvalidOperationException ex)
+                    {
+                        _logger.LogWarning("{Message}, RequisitionId: {requisition.RequisitionId}", ex.Message, requisition.RequisitionId);
+                        return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, errormessage = ex.Message });
+                    }
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
                 }
                 return Forbid();
@@ -343,7 +380,9 @@ namespace Tolk.Web.Controllers
             return _dbContext.Requisitions
                 .Include(r => r.CreatedByUser).ThenInclude(u => u.Broker)
                 .Include(r => r.ProcessedUser)
+                .Include(r => r.RequisitionStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                 .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
+                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(req => req.RequisitionStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows).ThenInclude(plr => plr.PriceListRow)
                 .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.CreatedByUser)

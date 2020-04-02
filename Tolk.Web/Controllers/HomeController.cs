@@ -392,14 +392,14 @@ namespace Tolk.Web.Controllers
             {
                 _logger.LogError(ex, $"Unexpected error occured for Orders cancelled by broker in method {nameof(GetCustomerStartLists)}");
             }
-            //Requisitions to review
+            //Requisitions to process
             try
             {
                 actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeContact: true, includeOrderGroupOrders: true)
                     .Where(o => o.Status == OrderStatus.Delivered)
                     .SelectMany(o => o.Requests)
                     .SelectMany(r => r.Requisitions)
-                    .Where(r => r.Status == RequisitionStatus.Created)
+                    .Where(r => r.Status == RequisitionStatus.Created && !r.RequisitionStatusConfirmations.Any(rs => rs.RequisitionStatus == RequisitionStatus.Created))
                     .Select(r => new StartListItemModel
                     {
                         Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt },
@@ -1016,44 +1016,6 @@ namespace Tolk.Web.Controllers
                 Header = count > 0 ? $"Tillsatta bokningar ({count} st)" : "Tillsatta bokningar",
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som är tillsatta",
                 StartListObjects = approvedRequestAnswers,
-                DisplayCustomer = true
-            };
-
-            //Sent requisitions
-            List<StartListItemModel> sentRequisitions = new List<StartListItemModel>();
-            try
-            {
-                sentRequisitions = _dbContext.Requisitions
-                    .Where(r => !r.ReplacedByRequisitionId.HasValue && r.Status == RequisitionStatus.Created && r.Request.Ranking.BrokerId == brokerId)
-                    .Select(r => new StartListItemModel
-                    {
-                        Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt },
-                        DefaulListAction = "View",
-                        DefaulListController = "Request",
-                        DefaultItemId = r.RequestId,
-                        InfoDate = r.CreatedAt.DateTime,
-                        InfoDateDescription = "Skickad: ",
-                        CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        CustomerName = r.Request.Order.CustomerOrganisation.Name,
-                        Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
-                        OrderNumber = r.Request.Order.OrderNumber,
-                        Status = StartListItemStatus.RequisitionCreated,
-                        ViewedBy = r.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                        OrderGroupNumber = r.Request.Order.OrderGroupId.HasValue ? $"Del av {r.Request.Order.Group.OrderGroupNumber}" : string.Empty
-                    }).ToList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Unexpected error occured for Sent requisitions in method {nameof(GetBrokerStartLists)}");
-            }
-            count = sentRequisitions.Any() ? sentRequisitions.Count : 0;
-            sentRequisitions.ForEach(l => l.ViewedByUser = l.ViewedBy.HasValue && l.ViewedBy != userId ? allOtherUsersInBroker.Single(a => a.Id == l.ViewedBy).Name + " håller på med detta ärende" : string.Empty);
-
-            yield return new StartList
-            {
-                Header = count > 0 ? $"Skickade rekvisitioner ({count} st)" : "Skickade rekvisitioner",
-                EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar med skickad rekvisition",
-                StartListObjects = sentRequisitions,
                 DisplayCustomer = true
             };
         }

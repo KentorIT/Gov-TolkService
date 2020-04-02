@@ -111,6 +111,13 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogDebug($"Requisition reviewed {requisition.RequisitionId}");
             _notificationService.RequisitionReviewed(requisition);
         }
+        public void ConfirmNoReview(Requisition requisition, int userId, int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(requisition, nameof(ConfirmNoReview), nameof(RequisitionService));
+            requisition.CofirmNoReview(_clock.SwedenNow, userId, impersonatorId);
+            _dbContext.SaveChanges();
+            _logger.LogDebug($"Requisition confirmed with no review {requisition.RequisitionId}");
+        }
 
         public void Comment(Requisition requisition, int userId, int? impersonatorId, string message)
         {

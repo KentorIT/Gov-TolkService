@@ -1245,6 +1245,9 @@ ul.pagination > li.paginate_button.active > a {
 .padding-top-10 {
   padding-top: 10px;
 }
+.padding-left-40 {
+  padding-left: 40px;
+}
 .logo-login {
   padding-bottom: 5px;
   padding-left: 40px;

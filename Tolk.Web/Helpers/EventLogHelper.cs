@@ -580,6 +580,18 @@ namespace Tolk.Web.Helpers
                             };
                         }
                     }
+                    if (requisition.RequisitionStatusConfirmations != null && requisition.RequisitionStatusConfirmations.Any(r => r.RequisitionStatus == RequisitionStatus.Created))
+                    {
+                        var confirmedNoReview = requisition.RequisitionStatusConfirmations.First(r => r.RequisitionStatus == RequisitionStatus.Created);
+                        yield return new EventLogEntryModel
+                        {
+                            Timestamp = confirmedNoReview.ConfirmedAt,
+                            EventDetails = "Rekvisition arkiverad",
+                            Actor = confirmedNoReview.ConfirmedByUser.FullName,
+                            Organization = customerName,
+                            ActorContactInfo = GetContactinfo(confirmedNoReview.ConfirmedByUser)
+                        };
+                    }
                 }
             }
         }

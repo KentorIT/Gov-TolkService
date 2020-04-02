@@ -323,6 +323,17 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(r => r.ImpersonatingConfirmedByUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<RequisitionStatusConfirmation>()
+                .HasOne(r => r.ConfirmedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<RequisitionStatusConfirmation>()
+                .HasOne(r => r.ImpersonatingConfirmedByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<OrderGroupStatusConfirmation>()
                 .HasOne(r => r.ConfirmedByUser)
                 .WithMany()
@@ -549,6 +560,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<RequestStatusConfirmation> RequestStatusConfirmation { get; set; }
 
         public DbSet<RequestGroupStatusConfirmation> RequestGroupStatusConfirmations { get; set; }
+
+        public DbSet<RequisitionStatusConfirmation> RequisitionStatusConfirmations { get; set; }
 
         public DbSet<OrderStatusConfirmation> OrderStatusConfirmation { get; set; }
 

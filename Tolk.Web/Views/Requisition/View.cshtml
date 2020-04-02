@@ -9,7 +9,7 @@
     <div class="row">
         <div class="col-xs-12" aria-label="breadcrumb">
             <ol class="breadcrumb">
-                @foreach(int id in Model.RelatedRequisitions)
+                @foreach (int id in Model.RelatedRequisitions)
                 {
                     i++;
                     @if (Model.RequisitionId == id)
@@ -71,11 +71,20 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-6">
+        <div class="col-sm-4">
             <button type="button" data-toggle="modal" data-target="#commentReqMessageDialog" class="btn btn-large btn-danger">Skicka kommentar</button>
             <span class="form-entry-information glyphicon glyphicon-info-sign info-sign-big decrease-left-margin" title="Klicka på ”Skicka kommentar” om du vill kommentera något i rekvisitionen och vill att tolkförmedlingen ska skicka en ny rekvisition."></span>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-4 padding-left-40">
+            @if (Model.AllowConfirmNoReview)
+            {
+                <form method="post" action="@Url.Action("ConfirmNoReview", new { RequisitionId = Model.RequisitionId })" asp-antiforgery="true">
+                    <button  class="btn btn-success btn-large pull-left">Arkivera</button>
+                </form>
+                <span class="form-entry-information glyphicon glyphicon-info-sign info-sign-big decrease-left-margin" title="Klicka på ”Arkivera” om du varken vill kommentera eller granska rekvisitionen."></span>
+            }
+        </div>
+        <div class="col-sm-4">
             <span class="pull-right form-entry-information glyphicon glyphicon-info-sign info-sign-big" title="Klicka på ”Granskad” för att bekräfta att du tagit del av innehållet i rekvisitionen. Detta betyder inte automatiskt att rekvisitionen är godkänd. Varje myndighet avgör själv vilken rutin för godkännande som ska gälla. Observera att om du klickat på granskad har du inte längre möjlighet att skicka kommentarer på rekvisitionen."></span>
             <form method="post" action="@Url.Action("Review", new { RequisitionId = Model.RequisitionId })" asp-antiforgery="true">
                 <button class="btn btn-success btn-large pull-right">Granskad <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>

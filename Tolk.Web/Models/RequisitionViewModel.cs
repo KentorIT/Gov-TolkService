@@ -35,6 +35,8 @@ namespace Tolk.Web.Models
 
         public bool AllowProcessing { get; set; }
 
+        public bool AllowConfirmNoReview { get; set; }
+
         [Display(Name = "Total summa")]
         [DataType(DataType.Currency)]
         public decimal TotalPrice { get => ResultPriceInformationModel?.TotalPriceToDisplay ?? 0; }

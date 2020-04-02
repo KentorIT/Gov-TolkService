@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -93,19 +94,29 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<MealBreak> MealBreaks { get; set; }
 
+        public List<RequisitionStatusConfirmation> RequisitionStatusConfirmations { get; set; }
+
         #region methods
 
         public void Review(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
-            if (Status != RequisitionStatus.Created)
+            if (!ProcessAllowed)
             {
-                throw new InvalidOperationException($"Requisition {RequisitionId} is {Status}. Only unprocessed requisitions can be approved");
+                throw new InvalidOperationException("Rekvisitionen har inte rätt status för att granskas.");
             }
-
             Status = RequisitionStatus.Reviewed;
             ProcessedAt = approveTime;
             ProcessedBy = userId;
             ImpersonatingProcessedBy = impersonatorId;
+        }
+
+        public void CofirmNoReview(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        {
+            if (!CofirmNoReviewAllowed)
+            {
+                throw new InvalidOperationException($"Rekvisitionen är inte i rätt tillstånd för att arkiveras, förmodligen har den redan arkiverats.");
+            }
+            RequisitionStatusConfirmations.Add(new RequisitionStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequisitionStatus = Status, ConfirmedAt = confirmedAt });
         }
 
         public bool ProcessAllowed
@@ -113,13 +124,17 @@ namespace Tolk.BusinessLogic.Entities
             get { return Status == RequisitionStatus.Created; }
         }
 
+        public bool CofirmNoReviewAllowed
+        {
+            get { return Status == RequisitionStatus.Created && !RequisitionStatusConfirmations.Any(r => r.RequisitionStatus == RequisitionStatus.Created); }
+        }
+
         public void Comment(DateTimeOffset denyTime, int userId, int? impersonatorId, string comment)
         {
-            if (Status != RequisitionStatus.Created)
+            if (!ProcessAllowed)
             {
-                throw new InvalidOperationException($"Requisition {RequisitionId} is {Status}. Only unprocessed requisitions can be denied");
+                throw new InvalidOperationException("Rekvisitionen har inte rätt status för att kommenteras.");
             }
-
             Status = RequisitionStatus.Commented;
             ProcessedAt = denyTime;
             ProcessedBy = userId;
