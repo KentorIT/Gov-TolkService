@@ -15,7 +15,7 @@ namespace Tolk.Web.Models.AccountViewModels
             MustContainUpper = true,
             MustContainNumbers = true,
             MustContainNonAlphanumeric = true)]
-        [Display(Name = "Nytt lösenord", Description = "Lösenord ska vara minst 8 tecken långt och innehålla minst 1 liten bokstav, 1 stor bokstav, 1 siffra och 1 symbol")]
+        [Display(Name = "Nytt lösenord", Description = "Lösenord ska vara minst 8 tecken långt och innehålla minst 1 liten bokstav, 1 stor bokstav, 1 siffra och 1 symbol/specialtecken.")]
         public string NewPassword { get; set; }
 
         [ClientRequired]
