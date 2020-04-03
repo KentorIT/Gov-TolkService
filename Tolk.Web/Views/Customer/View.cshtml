@@ -56,10 +56,13 @@
                 <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.List))"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
             </div>
             <div class="col-sm-4">
-                <a class="btn btn-large btn-default" asp-action="@nameof(Tolk.Web.Controllers.CustomerController.Edit)" asp-route-id="@Model.CustomerId">Ändra</a>
-            </div>
+                @if (Model.AllowEdit)
+                {
+                    <a class="btn btn-large btn-primary" asp-action="@nameof(Tolk.Web.Controllers.CustomerController.Edit)" asp-route-id="@Model.CustomerId">Ändra</a>
+                }
+                </div>
             <div class="col-sm-4">
-                <a class="btn btn-large btn-warning" asp-controller="User" asp-action="@nameof(Tolk.Web.Controllers.UserController.Create)" asp-route-customerId="@Model.CustomerId" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Skapa användare</a>
+                <a class="btn btn-large btn-default" asp-controller="User" asp-action="@nameof(Tolk.Web.Controllers.UserController.Create)" asp-route-customerId="@Model.CustomerId" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Skapa användare</a>
             </div>
         </div>
         <div class="row filter-panel">

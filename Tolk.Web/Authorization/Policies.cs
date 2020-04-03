@@ -369,7 +369,7 @@ namespace Tolk.Web.Authorization
                 case InterpreterBroker interpreter:
                     return user.IsInRole(Roles.CentralAdministrator) && interpreter.BrokerId == user.TryGetBrokerId();
                 case CustomerOrganisation organisation:
-                    return user.IsInRole(Roles.ApplicationAdministrator);
+                    return user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator);
                 case CustomerUnit unit:
                     return (user.IsInRole(Roles.CentralAdministrator) && unit.CustomerOrganisationId == user.TryGetCustomerOrganisationId()) ||
                         IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);

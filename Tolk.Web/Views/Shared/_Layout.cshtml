@@ -158,13 +158,13 @@
                                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">Administration <span class="caret"></span></a>
                                 <ul class="dropdown-menu">
                                     <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                    <li><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="Faq" asp-action="List">FAQ - Vanliga frågor</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="Contract" asp-action="List">Ramavtal</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="Email" asp-action="List">E-postmeddelanden</a></li>
                                     @if (User.IsInRole(Roles.ApplicationAdministrator))
                                     {
-                                        <li><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Language" asp-action="Index">Språk</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Home" asp-action="status" asp-all-route-data="@(new Dictionary<string, string>{{ "showDetails", "true" }})">Systemstatus</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Webhook" asp-action="List">Webhooks</a></li>
@@ -228,13 +228,13 @@
                                 else if (User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.ApplicationAdministrator))
                                 {
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                    <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="SystemMessage" asp-action="List">Nyheter</a></li>
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Faq" asp-action="List">FAQ - Vanliga frågor</a></li>
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Contract" asp-action="Index">Ramavtal</a></li>
                                     <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Email" asp-action="List">E-postmeddelanden</a></li>
                                     if (User.IsInRole(Roles.ApplicationAdministrator))
                                     {
-                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Customer" asp-action="List">Myndigheter</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Language" asp-action="Index">Språk</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Home" asp-action="status" asp-all-route-data="@(new Dictionary<string, string>{{ "showDetails", "true" }})">Systemstatus</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Webhook" asp-action="List">Webhooks</a></li>

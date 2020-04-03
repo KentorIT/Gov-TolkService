@@ -18,7 +18,7 @@ using Tolk.Web.Models;
 namespace Tolk.Web.Controllers
 {
 
-    [Authorize(Roles = Roles.ApplicationAdministrator)]
+    [Authorize(Roles = Roles.AppOrSysAdmin)]
     public class CustomerController : Controller
     {
         private readonly TolkDbContext _dbContext;
@@ -70,8 +70,9 @@ namespace Tolk.Web.Controllers
                         PriceListType = c.PriceListType,
                         ParentName = c.ParentCustomerOrganisation.Name,
                         OrganisationNumber = c.OrganisationNumber
-                    })
-            });
+                    }),
+                AllowCreate = User.IsInRole(Roles.ApplicationAdministrator)
+            });;
         }
 
         public async Task<ActionResult> View(int id, string message)
@@ -81,11 +82,12 @@ namespace Tolk.Web.Controllers
                 .SingleAsync(c => c.CustomerOrganisationId == id);
             if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.View)).Succeeded)
             {
-                return View(CustomerModel.GetModelFromCustomer(customer, message));
+                return View(CustomerModel.GetModelFromCustomer(customer, message, (await _authorizationService.AuthorizeAsync(User, customer, Policies.Edit)).Succeeded));
             }
             return Forbid();
         }
 
+        [Authorize(Roles = Roles.ApplicationAdministrator)]
         public async Task<ActionResult> Edit(int id)
         {
             var customer = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == id);
@@ -98,6 +100,7 @@ namespace Tolk.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = Roles.ApplicationAdministrator)]
         public async Task<ActionResult> Edit(CustomerModel model)
         {
             var customer = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == model.CustomerId);
@@ -115,6 +118,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+        [Authorize(Roles = Roles.ApplicationAdministrator)]
         public ActionResult Create()
         {
             return View(new CustomerModel { IsCreating = true });
@@ -122,6 +126,7 @@ namespace Tolk.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = Roles.ApplicationAdministrator)]
         public async Task<ActionResult> Create(CustomerModel model)
         {
             if (ModelState.IsValid && ValidateCustomer(model))

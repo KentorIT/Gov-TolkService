@@ -46,6 +46,8 @@ namespace Tolk.Web.Models
 
         public bool IsCreating { get; set; }
 
+        public bool AllowEdit { get; set; }
+
         public UserPageMode UserPageMode { get; set; }
 
         public CustomerUserFilterModel UserFilterModel { get; set; }
@@ -56,7 +58,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolken fakturerar själv tolkarvode")]
         public bool UseSelfInvoicingInterpreter { get; set; }
 
-        internal static CustomerModel GetModelFromCustomer(CustomerOrganisation customer, string message = null)
+        internal static CustomerModel GetModelFromCustomer(CustomerOrganisation customer, string message = null, bool allowEdit = true)
         {
             return new CustomerModel
             {
@@ -78,7 +80,8 @@ namespace Tolk.Web.Models
                     BackId = customer.CustomerOrganisationId.ToSwedishString()
                 },
                 UseOrderGroups = customer.UseOrderGroups,
-                UseSelfInvoicingInterpreter = customer.UseSelfInvoicingInterpreter
+                UseSelfInvoicingInterpreter = customer.UseSelfInvoicingInterpreter,
+                AllowEdit = allowEdit
             };
         }
 
