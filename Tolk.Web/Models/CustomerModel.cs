@@ -52,6 +52,8 @@ namespace Tolk.Web.Models
 
         public CustomerUserFilterModel UserFilterModel { get; set; }
 
+        public AdminUnitFilterModel UnitFilterModel { get; set; }
+
         [Display(Name = "Använd sammanhållen bokning")]
         public bool UseOrderGroups { get; set; }
 

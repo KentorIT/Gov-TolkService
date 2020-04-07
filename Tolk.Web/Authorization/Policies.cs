@@ -371,7 +371,7 @@ namespace Tolk.Web.Authorization
                 case CustomerOrganisation organisation:
                     return user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator);
                 case CustomerUnit unit:
-                    return (user.IsInRole(Roles.CentralAdministrator) && unit.CustomerOrganisationId == user.TryGetCustomerOrganisationId()) ||
+                    return user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator) || (user.IsInRole(Roles.CentralAdministrator) && unit.CustomerOrganisationId == user.TryGetCustomerOrganisationId()) ||
                         IsUserLocalAdminOfCustomerUnit(unit.CustomerUnitId, localAdminCustomerUnits);
                 case StatusVerificationResult statusModel:
                     return user.IsInRole(Roles.ApplicationAdministrator);

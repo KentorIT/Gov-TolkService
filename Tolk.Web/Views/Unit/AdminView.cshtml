@@ -1,0 +1,65 @@
+﻿@model CustomerUnitModel
+@{
+    ViewData["Title"] = "Enhetsdetaljer";
+}
+    <section aria-label="@ViewData["Title"]">
+        <h1>@ViewData["Title"]</h1>
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="Name" />
+                <display-entry asp-for="Email" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="CreatedAt" />
+                <display-entry asp-for="CreatedBy" />
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="IsActive" />
+                @if (!Model.IsActive)
+                {
+                    <display-entry asp-for="InactivatedAt" />
+                    <display-entry asp-for="InactivatedBy" />
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                @if (Model.UnitUsers.Any())
+                {
+                    <h2>Användare kopplade till enheten</h2>
+                    <br />
+                    <div class="table-responsive standard-table table-paging table-datatable">
+                        <table class="table search-table">
+                            <thead>
+                                <tr>
+                                    <th>Efternamn</th>
+                                    <th>Förnamn</th>
+                                    <th>E-postadress</th>
+                                    <th>Status</th>
+                                    <th>Lokal admin</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.UnitUsers)
+                                {
+                                    <tr>
+                                        <td class="@item.ColorClassName gray-border-bottom"> @item.LastName</td>
+                                        <td class="gray-border-bottom"> @item.FirstName</td>
+                                        <td class="gray-border-bottom">@item.Email</td>
+                                        <td class="gray-border-bottom">@item.IsActiveDisplay</td>
+                                        <td class="gray-border-bottom gray-border-right">@item.IsLocalAdmin</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Customer" asp-action="View" asp-route-Id="@Model.CustomerId"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+            </div>
+        </div>
+    </section>
+

@@ -1187,6 +1187,9 @@ ul.pagination > li.paginate_button.active > a {
 #DesiredRequirementType {
   width: 300px;
 }
+#UserType {
+  width: 333px;
+}
 .change-contact > #ContactPersonId {
   width: 200px;
 }

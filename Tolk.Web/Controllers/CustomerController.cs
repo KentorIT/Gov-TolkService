@@ -30,7 +30,6 @@ namespace Tolk.Web.Controllers
         private int CentralAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
         private int CentralOrderHandlerRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
 
-
         public CustomerController(
             TolkDbContext dbContext,
             IAuthorizationService authorizationService,
@@ -152,7 +151,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> ListUsers(IDataTablesRequest request)
         {
             //Get filters
-            CustomerUserFilterModel filters = await GetFilters();
+            CustomerUserFilterModel filters = await GetUserFilters();
 
             //Get the full table
             var data = _dbContext.Users.Where(u => u.CustomerOrganisationId == filters.Id);
@@ -168,17 +167,47 @@ namespace Tolk.Web.Controllers
             }));
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ListUnits(IDataTablesRequest request)
+        {
+            //Get filters
+            AdminUnitFilterModel filters = await GetUnitFilters();
+
+            //Get the full table
+            var data = _dbContext.CustomerUnits.Where(u => u.CustomerOrganisationId == filters.Id);
+
+            //Filter and return data tables data
+            return AjaxDataTableHelper.GetData(request, data.Count(), AdminUnitListItemModel.Filter(filters, data), d => d.Select(u => new AdminUnitListItemModel
+            {
+                CustomerUnitId = u.CustomerUnitId,
+                Name = u.Name,
+                Email = u.Email,
+                IsActive = u.IsActive
+            }));
+        }
         public JsonResult UserColumnDefinition()
         {
             return Json(AjaxDataTableHelper.GetColumnDefinitions<DynamicUserListItemModel>());
         }
 
-        private async Task<CustomerUserFilterModel> GetFilters()
+        public JsonResult UnitColumnDefinition()
+        {
+            return Json(AjaxDataTableHelper.GetColumnDefinitions<AdminUnitListItemModel>());
+        }
+
+        private async Task<CustomerUserFilterModel> GetUserFilters()
         {
             var filters = new CustomerUserFilterModel();
             await TryUpdateModelAsync(filters);
             filters.CentralAdministratorRoleId = CentralAdministratorRoleId;
             filters.CentralOrderHandlerRoleId = CentralOrderHandlerRoleId;
+            return filters;
+        }
+
+        private async Task<AdminUnitFilterModel> GetUnitFilters()
+        {
+            var filters = new AdminUnitFilterModel();
+            await TryUpdateModelAsync(filters);
             return filters;
         }
 

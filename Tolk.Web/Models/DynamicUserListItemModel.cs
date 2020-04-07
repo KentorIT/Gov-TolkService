@@ -18,7 +18,7 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Index = 2, Name = nameof(FirstName), ColumnName = "NameFirst", SortOnWebServer = false, Title = "Förnamn")]
         public string FirstName { get; set; }
 
-        [ColumnDefinitions(Index = 3, Name = nameof(Email), Title = "Epost")]
+        [ColumnDefinitions(Index = 3, Name = nameof(Email), Title = "E-postadress")]
         public string Email { get; set; }
 
         public bool IsActive { get; set; }
