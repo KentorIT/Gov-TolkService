@@ -1,4 +1,4 @@
-﻿@model Tolk.Web.Models.OrderModel
+﻿@model OrderViewModel
 @inject Tolk.BusinessLogic.Services.ISwedishClock Clock
 @using Tolk.BusinessLogic.Utilities
 @{
@@ -108,7 +108,7 @@
                                 @Model.InterpreterLocationInfoAnswer<br /><br />
                                 @if (Model.ActiveRequest.DisplayExpectedTravelCostInfo)
                                 {
-                                    <span class="bold">Bedömd resekostnad: </span>@Model.ActiveRequest.ExpectedTravelCosts.Value.ToString("#,0.00 SEK")<br />
+                                    <span class="bold">Bedömd resekostnad: </span>@Model.ActiveRequest.ExpectedTravelCosts.ToString("#,0.00 SEK")<br />
                                     <span class="bold">Kommentar till bedömd resekostnad: </span>
                                     @if (string.IsNullOrEmpty(Model.ActiveRequest.ExpectedTravelCostInfo))
                                     {
@@ -122,9 +122,9 @@
                             </td>
                             <td class="order-print-column">
                                 <span class="bold">Tillsatt tolk: </span>@Model.ActiveRequest.Interpreter <br />
-                                <span class="bold">Kammarkollegiets tolknummer: </span>@Model.ActiveRequest.NewInterpreterOfficialInterpreterId<br />
+                                @*<span class="bold">Kammarkollegiets tolknummer: </span>@Model.ActiveRequest.NewInterpreterOfficialInterpreterId<br />
                                 <span class="bold">E-post: </span>@Model.ActiveRequest.NewInterpreterEmail<br />
-                                <span class="bold">Telefon: </span>@Model.ActiveRequest.NewInterpreterPhoneNumber<br /><br />
+                                <span class="bold">Telefon: </span>@Model.ActiveRequest.NewInterpreterPhoneNumber<br /><br />*@
 
                                 <span class="bold">Tillsatt kompetensnivå: </span>@Model.InterpreterCompetenceLevel.Value.GetDescription()<br />
 

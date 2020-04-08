@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Enums;
@@ -26,6 +27,7 @@ namespace Tolk.Web.Models
 
         public string Description { get; set; }
 
+        public decimal ExpectedTravelCosts { get; set; }
         public bool MealBreakIsNotDetucted { get; set; }
 
         internal static PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true, bool alwaysUseOrderPriceRows = true)
@@ -49,7 +51,8 @@ namespace Tolk.Web.Models
 				MealBreakIsNotDetucted = order.MealBreakIncluded ?? false,
 				PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(priceRows),
                 UseDisplayHideInfo = true,
-                InitialCollapse = initialCollapse
+                InitialCollapse = initialCollapse,
+                ExpectedTravelCosts = priceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0
             };
         }
 

@@ -1,4 +1,4 @@
-﻿@model RequestModel
+﻿@model RequestViewModel
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> TolkOptions
 @using Microsoft.Extensions.Options;
 @using Tolk.BusinessLogic.Enums
@@ -7,12 +7,6 @@
     string header = (string)ViewData["header"] ?? "Bokningsförfrågan";
     bool showHeader = (bool?)ViewData["showHeader"] ?? true;
     bool isBroker = (bool?)ViewData["isBroker"] ?? false;
-    bool requestIsAnswered = (Model.Status != RequestStatus.InterpreterReplaced
-         && Model.Status != RequestStatus.Created
-         && Model.Status != RequestStatus.Received) && Model.RequestId > 0;
-    bool requestIsDeclinedByBroker = (Model.Status == RequestStatus.DeclinedByBroker
-        || Model.Status == RequestStatus.DeniedByTimeLimit);
-    bool isReplacedRequest = Model.Status == RequestStatus.Received && Model.ReplacingOrderRequestId > 0;
 
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? false;
     var divClass = isCollapsible ? "collapse" : "";
@@ -35,7 +29,7 @@
     }
     <div id="@divId" class="@divClass">
         <div class="row">
-            @if (Model.OrderModel.Status == OrderStatus.CancelledByCreator || Model.OrderModel.Status == OrderStatus.CancelledByBroker)
+            @if (Model.IsCancelled)
             {
                 @if (!string.IsNullOrEmpty(Model.CancelMessage))
                 {
@@ -57,13 +51,13 @@
 
         <div class="row">
             <div class="col-sm-4">
-                <display-entry asp-for="OrderModel.LanguageAndDialect" />
+                <display-entry asp-for="LanguageAndDialect" />
             </div>
             <div class="col-sm-4">
-                <display-entry asp-for="OrderModel.RegionName" />
+                <display-entry asp-for="RegionName" />
             </div>
             <div class="col-sm-4">
-                <display-entry asp-for="OrderModel.TimeRange" />
+                <display-entry asp-for="TimeRange" />
                 @if (!string .IsNullOrEmpty(Model.OrderModel.DisplayMealBreakIncludedText))
                 {
                     <div class="detail-text mealbreak-info">
@@ -73,7 +67,7 @@
             </div>
         </div>
         <div class="row">
-            @if (!requestIsAnswered && !isBroker)
+            @if (!Model.RequestIsAnswered && !isBroker)
             {
                 <div class="col-sm-4">
                     <label>Tolk ej tillsatt</label>
@@ -85,7 +79,7 @@
                     <display-entry asp-for="Interpreter" asp-empty="Tolk ej tillsatt" />
                 </div>
                 <div class="col-sm-4">
-                    @if ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest)
+                    @if ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.IsReplacedRequest)
                     {
                         <display-entry asp-for="InterpreterCompetenceLevel" />
                     }
@@ -113,7 +107,7 @@
                         }
                     }
                 </div>
-                @if ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest)
+                @if ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.IsReplacedRequest)
                 {
                     <div class="col-sm-4">
                         <display-entry asp-for="InterpreterLocation" label-override="Inställelsesätt enligt svar" />
@@ -121,7 +115,7 @@
                 }
             }
         </div>
-        @if ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest)
+        @if ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.IsReplacedRequest)
         {
             <div class="row">
                 @if (Model.RequirementAnswers.Any(r => r.IsRequired))
@@ -187,7 +181,7 @@
             </div>
         }
 
-        @if (Model.DisplayExpectedTravelCostInfo && ((requestIsAnswered && !requestIsDeclinedByBroker) || isReplacedRequest))
+        @if (Model.DisplayExpectedTravelCostInfo && ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.IsReplacedRequest))
         {
             <div class="row">
                 <div class="col-sm-4">
@@ -196,7 +190,7 @@
                 <div class="col-sm-4">
                     <display-entry asp-for="ExpectedTravelCostInfo" />
                 </div>
-                @if (TolkOptions.Value.EnableSetLatestAnswerTimeForCustomer && requestIsAnswered && !(Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered))
+                @if (TolkOptions.Value.EnableSetLatestAnswerTimeForCustomer && Model.RequestIsAnswered && !(Model.Status == RequestStatus.Approved || Model.Status == RequestStatus.Delivered))
                 {
                     <div class="col-sm-4">
                         <display-entry asp-for="LatestAnswerTimeForCustomer" />
@@ -205,13 +199,13 @@
             </div>
         }
         <div class="row">
-            @if (requestIsAnswered)
+            @if (Model.RequestIsAnswered)
             {
                 <div class="col-sm-4">
                     <display-entry asp-for="AnsweredBy" />
                 </div>
             }
-            else if (!requestIsAnswered && !isBroker)
+            else if (!Model.RequestIsAnswered && !isBroker)
             {
                 <div class="col-sm-4">
                     <display-entry asp-for="ExpiresAt" label-override="Senaste svarstid" />

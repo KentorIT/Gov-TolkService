@@ -82,17 +82,25 @@ namespace Tolk.Web.Models
 
         public PriceInformationModel ActiveRequestPriceInformationModel { get; set; }
 
+        public override decimal ExpectedTravelCosts
+        {
+            get => ActiveRequestPriceInformationModel.ExpectedTravelCosts;
+            set => base.ExpectedTravelCosts = value;
+        }
+
         [Display(Name = "Status på aktiv förfrågan")]
         public RequestStatus? RequestStatus { get; set; }
 
         public int? RequestId { get; set; }
 
-        public RequestModel ActiveRequest { get; set; }
+        public RequestViewModel ActiveRequest { get; set; }
 
         public IEnumerable<BrokerListModel> PreviousRequests { get; set; }
 
         public string CancelMessage { get; set; }
 
+        [Display(Name = "Är tolkanvändare samma person som bokar")]
+        public bool IsCreatorInterpreterUser { get; set; }
 
         #endregion
 
@@ -126,11 +134,12 @@ namespace Tolk.Web.Models
         public bool IsReplacement => ReplacingOrderId.HasValue;
 
         public bool IsInOrderGroup => OrderGroupId.HasValue;
+        public bool SeveralOccasions { get; set; } = false;
 
         public bool HasOnsiteLocation => RankedInterpreterLocationFirst == InterpreterLocation.OnSite || RankedInterpreterLocationFirst == InterpreterLocation.OffSiteDesignatedLocation
         || RankedInterpreterLocationSecond == InterpreterLocation.OnSite || RankedInterpreterLocationSecond == InterpreterLocation.OffSiteDesignatedLocation
         || RankedInterpreterLocationThird == InterpreterLocation.OnSite || RankedInterpreterLocationThird == InterpreterLocation.OffSiteDesignatedLocation;
-        
+
         public EventLogModel EventLog { get; set; }
 
         public IEnumerable<InterpreterLocation> RankedInterpreterLocations
@@ -163,14 +172,14 @@ namespace Tolk.Web.Models
         //TODO Possibly remove, uses this construction for the benefit of other models....
         public override bool SpecificCompetenceLevelRequired => CompetenceIsRequired;
 
+        public bool HasPreviousRequests => PreviousRequests.Any();
 
-        public int NumberOfPreviousRequests { get; set; }
-        public bool HasPreviousRequests => NumberOfPreviousRequests > 0;
-
-        internal static OrderViewModel GetModelFromOrderAndRequest(Order order)
+        internal static OrderViewModel GetModelFromOrder(Order order)
         {
             return new OrderViewModel
             {
+                //Dont like, should be possible to make lighter.
+                AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
                 OrderId = order.OrderId,
                 OrderNumber = order.OrderNumber,
                 Status = order.Status,
@@ -191,7 +200,6 @@ namespace Tolk.Web.Models
                 LanguageName = order.OtherLanguage ?? order.Language?.Name,
                 CustomerUnitName = order.CustomerUnit?.Name,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
-                //Dialect = o.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? o.Requirements.Single(r => r.RequirementType == RequirementType.Dialect).Description : string.Empty,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 CompetenceIsRequired = order.SpecificCompetenceLevelRequired,
                 TimeRange = new TimeRange
@@ -201,7 +209,66 @@ namespace Tolk.Web.Models
                 },
                 Description = order.Description,
                 UnitName = order.UnitName,
+                IsCreatorInterpreterUser = order.CreatorIsInterpreterUser ?? true
             };
         }
+
+        internal static OrderViewModel GetModelFromOrderForConfirmation(Order order)
+        {
+            bool useRankedInterpreterLocation = order.InterpreterLocations.Count > 1;
+
+            OrderCompetenceRequirement competenceFirst = null;
+            OrderCompetenceRequirement competenceSecond = null;
+            //Can get this from list on order since this is an order that has yet to be saved to database.
+            var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
+            {
+                CompetenceLevel = r.CompetenceLevel,
+                Rank = r.Rank,
+            }).ToList();
+
+            competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
+            competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
+            competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
+
+            return new OrderViewModel
+            {
+                //Dont like, should be possible to make lighter.
+                AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
+                AssignmentType = order.AssignmentType,
+                CreatorIsInterpreterUser = order.CreatorIsInterpreterUser.HasValue ? new RadioButtonGroup { SelectedItem = SelectListService.BoolList.Single(e => e.Value == (order.CreatorIsInterpreterUser.Value ? TrueFalse.Yes.ToString() : TrueFalse.No.ToString())) } : null,
+                CustomerReferenceNumber = order.CustomerReferenceNumber,
+                InvoiceReference = order.InvoiceReference,
+                TimeRange = new TimeRange
+                {
+                    StartDateTime = order.StartAt,
+                    EndDateTime = order.EndAt
+                },
+                Description = order.Description,
+                UnitName = order.UnitName,
+                LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
+                CompetenceLevelDesireType = new RadioButtonGroup
+                {
+                    SelectedItem = order.SpecificCompetenceLevelRequired
+                    ? SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Requirement)
+                    : SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Request)
+                },
+                RequestedCompetenceLevelFirst = competenceFirst?.CompetenceLevel,
+                RequestedCompetenceLevelSecond = competenceSecond?.CompetenceLevel,
+                RankedInterpreterLocationFirst = order.InterpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation,
+                RankedInterpreterLocationSecond = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation,
+                RankedInterpreterLocationThird = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation,
+                RankedInterpreterLocationFirstAddressModel = GetInterpreterLocation(order.InterpreterLocations.Single(l => l.Rank == 1)),
+                RankedInterpreterLocationSecondAddressModel = GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)),
+                RankedInterpreterLocationThirdAddressModel = GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)),
+                OrderRequirements = order.Requirements.Select(r => new OrderRequirementModel
+                {
+                    OrderRequirementId = r.OrderRequirementId,
+                    RequirementDescription = r.Description,
+                    RequirementIsRequired = r.IsRequired,
+                    RequirementType = r.RequirementType
+                }).ToList(),
+            };
+        }
+
     }
 }

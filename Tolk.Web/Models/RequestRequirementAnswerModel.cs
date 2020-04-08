@@ -1,4 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Helpers;
 
@@ -24,5 +29,18 @@ namespace Tolk.Web.Models
 
         [NoDisplayName]
         public bool CanMeetRequirement { get; set; }
+
+        internal static async Task<List<RequestRequirementAnswerModel>> GetFromList(IQueryable<OrderRequirementRequestAnswer> answers)
+        {
+            return await answers.Select(r => new RequestRequirementAnswerModel
+            {
+                OrderRequirementId = r.OrderRequirementId,
+                Description = r.OrderRequirement.Description,
+                IsRequired = r.OrderRequirement.IsRequired,
+                RequirementType = r.OrderRequirement.RequirementType,
+                CanMeetRequirement = r.CanSatisfyRequirement,
+                Answer = r.Answer
+            }).ToListAsync();
+        }
     }
 }

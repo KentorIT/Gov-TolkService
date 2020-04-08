@@ -4,8 +4,6 @@
 @{
     string isOrderDetailViewKey = "IsOrderDetailView";
     bool isOrderDetailView = (bool?)ViewData[isOrderDetailViewKey] ?? false;
-    int? actionReplacingId = isOrderDetailView ? Model.ReplacingOrderId : Model.ActiveRequest.ReplacingOrderRequestId;
-    int? actionReplacedById = isOrderDetailView ? Model.ReplacedByOrderId : Model.ActiveRequest.ReplacedByOrderRequestId;
     HelpLinkService.PageName = isOrderDetailView ? "myndighet-detaljvyer-av-bokningar/" : "formedling-detaljvyer-av-bokningar/";
 }
 <section aria-label="Bokningshuvud">
@@ -51,16 +49,16 @@
 
             <display-entry asp-for="OrderNumber" />
 
-            @if (actionReplacingId.HasValue)
+            @if (Model.ReplacingOrderId.HasValue)
             {
                 <span>
-                    (Ersätter <a href="@Url.Action("View", new { id = actionReplacingId })">@Model.ReplacingOrderNumber</a>)
+                    (Ersätter <a href="@Url.Action("View", new { id = Model.ReplacingOrderId })">@Model.ReplacingOrderNumber</a>)
                 </span>
             }
-            @if (actionReplacedById.HasValue)
+            @if (Model.ReplacedByOrderId.HasValue)
             {
                 <span>
-                    (Ersatt av <a href="@Url.Action("View", new { id = actionReplacedById})">@Model.ReplacedByOrderNumber</a>)
+                    (Ersatt av <a href="@Url.Action("View", new { id = Model.ReplacedByOrderId})">@Model.ReplacedByOrderNumber</a>)
                 </span>
             }
         </div>

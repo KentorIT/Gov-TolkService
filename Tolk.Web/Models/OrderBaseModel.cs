@@ -74,7 +74,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Angiven bedömd resekostnad (exkl. moms)")]
         [DataType(DataType.Currency)]
-        public decimal ExpectedTravelCosts { get; set; }
+        public virtual decimal ExpectedTravelCosts { get; set; }
 
         [Display(Name = "Kommentar till bedömd resekostnad")]
         [DataType(DataType.MultilineText)]

@@ -80,145 +80,84 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id, string message = null, string errorMessage = null)
         {
-            var order = await GetOrderForView(id);
+            var order = await _dbContext.Orders.GetFullOrderById(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
 
                 var allowEdit = (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 var allowCancel = (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
-                //var lists = await _dbContext.Orders
-                //    .Where(o => o.OrderId == id)
-                //    .Select(o => new
-                //    {
-                //        HasPreviousRequests = o.Requests.Any(r =>
-                //           r.Status == RequestStatus.DeclinedByBroker ||
-                //           r.Status == RequestStatus.DeniedByTimeLimit ||
-                //           r.Status == RequestStatus.DeniedByCreator ||
-                //           r.Status == RequestStatus.LostDueToQuarantine),
-                //        HasAttachments = o.Attachments.Any(),
-                //        HasRequirements = o.Requirements.Any(),
-                //        HasCompetenceRequirements = o.CompetenceRequirements.Any()
-                //    }).SingleAsync();
-                var request = await _dbContext.Requests
-                    .Include(r => r.AnsweringUser)
-                    .Include(r => r.Interpreter)
-                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .SingleOrDefaultAsync(r =>
-                                        r.OrderId == id &&
-                                        r.Status != RequestStatus.InterpreterReplaced &&
-                                        r.Status != RequestStatus.DeniedByTimeLimit &&
-                                        r.Status != RequestStatus.DeniedByCreator &&
-                                        r.Status != RequestStatus.DeclinedByBroker &&
-                                        r.Status != RequestStatus.LostDueToQuarantine);
-                //var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
-                //    model.FileGroupKey = new Guid();
-                //    model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
-                var model = OrderViewModel.GetModelFromOrderAndRequest(order);
+                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);
 
-                //GET OrderStatusConfirmations!!!!!
+                var model = OrderViewModel.GetModelFromOrder(order);
+
+                var orderStatusConfirmations = await _dbContext.OrderStatusConfirmation.GetStatusConfirmationsForOrder(id).ToListAsync();
 
                 model.AllowOrderCancellation = allowCancel && (request?.CanCancel ?? false) && order.StartAt > _clock.SwedenNow;
                 model.TimeIsValidForOrderReplacement = model.AllowOrderCancellation && TimeIsValidForOrderReplacement(order.StartAt);
-                model.AllowReplacementOnCancel = model.AllowOrderCancellation && request != null && request.CanCreateReplacementOrderOnCancel && model.TimeIsValidForOrderReplacement;
-                model.AllowNoAnswerConfirmation = allowEdit && order.Status == OrderStatus.NoBrokerAcceptedOrder && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
-                model.AllowResponseNotAnsweredConfirmation = allowEdit && order.Status == OrderStatus.ResponseNotAnsweredByCreator && !order.OrderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator);
+                model.AllowReplacementOnCancel = model.AllowOrderCancellation && model.TimeIsValidForOrderReplacement && request != null && request.CanCreateReplacementOrderOnCancel;
+                model.AllowNoAnswerConfirmation = allowEdit && order.Status == OrderStatus.NoBrokerAcceptedOrder && !orderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
+                model.AllowResponseNotAnsweredConfirmation = allowEdit && order.Status == OrderStatus.ResponseNotAnsweredByCreator && !orderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator);
                 model.AllowUpdateExpiry = order.OrderGroupId == null && order.Status == OrderStatus.AwaitingDeadlineFromCustomer && allowEdit;
                 model.AllowEditContactPerson = order.Status != OrderStatus.CancelledByBroker && order.Status != OrderStatus.CancelledByCreator && order.Status != OrderStatus.NoBrokerAcceptedOrder && order.Status != OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded;
                 model.AllowUpdate = _options.EnableOrderUpdate && order.Status == OrderStatus.ResponseAccepted && order.StartAt > _clock.SwedenNow && allowEdit;
 
+                //Locations
+                var interpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(id).ToListAsync();
+
+                model.RankedInterpreterLocationFirst = interpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation;
+                model.RankedInterpreterLocationSecond = interpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation;
+                model.RankedInterpreterLocationThird = interpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation;
+                model.RankedInterpreterLocationFirstAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.Single(l => l.Rank == 1));
+                model.RankedInterpreterLocationSecondAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.SingleOrDefault(l => l.Rank == 2));
+                model.RankedInterpreterLocationThirdAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.SingleOrDefault(l => l.Rank == 3));
+
+                //Compenteces
+                var competenceRequirements = await _dbContext.OrderCompetenceRequirements
+                    .GetOrderedCompetenceRequirementsForOrder(id)
+                    .Select(r => new { r.CompetenceLevel })
+                    .ToListAsync();
+
+                model.RequestedCompetenceLevelFirst = competenceRequirements.FirstOrDefault()?.CompetenceLevel;
+                model.RequestedCompetenceLevelSecond = competenceRequirements.Count > 1 ? competenceRequirements[1]?.CompetenceLevel : null;
+
                 //LISTS
-                var acticeRequestId = request?.RequestId;
-                if (request != null)
-                {
-                    model.OrderRequirements = await _dbContext.OrderRequirementRequestAnswer
-                        .Include(a => a.OrderRequirement)
-                        .Where(a => a.RequestId == acticeRequestId)
-                        .Select(r => new OrderRequirementModel
-                        {
-                            OrderRequirementId = r.OrderRequirementId,
-                            RequirementDescription = r.OrderRequirement.Description,
-                            RequirementIsRequired = r.OrderRequirement.IsRequired,
-                            RequirementType = r.OrderRequirement.RequirementType,
-                            CanSatisfyRequirement = r.CanSatisfyRequirement,
-                            Answer = r.Answer
-                        }).ToListAsync();
-                }
-                else
-                {
-                    model.OrderRequirements = await _dbContext.OrderRequirements
-                   .Where(r => r.OrderId == id)
-                   .Select(r => new OrderRequirementModel
-                   {
-                       OrderRequirementId = r.OrderRequirementId,
-                       RequirementDescription = r.Description,
-                       RequirementIsRequired = r.IsRequired,
-                       RequirementType = r.RequirementType,
-                   }).ToListAsync();
-                }
+                model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForOrder(id, order.OrderGroupId), "Bifogade filer från myndighet");
+                model.PreviousRequests = await BrokerListModel.GetFromList(_dbContext.Requests.GetLostRequestsForOrder(id));
+                model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.OrderPriceRows.GetPriceRowsForOrder(id).ToListAsync(), PriceInformationType.Order);
 
-                model.AttachmentListModel = new AttachmentListModel
-                {
-                    AllowDelete = false,
-                    AllowDownload = true,
-                    AllowUpload = false,
-                    Title = "Bifogade filer från myndighet",
-                    DisplayFiles = await _dbContext.Attachments.Where(a =>
-                        a.OrderGroups.Any(g => g.OrderGroupId == order.OrderGroupId) &&
-                            !a.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == id) ||
-                        a.Orders.Any(o => o.OrderId == id))
-                    .Select(a => new FileModel
-                    {
-                        Id = a.AttachmentId,
-                        FileName = a.FileName,
-                        Size = a.Blob.Length
-                    }).ToListAsync()
-                };
+                model.OrderRequirements = await OrderRequirementModel.GetFromList(_dbContext.OrderRequirements.GetRequirementsForOrder(id));
+                model.Dialect = model.OrderRequirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.RequirementDescription;
 
-                model.PreviousRequests = await _dbContext.Requests.Where(r =>
-                       r.OrderId == id &&
-                       (
-                           r.Status == RequestStatus.DeclinedByBroker ||
-                           r.Status == RequestStatus.DeniedByTimeLimit ||
-                           r.Status == RequestStatus.DeniedByCreator ||
-                           r.Status == RequestStatus.LostDueToQuarantine
-                       )
-                ).Select(r => new BrokerListModel
-                {
-                    Status = r.Status,
-                    BrokerName = r.Ranking.Broker.Name,
-                    DenyMessage = r.DenyMessage,
-                }).ToListAsync();
-
-                model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(_dbContext.OrderPriceRows.Include(p => p.PriceListRow).Where(o => o.OrderId == id).ToList(), PriceInformationType.Order);
                 if (request != null)
                 {
                     //MIGHT MOVE TO MODEL BUILDER
-                    model.AllowConfirmCancellation = allowEdit && order.Status == OrderStatus.CancelledByBroker && !request.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker);
+
+                    model.AllowConfirmCancellation = allowEdit && order.Status == OrderStatus.CancelledByBroker && !_dbContext.RequestStatusConfirmation
+                        .GetStatusConfirmationsForRequest(request.RequestId).Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker);
                     model.RequestStatus = request.Status;
                     model.BrokerName = request.Ranking.Broker.Name;
                     model.BrokerOrganizationNumber = request.Ranking.Broker.OrganizationNumber;
                     //don't use AnsweredBy since request for replacement order can have interpreter etc but not is answered
                     model.ActiveRequestIsAnswered = request.InterpreterBrokerId != null && (request.Status != RequestStatus.Created && request.Status != RequestStatus.Received);
                     model.AllowRequestPrint = request.CanPrint && (await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded;
+                    //Move to Extension, with Dto
+                    var requestChecks = await _dbContext.Requests
+                        .Where(r => r.RequestId == request.RequestId)
+                        .Select(r => new
+                        {
+                            LatestComplaint = r.Complaints.Max(c => (int?)c.ComplaintId),
+                            LatestRequisition = r.Requisitions.Max(req => (int?)req.RequisitionId),
+                            CanCreateRequisitions = !r.Requisitions.Any(req => req.Status == RequisitionStatus.Reviewed || req.Status == RequisitionStatus.Created),
+                            HasConstraints = r.Complaints.Any(),
+                        }).SingleAsync();
                     if (model.ActiveRequestIsAnswered)
                     {
-                        var requestChecks = await _dbContext.Requests
-                            .Where(r => r.RequestId == request.RequestId)
-                            .Select(r => new
-                            {
-                                LatestComplaint = r.Complaints.Max(c => (int?)c.ComplaintId),
-                                LatestRequisition = r.Requisitions.Max(req => (int?)req.RequisitionId),
-                                CanCreateRequisitions = !r.Requisitions.Any(req => req.Status == RequisitionStatus.Reviewed || req.Status == RequisitionStatus.Created),
-                                HasConstraints = r.Complaints.Any(),
-                            }).SingleAsync();
 
                         model.CancelMessage = request.CancelMessage;
-                        model.ActiveRequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(_dbContext.RequestPriceRows.Include(p => p.PriceListRow).Where(r => r.RequestId == request.RequestId).ToList(), PriceInformationType.Request);
+                        model.ActiveRequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToListAsync(), PriceInformationType.Request);
                         model.RequestId = request.RequestId;
                         model.AnsweredBy = request.AnsweringUser?.CompleteContactInformation;
-                        //GET THIS FROM ActiveRequestPriceInformationModel
-                        //model.ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0;
                         model.ExpectedTravelCostInfo = request.ExpectedTravelCostInfo;
                         //There is no InterpreterLocation for replacement order if not answered yet
                         if (request.InterpreterLocation.HasValue)
@@ -229,37 +168,26 @@ namespace Tolk.Web.Controllers
                         model.InterpreterName = request.Interpreter?.CompleteContactInformation;
                         model.AllowComplaintCreation = !requestChecks.HasConstraints && request.IsApprovedOrDelivered &&
                             order.StartAt < _clock.SwedenNow && (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded;
-                        model.RequestAttachmentListModel = new AttachmentListModel
-                        {
-                            AllowDelete = false,
-                            AllowDownload = true,
-                            AllowUpload = false,
-                            Title = "Bifogade filer från förmedling",
-                            DisplayFiles = _dbContext.Attachments
-                            .Where(a => a.RequestGroups.Any(g => g.RequestGroupId == (request.RequestGroupId ?? -1)) ||
-                                a.Requests.Any(r => r.RequestId == request.RequestId))
-                            .Select(a => new FileModel
-                            {
-                                Id = a.AttachmentId,
-                                FileName = a.FileName,
-                                Size = a.Blob.Length
-                            }).ToList()
-                        };
+                        model.RequestAttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForRequest(request.RequestId, request.RequestGroupId), "Bifogade filer från förmedling");
                         model.AllowProcessing = AllowProcessing(order, model) && (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
                         model.TerminateOnDenial = request.TerminateOnDenial;
                     }
+                    model.ActiveRequest = RequestViewModel.GetModelFromRequest(request, order.AllowExceedingTravelCost);
+                    model.ActiveRequest.ComplaintId = requestChecks.LatestComplaint;
+                    model.ActiveRequest.RequisitionId = requestChecks.LatestRequisition;
+                    model.ActiveRequest.AllowRequisitionRegistration = requestChecks.CanCreateRequisitions;
+                    model.ActiveRequest.RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId));
+                    model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
                 }
-                //    if (request != null)
-                //    {
-                //        model.ActiveRequest = RequestModel.GetModelFromRequest(request, true);
-                //        model.ActiveRequest.InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null;
-                //    }
-                //    else
-                //    {
-                        model.ActiveRequest = new RequestModel();
-                //    }
-                //    model.ActiveRequest.OrderModel = model;
-                //    model.ActiveRequest.OrderModel.OrderRequirements = model.OrderRequirements;
+                else
+                {
+                    model.ActiveRequest = new RequestViewModel();
+                }
+                model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
+                model.ActiveRequest.RegionName = model.RegionName;
+                model.ActiveRequest.TimeRange = model.TimeRange;
+                model.ActiveRequest.IsCancelled = model.Status == OrderStatus.CancelledByCreator || model.Status == OrderStatus.CancelledByBroker;
+
                 model.EventLog = new EventLogModel
                 {
                     Header = "Bokningshändelser",
@@ -596,11 +524,11 @@ namespace Tolk.Web.Controllers
         {
             Order order = CreateNewOrder();
             PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
-            OrderModel updatedModel = null;
+            OrderViewModel updatedModel = null;
             var firstOccasion = model.FirstOccasion;
             string warningOrderTimeInfo = string.Empty;
             model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
-            updatedModel = OrderModel.GetModelFromOrderForConfirmation(order);
+            updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
             if (model.IsMultipleOrders)
             {
                 updatedModel.OrderOccasionDisplayModels = GetGroupOrders(model, pricelistType);
@@ -763,42 +691,35 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Print(int id)
         {
-            Order order = GetOrder(id);
+            var order = await _dbContext.Orders.GetFullOrderById(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded)
             {
-                var request = order.Requests.SingleOrDefault(r =>
-                        r.Status != RequestStatus.InterpreterReplaced &&
-                        r.Status != RequestStatus.DeniedByTimeLimit &&
-                        r.Status != RequestStatus.DeniedByCreator &&
-                        r.Status != RequestStatus.DeclinedByBroker &&
-                        r.Status != RequestStatus.LostDueToQuarantine &&
-                        r.Status != RequestStatus.ResponseNotAnsweredByCreator
-                        );
+                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id, false);
                 if (!(request?.CanPrint ?? false))
                 {
                     return RedirectToAction(nameof(View), new { id, errorMessage = "Bokningen har fel status för att skriva ut en bokningsbekräftelse" });
                 }
 
-                var model = OrderModel.GetModelFromOrder(order, request?.RequestId);
+                var model = OrderViewModel.GetModelFromOrder(order);
                 model.BrokerName = request.Ranking.Broker.Name;
                 model.CreatedBy = request.Order.CreatedByUser.FullName;
                 model.ActiveRequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(request);
                 model.RequestId = request.RequestId;
                 model.AnsweredBy = request.AnsweringUser?.FullName;
                 model.AnsweredAt = request.AnswerDate;
-                model.ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0;
                 model.ExpectedTravelCostInfo = request.ExpectedTravelCostInfo;
                 model.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
                 model.InterpreterLocationInfoAnswer = GetInterpreterLocationInfoAnswer(order, request.InterpreterLocation.Value);
                 model.InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel)request.CompetenceLevel;
-                model.ActiveRequest = RequestModel.GetModelFromRequest(request, true);
+                model.ActiveRequest = RequestViewModel.GetModelFromRequest(request, order.AllowExceedingTravelCost);
+#warning add pertinent lists, both request and order!!!
                 model.ActiveRequest.InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null;
-                model.ActiveRequest.OrderModel = model;
                 model.ActiveRequest.Interpreter = request.Interpreter.FullName;
-                model.ActiveRequest.NewInterpreterEmail = request.Interpreter.Email ?? "-";
-                model.ActiveRequest.NewInterpreterPhoneNumber = request.Interpreter.PhoneNumber ?? "-";
-                model.ActiveRequest.NewInterpreterOfficialInterpreterId = request.Interpreter.OfficialInterpreterId ?? "-";
+#warning add inerpreter info!
+                //model.ActiveRequest.NewInterpreterEmail = request.Interpreter.Email ?? "-";
+                //model.ActiveRequest.NewInterpreterPhoneNumber = request.Interpreter.PhoneNumber ?? "-";
+                //model.ActiveRequest.NewInterpreterOfficialInterpreterId = request.Interpreter.OfficialInterpreterId ?? "-";
                 model.Dialect = GetRequestAnswerDialect(model.Dialect, model.ActiveRequest.RequirementAnswers);
                 model.ActiveRequest.AnswerProcessedBy = request.AnswerProcessedBy.HasValue ? request.ProcessingUser.FullName : "Systemet";
                 model.ActiveRequest.AnswerProcessedAt = request.AnswerProcessedAt.HasValue ? request.AnswerProcessedAt.Value.ToSwedishString("yyyy-MM-dd HH:mm") : request.AnswerDate.Value.ToSwedishString("yyyy-MM-dd HH:mm");
@@ -1014,10 +935,8 @@ namespace Tolk.Web.Controllers
 
         private void ChangeContactPerson(Order order, int? newContactPersonId)
         {
-
             order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
                 User.TryGetImpersonatorId(), _dbContext.Users.SingleOrDefault(u => u.Id == newContactPersonId));
-
         }
 
         [ValidateAntiForgeryToken]
@@ -1199,51 +1118,6 @@ namespace Tolk.Web.Controllers
                 .Include(o => o.Requests).ThenInclude(r => r.RequestGroup).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(o => o.Requests).ThenInclude(r => r.Order)
                 .Single(o => o.OrderId == id);
-        }
-        private async Task<Order> GetOrderForView(int id)
-        {
-            return await _dbContext.Orders
-                .Include(o => o.ReplacedByOrder)
-                .Include(o => o.ReplacingOrder).ThenInclude(o => o.CreatedByUser)
-                .Include(o => o.CreatedByUser)
-                .Include(o => o.ContactPersonUser)
-                .Include(o => o.Region)
-                .Include(o => o.CustomerOrganisation)
-                .Include(o => o.Language)
-                .Include(o => o.CustomerUnit)
-                //.Include(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                //.Include(o => o.InterpreterLocations)
-                //.Include(o => o.CompetenceRequirements)
-                //.Include(o => o.OrderStatusConfirmations)//.ThenInclude(os => os.ConfirmedByUser)
-                ////.Include(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation).ThenInclude(occ => occ.ConfirmedByUser).ThenInclude(cu => cu.Broker)
-                ////.Include(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
-                ////.Include(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.UpdatedByUser)
-                //.Include(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
-                //.Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                //.Include(o => o.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                //.Include(o => o.Requests).ThenInclude(r => r.Requisitions)//.ThenInclude(r => r.CreatedByUser)
-                ////.Include(o => o.Requests).ThenInclude(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)
-                //.Include(o => o.Requests).ThenInclude(r => r.Complaints)//.ThenInclude(c => c.CreatedByUser)
-                ////.Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.AnsweringUser)
-                ////.Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
-                ////.Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
-                //.Include(o => o.Requests).ThenInclude(r => r.Interpreter)
-                //.Include(o => o.Requests).ThenInclude(r => r.AnsweringUser)
-                //.Include(o => o.Requests).ThenInclude(r => r.ReceivedByUser)
-                //.Include(o => o.Requests).ThenInclude(r => r.ProcessingUser)
-                //.Include(o => o.Requests).ThenInclude(r => r.CancelledByUser)
-                ////.Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Ranking).ThenInclude(ra => ra.Broker)
-                ////.Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions).ThenInclude(u => u.CreatedByUser)
-                ////.Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints).ThenInclude(u => u.CreatedByUser)
-                ////.Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
-                ////.Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                //.Include(o => o.Requests).ThenInclude(r => r.Order)
-                //.Include(o => o.Requests).ThenInclude(r => r.RequestUpdateLatestAnswerTime).ThenInclude(ru => ru.UpdatedByUser)
-                //.Include(o => o.Group).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
-                //.Include(o => o.Attachments).ThenInclude(o => o.Attachment)
-                //.Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
-                //.Include(o => o.Requests).ThenInclude(r => r.RequestGroup).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
-                .SingleAsync(o => o.OrderId == id);
         }
     }
 }

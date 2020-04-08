@@ -661,63 +661,6 @@ namespace Tolk.Web.Models
             }
         }
 
-        internal static OrderModel GetModelFromOrderForConfirmation(Order order)
-        {
-            bool useRankedInterpreterLocation = order.InterpreterLocations.Count > 1;
-
-            OrderCompetenceRequirement competenceFirst = null;
-            OrderCompetenceRequirement competenceSecond = null;
-            var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
-            {
-                CompetenceLevel = r.CompetenceLevel,
-                Rank = r.Rank,
-            }).ToList();
-
-            competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
-            competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
-            competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
-
-            return new OrderModel
-            {
-                AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
-                AssignmentType = new RadioButtonGroup { SelectedItem = SelectListService.AssignmentTypes.Single(e => e.Value == order.AssignmentType.ToString()) },
-                CreatorIsInterpreterUser = order.CreatorIsInterpreterUser.HasValue ? new RadioButtonGroup { SelectedItem = SelectListService.BoolList.Single(e => e.Value == (order.CreatorIsInterpreterUser.Value ? TrueFalse.Yes.ToString() : TrueFalse.No.ToString())) } : null,
-                RegionId = order.RegionId,
-                CustomerReferenceNumber = order.CustomerReferenceNumber,
-                CustomerUnitId = order.CustomerUnitId,
-                InvoiceReference = order.InvoiceReference,
-                TimeRange = new TimeRange
-                {
-                    StartDateTime = order.StartAt,
-                    EndDateTime = order.EndAt
-                },
-                Description = order.Description,
-                UnitName = order.UnitName,
-                LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
-                CompetenceLevelDesireType = new RadioButtonGroup
-                {
-                    SelectedItem = order.SpecificCompetenceLevelRequired
-                    ? SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Requirement)
-                    : SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Request)
-                },
-                RequestedCompetenceLevelFirst = competenceFirst?.CompetenceLevel,
-                RequestedCompetenceLevelSecond = competenceSecond?.CompetenceLevel,
-                RankedInterpreterLocationFirst = order.InterpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation,
-                RankedInterpreterLocationSecond = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation,
-                RankedInterpreterLocationThird = order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation,
-                RankedInterpreterLocationFirstAddressModel = GetInterpreterLocation(order.InterpreterLocations.Single(l => l.Rank == 1)),
-                RankedInterpreterLocationSecondAddressModel = GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)),
-                RankedInterpreterLocationThirdAddressModel = GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)),
-                OrderRequirements = order.Requirements.Select(r => new OrderRequirementModel
-                {
-                    OrderRequirementId = r.OrderRequirementId,
-                    RequirementDescription = r.Description,
-                    RequirementIsRequired = r.IsRequired,
-                    RequirementType = r.RequirementType
-                }).ToList(),
-            };
-        }
-
         private static OrderInterpreterLocation GetInterpreterLocation(InterpreterLocation location, int rank, InterpreterLocationAddressModel addressModel)
         {
             return new OrderInterpreterLocation

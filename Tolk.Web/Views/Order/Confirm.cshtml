@@ -1,8 +1,9 @@
-﻿@model Tolk.Web.Models.OrderModel
+﻿@model OrderViewModel
 @inject HelpLinkService HelpLinkService
+@using Tolk.BusinessLogic.Utilities
 @using Tolk.Web.Services
 @{
-    ViewData["Title"] = $"Sammanfattning av bokning uppdragstyp - {Model.AssignmentType.SelectedItem.Text}";
+    ViewData["Title"] = $"Sammanfattning av bokning uppdragstyp - {Model.AssignmentType.GetDescription()}";
     ViewData["OrderSummary_ShowCalculatedPrice"] = true;
 }
 

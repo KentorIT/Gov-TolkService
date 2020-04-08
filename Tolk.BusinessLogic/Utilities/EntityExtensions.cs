@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -9,12 +11,15 @@ namespace Tolk.BusinessLogic.Utilities
 {
     public static class EntityExtensions
     {
+        #region lists
+
         public static IQueryable<OrderGroup> CustomerOrderGroups(this IQueryable<OrderGroup> orderGroups, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false)
         {
             var filteredOrderGroups = orderGroups.Where(o => o.CustomerOrganisationId == customerOrganisationId);
             return isCentralAdminOrOrderHandler ? filteredOrderGroups :
                 filteredOrderGroups.Where(o => (o.CreatedBy == userId && o.CustomerUnitId == null) || customerUnits.Contains(o.CustomerUnitId ?? -1));
         }
+
         public static IQueryable<OrderListRow> CustomerOrderListRows(this IQueryable<OrderListRow> entities, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false)
         {
             var filteredOrderGroups = entities.Where(o => o.CustomerOrganisationId == customerOrganisationId);
@@ -92,6 +97,97 @@ namespace Tolk.BusinessLogic.Utilities
                      r.Status == RequestStatus.Approved && !(r.CompletedNotificationIsHandled ?? false));
         }
 
+        #endregion
+
+        #region lists connected to order
+
+        public static IQueryable<OrderStatusConfirmation> GetStatusConfirmationsForOrder(this IQueryable<OrderStatusConfirmation> confirmations, int id)
+            => confirmations.Where(o => o.OrderId == id);
+
+        public static IQueryable<OrderInterpreterLocation> GetOrderedInterpreterLocationsForOrder(this IQueryable<OrderInterpreterLocation> locations, int id)
+             => locations.Where(r => r.OrderId == id).OrderBy(r => r.Rank);
+
+        public static IQueryable<OrderCompetenceRequirement> GetOrderedCompetenceRequirementsForOrder(this IQueryable<OrderCompetenceRequirement> requirements, int id)
+            => requirements.Where(r => r.OrderId == id).OrderBy(r => r.Rank);
+
+        public static IQueryable<OrderRequirement> GetRequirementsForOrder(this IQueryable<OrderRequirement> requirements, int id)
+            => requirements.Where(r => r.OrderId == id);
+
+        public static IQueryable<Attachment> GetAttachmentsForOrder(this IQueryable<Attachment> attachments, int id, int? orderGroupId)
+            => attachments.Where(a =>
+                        a.OrderGroups.Any(g => g.OrderGroupId == orderGroupId) &&
+                            !a.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == id) ||
+                        a.Orders.Any(o => o.OrderId == id));
+
+        public static IQueryable<Request> GetLostRequestsForOrder(this IQueryable<Request> requests, int id)
+            => requests.Where(r => r.OrderId == id &&
+                       (
+                           r.Status == RequestStatus.DeclinedByBroker ||
+                           r.Status == RequestStatus.DeniedByTimeLimit ||
+                           r.Status == RequestStatus.DeniedByCreator ||
+                           r.Status == RequestStatus.LostDueToQuarantine
+                       )
+                );
+
+        public static IQueryable<OrderPriceRow> GetPriceRowsForOrder(this IQueryable<OrderPriceRow> rows, int id)
+            => rows.Include(p => p.PriceListRow).Where(o => o.OrderId == id);
+
+
+        #endregion
+
+        #region lists connected to requests
+
+        public static IQueryable<RequestStatusConfirmation> GetStatusConfirmationsForRequest(this IQueryable<RequestStatusConfirmation> confirmations, int id)
+            => confirmations.Where(o => o.RequestId == id);
+
+        public static IQueryable<RequestPriceRow> GetPriceRowsForRequest(this IQueryable<RequestPriceRow> rows, int id)
+            => rows.Include(p => p.PriceListRow).Where(o => o.RequestId == id);
+
+        public static IQueryable<Attachment> GetAttachmentsForRequest(this IQueryable<Attachment> attachments, int id, int? requestGroupId)
+            => attachments.Where(a => a.RequestGroups.Any(g => g.RequestGroupId == (requestGroupId ?? -1)) ||
+                    a.Requests.Any(r => r.RequestId == id));
+
+        public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForRequest(this IQueryable<OrderRequirementRequestAnswer> answers, int id)
+           => answers.Include(a => a.OrderRequirement).Where(a => a.RequestId == id);
+
+        #endregion
+
+        #region single entities by id
+
+        public static async Task<Order> GetFullOrderById(this IQueryable<Order> orders, int id)
+        {
+            return await orders
+                .Include(o => o.ReplacedByOrder)
+                .Include(o => o.ReplacingOrder).ThenInclude(o => o.CreatedByUser)
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.ContactPersonUser)
+                .Include(o => o.Region)
+                .Include(o => o.CustomerOrganisation)
+                .Include(o => o.Language)
+                .Include(o => o.CustomerUnit)
+                .SingleAsync(o => o.OrderId == id);
+        }
+
+        public static async Task<Request> GetActiveRequestByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
+        {
+            return await requests
+                .Include(r => r.Order)
+                .Include(r => r.AnsweringUser)
+                .Include(r => r.Interpreter)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .SingleOrDefaultAsync(r =>
+                                    r.OrderId == orderId &&
+                                    r.Status != RequestStatus.InterpreterReplaced &&
+                                    r.Status != RequestStatus.DeniedByTimeLimit &&
+                                    r.Status != RequestStatus.DeniedByCreator &&
+                                    r.Status != RequestStatus.DeclinedByBroker &&
+                                    r.Status != RequestStatus.LostDueToQuarantine &&
+                                    (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
+
+        }
+
+        #endregion
+
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)
         {
             return requests.GetRequestOrders().OrderBy(o => o.StartAt).First().StartAt;
@@ -125,11 +221,6 @@ namespace Tolk.BusinessLogic.Utilities
 
         }
 
-        private static int? TryGetNullableInt(this string value)
-        {
-            return int.TryParse(value, out var i) ? (int?)i : null;
-        }
-
         public static PriceInformationModel GetPriceInformationModel(this IEnumerable<PriceRowBase> priceRows, string competenceLevel, decimal brokerFee)
         {
             return new PriceInformationModel
@@ -152,6 +243,11 @@ namespace Tolk.BusinessLogic.Utilities
                         })
                     })
             };
+        }
+
+        private static int? TryGetNullableInt(this string value)
+        {
+            return int.TryParse(value, out var i) ? (int?)i : null;
         }
     }
 }

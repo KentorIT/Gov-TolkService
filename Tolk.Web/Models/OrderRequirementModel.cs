@@ -1,4 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Helpers;
 
@@ -30,5 +35,14 @@ namespace Tolk.Web.Models
         [ClientRequired]
         [NoDisplayName]
         public Gender? Gender { get; set; }
+
+        internal static async Task<List<OrderRequirementModel>> GetFromList(IQueryable<OrderRequirement> requirements)
+            => await requirements.Select(r => new OrderRequirementModel
+            {
+                OrderRequirementId = r.OrderRequirementId,
+                RequirementDescription = r.Description,
+                RequirementIsRequired = r.IsRequired,
+                RequirementType = r.RequirementType,
+            }).ToListAsync();
     }
 }

@@ -512,6 +512,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<OrderGroupInterpreterLocation> OrderGroupInterpreterLocations { get; set; }
 
+        public DbSet<OrderInterpreterLocation> OrderInterpreterLocation { get; set; }
+
         public DbSet<OrderCompetenceRequirement> OrderCompetenceRequirements { get; set; }
 
         public DbSet<Order> Orders { get; set; }

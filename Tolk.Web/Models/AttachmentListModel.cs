@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.Web.Models
 {
@@ -19,5 +23,21 @@ namespace Tolk.Web.Models
         public string Title { get; set; } = "Bifogade filer";
 
         public string Description { get; set; } = "Möjlighet att bifoga filer som kan vara relevanta";
+
+        internal static async Task<AttachmentListModel> GetReadOnlyModelFromList(IQueryable<Attachment> attachments, string title)
+            => new AttachmentListModel
+            {
+                AllowDelete = false,
+                AllowDownload = true,
+                AllowUpload = false,
+                Title = title,
+                DisplayFiles = await attachments
+                    .Select(a => new FileModel
+                    {
+                        Id = a.AttachmentId,
+                        FileName = a.FileName,
+                        Size = a.Blob.Length
+                    }).ToListAsync()
+            };
     }
 }
