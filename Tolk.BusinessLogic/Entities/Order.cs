@@ -65,6 +65,8 @@ namespace Tolk.BusinessLogic.Entities
         [Required]
         public string OrderNumber { get; set; }
 
+        public bool? MealBreakIncluded { get; set; }
+
         public int? OrderGroupId { get; set; }
 
         [ForeignKey(nameof(OrderGroupId))]

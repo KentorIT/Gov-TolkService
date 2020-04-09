@@ -79,10 +79,14 @@
                             <div class="row">
                                 <div class="order-datepicker @orderTimeClass">
                                     <form-entry asp-for="SplitTimeRange" class="date-and-time-part" help-link="@HelpLinkService.GenerateUrl("nybokning_start_sluttid")" />
+
                                     @if (enableOrderGroups)
                                     {
                                         <form-entry asp-for="ExtraInterpreter" class="extra-interpreter-part" help-link="@HelpLinkService.GenerateUrl("nybokning_sammanhallen")" />
                                     }
+                                </div>
+                                <div id="mealbreak-included" class="col-sm-12 d-none">
+                                    <form-entry asp-for="MealBreakIncluded" help-link="@HelpLinkService.GenerateUrl("nybokning_maltidspaus")" />
                                 </div>
                                 <div id="OccasionValidator" class="col-sm-12 d-none text-danger body"></div>
                             </div>
@@ -106,6 +110,7 @@
                                                     <tr>
                                                         <th>Tillfälle</th>
                                                         <th>Extra tolk</th>
+                                                        <th>Måltidspaus ingår</th>
                                                         <th data-sortable="false"></th>
                                                     </tr>
                                                 </thead>
@@ -354,6 +359,7 @@
     <input asp-for="Occasions[0].OccasionStartDateTime" type="hidden" />
     <input asp-for="Occasions[0].OccasionEndDateTime" type="hidden" />
     <input asp-for="Occasions[0].ExtraInterpreter" type="hidden" />
+    <input asp-for="Occasions[0].MealBreakIncluded" type="hidden" />
 </span>
 @await Html.PartialAsync("_UploadFileDialog")
 @await Html.PartialAsync("../Shared/_OrderRequirementAndDesires", Model.UserDefaultSettings)

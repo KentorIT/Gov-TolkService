@@ -103,6 +103,7 @@ $(function () {
             return;
         }
         var hasExtra = $("#ExtraInterpreter").is(":checked") ? 'Ja' : 'Nej';
+        var mealBreakIncluded = $("#MealBreakIncluded").is(":checked") ? 'Ja' : 'Nej';
         var $hidden = $("#baseOccasion").clone();
         //Change the ids for the cloned inputs
         $hidden.find("input").each(function () {
@@ -141,16 +142,18 @@ $(function () {
             ':' +
             zeroPrefix($("#SplitTimeRange_EndTimeMinutes").val()));
         $hidden.find("input[name$='ExtraInterpreter']").val($("#ExtraInterpreter").is(":checked") ? "true" : "false");
+        $hidden.find("input[name$='MealBreakIncluded']").val($("#MealBreakIncluded").is(":checked") ? "true" : "false");
 
         var table = $('.several-occasions-table table').DataTable();
-        table.row.add([date + $hidden.html(), hasExtra, occasionButtons]).draw();
+        table.row.add([date + $hidden.html(), hasExtra, mealBreakIncluded, occasionButtons]).draw();
 
         $('.order-datepicker input:text').val('');
         $(".order-datepicker select").each(function (i, v) {
             $(this).val("").trigger("change");
         });
         $("#ExtraInterpreter").prop('checked', false);
-
+        $("#MealBreakIncluded").prop('checked', false);
+        $("#mealbreak-included").hide();
     };
 
     var zeroPrefix = function (val) {
@@ -173,6 +176,44 @@ $(function () {
             $("#SeveralOccasions").parents(".checkbox").addClass("checkbox-disabled");
         } else {
             $("#SeveralOccasions").parents(".checkbox").removeClass("checkbox-disabled");
+        }
+    };
+
+    var checkMealbreak = function () {
+        //if not all time values are set don't show
+        if ($("#SplitTimeRange_StartTimeHour").val() === "" || $("#SplitTimeRange_StartTimeMinutes").val() === ""
+            || $("#SplitTimeRange_EndTimeHour").val() === "" || $("#SplitTimeRange_EndTimeMinutes").val() === "") {
+            return;
+        }
+        //else check if longer than 4h
+        var isLongerThan4h = false;
+        var startHour = Number($("#SplitTimeRange_StartTimeHour").val());
+        var startMinute = Number($("#SplitTimeRange_StartTimeMinutes").val());
+        var endHour = Number($("#SplitTimeRange_EndTimeHour").val());
+        var endMinute = Number($("#SplitTimeRange_EndTimeMinutes").val());
+
+        if (startHour === endHour) {
+            isLongerThan4h = endMinute <= startMinute;
+        }
+        else if (startHour > endHour) {
+            if (startHour - endHour < 20) {
+                isLongerThan4h = true;
+            }
+            else if (startHour - endHour === 20) {
+                isLongerThan4h = endMinute > startMinute;
+            }
+        }
+        else if (endHour - startHour > 4) {
+            isLongerThan4h = true;
+        }
+        else if (endHour - startHour === 4) {
+            isLongerThan4h = endMinute > startMinute;
+        }
+        if (isLongerThan4h) {
+            $("#mealbreak-included").show();
+        }
+        else {
+            $("#mealbreak-included").hide();
         }
     };
 
@@ -342,6 +383,8 @@ $(function () {
 
     $("body").on("change", "#SplitTimeRange_StartTimeHour, #SplitTimeRange_StartTimeMinutes, #SplitTimeRange_EndTimeHour, #SplitTimeRange_EndTimeMinutes", function () {
         toggleSeveralOccasions();
+        checkMealbreak();
+
     });
 
     $("body").on("change", "#LatestAnswerBy_Hour", function () {

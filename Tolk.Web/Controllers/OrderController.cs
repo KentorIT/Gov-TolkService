@@ -1006,7 +1006,7 @@ namespace Tolk.Web.Controllers
                 {
                     list.Add(occasion.OrderOccasionId.Value, order);
                 }
-
+                order.MealBreakIncluded = occasion.MealBreakIncluded;
                 yield return order;
             }
         }

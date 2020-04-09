@@ -749,6 +749,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int?>("LanguageId");
 
+                    b.Property<bool?>("MealBreakIncluded");
+
                     b.Property<int?>("OrderGroupId");
 
                     b.Property<string>("OrderNumber")

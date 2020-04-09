@@ -65,6 +65,7 @@ else
                         <thead>
                             <tr>
                                 <th>Tillfälle</th>
+                                <th>Måltidspaus ingår</th>
                                 <th></th>
                                 <th class="currency">Beräknat pris</th>
                                 <th data-sortable="false"></th>
@@ -73,20 +74,23 @@ else
                         <tbody>
                             @foreach (var occasion in Model.OrderOccasionDisplayModels.OrderBy(o => o.OccasionStartDateTime))
                             {
-                                <tr class="table-row">
-                                    <td>
-                                        @occasion.Information
-                                    </td>
-                                    <td>
-                                        @(occasion.ExtraInterpreter ? "Extra tolk" : "")
-                                    </td>
-                                    <td class="currency">
-                                        @occasion.PriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")
-                                    </td>
-                                    <td>
-                                        <a class="table-price-toggle-price-info" href="#more-info">Visa</a>
-                                    </td>
-                                </tr>
+                            <tr class="table-row">
+                                <td>
+                                    @occasion.Information
+                                </td>
+                                <td>
+                                    @(occasion.MealBreakIncluded ? "Ja" : "Nej")
+                                </td>
+                                <td>
+                                    @(occasion.ExtraInterpreter ? "Extra tolk" : "")
+                                </td>
+                                <td class="currency">
+                                    @occasion.PriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")
+                                </td>
+                                <td>
+                                    <a class="table-price-toggle-price-info" href="#more-info">Visa</a>
+                                </td>
+                            </tr>
                                 <tr class="table-price-row">
                                     <td colspan="4">
                                         @await Html.PartialAsync("_PriceTable", occasion.PriceInformationModel)

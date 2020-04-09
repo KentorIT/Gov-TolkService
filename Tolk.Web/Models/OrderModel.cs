@@ -69,6 +69,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Extra tolk", Description = "Om det finns behov av två tolkar till samma tillfälle så kryssa i rutan Extra tolk. Detta innebär att arvode och förmedlingsavgift utgår för båda tolkarna för hela tillfället.")]
         public bool ExtraInterpreter { get; set; }
 
+        [Display(Name = "Måltidspaus ingår", Description = "Om det är ett längre uppdrag så kryssa i rutan om det ingår en måltidspaus.")]
+        public bool MealBreakIncluded { get; set; }
+
         [Display(Name = "Boka flera tillfällen med samma tolk", Description = "Om rutan kryssas i så går det att lägga till flera tillfällen. Det är tvingande för förmedlingen att tillsätta samma tolk för alla tillfällen. Detta innebär att arvode och förmedlingsavgift utgår för varje tillfälle. Fyll i ett fullständigt tillfälle för att kunna lägga till fler tillfällen.")]
         public bool SeveralOccasions { get; set; }
 
@@ -226,10 +229,10 @@ namespace Tolk.Web.Models
                 {
                     foreach (var occasion in Occasions)
                     {
-                        yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreter = false, OrderOccasionId = id++ };
+                        yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreter = false, MealBreakIncluded = occasion.MealBreakIncluded, OrderOccasionId = id++ };
                         if (occasion.ExtraInterpreter)
                         {
-                            yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreterFor = id - 1, OrderOccasionId = id++ };
+                            yield return new OrderOccasionDisplayModel(occasion) { ExtraInterpreterFor = id - 1, MealBreakIncluded = occasion.MealBreakIncluded, OrderOccasionId = id++ };
                         }
                     }
                 }
@@ -242,6 +245,7 @@ namespace Tolk.Web.Models
                             OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
                             OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
                             ExtraInterpreter = false,
+                            MealBreakIncluded = MealBreakIncluded,
                             OrderOccasionId = id
                         };
                         if (ExtraInterpreter)
@@ -252,6 +256,7 @@ namespace Tolk.Web.Models
                                 OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
                                 ExtraInterpreter = true,
                                 ExtraInterpreterFor = id,
+                                MealBreakIncluded = MealBreakIncluded,
                                 OrderOccasionId = ++id
                             };
                         }
@@ -405,6 +410,7 @@ namespace Tolk.Web.Models
             order.ContactPersonId = ContactPersonId;
             if (!isGroupOrder)
             {
+                order.MealBreakIncluded = MealBreakIncluded;
                 order.Attachments = Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList();
             }
             order.InvoiceReference = InvoiceReference;

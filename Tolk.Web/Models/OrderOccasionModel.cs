@@ -11,5 +11,7 @@ namespace Tolk.Web.Models
         public DateTime OccasionEndDateTime { get; set; }
 
         public bool ExtraInterpreter { get; set; }
+
+        public bool MealBreakIncluded { get; set; }
     }
 }
