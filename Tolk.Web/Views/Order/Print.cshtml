@@ -122,9 +122,9 @@
                             </td>
                             <td class="order-print-column">
                                 <span class="bold">Tillsatt tolk: </span>@Model.ActiveRequest.Interpreter <br />
-                                @*<span class="bold">Kammarkollegiets tolknummer: </span>@Model.ActiveRequest.NewInterpreterOfficialInterpreterId<br />
-                                <span class="bold">E-post: </span>@Model.ActiveRequest.NewInterpreterEmail<br />
-                                <span class="bold">Telefon: </span>@Model.ActiveRequest.NewInterpreterPhoneNumber<br /><br />*@
+                                <span class="bold">Kammarkollegiets tolknummer: </span>@Model.ActiveRequest.InterpreterOfficialInterpreterId<br />
+                                <span class="bold">E-post: </span>@Model.ActiveRequest.InterpreterEmail<br />
+                                <span class="bold">Telefon: </span>@Model.ActiveRequest.InterpreterPhoneNumber<br /><br />
 
                                 <span class="bold">Tillsatt kompetensnivå: </span>@Model.InterpreterCompetenceLevel.Value.GetDescription()<br />
 
@@ -156,26 +156,23 @@
                                 <br />
                             </td>
                         </tr>
-                        @if (Model.ActiveRequest.AttachmentListModel?.DisplayFiles?.Count > 0)
+                        @if (Model.RequestAttachmentListModel?.DisplayFiles?.Count > 0)
                         {
                             <tr>
                                 <td colspan="2" class="align-top">
                                     <span class="bold">
-                                        Bifogade filer från förmedling:
+                                        @(Model.RequestAttachmentListModel.Title):
                                     </span>
                                     <table>
                                         <tbody>
-                                            @if (Model.ActiveRequest.AttachmentListModel?.DisplayFiles != null)
-                                            {
-                                                @for (var i = 0; i < Model.ActiveRequest.AttachmentListModel?.DisplayFiles.Count; ++i)
+                                                @foreach (var file in Model.RequestAttachmentListModel.DisplayFiles)
                                                 {
                                                     <tr>
                                                         <td>
-                                                            @Model.ActiveRequest.AttachmentListModel?.DisplayFiles[i].FileName
+                                                            @file.FileName
                                                         </td>
                                                     </tr>
                                                 }
-                                            }
                                         </tbody>
                                     </table>
 

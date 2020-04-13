@@ -292,7 +292,7 @@ namespace Tolk.BusinessLogic.Entities
                 OrderChangeLogType = model.OrderChangeLogType,
                 OrderAttachmentHistoryEntries = orderAttachmentHistories,
                 OrderHistories = orderHistories,
-                BrokerId = Requests.OrderBy(r => r.RequestId).Last().Ranking.BrokerId
+                BrokerId = model.BrokerId
             });
         }
 

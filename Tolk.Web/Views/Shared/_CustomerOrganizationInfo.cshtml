@@ -4,7 +4,7 @@
     bool IsOrderDetailView = ViewData.ContainsKey(IsOrderDetailViewKey) ? (bool)ViewData[IsOrderDetailViewKey] : false;
     string header = (string)ViewData["header"] ?? "Myndighetens uppgifter";
 
-    //string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till " : "Ändra ";
+    string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till " : "Ändra ";
 
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
     var divClass = isCollapsible ? "collapse" : "";
@@ -41,8 +41,7 @@
                     <display-entry asp-for="ContactPerson" />
                     @if (Model.AllowEditContactPerson)
                     {
-                        <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-primary">BEHÖVER FIXAS BYT PERSON</button>
-                        @*<button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-primary">@editContactpersonButtonText person</button>*@
+                        <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-primary">@editContactpersonButtonText person</button>
                         <br /><br />
                     }
                 </div>

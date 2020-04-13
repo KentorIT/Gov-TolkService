@@ -31,6 +31,8 @@ namespace BrokerMock.Controllers
         private readonly IMemoryCache _cache;
         private readonly static HttpClient client = new HttpClient(GetCertHandler());
 
+        private readonly object clientLock = new object();
+
         public RequestController(IHubContext<WebHooksHub> hubContext, IOptions<BrokerMockOptions> options, ApiCallService apiService, IMemoryCache cache)
         {
             _hubContext = hubContext;
@@ -39,13 +41,16 @@ namespace BrokerMock.Controllers
             _cache = cache;
             if (_options.UseApiKey)
             {
-                if (!client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-UserName"))
+                lock (clientLock)
                 {
-                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-UserName", _options.ApiUserName);
-                }
-                if (!client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-ApiKey"))
-                {
-                    client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-ApiKey", _options.ApiKey);
+                    if (!client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-UserName"))
+                    {
+                        client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-UserName", _options.ApiUserName);
+                    }
+                    if (!client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-ApiKey"))
+                    {
+                        client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-ApiKey", _options.ApiKey);
+                    }
                 }
             }
         }

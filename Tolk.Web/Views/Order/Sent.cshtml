@@ -1,4 +1,4 @@
-﻿@model OrderModel
+﻿@model OrderSentModel
 @inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
 @{
@@ -20,7 +20,6 @@
                 </div>
                 @if (Model.OrderCalculatedPriceInformationModel != null)
                 {
-                    Model.OrderCalculatedPriceInformationModel.Header = "Preliminärt pris";
                     await Html.RenderPartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
                 }
                 <br /><br /><br />

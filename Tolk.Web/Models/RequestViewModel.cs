@@ -142,6 +142,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Tillsatt tolk")]
         [DataType(DataType.MultilineText)]
         public string Interpreter { get; set; }
+        public string InterpreterEmail { get; set; }
+        public string InterpreterPhoneNumber { get; set; }
+        public string InterpreterOfficialInterpreterId { get; set; }
 
         public bool? IsInterpreterVerified { get; set; }
 

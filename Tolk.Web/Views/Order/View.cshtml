@@ -6,7 +6,7 @@
 @using Tolk.BusinessLogic.Enums
 @{
     ViewData["Title"] = "Bokning - " + Model.OrderNumber;
-    //string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till " : "Ändra ";
+    string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till " : "Ändra ";
 
     bool isRequisitionAvailable = (bool?)Model.ActiveRequest.RequisitionId.HasValue ?? false;
     bool isComplaintAvailable = (bool?)Model.ActiveRequest.ComplaintId.HasValue ?? false;
@@ -346,7 +346,7 @@
 @if (Model.AllowEditContactPerson)
 {
 
-@*
+
 
     <div id="EditContactPerson" class="modal fade" role="dialog">
         <div class="modal-dialog">
@@ -374,7 +374,7 @@
             </div>
         </div>
     </div>
-    *@
+    
 }
 @section Scripts {
     <environment include="Development">

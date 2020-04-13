@@ -153,7 +153,6 @@ namespace Tolk.Web.Models
         [Placeholder("Beskriv anledning till avbokning.")]
         public string CancelMessage { get; set; }
 
-
         #endregion
 
         public bool AllowDenial => AllowExceedingTravelCost != null && EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved;

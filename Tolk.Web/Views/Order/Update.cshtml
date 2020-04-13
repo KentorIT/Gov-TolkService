@@ -121,12 +121,10 @@
                     </div>
                     <div class="col-sm-4">
                         <display-entry asp-for="SelectedInterpreterLocation" />
-                        <input asp-for="SelectedInterpreterLocation" type="hidden" />
                         @if (!string.IsNullOrEmpty(Model.LocationStreet))
                         {
                             <form-entry asp-for="LocationStreet" />
                             <display-entry asp-for="LocationCity" />
-                            <input asp-for="LocationCity" type="hidden" />
                         }
                         else
                         {
@@ -140,9 +138,6 @@
                     </div>
                 </div>
                 <input asp-for="RankedInterpreterLocationFirst" type="hidden" />
-                <input asp-for="TimeRange" type="hidden" />
-                <input asp-for="AssignmentType" type="hidden" />
-                <input asp-for="RegionId" type="hidden" />
                 <input asp-for="OrderId" type="hidden" />
                 <h1 class="normal-weight">Myndighetens uppgifter</h1>
                 <hr />

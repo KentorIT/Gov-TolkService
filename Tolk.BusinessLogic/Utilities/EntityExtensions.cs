@@ -113,11 +113,15 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<OrderRequirement> GetRequirementsForOrder(this IQueryable<OrderRequirement> requirements, int id)
             => requirements.Where(r => r.OrderId == id);
 
-        public static IQueryable<Attachment> GetAttachmentsForOrder(this IQueryable<Attachment> attachments, int id, int? orderGroupId)
+        public static IQueryable<Attachment> GetAttachmentsForOrderAndGroup(this IQueryable<Attachment> attachments, int id, int? orderGroupId)
             => attachments.Where(a =>
                         a.OrderGroups.Any(g => g.OrderGroupId == orderGroupId) &&
                             !a.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == id) ||
                         a.Orders.Any(o => o.OrderId == id));
+        public static IQueryable<OrderAttachment> GetAttachmentsForOrder(this IQueryable<OrderAttachment> attachments, int id)
+            => attachments.Include(a => a.Attachment).Where(a => a.Attachment.Orders.Any(o => o.OrderId == id));
+        public static IQueryable<OrderGroupAttachment> GetAttachmentsForOrderGroup(this IQueryable<OrderGroupAttachment> attachments, int id)
+            => attachments.Include(a => a.Attachment).Where(a => a.Attachment.OrderGroups.Any(g => g.OrderGroupId == id));
 
         public static IQueryable<Request> GetLostRequestsForOrder(this IQueryable<Request> requests, int id)
             => requests.Where(r => r.OrderId == id &&
@@ -128,10 +132,12 @@ namespace Tolk.BusinessLogic.Utilities
                            r.Status == RequestStatus.LostDueToQuarantine
                        )
                 );
+        
+        public static IQueryable<Request> GetRequestsForOrder(this IQueryable<Request> requests, int id)
+            => requests.Where(r => r.OrderId == id);
 
         public static IQueryable<OrderPriceRow> GetPriceRowsForOrder(this IQueryable<OrderPriceRow> rows, int id)
-            => rows.Include(p => p.PriceListRow).Where(o => o.OrderId == id);
-
+            => rows.Include(p => p.PriceListRow).Where(p => p.OrderId == id);
 
         #endregion
 
@@ -163,14 +169,22 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(o => o.ContactPersonUser)
                 .Include(o => o.Region)
                 .Include(o => o.CustomerOrganisation)
-                .Include(o => o.Language)
                 .Include(o => o.CustomerUnit)
+                .Include(o => o.Language)
+                .Include(o => o.Group)
                 .SingleAsync(o => o.OrderId == id);
         }
+        public static async Task<Order> GetOrderWithContactsById(this IQueryable<Order> orders, int id)
+            => await orders
+                .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CustomerUnit)
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.ContactPersonUser)
+                .SingleAsync(o => o.OrderId == id);
 
         public static async Task<Request> GetActiveRequestByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
         {
-            return await requests
+            var request = await requests
                 .Include(r => r.Order)
                 .Include(r => r.AnsweringUser)
                 .Include(r => r.Interpreter)
@@ -183,7 +197,7 @@ namespace Tolk.BusinessLogic.Utilities
                                     r.Status != RequestStatus.DeclinedByBroker &&
                                     r.Status != RequestStatus.LostDueToQuarantine &&
                                     (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
-
+            return request;
         }
 
         #endregion

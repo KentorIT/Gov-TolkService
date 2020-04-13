@@ -312,7 +312,7 @@ namespace Tolk.BusinessLogic.Services
             var replacingRequest = new Request(request, order.StartAt, _clock.SwedenNow);
             replacementOrder.Requests.Add(replacingRequest);
             await _tolkDbContext.AddAsync(replacementOrder);
-            CancelOrder(order, userId, impersonatorId, cancelMessage, true);
+            await CancelOrder(order, userId, impersonatorId, cancelMessage, true);
             replacementOrder.CreatedAt = _clock.SwedenNow;
             replacementOrder.CreatedBy = userId;
             replacementOrder.ImpersonatingCreator = impersonatorId;
@@ -407,8 +407,8 @@ namespace Tolk.BusinessLogic.Services
         public async Task ConfirmNoAnswer(Order order, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(ConfirmNoAnswer), nameof(OrderService));
+            order.OrderStatusConfirmations = await _tolkDbContext.OrderStatusConfirmation.GetStatusConfirmationsForOrder(order.OrderId).ToListAsync();
             order.ConfirmNoAnswer(_clock.SwedenNow, userId, impersonatorId);
-            await _tolkDbContext.SaveChangesAsync();
         }
 
         public async Task ConfirmResponeNotAnswered(Order order, int userId, int? impersonatorId)
@@ -432,14 +432,16 @@ namespace Tolk.BusinessLogic.Services
             await _tolkDbContext.SaveChangesAsync();
         }
 
-        public void CancelOrder(Order order, int userId, int? impersonatorId, string message, bool isReplaced = false)
+        public async Task CancelOrder(Order order, int userId, int? impersonatorId, string message, bool isReplaced = false)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(CancelOrder), nameof(OrderService));
-            var request = order.ActiveRequest;
+            var request = await _tolkDbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
             if (request == null)
             {
                 throw new InvalidOperationException($"Order {order.OrderId} has no active requests that can be cancelled");
             }
+            request.PriceRows = await _tolkDbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToListAsync();
+            request.Requisitions = new List<Requisition>();
             var now = _clock.SwedenNow;
             //check if late cancelling, if so we check for mealbreaks
             bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2;

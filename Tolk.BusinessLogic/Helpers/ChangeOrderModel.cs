@@ -19,5 +19,6 @@ namespace Tolk.BusinessLogic.Helpers
         public int UpdatedBy { get; set; }
         public int? ImpersonatedUpdatedBy { get; set; }
         public IEnumerable<int> Attachments { get; set; }
+        public int BrokerId { get; set; }
     }
 }

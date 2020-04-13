@@ -45,9 +45,10 @@ namespace Tolk.Web.Models
 
         public AssignmentType AssignmentType { get; set; }
 
-        [Display(Name = "Övrigt (annat) språk", Description = "Ange annat språk. Dialekt läggs till i fältet bredvid.")]
+        [Display(Name = "Rätt att granska rekvisition", Description = "Välj vid behov en annan person som skall ges rätt att granska rekvisition, t ex person som deltar vid tolktillfället. Denna uppgift kan du även komplettera eller ändra senare.")]
+        public int? ContactPersonId { get; set; }
 
-        public string OtherLanguage { get; set; }
+        public int? ChangeContactPersonId { get; set; }
 
         public bool DisplayForBroker { get; set; } = false;
 
@@ -97,6 +98,11 @@ namespace Tolk.Web.Models
 
         public IEnumerable<BrokerListModel> PreviousRequests { get; set; }
 
+        [Display(Name = "Anledning till att bokningen avbokas")]
+        [DataType(DataType.MultilineText)]
+        [ClientRequired]
+        [StringLength(1000)]
+        [Placeholder("Beskriv anledning till avbokning.")]
         public string CancelMessage { get; set; }
 
         [Display(Name = "Är tolkanvändare samma person som bokar")]
@@ -178,7 +184,7 @@ namespace Tolk.Web.Models
         {
             return new OrderViewModel
             {
-                //Dont like, should be possible to make lighter.
+#warning Dont like, should be possible to make lighter.
                 AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
                 OrderId = order.OrderId,
                 OrderNumber = order.OrderNumber,
@@ -195,6 +201,7 @@ namespace Tolk.Web.Models
                 CreatedBy = order.ContactInformation,
                 CreatedById = order.CreatedBy,
                 ContactPerson = order.ContactPersonUser?.CompleteContactInformation,
+                ChangeContactPersonId = order.ContactPersonId,
                 CreatedAt = order.CreatedAt,
                 InvoiceReference = order.InvoiceReference,
                 LanguageName = order.OtherLanguage ?? order.Language?.Name,
