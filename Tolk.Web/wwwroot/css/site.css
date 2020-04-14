@@ -1130,6 +1130,9 @@ li.placeholder::before {
 #RequiredCompetenceLevels {
   padding-top: 5px;
 }
+.neg-padding-top {
+  margin-top: -11px;
+}
 .navbar-default {
   background-color: white;
   border: none;

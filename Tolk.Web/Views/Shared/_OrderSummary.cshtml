@@ -53,6 +53,12 @@
             </div>
             <div class="col-sm-4">
                 <display-entry asp-for="TimeRange" />
+                @if (!string.IsNullOrEmpty(Model.DisplayMealBreakIncluded))
+                {
+                    <div class="detail-text neg-padding-top">
+                        @Model.DisplayMealBreakIncluded
+                    </div>
+                }
                 @if (Model.LatestAnswerBy != null)
                 {
                     <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />

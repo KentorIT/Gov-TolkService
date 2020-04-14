@@ -17,6 +17,7 @@ namespace Tolk.Web.Models
             OccasionStartDateTime = occasion.OccasionStartDateTime;
             OccasionEndDateTime = occasion.OccasionEndDateTime;
             ExtraInterpreter = occasion.ExtraInterpreter;
+            MealBreakIncluded = occasion.MealBreakIncluded;
         }
 
         public int ExtraInterpreterFor { get; set; }
@@ -41,6 +42,8 @@ namespace Tolk.Web.Models
 
         public PriceInformationModel PriceInformationModel { get; set; }
 
+        public string MealBreakIncludedText { get; set; }
+
         internal static OrderOccasionDisplayModel GetModelFromOrder(Order order, PriceInformationModel priceInformationModel = null, Request request = null)
         {
             return new OrderOccasionDisplayModel
@@ -54,6 +57,7 @@ namespace Tolk.Web.Models
                 ControllerName = request == null ? "Order" : "Request",
                 OrderStatus = order.Status,
                 RequestStatus = request?.Status,
+                MealBreakIncludedText = order.MealBreakIncluded.HasValue ? order.MealBreakIncluded.Value ? "Måltidspaus ingår" : "Måltidspaus ingår inte" : "Ej angivet om måltidspaus ingår"
             };
         }
     }

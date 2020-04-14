@@ -1,142 +1,81 @@
 ﻿@model OccasionListModel
 @inject HelpLinkService HelpLinkService
-@using Tolk.BusinessLogic.Utilities
 @using Tolk.Web.Services
-@{
-    var colWidthClass = Model.DisplayDetailedList ? "col-lg-12" : "col-lg-8";
-    var styledRowClass = Model.DisplayDetailedList ? "" : "styled-row";
-
-}
 
 @if (Model.DisplayableOccasions.Any())
 {
     <div class="row list-of-occasions">
-        <div class="col-sm-12 col-md-10 @colWidthClass">
+        <div class="col-sm-12 col-md-10 col-lg-12">
             <div class="table-responsive table-datatable">
-                <table class="table design-only-table @styledRowClass">
+                <table class="table table-condensed design-only-table">
                     <thead>
                         <tr>
                             <th data-sortable="false">Boknings-ID</th>
-                            @if (Model.DisplayDetailedList)
-                            {
-                                <th data-sortable="false">Status</th>
-                            }
+                            <th data-sortable="false">Status</th>
                             <th data-sortable="false">Tillfälle</th>
                             <th data-sortable="false"></th>
                             <th data-sortable="false" class="currency">Beräknat pris</th>
                             <th data-sortable="false"></th>
                         </tr>
                     </thead>
-                    <tbody class="">
+                    <tbody>
                         @foreach (var occasion in Model.DisplayableOccasions.OrderBy(o => o.OccasionStartDateTime).ThenBy(o => o.OrderNumber))
                         {
-                            @if (Model.DisplayDetailedList)
-                            {
-                                <tr class="table-row">
-                                    <td class="@occasion.ColorClassName">
+                            <tr class="table-row">
+                                <td class="@occasion.ColorClassName">
+                                    @if (Model.DisplayDetailedList)
+                                    {
                                         <a asp-controller="@occasion.ControllerName" asp-action="View" asp-route-id="@occasion.RouteId">@occasion.OrderNumber</a>
-                                    </td>
-                                    <td>
-                                        @occasion.StatusName
-                                    </td>
-                                    <td>
-                                        @occasion.Information
-                                    </td>
-                                    <td>
-                                        @(occasion.ExtraInterpreter ? "Extra tolk" : "")
-                                    </td>
-                                    @if (occasion.PriceInformationModel != null)
-                                    {
-                                        <td class="currency">
-                                            @occasion.PriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")
-                                        </td>
-                                        <td class="gray-border-right">
-                                            <a class="table-price-toggle-price-info" href="#more-info">Visa</a>
-                                        </td>
                                     }
                                     else
                                     {
-                                        <td class="currency">
-                                            MER INFO
-                                        </td>
-                                        <td>
-                                            HÄR
-                                        </td>
-                                    }
-                                </tr>
-                                @if (occasion.PriceInformationModel != null)
-                                {
-                                    <tr class="table-price-row">
-                                        <td colspan="6">
-                                            @await Html.PartialAsync("_PriceTable", occasion.PriceInformationModel)
-                                        </td>
-                                        <td style="display: none;"></td>
-                                        <td style="display: none;"></td>
-                                        <td style="display: none;"></td>
-                                        <td style="display: none;"></td>
-                                        <td style="display: none;"></td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr class="table-row">
-                                    <td class="@occasion.ColorClassName">
                                         @occasion.OrderNumber
-                                    </td>
-                                    <td>
-                                        @occasion.Information
-                                    </td>
-                                    <td>
-                                        @(occasion.ExtraInterpreter ? "Extra tolk" : "")
-                                    </td>
-                                    @if (occasion.PriceInformationModel != null)
-                                    {
-                                        <td class="currency">
-                                            @occasion.PriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")
-                                        </td>
-                                        <td>
-                                            <a class="table-price-toggle-price-info" href="#more-info">Visa</a>
-                                        </td>
                                     }
-                                    else
+                                </td>
+                                <td>
+                                    @occasion.StatusName
+                                </td>
+                                <td>
+                                    @occasion.Information
+                                    @if (!string.IsNullOrEmpty(occasion.MealBreakIncludedText))
                                     {
-                                        <td class="currency">
-                                            MER INFO
-                                        </td>
-                                        <td>
-                                            HÄR
-                                        </td>
+                                        <span class="small"><br />@(occasion.MealBreakIncludedText)</span>
                                     }
-                                </tr>
+                                </td>
+                                <td>
+                                    @(occasion.ExtraInterpreter ? "Extra tolk" : "")
+                                </td>
                                 @if (occasion.PriceInformationModel != null)
                                 {
-                                    <tr class="table-price-row">
-                                        <td colspan="5">
-                                            @await Html.PartialAsync("_PriceTable", occasion.PriceInformationModel)
-                                        </td>
-                                        <td style="display: none;"></td>
-                                        <td style="display: none;"></td>
-                                        <td style="display: none;"></td>
-                                        <td style="display: none;"></td>
-                                    </tr>
+                                    <td class="currency">
+                                        @occasion.PriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")
+                                    </td>
+                                    <td class="gray-border-right">
+                                        <a class="table-price-toggle-price-info" href="#more-info">Visa</a>
+                                    </td>
                                 }
+                            </tr>
+                            @if (occasion.PriceInformationModel != null)
+                            {
+                                <tr class="table-price-row">
+                                    <td colspan="6">
+                                        @await Html.PartialAsync("_PriceTable", occasion.PriceInformationModel)
+                                    </td>
+                                    <td style="display: none;"></td>
+                                    <td style="display: none;"></td>
+                                    <td style="display: none;"></td>
+                                    <td style="display: none;"></td>
+                                    <td style="display: none;"></td>
+                                </tr>
                             }
                         }
                     </tbody>
                     <tfoot>
                         <tr>
-                            @if (Model.DisplayDetailedList)
-                            {
-                                <th></th>
-                                <th></th>
-                                <th>Totalt beräknat pris:</th>
-                                <th></th>
-                            }
-                            else
-                            {
-                                <th colspan="3">Totalt beräknat pris</th>
-                            }
+                            <th></th>
+                            <th></th>
+                            <th>Totalt beräknat pris:</th>
+                            <th></th>
                             <th class="currency">@Model.TotalPrice.ToString("#,0.00 SEK")</th>
                             <th></th>
                         </tr>

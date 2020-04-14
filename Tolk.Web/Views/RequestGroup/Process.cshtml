@@ -195,10 +195,8 @@
                             <display-entry asp-for="Description" />
                         </div>
                     </div>
-                    <br />
                 </div>
             </section>
-
             @await Html.PartialAsync("_OccasionList", Model.OccasionList)
             <form method="post">
                 <input asp-for="RequestGroupId" type="hidden" />

@@ -520,6 +520,7 @@ namespace Tolk.Web.Controllers
                 //get pricelisttype for customer and get calculated price
                 updatedModel.OrderCalculatedPriceInformationModel = new PriceInformationModel
                 {
+                    MealBreakIsNotDetucted = order.MealBreakIncluded ?? false,
                     Header = "Beräknat preliminärt pris",
                     PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(order, pricelistType),
                     UseDisplayHideInfo = true,
@@ -1020,6 +1021,7 @@ namespace Tolk.Web.Controllers
                 model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), isGroupOrder: true);
                 occasion.PriceInformationModel = new PriceInformationModel
                 {
+                    MealBreakIsNotDetucted = occasion.MealBreakIncluded,
                     Header = "Beräknat preliminärt pris",
                     PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType),
                     UseDisplayHideInfo = true,

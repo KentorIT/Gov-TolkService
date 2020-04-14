@@ -97,6 +97,8 @@ namespace Tolk.Web.Models
 
         public bool DisplayForBroker { get; set; } = false;
 
+        public string DisplayMealBreakIncluded { get; set; }
+
         public string WarningOrderTimeInfo { get; set; } = string.Empty;
 
         public string WarningOrderRequiredCompetenceInfo { get; set; } = string.Empty;
@@ -540,7 +542,6 @@ namespace Tolk.Web.Models
             competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
             competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
             competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
-
             return new OrderModel
             {
                 DisplayForBroker = displayForBroker,
@@ -578,6 +579,8 @@ namespace Tolk.Web.Models
                     StartDateTime = order.StartAt,
                     EndDateTime = order.EndAt
                 },
+                MealBreakIncluded = order.MealBreakIncluded ?? false,
+                DisplayMealBreakIncluded = (int)(order.EndAt.DateTime - order.StartAt.DateTime).TotalMinutes > 240 ? GetMealBreakText(order.MealBreakIncluded) : null,
                 Description = order.Description,
                 UnitName = order.UnitName,
                 CompetenceLevelDesireType = new RadioButtonGroup
@@ -641,6 +644,11 @@ namespace Tolk.Web.Models
                     DenyMessage = r.DenyMessage,
                 }).ToList(),
             };
+        }
+
+        private static string GetMealBreakText(bool? mealBreakIncluded)
+        {
+            return mealBreakIncluded.HasValue ? mealBreakIncluded.Value ? "Måltidspaus ingår" : "Måltidspaus ingår inte" : "Ej angivet om måltidspaus ingår";
         }
 
         internal void UpdateModelWithDefaultSettings(List<int> units)

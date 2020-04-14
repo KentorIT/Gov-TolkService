@@ -723,6 +723,7 @@ namespace Tolk.Web.Controllers
         {
             return new PriceInformationModel
             {
+                MealBreakIsNotDetucted = request.Order.MealBreakIncluded ?? false,
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(
                     _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
                 Header = "Beräknat pris enligt bokningsförfrågan",

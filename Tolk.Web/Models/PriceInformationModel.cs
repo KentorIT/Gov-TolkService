@@ -24,6 +24,8 @@ namespace Tolk.Web.Models
 
         public string Description { get; set; }
 
+        public bool MealBreakIsNotDetucted { get; set; }
+
         internal static PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true, bool alwaysUseOrderPriceRows = true)
         {
             if (order.PriceRows == null)
@@ -36,6 +38,7 @@ namespace Tolk.Web.Models
             }
             return new PriceInformationModel
             {
+                MealBreakIsNotDetucted = order.MealBreakIncluded ?? false,
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris enligt ursprunglig bokningsförfrågan",
                 UseDisplayHideInfo = true,
@@ -51,6 +54,7 @@ namespace Tolk.Web.Models
             }
             return new PriceInformationModel
             {
+                MealBreakIsNotDetucted = request.Order.MealBreakIncluded ?? false,
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = "Beräknat pris enligt bokningsbekräftelse",
                 UseDisplayHideInfo = true,
