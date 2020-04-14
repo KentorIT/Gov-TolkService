@@ -1524,6 +1524,7 @@ Sammanställning:
                 AssignmentType = EnumHelper.GetCustomName(order.AssignmentType),
                 Description = order.Description,
                 CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
+                MealBreakIncluded = order.MealBreakIncluded,
                 Requirements = order.Requirements.Select(r => new RequirementModel
                 {
                     Description = r.Description,
@@ -1713,7 +1714,8 @@ Sammanställning:
                     StartAt = o.StartAt,
                     EndAt = o.EndAt,
                     IsExtraInterpreterForOrderNumber = o.IsExtraInterpreterForOrder?.OrderNumber,
-                    PriceInformation = o.PriceRows.GetPriceInformationModel(o.PriceCalculatedFromCompetenceLevel.GetCustomName(), requestGroup.Ranking.BrokerFee)
+                    PriceInformation = o.PriceRows.GetPriceInformationModel(o.PriceCalculatedFromCompetenceLevel.GetCustomName(), requestGroup.Ranking.BrokerFee),
+                    MealBreakIncluded = o.MealBreakIncluded
                 })
             };
         }

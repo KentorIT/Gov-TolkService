@@ -9,5 +9,6 @@ namespace Tolk.Api.Payloads.WebHookPayloads
         public DateTimeOffset EndAt { get; set; }
         public PriceInformationModel PriceInformation { get; set; }
         public string IsExtraInterpreterForOrderNumber { get; set; }
+        public bool? MealBreakIncluded { get; set; }
     }
 }

@@ -111,6 +111,7 @@ namespace Tolk.Web.Api.Services
                 CompetenceLevelsAreRequired = request.Order.SpecificCompetenceLevelRequired,
                 AllowMoreThanTwoHoursTravelTime = request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || request.Order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 CreatorIsInterpreterUser = request.Order.CreatorIsInterpreterUser,
+                MealBreakIncluded = request.Order.MealBreakIncluded,
                 Description = request.Order.Description,
                 AssignmentType = request.Order.AssignmentType.GetCustomName(),
                 Attachments = attachments,

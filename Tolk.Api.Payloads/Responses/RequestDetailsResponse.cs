@@ -26,6 +26,7 @@ namespace Tolk.Api.Payloads.Responses
         public bool CompetenceLevelsAreRequired { get; set; }
         public bool AllowMoreThanTwoHoursTravelTime { get; set; }
         public bool? CreatorIsInterpreterUser { get; set; }
+        public bool? MealBreakIncluded { get; set; }
         public string Description { get; set; }
         public string AssignmentType { get; set; }
         public IEnumerable<AttachmentInformationModel> Attachments { get; set; }
