@@ -305,8 +305,7 @@ $(function () {
 
             //Add the info to the cloned hidden fields, add a row to the table
             $('.mealbreak-table > tbody:last-child').append('<tr>' +
-                '<td class="table-start-column">' + $hidden.html() + $hidden.find(startAtSelector).val() + '</td>' +
-                '<td class="table-end-column">' + $hidden.find(endAtSelector).val() + '</td>' +
+                '<td class="table-start-column">' + $hidden.html() + $hidden.find(startAtSelector).val().substring(11, 16) + '-' + $hidden.find(endAtSelector).val().substring(11, 16) + '</td>' +
                 '<td class="table-remove-column"><span class="remove-mealbreak-row bold">&times;</span></td>' +
                 '</tr>');
 
@@ -338,10 +337,10 @@ function checkEachMealBreak(start, end, checkAgainstSessionTime) {
     }
     else {
         $rows.each(function () {
-            var tdStart = $(this).find(".table-start-column").text().trim();
-            var tdEnd = $(this).find(".table-end-column").text().trim();
-            var testStart = tdStart.substring(0, 10) + "T" + tdStart.substring(11, 16) + ":00";
-            var testEnd = tdEnd.substring(0, 10) + "T" + tdEnd.substring(11, 16) + ":00";
+
+            var testStart = $(this).find("input[name$='StartAtTemp']").val();
+            var testEnd = $(this).find("input[name$='EndAtTemp']").val();
+
             //check added mealbreak against previous mealbreaks
             if (!checkAgainstSessionTime) {
                 if (new Date(testStart) - end === 0 || new Date(testEnd) - start === 0 || new Date(testStart) - start === 0 || new Date(testEnd) - end === 0) {

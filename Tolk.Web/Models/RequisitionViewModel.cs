@@ -84,6 +84,7 @@ namespace Tolk.Web.Models
                 Status = requisition.Status,
                 CustomerComment = requisition.CustomerComment,
                 ContactPerson = requisition.Request.Order.ContactPersonUser?.CompleteContactInformation,
+                MealBreakIncluded = requisition.Request.Order.MealBreakIncluded,
                 AttachmentListModel = new AttachmentListModel
                 {
                     AllowDelete = false,

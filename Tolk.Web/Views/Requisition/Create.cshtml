@@ -1,4 +1,5 @@
-﻿@model Tolk.Web.Models.RequisitionModel
+﻿ 
+@model Tolk.Web.Models.RequisitionModel
 @inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Entities;
@@ -137,13 +138,13 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-sm-6">
-                        <a href="#" class="add-mealbreak-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addMealBreak"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till måltidspaus</a>
+                    <div class="col-sm-4">
+                        <a href="#" class="add-mealbreak-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addMealBreak"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till måltidspaus</a> 
                         <br /><br />
                         <div class="@tableClassName mealbreak-list no-padding">
                             <label>Angivna måltidspauser</label><br />
                             <table class="table mealbreak-table">
-                                <thead><tr><th>Start</th><th>Slut</th><th>Ta bort</th></tr></thead>
+                                <thead><tr><th>Tid för måltidspaus</th><th>Ta bort</th></tr></thead>
                                 <tbody id="mealBreak-tbody">
                                     @if (Model.MealBreaks != null && Model.MealBreaks.Any())
                                     {
@@ -153,10 +154,7 @@
                                                 <td class="table-start-column">
                                                     <input asp-for="MealBreaks[i].StartAtTemp" type="hidden">
                                                     <input asp-for="MealBreaks[i].EndAtTemp" type="hidden">
-                                                    @Model.MealBreaks[i].StartAt.ToString("yyyy-MM-dd HH:mm")
-                                                </td>
-                                                <td class="table-end-column">
-                                                    @Model.MealBreaks[i].EndAt.ToString("yyyy-MM-dd HH:mm")
+                                                    @Model.MealBreaks[i].StartAt.ToString("HH:mm")-@Model.MealBreaks[i].EndAt.ToString("HH:mm")
                                                 </td>
                                                 <td class="table-remove-column"><span class="remove-mealbreak-row bold">&times;</span></td>
                                             </tr>
@@ -165,6 +163,12 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    <div class="col-sm-6">
+                        @if (Model.MealBreakIncluded ?? false)
+                        {
+                            <div class="warning-info-yellow"><span class="glyphicon message-icon glyphicon-exclamation-sign yellow-glyphicon"></span><span class="info-message-small" role="alert"> Myndighet har angett att måltidspaus skulle ingå i uppdraget</span></div>
+                        }
                     </div>
                 </div>
                 <div class="row">

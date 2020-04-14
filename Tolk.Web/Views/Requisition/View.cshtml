@@ -65,12 +65,21 @@
 {
     <div class="row">
         <div class="col-sm-12">
-            <div class="pull-right">
-                @HelpLinkService.ButtonHelpIcon("myndighet-hantera-rekvisition")
-            </div>
+            <h2>
+                Hantera rekvisition <span class="pull-right">
+                    @HelpLinkService.ButtonHelpIcon("myndighet-hantera-rekvisition")
+                </span>
+            </h2>
+            <hr />
         </div>
     </div>
     <div class="row">
+        @if ((Model.MealBreakIncluded ?? false) && !Model.ResultPriceInformationModel.PriceInformationToDisplay.MealBreaks.Any())
+        {
+            <div class="col-sm-12">
+                <div class="warning-info-home"><span class="glyphicon message-icon glyphicon-exclamation-sign"></span><span class="info-message-small" role="alert"> Observera att myndigheten har angett att måltidspaus skulle ingå i uppdraget, men inga måltidspauser har lagts till i rekvisitionen</span></div><br /><br />
+            </div>
+        }
         <div class="col-sm-4">
             <button type="button" data-toggle="modal" data-target="#commentReqMessageDialog" class="btn btn-large btn-danger">Skicka kommentar</button>
             <span class="form-entry-information glyphicon glyphicon-info-sign info-sign-big decrease-left-margin" title="Klicka på ”Skicka kommentar” om du vill kommentera något i rekvisitionen och vill att tolkförmedlingen ska skicka en ny rekvisition."></span>
@@ -79,7 +88,7 @@
             @if (Model.AllowConfirmNoReview)
             {
                 <form method="post" action="@Url.Action("ConfirmNoReview", new { RequisitionId = Model.RequisitionId })" asp-antiforgery="true">
-                    <button  class="btn btn-success btn-large pull-left">Arkivera</button>
+                    <button class="btn btn-success btn-large pull-left">Arkivera</button>
                 </form>
                 <span class="form-entry-information glyphicon glyphicon-info-sign info-sign-big decrease-left-margin" title="Klicka på ”Arkivera” om du varken vill kommentera eller granska rekvisitionen."></span>
             }

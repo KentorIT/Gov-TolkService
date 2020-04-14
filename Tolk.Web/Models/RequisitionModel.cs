@@ -149,6 +149,8 @@ namespace Tolk.Web.Models
 
         public bool RequestOrReplacingOrderPricesAreUsed { get; set; }
 
+        public bool? MealBreakIncluded { get; set; }
+
         [Display(Name = "Inställelsesätt", Description = "Tolkning på plats och på distans i anvisad lokal kan medföra reskostnader för tolken.")]
         public InterpreterLocation? InterpreterLocation { get; set; }
 
@@ -175,7 +177,8 @@ namespace Tolk.Web.Models
                 OrderNumber = request.Order.OrderNumber,
                 RegionName = request.Ranking.Region.Name,
                 PreviousRequisition = PreviousRequisitionViewModel.GetViewModelFromPreviousRequisition(request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Commented && !r.ReplacedByRequisitionId.HasValue)),
-                InterpreterLocation = (InterpreterLocation)request.InterpreterLocation
+                InterpreterLocation = (InterpreterLocation)request.InterpreterLocation,
+                MealBreakIncluded = request.Order.MealBreakIncluded
             };
         }
 
