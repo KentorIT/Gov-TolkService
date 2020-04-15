@@ -95,7 +95,7 @@ namespace Tolk.BusinessLogic.Services
 
         /// <summary>
         /// If order passes midnight their might be two rows of same pricetype, merge these to one 
-        /// Also check if two duplicate rows have less or equal compensationtime together. Then it should be reduced, e.g. 23:45-00:45 (should be two 30 min periods not three)
+        /// Also check if two duplicate rows have less or equal compensation time together. Then it should be reduced, e.g. 23:45-00:45 (should be two 30 min periods not three)
         /// </summary>
         public static IEnumerable<PriceRowBase> MergePriceListRowsAndReduceForMealBreak(IEnumerable<PriceRowBase> pricePerType, IDictionary<PriceListRowType, int> mealbreakDictionary = null)
         {

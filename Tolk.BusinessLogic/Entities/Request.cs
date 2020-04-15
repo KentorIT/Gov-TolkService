@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 
@@ -499,7 +500,7 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.Requested;
         }
 
-        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false, bool isCancelledFromGroup = false)
+        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false, bool isCancelledFromGroup = false, List<MealBreak> mealbreaks = null, PriceInformation pi = null)
         {
             if ((!isCancelledFromGroup && !CanCancel) || (isCancelledFromGroup && !CanCancelFromGroup))
             {
@@ -521,7 +522,8 @@ namespace Tolk.BusinessLogic.Entities
                         Status = RequisitionStatus.AutomaticGeneratedFromCancelledOrder,
                         SessionStartedAt = Order.StartAt,
                         SessionEndedAt = Order.EndAt,
-                        PriceRows = GetPriceRows(createFullCompensationRequisition)
+                        PriceRows = pi?.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)).ToList() ?? GetPriceRows(createFullCompensationRequisition),
+                        MealBreaks = mealbreaks
                     }
                 );
             }

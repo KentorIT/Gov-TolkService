@@ -442,13 +442,34 @@ namespace Tolk.BusinessLogic.Services
                 throw new InvalidOperationException($"Order {order.OrderId} has no active requests that can be cancelled");
             }
             var now = _clock.SwedenNow;
-            //If approved request (status check in request.Cancel) and cancellation is done to late, a requisition with full compensation will be created (not if replaced)
+            //check if late cancelling, if so we check for mealbreaks
             bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2;
-            request.Cancel(now, userId, impersonatorId, message, createFullCompensationRequisition, isReplaced);
+
+            var mealbreaks = (createFullCompensationRequisition && (request.Order.MealBreakIncluded ?? false)) ? new List<MealBreak> { new MealBreak { StartAt = request.Order.StartAt.AddHours(1).ToDateTimeOffsetSweden(), EndAt = request.Order.StartAt.AddHours(2).ToDateTimeOffsetSweden() } } : null;
+
+            //if mealbreaks and full compensation we must get correct prices with mealbreaks reducted (else they will be added in Request.Cancel)
+            var priceInformation = (createFullCompensationRequisition && mealbreaks != null) ? _priceCalculationService.GetPricesRequisition(
+                request.Order.StartAt,
+                request.Order.EndAt,
+                request.Order.StartAt,
+                request.Order.EndAt,
+                EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
+                request.Order.CustomerOrganisation.PriceListType,
+                request.Ranking.RankingId,
+                out bool useRequestRows,
+                null,
+                null,
+                request.PriceRows.OfType<PriceRowBase>(),
+                null,
+                null,
+                request.Order.CreatedAt,
+                mealbreaks
+            ) : null;
+            request.Cancel(now, userId, impersonatorId, message, createFullCompensationRequisition, isReplaced, mealbreaks: mealbreaks, pi: priceInformation);
 
             if (!isReplaced)
             {
-                //Only notify if the order was not replaced.
+                //Only notify if the order was not replaced
                 _notificationService.OrderCancelledByCustomer(request, createFullCompensationRequisition);
             }
             _logger.LogInformation("Order {orderId} cancelled by customer {userId}.", order.OrderId, userId);
