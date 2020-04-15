@@ -185,6 +185,7 @@ namespace Tolk.Web.Controllers
                 model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
                 model.ActiveRequest.RegionName = model.RegionName;
                 model.ActiveRequest.TimeRange = model.TimeRange;
+                model.ActiveRequest.DisplayMealBreakIncluded = model.DisplayMealBreakIncluded;
                 model.ActiveRequest.IsCancelled = model.Status == OrderStatus.CancelledByCreator || model.Status == OrderStatus.CancelledByBroker;
 
                 model.EventLog = new EventLogModel

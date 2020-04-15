@@ -11,7 +11,6 @@ namespace Tolk.Web.Models
 {
     public class PriceInformationModel
     {
-
         public DisplayPriceInformation PriceInformationToDisplay { get; set; }
 
         public string Header { get; set; }
@@ -30,6 +29,7 @@ namespace Tolk.Web.Models
         public decimal ExpectedTravelCosts { get; set; }
         public bool MealBreakIsNotDetucted { get; set; }
 
+#warning Detta är inte ok, tror jag...
         internal static PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true, bool alwaysUseOrderPriceRows = true)
         {
             if (order.PriceRows == null)
@@ -40,15 +40,15 @@ namespace Tolk.Web.Models
             {
                 return GetPriceinformationToDisplay(order.Requests.OrderBy(r => r.RequestId).Last(), initialCollapse);
             }
-            return GetPriceinformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList(), PriceInformationType.Order, initialCollapse);
+            return GetPriceinformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList(), PriceInformationType.Order, initialCollapse, order.MealBreakIncluded ?? false);
         }
 
-        internal static PriceInformationModel GetPriceinformationToDisplay(IEnumerable<PriceRowBase> priceRows, PriceInformationType type, bool initialCollapse = true)
+        internal static PriceInformationModel GetPriceinformationToDisplay(IEnumerable<PriceRowBase> priceRows, PriceInformationType type, bool initialCollapse = true, bool mealBreakIncluded = false)
         {
             return new PriceInformationModel
             {
                 Header = type.GetDescription(),
-				MealBreakIsNotDetucted = order.MealBreakIncluded ?? false,
+				MealBreakIsNotDetucted = mealBreakIncluded,
 				PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(priceRows),
                 UseDisplayHideInfo = true,
                 InitialCollapse = initialCollapse,
@@ -62,17 +62,7 @@ namespace Tolk.Web.Models
             {
                 return null;
             }
-            };
-FELFELFEL saknar meal break!
-return GetPriceinformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), PriceInformationType.Request, initialCollapse);
-            return GetPriceinformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), PriceInformationType.Request, initialCollapse);
-            {
-                MealBreakIsNotDetucted = request.Order.MealBreakIncluded ?? false,
-                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris enligt bokningsbekräftelse",
-                UseDisplayHideInfo = true,
-                InitialCollapse = initialCollapse
-            };
+            return GetPriceinformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), PriceInformationType.Request, initialCollapse, request.Order.MealBreakIncluded ?? false);
         }
 
     }

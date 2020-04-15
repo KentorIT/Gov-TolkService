@@ -180,6 +180,8 @@ namespace Tolk.Web.Models
 
         public bool HasPreviousRequests => PreviousRequests.Any();
 
+        public string DisplayMealBreakIncluded { get; set; }
+
         internal static OrderViewModel GetModelFromOrder(Order order)
         {
             return new OrderViewModel
@@ -214,6 +216,7 @@ namespace Tolk.Web.Models
                     StartDateTime = order.StartAt,
                     EndDateTime = order.EndAt
                 },
+                DisplayMealBreakIncluded = (int)(order.EndAt.DateTime - order.StartAt.DateTime).TotalMinutes > 240 ? OrderModel.GetMealBreakText(order.MealBreakIncluded) : null,
                 Description = order.Description,
                 UnitName = order.UnitName,
                 IsCreatorInterpreterUser = order.CreatorIsInterpreterUser ?? true

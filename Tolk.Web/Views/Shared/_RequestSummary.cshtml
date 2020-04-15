@@ -58,10 +58,10 @@
             </div>
             <div class="col-sm-4">
                 <display-entry asp-for="TimeRange" />
-                @if (!string .IsNullOrEmpty(Model.OrderModel.DisplayMealBreakIncludedText))
+                @if (!string.IsNullOrEmpty(Model.DisplayMealBreakIncluded))
                 {
-                    <div class="detail-text mealbreak-info">
-                        @Model.OrderModel.DisplayMealBreakIncludedText
+                    <div class="detail-text neg-padding-top">
+                        @Model.DisplayMealBreakIncluded
                     </div>
                 }
             </div>

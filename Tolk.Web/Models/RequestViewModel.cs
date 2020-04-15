@@ -93,6 +93,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Datum och tid")]
         public TimeRange TimeRange { get; set; }
 
+        public string DisplayMealBreakIncluded { get; set; }
+
         //THINGS IN NEED OF VALIDATION!!!!!!!
         public bool RequestIsAnswered => Status != RequestStatus.InterpreterReplaced && Status != RequestStatus.Created && Status != RequestStatus.Received && RequestId > 0;
         public bool RequestIsDeclinedByBroker => Status == RequestStatus.DeclinedByBroker || Status == RequestStatus.DeniedByTimeLimit;
