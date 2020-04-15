@@ -131,6 +131,7 @@ namespace Tolk.Web.Controllers
                 IEnumerable<CustomerUnit> customerUnits = null;
                 if (user.CustomerOrganisationId.HasValue)
                 {
+#warning include-fest
                     customerUnits = _dbContext.CustomerUnits
                         .Include(cu => cu.CustomerUnitUsers)
                         .Where(cu => cu.CustomerOrganisationId == user.CustomerOrganisationId
@@ -251,6 +252,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+#warning include-fest
                 var user = await _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefaultAsync(u => u.Id == model.Id);
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
                 {
@@ -526,6 +528,7 @@ namespace Tolk.Web.Controllers
             var brokerId = User.TryGetBrokerId();
             if (brokerId != null)
             {
+#warning include-fest
                 var apiUser = _dbContext.Users
                     .Include(u => u.Claims)
                     .Include(u => u.NotificationSettings)
@@ -561,6 +564,7 @@ namespace Tolk.Web.Controllers
             var brokerId = User.TryGetBrokerId();
             if (brokerId != null)
             {
+#warning include-fest
                 var apiUser = _dbContext.Users
                     .Include(u => u.NotificationSettings)
                     .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
@@ -582,6 +586,7 @@ namespace Tolk.Web.Controllers
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
+#warning include-fest
                     var apiUser = _dbContext.Users
                         .Include(u => u.NotificationSettings)
                         .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
@@ -613,6 +618,7 @@ namespace Tolk.Web.Controllers
             var brokerId = User.TryGetBrokerId();
             if (brokerId != null)
             {
+#warning include-fest
                 var apiUser = _dbContext.Users
                     .Include(u => u.Claims)
                     .Include(u => u.NotificationSettings)
@@ -758,6 +764,7 @@ namespace Tolk.Web.Controllers
             var brokerId = User.TryGetBrokerId();
             if (brokerId != null)
             {
+#warning include-fest
                 var apiUser = _dbContext.Users
                     .Include(u => u.Claims)
                     .Include(u => u.NotificationSettings)
@@ -858,6 +865,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> ViewDefaultSettings(int id, string bi = null, string bc = null, string ba = null)
         {
+#warning include-fest
             var user = await _userManager.Users
                 .Include(u => u.DefaultSettings)
                 .Include(u => u.DefaultSettingOrderRequirements)
@@ -881,6 +889,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> ChangeEmail(int id, string bc, string ba, string bi)
         {
+#warning include-fest
             var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
             {
@@ -909,6 +918,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> ChangeEmail(UserModel model)
         {
+#warning include-fest
             var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
             if (ModelState.IsValid)
             {
@@ -958,6 +968,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> SendNewInvite(int id, string bc, string ba, string bi)
         {
+#warning include-fest
             var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded && !user.EmailConfirmed)
             {
@@ -984,6 +995,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> SendNewInvite(UserModel model)
         {
+#warning include-fest
             var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
             if (ModelState.IsValid)
             {
@@ -1087,6 +1099,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<AspNetUser> GetUserToHandle(int userId)
         {
+#warning include-fest
             return await _userManager.Users
             .Include(u => u.CustomerUnits).ThenInclude(cu => cu.CustomerUnit)
             .Include(u => u.Roles)
@@ -1099,6 +1112,7 @@ namespace Tolk.Web.Controllers
         {
             int userId = combinedId.Split("_")[0].ToSwedishInt();
             int customerUnitId = combinedId.Split("_")[1].ToSwedishInt();
+#warning move include
             return _dbContext.CustomerUnitUsers.Include(cuu => cuu.CustomerUnit)
                 .Where(cu => cu.CustomerUnitId == customerUnitId && cu.UserId == userId).Single();
         }

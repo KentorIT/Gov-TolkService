@@ -60,6 +60,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
+#warning include-fest
                 var order = await _dbContext.Orders
                     .Include(o => o.Requests)
                     .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
@@ -128,6 +129,7 @@ namespace Tolk.Web.Api.Controllers
                 var brokerId = User.TryGetBrokerId().Value;
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
 
+#warning include-fest
                 var requisition = _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Ranking)
                     .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.MealBreaks)

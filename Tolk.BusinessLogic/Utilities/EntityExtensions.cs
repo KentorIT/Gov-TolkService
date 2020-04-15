@@ -134,7 +134,7 @@ namespace Tolk.BusinessLogic.Utilities
                 );
         
         public static IQueryable<Request> GetRequestsForOrder(this IQueryable<Request> requests, int id)
-            => requests.Where(r => r.OrderId == id);
+            => requests.Include(r => r.Ranking).Where(r => r.OrderId == id);
 
         public static IQueryable<OrderPriceRow> GetPriceRowsForOrder(this IQueryable<OrderPriceRow> rows, int id)
             => rows.Include(p => p.PriceListRow).Where(p => p.OrderId == id);
@@ -174,6 +174,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(o => o.Group)
                 .SingleAsync(o => o.OrderId == id);
         }
+ 
         public static async Task<Order> GetOrderWithContactsById(this IQueryable<Order> orders, int id)
             => await orders
                 .Include(o => o.CustomerOrganisation)
@@ -181,6 +182,17 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
                 .SingleAsync(o => o.OrderId == id);
+
+        public static async Task<Request> GetRequestById(this IQueryable<Request> requests, int id)
+            => await requests.Include(r => r.Interpreter)
+                .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .SingleAsync(r => r.RequestId == id);
+        
+        public static async Task<Request> GetSimpleRequestById(this IQueryable<Request> requests, int id)
+            => await requests.Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order)
+                .SingleAsync(r => r.RequestId == id);
 
         public static async Task<Request> GetActiveRequestByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
         {
@@ -200,10 +212,14 @@ namespace Tolk.BusinessLogic.Utilities
             return request;
         }
 
+        public static async Task<AspNetUser> GetUser(this IQueryable<AspNetUser> users, int id)
+            => await users.Include(u => u.CustomerOrganisation).SingleOrDefaultAsync(u => u.Id == id);
+
         #endregion
 
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)
         {
+#warning detta KAN ge konstig sql...
             return requests.GetRequestOrders().OrderBy(o => o.StartAt).First().StartAt;
         }
 
@@ -237,6 +253,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static PriceInformationModel GetPriceInformationModel(this IEnumerable<PriceRowBase> priceRows, string competenceLevel, decimal brokerFee)
         {
+#warning detta KAN ge konstig sql
             return new PriceInformationModel
             {
                 PriceCalculatedFromCompetenceLevel = competenceLevel,

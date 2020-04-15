@@ -117,6 +117,8 @@ namespace Tolk.Web.Controllers
         [HttpGet]
         public async Task<ActionResult> Download(int id)
         {
+#warning include-fest
+#warning behövs vrerkligen alla dessa includes
             var attachment = await _dbContext.Attachments
                 .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
                 .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
@@ -139,6 +141,7 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> Delete(int id, Guid groupKey)
         {
+#warning include-fest
             var attachment = await _dbContext.Attachments
                 .Include(a => a.TemporaryAttachmentGroup)
                 .Include(a => a.Requisitions)

@@ -29,6 +29,7 @@ namespace Tolk.Web.Api.Services
 
         public async Task<Order> GetOrderAsync(string orderNumber, int brokerId)
         {
+#warning include-fest
             var order = await _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking)
                 .SingleOrDefaultAsync(o => o.OrderNumber == orderNumber &&
@@ -44,6 +45,7 @@ namespace Tolk.Web.Api.Services
 
         public async Task<OrderGroup> GetOrderGroupAsync(string orderGroupNumber, int brokerId)
         {
+#warning include-fest
             var orderGroup = await _dbContext.OrderGroups
                 .Include(o => o.RequestGroups).ThenInclude(r => r.Ranking)
                 .SingleOrDefaultAsync(o => o.OrderGroupNumber == orderGroupNumber &&
@@ -157,6 +159,7 @@ namespace Tolk.Web.Api.Services
                 return null;
             }
             OrderGroup orderGroup = requestGroup.OrderGroup;
+#warning include-fest
             var occasions = _dbContext.Requests
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.RequirementAnswers)
@@ -236,6 +239,7 @@ namespace Tolk.Web.Api.Services
 
         private IEnumerable<AttachmentInformationModel> GetAttachments(int requestId)
         {
+#warning include-fest
             return _dbContext.Attachments
                 .Include(a => a.Orders).ThenInclude(a => a.Attachment)
                 .Include(a => a.OrderGroups).ThenInclude(a => a.Attachment)

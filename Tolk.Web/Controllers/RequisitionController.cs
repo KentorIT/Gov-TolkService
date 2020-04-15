@@ -151,6 +151,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Broker)]
         public async Task<IActionResult> Create(int id)
         {
+#warning include-fest
             var request = _dbContext.Requests
                 .Include(r => r.Requisitions).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Requisitions).ThenInclude(r => r.PriceRows)
@@ -180,6 +181,7 @@ namespace Tolk.Web.Controllers
                 //Get request model from db
                 if (model.PreviousRequisition != null)
                 {
+#warning include-fest
                     var previousRequisition = _dbContext.Requisitions.Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                     .SingleOrDefault(r => r.RequisitionId == model.PreviousRequisition.RequisitionId);
                     // Get the attachments from the previous requisition.
@@ -225,6 +227,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+#warning include-fest
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order.CreatedByUser)
@@ -272,6 +275,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Review(int requisitionId)
         {
+#warning include-fest
             var requisition = _dbContext.Requisitions
                 .Include(r => r.Request).ThenInclude(r => r.Order)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -303,9 +307,9 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmNoReview(int requisitionId)
         {
+#warning include-fest
             var requisition = _dbContext.Requisitions
                 .Include(r => r.Request).ThenInclude(r => r.Order)
-                    .Include(r => r.Request).ThenInclude(r => r.Order)
                     .Include(r => r.RequisitionStatusConfirmations)
                 .Single(r => r.RequisitionId == requisitionId);
             if (ModelState.IsValid)
@@ -335,6 +339,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+#warning include-fest
                 var requisition = _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Order)
                     .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
@@ -376,6 +381,7 @@ namespace Tolk.Web.Controllers
 
         private Requisition GetRequisition(int id)
         {
+#warning include-fest
             return _dbContext.Requisitions
                 .Include(r => r.CreatedByUser).ThenInclude(u => u.Broker)
                 .Include(r => r.ProcessedUser)

@@ -40,6 +40,7 @@ namespace Tolk.Web.Controllers
             {
                 model = new FaqFilterModel();
             }
+#warning include-fest
             var faqs = _dbContext.Faq.Include(f => f.FaqDisplayUserRoles).Select(f => f);
 
             faqs = model.Apply(faqs);
@@ -98,6 +99,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.AppOrSysAdmin)]
         public ActionResult Edit(int id)
         {
+#warning include-fest
             var faq = _dbContext.Faq.Include(f => f.FaqDisplayUserRoles)
                 .Single(f => f.FaqId == id);
 
@@ -136,6 +138,7 @@ namespace Tolk.Web.Controllers
             var displayForRoles = model.DisplayForRoles.SelectedItems.Select(r => EnumHelper.Parse<DisplayUserRole>(r.Value));
             if (update)
             {
+#warning include-fest
                 faq = _dbContext.Faq.Include(f => f.FaqDisplayUserRoles)
                     .Single(s => s.FaqId == model.FaqId);
                 faq.Update(_clock.SwedenNow, User.GetUserId(), model.IsDisplayed, model.Question, model.Answer, displayForRoles);

@@ -173,6 +173,7 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<Request> GetRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
         {
+#warning include-fest
             return _dbContext.Requests
                       .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                       .Include(r => r.AnsweringUser)
@@ -202,6 +203,7 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<Request> GetDeliveredRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
         {
+#warning include-fest
             return _dbContext.Requests
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.AnsweringUser)
@@ -233,6 +235,7 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<Requisition> GetRequisitionsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
         {
+#warning include-fest
             return _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -256,6 +259,7 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<Complaint> GetComplaintsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
         {
+#warning include-fest
             return _dbContext.Complaints
                     .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -309,6 +313,7 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<Order> GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
+#warning include-fest
             return _dbContext.Orders
                     .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
@@ -340,6 +345,7 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<Requisition> GetRequisitionsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
+#warning include-fest
             return _dbContext.Requisitions
                     .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -367,6 +373,7 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<Complaint> GetComplaintsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
+#warning include-fest
             return _dbContext.Complaints
                     .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)

@@ -76,6 +76,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<ActionResult> View(int id, string message)
         {
+#warning move include
             var customer = await _dbContext.CustomerOrganisations
                 .Include(c => c.ParentCustomerOrganisation)
                 .SingleAsync(c => c.CustomerOrganisationId == id);
@@ -138,6 +139,7 @@ namespace Tolk.Web.Controllers
                 _dbContext.Add(customer);
                 await _cacheService.Flush(CacheKeys.Customers);
                 await _dbContext.SaveChangesAsync();
+#warning move include
                 customer = await _dbContext.CustomerOrganisations
                     .Include(c => c.ParentCustomerOrganisation)
                     .SingleAsync(c => c.CustomerOrganisationId == customer.CustomerOrganisationId);

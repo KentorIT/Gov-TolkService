@@ -60,6 +60,7 @@ namespace Tolk.Web.Controllers
 
         public IActionResult View(int id)
         {
+#warning move include
             return View(EmailModel.GetModelFromOutboundEmail(_dbContext.OutboundEmails
                 .Include(e => e.ReplacedByEmail).Single(e => e.OutboundEmailId == id), User.IsInRole(Roles.ApplicationAdministrator)));
         }
@@ -69,7 +70,7 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Resend(int id)
         {
-
+#warning move include
             var oldEmail = _dbContext.OutboundEmails.Include(e => e.ReplacedByEmail)
                 .SingleOrDefault(e => e.OutboundEmailId == id);
             if (oldEmail == null || oldEmail.ReplacedByEmail != null)

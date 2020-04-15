@@ -118,6 +118,7 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Process(RequestGroupProcessModel model)
         {
+#warning include-fest
             var requestGroup = await _dbContext.RequestGroups
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
@@ -194,6 +195,7 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Decline(RequestGroupDeclineModel model)
         {
+#warning include-fest
             var requestGroup = await _dbContext.RequestGroups
                 .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
@@ -273,6 +275,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<JsonResult> AddView(int id)
         {
+#warning include-fest
             var requestGroup = _dbContext.RequestGroups
                .Include(r => r.Views).Single(r => r.RequestGroupId == id);
             if (requestGroup != null)
@@ -332,6 +335,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<RequestGroup> GetRequestGroupToProcess(int requestGroupId)
         {
+#warning include-fest
             return await _dbContext.RequestGroups
                .Include(g => g.Ranking)
                .Include(g => g.Views).ThenInclude(v => v.ViewedByUser)
@@ -350,6 +354,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<RequestGroup> GetRequestGroupToView(int requestGroupId)
         {
+#warning include-fest
             return await _dbContext.RequestGroups
                .Include(g => g.Ranking).ThenInclude(r => r.Broker)
                .Include(g => g.StatusConfirmations)
@@ -378,6 +383,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<RequestGroup> GetConfirmedRequestGroup(int requestGroupId)
         {
+#warning include-fest
             return await _dbContext.RequestGroups
                 .Include(rg => rg.Ranking)
                 .Include(rg => rg.OrderGroup)

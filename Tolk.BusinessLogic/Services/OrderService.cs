@@ -254,6 +254,7 @@ namespace Tolk.BusinessLogic.Services
 
             if (request != null)
             {
+#warning include-fest
                 var newRequest = _tolkDbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
@@ -368,14 +369,16 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(request, nameof(DenyRequestAnswer), nameof(OrderService));
             var createRequest = !request.TerminateOnDenial;
             request.Deny(_clock.SwedenNow, userId, impersonatorId, message);
+            var order = request.Order;
+             order.Requests = await _tolkDbContext.Requests.GetRequestsForOrder(order.OrderId).ToListAsync();
             if (createRequest)
             {
-                await CreateRequest(request.Order, request);
+                await CreateRequest(order, request);
             }
             else
             {
                 request.Order.Status = OrderStatus.NoBrokerAcceptedOrder;
-                await TerminateOrder(request.Order);
+                await TerminateOrder(order);
             }
             _notificationService.RequestAnswerDenied(request);
         }
@@ -637,6 +640,7 @@ namespace Tolk.BusinessLogic.Services
 
         private async Task<RequestGroup> GetNewRequestGroup(int requestGroupId)
         {
+#warning include-fest
             return await _tolkDbContext.RequestGroups
                 .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
@@ -671,6 +675,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 try
                 {
+#warning move include
                     var startedRequest = await _tolkDbContext.Requests
                     .Include(r => r.Interpreter)
                     .SingleOrDefaultAsync(r => r.RequestId == requestId);
@@ -713,6 +718,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 try
                 {
+#warning move include
                     var completedRequest = await _tolkDbContext.Requests.CompletedRequests(_clock.SwedenNow)
                     .Include(r => r.Order)
                     .Include(r => r.Ranking)
@@ -739,6 +745,7 @@ namespace Tolk.BusinessLogic.Services
 
         private async Task TerminateOrderGroup(OrderGroup orderGroup)
         {
+#warning include-fest
             var terminatedOrderGroup = await _tolkDbContext.OrderGroups
               .Include(o => o.CreatedByUser)
               .Include(o => o.Orders).ThenInclude(o => o.CustomerUnit)
@@ -753,6 +760,7 @@ namespace Tolk.BusinessLogic.Services
             //The order will be terminated, send an email to tell the order creator
             if (notify)
             {
+#warning move include
                 var terminatedOrder = await _tolkDbContext.Orders
                    .Include(o => o.CreatedByUser)
                    .Include(o => o.ContactPersonUser)
@@ -797,6 +805,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     try
                     {
+#warning include-fest
                         var expiredRequest = await _tolkDbContext.Requests.ExpiredRequests(_clock.SwedenNow)
                             .Include(r => r.Ranking)
                             .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -870,6 +879,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     try
                     {
+#warning include-fest
                         var expiredRequestGroup = await _tolkDbContext.RequestGroups.ExpiredRequestGroups(_clock.SwedenNow)
                             .Include(r => r.Ranking)
                             .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
@@ -941,6 +951,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     try
                     {
+#warning move includes
                         var request = await _tolkDbContext.Requests.NonAnsweredRespondedRequests(_clock.SwedenNow)
                         .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                         .Include(r => r.Ranking)
@@ -987,6 +998,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     try
                     {
+#warning include-fest
                         var requestGroup = await _tolkDbContext.RequestGroups.NonAnsweredRespondedRequestGroups(_clock.SwedenNow)
                         .Include(rg => rg.Requests)
                         .Include(rg => rg.Ranking)

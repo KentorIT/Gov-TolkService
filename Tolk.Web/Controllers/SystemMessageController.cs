@@ -32,6 +32,7 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List()
         {
+#warning move include
             var systemMessages = _dbContext.SystemMessages
                 .Include(s => s.CreatedByUser)
                 .Include(s => s.LastUpdatedByUser).ToList();

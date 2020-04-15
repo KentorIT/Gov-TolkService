@@ -70,6 +70,7 @@ namespace Tolk.Web.Controllers
             IEnumerable<CustomerUnit> customerUnits = null;
             if (customerOrganisationId != null)
             {
+#warning include-fest
                 customerUnits = _dbContext.CustomerUnits
                     .Include(cu => cu.CustomerUnitUsers)
                     .Where(cu => cu.CustomerOrganisationId == customerOrganisationId
@@ -194,6 +195,7 @@ namespace Tolk.Web.Controllers
                     }
                     if (_userService.IsUniqueEmail(model.NewEmailAddress, user.Id))
                     {
+#warning move include
                         var emailUser = await _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).SingleAsync(u => u.Id == User.GetUserId());
                         await _userService.SetTemporaryEmail(user, model.NewEmailAddress, User.GetUserId(), User.TryGetImpersonatorId());
                         return await SendChangedEmailLink(user, model.NewEmailAddress);
@@ -404,6 +406,7 @@ namespace Tolk.Web.Controllers
             }
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
+#warning move include
                 var user = _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).Single(u => u.Id == User.GetUserId());
                 var newEmail = user.TemporaryChangedEmailEntry?.EmailAddress;
                 if (!string.IsNullOrEmpty(newEmail))
@@ -642,7 +645,7 @@ namespace Tolk.Web.Controllers
                     using (var trn = await _dbContext.Database.BeginTransactionAsync())
                     {
                         var domain = model.Email.Split('@')[1];
-
+#warning include-fest
                         var organisation = await _dbContext.CustomerOrganisations
                             .Include(c => c.SubCustomerOrganisations)
                             .SingleOrDefaultAsync(c => c.EmailDomain == domain && c.ParentCustomerOrganisationId == null);
@@ -811,6 +814,7 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
+#warning include-fest
         private Task<AspNetUser> UserForDefaultSettings => _userManager.Users.Include(u => u.DefaultSettings)
             .Include(u => u.DefaultSettingOrderRequirements)
             .Include(u => u.CustomerUnits).ThenInclude(c => c.CustomerUnit)

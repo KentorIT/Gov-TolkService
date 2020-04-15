@@ -64,6 +64,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId();
                 var apiUserId = User.UserId();
+#warning include-fest
                 var order = await _dbContext.Orders
                     .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(o => o.Requests).ThenInclude(r => r.RequirementAnswers)
@@ -186,6 +187,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.RequestIsPartOfAGroup);
                 }
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+#warning move include
                 var request = await _dbContext.Requests
                     .Include(r => r.Order)
                     .SingleOrDefaultAsync(r => r.Order.OrderNumber == model.OrderNumber && brokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Created);
@@ -222,6 +224,7 @@ namespace Tolk.Web.Api.Controllers
                 }
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+#warning include-fest
                 var request = await _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Order.CreatedByUser)
@@ -263,6 +266,7 @@ namespace Tolk.Web.Api.Controllers
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
 
+#warning move include
                 var request = await _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
@@ -314,6 +318,7 @@ namespace Tolk.Web.Api.Controllers
                 var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+#warning include-fest
                 var request = await _dbContext.Requests
                     .Include(r => r.RequestGroup)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -408,6 +413,7 @@ namespace Tolk.Web.Api.Controllers
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
 
+#warning include-fest
                 var order = _dbContext.Orders
                 .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
@@ -619,6 +625,7 @@ namespace Tolk.Web.Api.Controllers
             try
             {
                 var brokerId = User.TryGetBrokerId().Value;
+#warning include-fest
                 var order = _dbContext.Orders
                     .Include(o => o.Requests).ThenInclude(r => r.Ranking)
                     .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
@@ -665,6 +672,7 @@ namespace Tolk.Web.Api.Controllers
                 var brokerId = User.TryGetBrokerId().Value;
 
                 //GET THE MOST CURRENT REQUEST, IE THE REQUEST WITHOUT ReplacedBy....
+#warning include-fest
                 var request = await _dbContext.Requests
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.RequirementAnswers)
@@ -707,6 +715,7 @@ namespace Tolk.Web.Api.Controllers
 
         private async Task<Request> GetConfirmedRequest(string orderNumber, int brokerId, IEnumerable<RequestStatus> expectedStatuses)
         {
+#warning include-fest
             var request = await _dbContext.Requests
                 .Include(r => r.Ranking)
                 .Include(r => r.Order)
@@ -723,6 +732,7 @@ namespace Tolk.Web.Api.Controllers
 
         private async Task<Request> GetOrderChangedRequest(string orderNumber, int brokerId)
         {
+#warning include-fest
             var request = await _dbContext.Requests
                 .Include(r => r.Ranking)
                 .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation).OrderBy(r => r.RequestId)

@@ -149,6 +149,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+#warning include-fest
                 var request = _dbContext.Requests
                     .Include(r => r.RequestGroup)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
@@ -308,6 +309,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+#warning move include
                 var request = _dbContext.Requests
                     .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                     .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
@@ -335,6 +337,8 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Decline(RequestDeclineModel model)
         {
+#warning include-fest
+#warning kolla hur order gör detta, det är tidigare brokers som behöver komma med...
             var request = _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order.CreatedByUser)
@@ -479,6 +483,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public JsonResult AddRequestView(int requestId)
         {
+#warning include-fest
             var request = _dbContext.Requests
                .Include(r => r.RequestViews).Single(r => r.RequestId == requestId);
             if (request != null)
@@ -498,6 +503,7 @@ namespace Tolk.Web.Controllers
                 return PartialView("_EventLogDynamic", new EventLogModel
                 {
                     Entries = EventLogHelper.GetEventLog(request, request.Order.CustomerOrganisation.Name, request.Ranking.Broker.Name,
+#warning include-fest
                     previousRequests: _dbContext.Requests
                         .Include(r => r.ReceivedByUser)
                         .Include(r => r.AnsweringUser)
@@ -524,6 +530,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<Request> GetRequestToProcess(int requestId)
         {
+#warning include-fest
             return await _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Order).ThenInclude(o => o.Requirements)
@@ -553,6 +560,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<Request> GetRequestToView(int requestId)
         {
+#warning include-fest
             return await _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)
@@ -591,6 +599,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<Request> GetRequestForEventlog(int requestId)
         {
+#warning include-fest
             return await _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)
@@ -633,6 +642,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<Request> GetConfirmedRequest(int requestId)
         {
+#warning include-fest
             return await _dbContext.Requests
                 .Include(r => r.Ranking)
                 .Include(r => r.Order)
@@ -642,6 +652,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<Request> GetOrderChangedRequest(int requestId)
         {
+#warning include-fest
             return await _dbContext.Requests
                 .Include(r => r.Ranking)
                 .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation)
@@ -678,6 +689,7 @@ namespace Tolk.Web.Controllers
 
             if (isView)
             {
+#warning detta måste tillbaka innan du mergar till github!
                 model.DisplayOrderChangeText = "";// DisplayOrderChange(request) ? GetOrderChangeText(request.Order, request) : string.Empty;
                 //model.ConfirmedOrderChangeLogEntries = request.Order.OrderChangeLogEntries.Where(oc => oc.BrokerId == request.Ranking.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null).Select(oc => oc.OrderChangeLogEntryId).ToList();
                 model.EventLog = new EventLogModel

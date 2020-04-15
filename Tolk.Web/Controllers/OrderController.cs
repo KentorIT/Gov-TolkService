@@ -464,6 +464,7 @@ namespace Tolk.Web.Controllers
             }
             DateTime nextPanicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
 
+#warning include-fest
             var user = await _userManager.Users
                 .Include(u => u.DefaultSettings)
                 .Include(u => u.DefaultSettingOrderRequirements)
@@ -502,7 +503,7 @@ namespace Tolk.Web.Controllers
                 {
                     if (model.IsMultipleOrders)
                     {
-                        var orderGroup = CreateNewOrderGroup(GetOrdersForGroup(model).ToList());
+                        var orderGroup = await CreateNewOrderGroup(await GetOrdersForGroup(model));
                         model.UpdateOrderGroup(orderGroup);
                         await _dbContext.AddAsync(orderGroup);
                         //TODO: LASTANSWER BY HAS TO BE NULL IF NOT ONLY ONE OCCASION WITH EXTRA INTERPRETER!!
@@ -514,7 +515,7 @@ namespace Tolk.Web.Controllers
                     }
                     else
                     {
-                        Order order = CreateNewOrder();
+                        Order order = await CreateNewOrder();
                         var firstOccasion = model.FirstOccasion;
                         model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
                         await _dbContext.AddAsync(order);
@@ -534,9 +535,9 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         [HttpPost]
         [Authorize(Policy = Policies.Customer)]
-        public ActionResult Confirm(OrderModel model)
+        public async Task<ActionResult> Confirm(OrderModel model)
         {
-            Order order = CreateNewOrder();
+            Order order = await CreateNewOrder();
             PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
             OrderViewModel updatedModel = null;
             var firstOccasion = model.FirstOccasion;
@@ -546,7 +547,7 @@ namespace Tolk.Web.Controllers
             updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
             if (model.IsMultipleOrders)
             {
-                updatedModel.OrderOccasionDisplayModels = GetGroupOrders(model, pricelistType);
+                updatedModel.OrderOccasionDisplayModels = await GetGroupOrders(model, pricelistType);
                 updatedModel.SeveralOccasions = true;
                 updatedModel.WarningOrderGroupCloseInTime = CheckOrderGroupCloseInTime(updatedModel.OrderOccasionDisplayModels);
                 warningOrderTimeInfo = CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels);
@@ -774,11 +775,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Approve(ProcessRequestModel model)
         {
-            var request = await _dbContext.Requests
-                .Include(r => r.Interpreter)
-                .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .SingleAsync(r => r.RequestId == model.RequestId);
+            var request = await _dbContext.Requests.GetRequestById(model.RequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.Accept)).Succeeded)
             {
@@ -842,10 +839,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmCancellation(int requestId)
         {
-            var request = await _dbContext.Requests
-                .Include(r => r.Ranking)
-                .Include(r => r.Order)
-                .SingleAsync(r => r.RequestId == requestId);
+            var request = await _dbContext.Requests.GetSimpleRequestById(requestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.View)).Succeeded)
             {
@@ -888,7 +882,9 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmResponseNotAnswered(int orderId)
         {
-            var order = await _dbContext.Orders.Include(o => o.OrderStatusConfirmations).SingleAsync(o => o.OrderId == orderId);
+#warning inte testat detta!
+            var order = await _dbContext.Orders.SingleAsync(o => o.OrderId == orderId);
+            order.OrderStatusConfirmations = await _dbContext.OrderStatusConfirmation.GetStatusConfirmationsForOrder(orderId).ToListAsync();
             if (order.Status == OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
                 try
@@ -909,10 +905,8 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Deny(ProcessRequestModel model)
         {
-            var request = await _dbContext.Requests
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(req => req.Ranking)
-                .SingleAsync(r => r.RequestId == model.RequestId);
+#warning inte testat!
+            var request = await _dbContext.Requests.GetSimpleRequestById(model.RequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.Accept)).Succeeded)
             {
@@ -922,7 +916,6 @@ namespace Tolk.Web.Controllers
                 }
                 var requestWillTerminate = request.TerminateOnDenial;
 #warning borde vara en try catch här, i alla fall för invalid
-#warning Det är rätt meckigt att följa alla vägar för en order, men det borde gå att flytta hämtandet av ordern och dess requests till servicen. Det gäller bara att systemet känner till nuvarande requests förändring.
                 await _orderService.DenyRequestAnswer(request, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = request.OrderId, message = requestWillTerminate ? "Tillsättning är nu underkänd och bokningsförfrågan avslutad" : string.Empty });
@@ -1042,12 +1035,13 @@ namespace Tolk.Web.Controllers
             return Json(definition);
         }
 
-        private IEnumerable<Order> GetOrdersForGroup(OrderModel model)
+        private async Task<List<Order>> GetOrdersForGroup(OrderModel model)
         {
+            var orders = new List<Order>();
             var list = new Dictionary<int, Order>();
             foreach (var occasion in model.UniqueOrdersFromOccasions.OrderBy(o => o.OrderOccasionId))
             {
-                var order = CreateNewOrder();
+                var order = await CreateNewOrder();
                 model.UpdateOrder(order, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), isGroupOrder: true);
                 if (occasion.ExtraInterpreter)
                 {
@@ -1061,15 +1055,17 @@ namespace Tolk.Web.Controllers
                     list.Add(occasion.OrderOccasionId.Value, order);
                 }
                 order.MealBreakIncluded = occasion.MealBreakIncluded;
-                yield return order;
+                orders.Add(order);
             }
+            return orders;
         }
 
-        private IEnumerable<OrderOccasionDisplayModel> GetGroupOrders(OrderModel model, PriceListType pricelistType)
+        private async Task<IEnumerable<OrderOccasionDisplayModel>> GetGroupOrders(OrderModel model, PriceListType pricelistType)
         {
+            var occasions = new List<OrderOccasionDisplayModel>();
             foreach (var occasion in model.UniqueOrdersFromOccasions)
             {
-                Order groupOrder = CreateNewOrder();
+                Order groupOrder = await CreateNewOrder();
                 // Add list of occasions, with the price information
                 model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), isGroupOrder: true);
                 occasion.PriceInformationModel = new PriceInformationModel
@@ -1080,38 +1076,38 @@ namespace Tolk.Web.Controllers
                     UseDisplayHideInfo = true,
                     Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
                 };
-                yield return occasion;
+                occasions.Add(occasion);
             }
+            return occasions;
         }
 
-        private OrderGroup CreateNewOrderGroup(List<Order> orders)
+        private async Task<OrderGroup> CreateNewOrderGroup(List<Order> orders)
         {
-            (AspNetUser user, AspNetUser impersonatingUser) = GetUsers();
+            (AspNetUser user, AspNetUser impersonatingUser) = await GetUsers();
             return new OrderGroup(user, impersonatingUser, user.CustomerOrganisation, _clock.SwedenNow, orders);
         }
 
-        private Order CreateNewOrder()
+        private async Task<Order> CreateNewOrder()
         {
-            (AspNetUser user, AspNetUser impersonatingUser) = GetUsers();
+            (AspNetUser user, AspNetUser impersonatingUser) = await GetUsers();
             return new Order(user, impersonatingUser, user.CustomerOrganisation, _clock.SwedenNow);
         }
 
-        private (AspNetUser, AspNetUser) GetUsers()
+        private async Task<(AspNetUser, AspNetUser)> GetUsers()
         {
-            AspNetUser user = _dbContext.Users
-               .Include(u => u.CustomerOrganisation)
-               .Single(u => u.Id == User.GetUserId());
+            AspNetUser user = await _dbContext.Users.GetUser(User.GetUserId());
             var impersonator = User.TryGetImpersonatorId();
             AspNetUser impersonatingUser = null;
             if (impersonator.HasValue)
             {
-                impersonatingUser = _dbContext.Users.Single(u => u.Id == impersonator);
+                impersonatingUser = await _dbContext.Users.GetUser(impersonator.Value);
             }
             return (user, impersonatingUser);
         }
 
         private Order GetOrder(int id)
         {
+#warning include-fest
             return _dbContext.Orders
                 .Include(o => o.ReplacedByOrder)
                 .Include(o => o.ReplacingOrder)

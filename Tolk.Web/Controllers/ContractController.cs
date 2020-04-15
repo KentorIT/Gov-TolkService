@@ -36,6 +36,7 @@ namespace Tolk.Web.Controllers
         public IActionResult List()
         {
             var brokerFeePrices = _cacheService.BrokerFeePriceList;
+#warning include-fest
             return View(new ContractListModel
             {
                 ItemsPerBroker = _dbContext.Brokers.Include(b => b.Rankings)
@@ -57,6 +58,7 @@ namespace Tolk.Web.Controllers
                                 .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                         }).ToList()
                 }),
+#warning include-fest
                 ItemsPerRegion = _dbContext.Regions.Include(b => b.Rankings)
                 .ThenInclude(r => r.Broker)
                 .OrderBy(r => r.Name)

@@ -78,6 +78,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Approve(ProcessRequestGroupModel model)
         {
+#warning include-fest
             var requestGroup = await _dbContext.RequestGroups
                 .Include(r => r.Requests).ThenInclude(r => r.Order)
                 .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
@@ -103,6 +104,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Cancel(CancelOrderGroupModel model)
         {
+#warning include-fest
             var orderGroup = await _dbContext.OrderGroups
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.CustomerUnit)
@@ -137,6 +139,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmNoAnswer(int orderGroupId)
         {
+#warning include-fest
             var orderGroup = await _dbContext.OrderGroups
                 .Include(og => og.StatusConfirmations)
                 .Include(og => og.Orders).ThenInclude(o => o.OrderStatusConfirmations)
@@ -162,6 +165,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> ConfirmResponseNotAnswered(int orderGroupId)
         {
             var orderGroup = await _dbContext.OrderGroups
+#warning include-fest
                 .Include(og => og.StatusConfirmations)
                 .Include(og => og.Orders).ThenInclude(o => o.OrderStatusConfirmations)
                 .SingleAsync(og => og.OrderGroupId == orderGroupId);
@@ -185,6 +189,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Deny(ProcessRequestGroupModel model)
         {
+#warning include-fest
             var requestGroup = await _dbContext.RequestGroups
                 .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
                 .Include(r => r.Requests)
@@ -231,6 +236,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<OrderGroup> GetOrderGroup(int id)
         {
+#warning include-fest
             return await _dbContext.OrderGroups
                 .Include(o => o.Language)
                 .Include(o => o.CompetenceRequirements)
