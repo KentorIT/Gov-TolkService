@@ -213,6 +213,7 @@ $(function () {
             $("#mealbreak-included").show();
         }
         else {
+            $("#MealBreakIncluded").prop('checked', false);
             $("#mealbreak-included").hide();
         }
     };
