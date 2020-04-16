@@ -1130,8 +1130,9 @@ li.placeholder::before {
 #RequiredCompetenceLevels {
   padding-top: 5px;
 }
-.neg-padding-top {
-  margin-top: -11px;
+.mealbreak-info {
+  font-size: 13.5px;
+  margin-top: -12px;
 }
 .navbar-default {
   background-color: white;
@@ -1379,6 +1380,9 @@ ul.pagination > li.paginate_button.active > a {
 .full-row-height > tbody > tr {
   font-weight: 300;
   height: 70px;
+}
+.occasion-table > tbody > tr {
+  font-weight: 300;
 }
 .sortable-only-table,
 .search-table,

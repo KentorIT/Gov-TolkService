@@ -57,7 +57,7 @@ namespace Tolk.Web.Models
                 ControllerName = request == null ? "Order" : "Request",
                 OrderStatus = order.Status,
                 RequestStatus = request?.Status,
-                MealBreakIncludedText = order.MealBreakIncluded.HasValue ? order.MealBreakIncluded.Value ? "Måltidspaus ingår" : "Måltidspaus ingår inte" : "Ej angivet om måltidspaus ingår"
+                MealBreakIncludedText = order.MealBreakTextToDisplay
             };
         }
     }

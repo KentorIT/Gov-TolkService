@@ -97,7 +97,7 @@ namespace Tolk.Web.Models
 
         public bool DisplayForBroker { get; set; } = false;
 
-        public string DisplayMealBreakIncluded { get; set; }
+        public string DisplayMealBreakIncludedText { get; set; }
 
         public string WarningOrderTimeInfo { get; set; } = string.Empty;
 
@@ -412,7 +412,6 @@ namespace Tolk.Web.Models
             order.ContactPersonId = ContactPersonId;
             if (!isGroupOrder)
             {
-                order.MealBreakIncluded = MealBreakIncluded;
                 order.Attachments = Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList();
             }
             order.InvoiceReference = InvoiceReference;
@@ -438,6 +437,7 @@ namespace Tolk.Web.Models
             }
             else
             {
+                order.MealBreakIncluded = MealBreakIncluded;
                 order.LanguageId = LanguageId;
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;
@@ -580,7 +580,7 @@ namespace Tolk.Web.Models
                     EndDateTime = order.EndAt
                 },
                 MealBreakIncluded = order.MealBreakIncluded ?? false,
-                DisplayMealBreakIncluded = (int)(order.EndAt.DateTime - order.StartAt.DateTime).TotalMinutes > 240 ? GetMealBreakText(order.MealBreakIncluded) : null,
+                DisplayMealBreakIncludedText = order.MealBreakTextToDisplay,
                 Description = order.Description,
                 UnitName = order.UnitName,
                 CompetenceLevelDesireType = new RadioButtonGroup
@@ -644,11 +644,6 @@ namespace Tolk.Web.Models
                     DenyMessage = r.DenyMessage,
                 }).ToList(),
             };
-        }
-
-        private static string GetMealBreakText(bool? mealBreakIncluded)
-        {
-            return mealBreakIncluded.HasValue ? mealBreakIncluded.Value ? "Måltidspaus ingår" : "Måltidspaus ingår inte" : "Ej angivet om måltidspaus ingår";
         }
 
         internal void UpdateModelWithDefaultSettings(List<int> units)

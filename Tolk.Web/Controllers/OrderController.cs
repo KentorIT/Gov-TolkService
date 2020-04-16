@@ -529,6 +529,7 @@ namespace Tolk.Web.Controllers
                 warningOrderTimeInfo = CheckReasonableDurationTime(order.StartAt.DateTime, order.EndAt.DateTime);
                 updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? CheckOrderOccasionFarAway(order.StartAt.DateTime) :
                     $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(order.StartAt.DateTime)}";
+                updatedModel.DisplayMealBreakIncludedText = order.MealBreakTextToDisplay;
             }
             var customerUnit = model.CustomerUnitId.HasValue && model.CustomerUnitId > 0 ? _dbContext.CustomerUnits
                 .Single(cu => cu.CustomerUnitId == model.CustomerUnitId) : null;
