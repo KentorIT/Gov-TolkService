@@ -27,6 +27,8 @@ namespace Tolk.BusinessLogic.Entities
             LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter;
             SpecificCompetenceLevelRequired = order.SpecificCompetenceLevelRequired;
             Group = order.Group;
+            CreatorIsInterpreterUser = order.CreatorIsInterpreterUser;
+            MealBreakIncluded = order.MealBreakIncluded;
             CompetenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
                 CompetenceLevel = r.CompetenceLevel,
