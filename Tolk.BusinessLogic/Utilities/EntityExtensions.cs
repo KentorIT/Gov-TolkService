@@ -158,6 +158,8 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForRequest(this IQueryable<OrderRequirementRequestAnswer> answers, int id)
            => answers.Include(a => a.OrderRequirement).Where(a => a.RequestId == id);
+        public static IQueryable<RequestView> GetActiveViewsForRequest(this IQueryable<RequestView> views, int id)
+           => views.Include(a => a.ViewedByUser).Where(a => a.RequestId == id);
 
         #endregion
 

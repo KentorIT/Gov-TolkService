@@ -90,6 +90,14 @@ namespace Tolk.Web.Services
             }
             return model;
         }
+
+        internal async Task<string> GetOtherViewer(int requestId, int currentUserId)
+        {
+            var otherViewer = await _dbContext.RequestViews.GetActiveViewsForRequest(requestId).FirstOrDefaultAsync(rv => rv.ViewedBy != currentUserId);
+            return otherViewer != null ?
+                $"{otherViewer.ViewedByUser.FullName} håller också på med denna förfrågan" :
+                string.Empty;
+        }
     }
 }
 

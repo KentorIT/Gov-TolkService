@@ -636,10 +636,7 @@ namespace Tolk.Web.Controllers
             {
                 model.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
             }
-            if (request.RequestViews != null && request.RequestViews.Any(rv => rv.ViewedBy != User.GetUserId()))
-            {
-                model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
-            }
+            model.ViewedByUser = await _listToModelService.GetOtherViewer(request.RequestId, User.GetUserId());
             model.BrokerId = request.Ranking.BrokerId;
             model.OrderViewModel.ActiveRequest = new RequestViewModel
             {
@@ -667,11 +664,8 @@ namespace Tolk.Web.Controllers
             {
                 model.ActiveRequest.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
             }
-#warning Denna behöver flyttas till servicen ANNARS SYNS DE INTE
-            if (request.RequestViews != null && request.RequestViews.Any(rv => rv.ViewedBy != User.GetUserId()))
-            {
-                model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
-            }
+            model.ViewedByUser = await _listToModelService.GetOtherViewer(request.RequestId, User.GetUserId());
+
             model.ActiveRequest.AllowInterpreterChange = request.CanChangeInterpreter(_clock.SwedenNow);
             model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
             model.ActiveRequest.RegionName = model.RegionName;
