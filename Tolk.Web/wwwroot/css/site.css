@@ -1133,6 +1133,7 @@ li.placeholder::before {
 .mealbreak-info {
   font-size: 13.5px;
   margin-top: -12px;
+  margin-bottom: 12px;
 }
 .navbar-default {
   background-color: white;
