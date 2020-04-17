@@ -19,6 +19,8 @@ namespace Tolk.Web.Models
 
         public int? ReplacedByOrderRequestId { get; set; }
 
+        public int BrokerId { get; set; }
+
         public int? RequestGroupId { get; set; }
 
         public string ViewedByUser { get; set; } = string.Empty;
@@ -64,8 +66,6 @@ namespace Tolk.Web.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
-        public int? RequisitionId { get; set; }
-
         [Display(Name = "Bedömd resekostnad")]
         [DataType(DataType.Currency)]
         public decimal ExpectedTravelCosts => RequestCalculatedPriceInformationModel.ExpectedTravelCosts;
@@ -104,18 +104,6 @@ namespace Tolk.Web.Models
 
         public bool AllowInterpreterChange { get; set; } = false;
 
-        public bool AllowRequisitionRegistration { get; set; } = false;
-
-        public bool AllowConfirmNoRequisition { get; set; } = false;
-
-        public bool AllowCancellation { get; set; } = true;
-
-        public bool AllowConfirmCancellation { get; set; } = false;
-
-        public bool AllowConfirmationDenial { get; set; } = false;
-
-        public bool AllowConfirmNoAnswer { get; set; } = false;
-
         public bool AllowProcessing { get; set; } = true;
 
         public bool DisplayExpectedTravelCostInfo { get; set; }
@@ -123,13 +111,6 @@ namespace Tolk.Web.Models
         public EventLogModel EventLog { get; set; }
 
         public string ColorClassName => CssClassHelper.GetColorClassNameForRequestStatus(Status);
-
-        [DataType(DataType.MultilineText)]
-        [Display(Name = "Bokningsändringar")]
-        public string DisplayOrderChangeText { get; set; }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
-        public List<int> ConfirmedOrderChangeLogEntries { get; set; } = new List<int>();
 
         [Display(Name = "Vill du ange en sista tid för att besvara tillsättning för myndighet", Description = "Ange om du vill sätta en tid för när myndigheten senast ska besvara tillsättningen. Om du anger en tid och myndigheten inte svarar inom angiven tid avslutas förfrågan.")]
         [ClientRequired]
@@ -155,8 +136,6 @@ namespace Tolk.Web.Models
         public PriceInformationModel OrderCalculatedPriceInformationModel { get; set; }
 
         public PriceInformationModel RequestCalculatedPriceInformationModel { get; set; }
-
-        public int? ComplaintId { get; set; }
 
         public int? OldInterpreterId { get; set; }
 
@@ -189,6 +168,7 @@ namespace Tolk.Web.Models
                 DisplayExpectedTravelCostInfo = GetDisplayExpectedTravelCostInfo(allowExceedingTravelCost, request.InterpreterLocation ?? 0),
                 LatestAnswerTimeForCustomer = request.LatestAnswerTimeForCustomer,
                 ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
+                BrokerId = request.Ranking.BrokerId
             };
         }
 

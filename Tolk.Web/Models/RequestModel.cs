@@ -27,13 +27,13 @@ namespace Tolk.Web.Models
 
         public int? RequestGroupId { get; set; }
 
-        public OrderModel OrderModel { get; set; }
+        public OrderViewModel OrderViewModel { get; set; }
 
         public int? OrderId
         {
             get
             {
-                return OrderModel?.OrderId;
+                return OrderViewModel?.OrderId;
             }
         }
 
@@ -157,20 +157,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Svara senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 
-        public bool AllowInterpreterChange { get; set; } = false;
-
-        public bool AllowRequisitionRegistration { get; set; } = false;
-
-        public bool AllowConfirmNoRequisition { get; set; } = false;
-
-        public bool AllowCancellation { get; set; } = true;
-
-        public bool AllowConfirmCancellation { get; set; } = false;
-
-        public bool AllowConfirmationDenial { get; set; } = false;
-
-        public bool AllowConfirmNoAnswer { get; set; } = false;
-
         public bool AllowProcessing { get; set; } = true;
 
         public bool DisplayExpectedTravelCostInfo { get; set; }
@@ -182,9 +168,6 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         [Display(Name = "Bokningsändringar")]
         public string DisplayOrderChangeText { get; set; }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
-        public List<int> ConfirmedOrderChangeLogEntries { get; set; } = new List<int>();
 
         [Display(Name = "Vill du ange en sista tid för att besvara tillsättning för myndighet", Description = "Ange om du vill sätta en tid för när myndigheten senast ska besvara tillsättningen. Om du anger en tid och myndigheten inte svarar inom angiven tid avslutas förfrågan.")]
         [ClientRequired]
@@ -226,7 +209,6 @@ namespace Tolk.Web.Models
             var attach = request.Attachments;
             var verificationResult = (request.InterpreterCompetenceVerificationResultOnStart ?? request.InterpreterCompetenceVerificationResultOnAssign);
             bool? isInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null;
-
             return new RequestModel
             {
                 Status = request.Status,
@@ -277,7 +259,7 @@ namespace Tolk.Web.Models
 
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
                 DisplayExpectedTravelCostInfo = GetDisplayExpectedTravelCostInfo(request.Order, request.InterpreterLocation ?? 0),
-                OrderModel = OrderModel.GetModelFromOrder(request.Order, null, true),
+                OrderViewModel = OrderViewModel.GetModelFromOrder(request.Order, request),
                 ComplaintId = complaint?.ComplaintId,
                 LatestAnswerTimeForCustomer = request.LatestAnswerTimeForCustomer,
                 ReplacingOrderRequestId = requestSummaryOnly ? null : replacingOrderRequest?.RequestId,

@@ -8,11 +8,11 @@
     ViewData["Title"] = "Bokning - " + Model.OrderNumber;
     string editContactpersonButtonText = (Model.ChangeContactPersonId == null) ? "Lägg till " : "Ändra ";
 
-    bool isRequisitionAvailable = (bool?)Model.ActiveRequest.RequisitionId.HasValue ?? false;
-    bool isComplaintAvailable = (bool?)Model.ActiveRequest.ComplaintId.HasValue ?? false;
+    bool isRequisitionAvailable = (bool?)Model.RequisitionId.HasValue ?? false;
+    bool isComplaintAvailable = (bool?)Model.ComplaintId.HasValue ?? false;
 
-    string requisitionPath = isRequisitionAvailable ? "Requisition/View?id=" + Model.ActiveRequest.RequisitionId + "&returnPartial=true" : "#";
-    string complaintPath = isComplaintAvailable ? "Complaint/View?Id=" + Model.ActiveRequest.ComplaintId: "#";
+    string requisitionPath = isRequisitionAvailable ? "Requisition/View?id=" + Model.RequisitionId + "&returnPartial=true" : "#";
+    string complaintPath = isComplaintAvailable ? "Complaint/View?Id=" + Model.ComplaintId: "#";
 }
 
 @await Html.PartialAsync("_OrderHeader", Model, new ViewDataDictionary(ViewData) { { "IsOrderDetailView", true } })

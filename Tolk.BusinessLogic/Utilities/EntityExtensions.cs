@@ -139,6 +139,9 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<OrderPriceRow> GetPriceRowsForOrder(this IQueryable<OrderPriceRow> rows, int id)
             => rows.Include(p => p.PriceListRow).Where(p => p.OrderId == id);
 
+        public static IQueryable<OrderChangeLogEntry> GetOrderChangeLogEntiesForOrder(this IQueryable<OrderChangeLogEntry> rows, int id)
+            => rows.Include(c => c.OrderChangeConfirmation).Where(c => c.OrderId == id);
+
         #endregion
 
         #region lists connected to requests
@@ -161,20 +164,11 @@ namespace Tolk.BusinessLogic.Utilities
         #region single entities by id
 
         public static async Task<Order> GetFullOrderById(this IQueryable<Order> orders, int id)
-        {
-            return await orders
-                .Include(o => o.ReplacedByOrder)
-                .Include(o => o.ReplacingOrder).ThenInclude(o => o.CreatedByUser)
-                .Include(o => o.CreatedByUser)
-                .Include(o => o.ContactPersonUser)
-                .Include(o => o.Region)
-                .Include(o => o.CustomerOrganisation)
-                .Include(o => o.CustomerUnit)
-                .Include(o => o.Language)
-                .Include(o => o.Group)
-                .SingleAsync(o => o.OrderId == id);
-        }
- 
+            => await orders.GetOrdersWithInclude().SingleAsync(o => o.OrderId == id);
+
+        public static async Task<Order> GetFullOrderByRequestId(this IQueryable<Order> orders, int id)
+            => await orders.GetOrdersWithInclude().SingleAsync(o => o.Requests.Any(r => r.RequestId == id));
+
         public static async Task<Order> GetOrderWithContactsById(this IQueryable<Order> orders, int id)
             => await orders
                 .Include(o => o.CustomerOrganisation)
@@ -280,5 +274,18 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return int.TryParse(value, out var i) ? (int?)i : null;
         }
+
+        private static IQueryable<Order> GetOrdersWithInclude(this IQueryable<Order> orders)
+            => orders
+                .Include(o => o.ReplacedByOrder)
+                .Include(o => o.ReplacingOrder).ThenInclude(o => o.CreatedByUser)
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.ContactPersonUser)
+                .Include(o => o.Region)
+                .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CustomerUnit)
+                .Include(o => o.Language)
+                .Include(o => o.Group);
+
     }
 }

@@ -1,13 +1,13 @@
-﻿@model Tolk.Web.Models.RequestModel
+﻿@model OrderViewModel
 @using Tolk.BusinessLogic.Enums
 @{
-    ViewData["Title"] = "Bokningsförfrågan - " + Model.OrderModel.OrderNumber;
+    ViewData["Title"] = "Bokningsförfrågan - " + Model.OrderNumber;
     bool isRequisitionAvailable = (bool?)Model.RequisitionId.HasValue ?? false;
     bool isComplaintAvailable = (bool?)Model.ComplaintId.HasValue ?? false;
     string requisitionPath = isRequisitionAvailable ? "Requisition/View?Id=" + Model.RequisitionId + "&returnPartial=true" : "#";
     string complaintPath = isComplaintAvailable ? "Complaint/View?Id=" + Model.ComplaintId + "&returnPartial=true" : "#";
 }
-@await Html.PartialAsync("_OrderHeader", Model.OrderModel, new ViewDataDictionary(ViewData) { { "header", ViewData["Title"] } })
+@await Html.PartialAsync("_OrderHeader", Model, new ViewDataDictionary(ViewData) { { "header", ViewData["Title"] } })
 <ul class="nav nav-tabs nav-justified">
     <li class="active"><a data-toggle="tab" href="#request">Bokning</a></li>
     <li class='@(isRequisitionAvailable ? "" : "disabled")'><a id="requisitionTab" data-toggle='@(isRequisitionAvailable ? "tab" : "")' href="#requisition" onclick="changeTab(this, '@requisitionPath', '#requisition')">Rekvisition</a></li>
@@ -18,13 +18,13 @@
     <div id="request" class="tab-pane fade in active">
         <div class="row">
             <div class="col-sm-12">
-                @if (Model.OrderModel.IsInOrderGroup)
+                @if (Model.IsInOrderGroup)
                 {
                     <div class="row">
                         <div class="col-xs-12">
                             <br />
                             <div class="@Model.GroupStatusCssClassColor">
-                                Tillhör sammanhållen bokning: <a asp-controller="RequestGroup" asp-action="View" asp-route-id="@Model.RequestGroupId">@Model.OrderModel.OrderGroupNumber</a>
+                                Tillhör sammanhållen bokning: <a asp-controller="RequestGroup" asp-action="View" asp-route-id="@Model.ActiveRequest.RequestGroupId">@Model.OrderGroupNumber</a>
                             </div>
                         </div>
                     </div>
@@ -58,12 +58,12 @@
                         </div>
                     </div>
                 }
-                @if (Model.AllowConfirmCancellation)
+                @if (Model.AllowConfirmCancellationByCreator)
                 {
                     <br />
-                    @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer))
+                    @if (!string.IsNullOrWhiteSpace(Model.ActiveRequest.Info48HCancelledByCustomer))
                     {
-                        <div class="important-info">@Model.Info48HCancelledByCustomer</div>
+                        <div class="important-info">@Model.ActiveRequest.Info48HCancelledByCustomer</div>
                     }
                     <form method="post" action="@Url.Action("ConfirmCancellation", new { RequestId = Model.RequestId })" asp-antiforgery="true">
                         <button class="btn btn-primary btn-large pull-right">Bekräfta avbokning <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
@@ -95,19 +95,19 @@
                                 <display-entry asp-for="DisplayOrderChangeText" />
                             </div>
                             <div class="col-xs-4">
-                                <form method="post" action="@Url.Action("ConfirmOrderChange", new ConfirmOrderChangeModel { ConfirmedOrderChangeLogEntries = Model.ConfirmedOrderChangeLogEntries, RequestId = Model.RequestId })" asp-antiforgery="true">
+                                <form method="post" action="@Url.Action("ConfirmOrderChange", new ConfirmOrderChangeModel { ConfirmedOrderChangeLogEntries = Model.ConfirmedOrderChangeLogEntries, RequestId = Model.ActiveRequest.RequestId })" asp-antiforgery="true">
                                     <button class="btn btn-primary btn-large pull-right">Bekräfta ändring <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 }
-                @await Html.PartialAsync("_RequestSummary", Model, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", true } })
+                @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", true } })
                 <div class="row">
-                    @if (Model.RequestCalculatedPriceInformationModel != null)
+                    @if (Model.ActiveRequestPriceInformationModel != null)
                     {
                         <div class="col-sm-6">
-                            @await Html.PartialAsync("_PriceInformationDisplay", Model.RequestCalculatedPriceInformationModel)
+                            @await Html.PartialAsync("_PriceInformationDisplay", Model.ActiveRequestPriceInformationModel)
                         </div>
                     }
                     @if (Model.OrderCalculatedPriceInformationModel != null)
@@ -125,17 +125,17 @@
                         </div>
                     </div>
                 }
-                @await Html.PartialAsync("_OrderSummary", Model.OrderModel, new ViewDataDictionary(ViewData) { { "displayGeneralOrderInfo", false } })
-                @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderModel)
-                @if (!string.IsNullOrWhiteSpace(Model.Info48HCancelledByCustomer) && (Model.Status == RequestStatus.CancelledByCreatorWhenApproved && !Model.AllowConfirmCancellation))
+                @await Html.PartialAsync("_OrderSummary", Model, new ViewDataDictionary(ViewData) { { "displayGeneralOrderInfo", false } })
+                @await Html.PartialAsync("_CustomerOrganizationInfo", Model)
+                @if (!string.IsNullOrWhiteSpace(Model.ActiveRequest.Info48HCancelledByCustomer) && Model.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved && !Model.AllowConfirmCancellation)
                 {
-                    <div class="important-info">@Model.Info48HCancelledByCustomer</div>
+                    <div class="important-info">@Model.ActiveRequest.Info48HCancelledByCustomer</div>
                 }
-                @if (Model.AllowCancellation || Model.AllowInterpreterChange)
+                @if (Model.AllowRequestCancellation || Model.ActiveRequest.AllowInterpreterChange)
                 {
                     <div class="row">
                         <div class="col-sm-6">
-                            @if (Model.AllowCancellation)
+                            @if (Model.AllowRequestCancellation)
                             {
                                 <form method="post" class="cancel-form" action="@Url.Action("Cancel", new { RequestId = Model.RequestId })" asp-antiforgery="true">
                                     <input name="CancelMessage" type="hidden" />
@@ -144,7 +144,7 @@
                             }
                         </div>
                         <div class="col-sm-6">
-                            @if (Model.AllowInterpreterChange)
+                            @if (Model.ActiveRequest.AllowInterpreterChange)
                             {
                                 <a class="btn btn-primary btn-large pull-right" href="@Url.Action("Change", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
                             }

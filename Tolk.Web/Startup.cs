@@ -52,6 +52,8 @@ namespace Tolk.Web
 
             services.AddScoped<MockTellusApiService>();
 
+            services.AddScoped<ListToModelService>();
+
             services.ConfigureApplicationCookie(opt =>
             {
                 //This does not work, for some reason...
