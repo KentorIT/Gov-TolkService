@@ -81,6 +81,7 @@ namespace Tolk.Web.Controllers
                 }
             });
         }
+
         public async Task<IActionResult> View(int id, string message = null, string errorMessage = null)
         {
             var order = await _dbContext.Orders.GetFullOrderById(id);
@@ -105,7 +106,6 @@ namespace Tolk.Web.Controllers
                 if (request != null)
                 {
                     model.UserCanCreateComplaint = (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded;
-
                     model.ActiveRequest = RequestViewModel.GetModelFromRequest(request, order.AllowExceedingTravelCost);
                     model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
                 }
@@ -113,6 +113,7 @@ namespace Tolk.Web.Controllers
                 {
                     model.ActiveRequest = new RequestViewModel();
                 }
+#warning Detta görs både här och i RequestController. Det är sjukt cirkulärt...
                 model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
                 model.ActiveRequest.RegionName = model.RegionName;
                 model.ActiveRequest.TimeRange = model.TimeRange;

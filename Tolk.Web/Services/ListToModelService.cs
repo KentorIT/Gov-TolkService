@@ -26,7 +26,7 @@ namespace Tolk.Web.Services
             _dbContext = dbContext;
         }
 
-#warning man borde skicka med vilken roll man har, för alla delar av rättighetskollarna skall bara göras per roll
+#warning man borde skicka med vilken roll man har, för alla delar av rättighetskollarna skall bara göras per roll, det finns ju sys och app-admins också, och de får ju inte göra någonting...
         internal async Task<OrderViewModel> AddInformationFromListsToModel(OrderViewModel model)
         {
             int id = model.OrderId.Value;
