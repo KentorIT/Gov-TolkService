@@ -250,7 +250,7 @@ namespace Tolk.Web.Models
 
         public bool HasPreviousRequests => PreviousRequests.Any();
 
-        public string DisplayMealBreakIncluded { get; set; }
+        public string DisplayMealBreakIncludedText { get; set; }
 
         public int? ComplaintId { get; set; }
 
@@ -290,12 +290,11 @@ namespace Tolk.Web.Models
                     StartDateTime = order.StartAt,
                     EndDateTime = order.EndAt
                 },
-                DisplayMealBreakIncluded = (int)(order.EndAt.DateTime - order.StartAt.DateTime).TotalMinutes > 240 ? OrderModel.GetMealBreakText(order.MealBreakIncluded) : null,
+                DisplayMealBreakIncludedText = order.MealBreakTextToDisplay,
                 Description = order.Description,
                 UnitName = order.UnitName,
                 IsCreatorInterpreterUser = order.CreatorIsInterpreterUser ?? true,
                 MealbreakIncluded = order.MealBreakIncluded ?? false,
-
             };
             if (request != null)
             {

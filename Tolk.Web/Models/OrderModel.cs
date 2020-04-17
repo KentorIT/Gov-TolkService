@@ -97,8 +97,6 @@ namespace Tolk.Web.Models
 
         public bool DisplayForBroker { get; set; } = false;
 
-        public string DisplayMealBreakIncludedText { get; set; }
-
         public string WarningOrderTimeInfo { get; set; } = string.Empty;
 
         public string WarningOrderRequiredCompetenceInfo { get; set; } = string.Empty;
@@ -579,7 +577,6 @@ namespace Tolk.Web.Models
                     EndDateTime = order.EndAt
                 },
                 MealBreakIncluded = order.MealBreakIncluded ?? false,
-                DisplayMealBreakIncludedText = order.MealBreakTextToDisplay,
                 Description = order.Description,
                 UnitName = order.UnitName,
                 CompetenceLevelDesireType = new RadioButtonGroup

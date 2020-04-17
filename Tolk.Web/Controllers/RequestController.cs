@@ -660,14 +660,14 @@ namespace Tolk.Web.Controllers
             model.UserCanCancelRequest = _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
 
             model.ActiveRequest = RequestViewModel.GetModelFromRequest(request, order.AllowExceedingTravelCost);
-            model.ActiveRequest.DisplayMealBreakIncluded = (int)(order.EndAt.DateTime - order.StartAt.DateTime).TotalMinutes > 240 ? OrderModel.GetMealBreakText(order.MealBreakIncluded) : null;
+            model.ActiveRequest.DisplayMealBreakIncluded = order.MealBreakTextToDisplay;
 
             model.ActiveRequest.RequestCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(request);
             if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
             {
                 model.ActiveRequest.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
             }
-#warning Denna behöver flyttas till servicen
+#warning Denna behöver flyttas till servicen ANNARS SYNS DE INTE
             if (request.RequestViews != null && request.RequestViews.Any(rv => rv.ViewedBy != User.GetUserId()))
             {
                 model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
@@ -676,7 +676,7 @@ namespace Tolk.Web.Controllers
             model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
             model.ActiveRequest.RegionName = model.RegionName;
             model.ActiveRequest.TimeRange = model.TimeRange;
-            model.ActiveRequest.DisplayMealBreakIncluded = model.DisplayMealBreakIncluded;
+            model.ActiveRequest.DisplayMealBreakIncluded = model.DisplayMealBreakIncludedText;
             model.ActiveRequest.IsCancelled = model.Status == OrderStatus.CancelledByCreator || model.Status == OrderStatus.CancelledByBroker;
 
             //LISTS
