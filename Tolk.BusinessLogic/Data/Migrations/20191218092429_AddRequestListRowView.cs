@@ -6,7 +6,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-			migrationBuilder.Sql(@"Exec('Create VIEW RequestListRows
+            migrationBuilder.Sql(@"Exec('Create VIEW RequestListRows
 As
 
 Select 
@@ -81,11 +81,11 @@ Left Join Languages l
 On l.LanguageId = og.LanguageId
 Where r.Status Not In(13,17,18)
 ');");
-		}
+        }
 
-		protected override void Down(MigrationBuilder migrationBuilder)
+        protected override void Down(MigrationBuilder migrationBuilder)
         {
-			migrationBuilder.Sql("Drop View RequestListRows");
-		}
-	}
+            migrationBuilder.Sql("Drop View RequestListRows");
+        }
+    }
 }

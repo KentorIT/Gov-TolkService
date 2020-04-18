@@ -851,7 +851,7 @@ namespace Tolk.Web.TagHelpers
                     tagBuilder.InnerHtml.MoveTo(existingOptionsBuilder);
 
                     tagBuilder.InnerHtml.Clear();
-                    tagBuilder.InnerHtml.AppendHtml("<option value></option>"); 
+                    tagBuilder.InnerHtml.AppendHtml("<option value></option>");
                     tagBuilder.InnerHtml.AppendHtml(existingOptionsBuilder);
                 }
                 if (writePrefix)

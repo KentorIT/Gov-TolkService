@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Tolk.BusinessLogic.Entities 
+namespace Tolk.BusinessLogic.Entities
 {
     public class OrderChangeConfirmation : StatusConfirmationBase
     {

@@ -128,7 +128,7 @@ namespace Tolk.Web
             IApplicationBuilder app,
             IHostingEnvironment env,
             TolkDbContext dbContext,
-            RoleManager<IdentityRole<int>> roleManager, 
+            RoleManager<IdentityRole<int>> roleManager,
             ILoggerFactory loggerFactory
             )
         {

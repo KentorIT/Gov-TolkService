@@ -370,7 +370,7 @@ namespace Tolk.BusinessLogic.Services
             var createRequest = !request.TerminateOnDenial;
             request.Deny(_clock.SwedenNow, userId, impersonatorId, message);
             var order = request.Order;
-             order.Requests = await _tolkDbContext.Requests.GetRequestsForOrder(order.OrderId).ToListAsync();
+            order.Requests = await _tolkDbContext.Requests.GetRequestsForOrder(order.OrderId).ToListAsync();
             if (createRequest)
             {
                 await CreateRequest(order, request);

@@ -38,7 +38,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         private CacheService CreateCacheService(TolkDbContext dbContext)
         {
             IDistributedCache cache = Mock.Of<IDistributedCache>();
-            TolkBaseOptionsService optionService = new TolkBaseOptionsService(Options.Create(new TolkOptions(){ RoundPriceDecimals = true }) );
+            TolkBaseOptionsService optionService = new TolkBaseOptionsService(Options.Create(new TolkOptions() { RoundPriceDecimals = true }));
             return new CacheService(cache, dbContext, optionService);
         }
 

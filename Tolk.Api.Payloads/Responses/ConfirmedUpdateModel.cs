@@ -7,6 +7,6 @@ namespace Tolk.Api.Payloads.Responses
         public DateTimeOffset UpdatedAt { get; set; }
 
         public string RequestUpdateType { get; set; }
- 
+
     }
 }

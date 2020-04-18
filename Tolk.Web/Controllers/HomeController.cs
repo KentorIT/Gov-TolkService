@@ -197,7 +197,7 @@ namespace Tolk.Web.Controllers
                         OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
                     }));
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 _logger.LogError(ex, $"Unexpected error occured for Orders to approve where interpreter is changed in method {nameof(GetCustomerStartLists)}");
             }
@@ -470,7 +470,7 @@ namespace Tolk.Web.Controllers
                 StartListObjects = actionList,
                 HasReviewAction = true
             };
-            
+
             List<StartListItemModel> sentOrders = new List<StartListItemModel>();
             //Sent orders
             try

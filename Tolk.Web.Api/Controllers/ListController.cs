@@ -129,22 +129,22 @@ namespace Tolk.Web.Api.Controllers
         [Authorize(Policies.Broker)]
         public async Task<ActionResult<IEnumerable<ListItemResponse>>> BrokerInterpreters()
         {
-                return Ok(new BrokerInterpretersResponse
+            return Ok(new BrokerInterpretersResponse
+            {
+                Interpreters = await _dbContext.InterpreterBrokers
+                .Where(i => i.BrokerId == User.TryGetBrokerId())
+                .Select(i => new InterpreterDetailsModel
                 {
-                    Interpreters = await _dbContext.InterpreterBrokers
-                    .Where(i => i.BrokerId == User.TryGetBrokerId())
-                    .Select(i => new InterpreterDetailsModel
-                    {
-                        IsActive = i.IsActive,
-                        InterpreterId = i.InterpreterBrokerId,
-                        Email = i.Email,
-                        FirstName = i.FirstName,
-                        LastName = i.LastName,
-                        OfficialInterpreterId = i.OfficialInterpreterId,
-                        PhoneNumber = i.PhoneNumber,
-                        InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter)
-                    }).ToListAsync()
-                });
+                    IsActive = i.IsActive,
+                    InterpreterId = i.InterpreterBrokerId,
+                    Email = i.Email,
+                    FirstName = i.FirstName,
+                    LastName = i.LastName,
+                    OfficialInterpreterId = i.OfficialInterpreterId,
+                    PhoneNumber = i.PhoneNumber,
+                    InterpreterInformationType = EnumHelper.GetCustomName(InterpreterInformationType.ExistingInterpreter)
+                }).ToListAsync()
+            });
         }
 
         [HttpGet]

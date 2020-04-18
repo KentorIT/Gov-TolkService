@@ -48,8 +48,8 @@ namespace Tolk.Web.Models
             return new PriceInformationModel
             {
                 Header = type.GetDescription(),
-				MealBreakIsNotDetucted = mealBreakIncluded,
-				PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(priceRows),
+                MealBreakIsNotDetucted = mealBreakIncluded,
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(priceRows),
                 UseDisplayHideInfo = true,
                 InitialCollapse = initialCollapse,
                 ExpectedTravelCosts = priceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0

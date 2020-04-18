@@ -867,7 +867,7 @@ namespace Tolk.Web.Controllers
             }
             else
             {
-         
+
                 if (requiredOrderSettings.Any())
                 {
                     _dbContext.UserDefaultSettingOrderRequirements.RemoveRange(requiredOrderSettings);

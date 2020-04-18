@@ -132,7 +132,7 @@ namespace Tolk.BusinessLogic.Utilities
                            r.Status == RequestStatus.LostDueToQuarantine
                        )
                 );
-        
+
         public static IQueryable<Request> GetRequestsForOrder(this IQueryable<Request> requests, int id)
             => requests.Include(r => r.Ranking).Where(r => r.OrderId == id);
 
@@ -184,7 +184,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .SingleAsync(r => r.RequestId == id);
-        
+
         public static async Task<Request> GetSimpleRequestById(this IQueryable<Request> requests, int id)
             => await requests.Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order)

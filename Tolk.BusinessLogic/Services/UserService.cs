@@ -355,14 +355,14 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public bool IsUniqueEmail(string email, int? userId = null, int? customerUnitId = null)
         {
-        #pragma warning disable CA1304 // Ef gets better at filtering at server...
+#pragma warning disable CA1304 // Ef gets better at filtering at server...
 
             var emailIsUniqueForUsers = !_dbContext.Users.Any(u => !u.IsApiUser &&
                      (u.NormalizedEmail == email.ToUpper() ||
                      (u.TemporaryChangedEmailEntry.EmailAddress.ToUpper() == email.ToUpper() && u.TemporaryChangedEmailEntry.UserId != userId)));
             var emailIsUniqueForUnits = !_dbContext.CustomerUnits.Any(cu => cu.Email.ToSwedishUpper() == email.ToSwedishUpper() && cu.CustomerUnitId != customerUnitId);
             return emailIsUniqueForUsers && emailIsUniqueForUnits;
-        #pragma warning restore CA1304 // 
+#pragma warning restore CA1304 // 
         }
     }
 }

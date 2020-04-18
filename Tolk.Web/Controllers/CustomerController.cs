@@ -71,7 +71,7 @@ namespace Tolk.Web.Controllers
                         OrganisationNumber = c.OrganisationNumber
                     }),
                 AllowCreate = User.IsInRole(Roles.ApplicationAdministrator)
-            });;
+            }); ;
         }
 
         public async Task<ActionResult> View(int id, string message)

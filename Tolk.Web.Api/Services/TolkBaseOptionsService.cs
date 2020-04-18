@@ -30,7 +30,7 @@ namespace Tolk.Web.Api.Services
         public StatusCheckerSettings StatusChecker => _options.StatusChecker;
 
         public bool RunEntityScheduler => false;
-        
+
         public bool AllowDeclineExtraInterpreterOnRequestGroups => _options.AllowDeclineExtraInterpreterOnRequestGroups;
 
         public bool RoundPriceDecimals => _options.RoundPriceDecimals;

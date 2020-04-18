@@ -26,7 +26,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> FlushCaches()
         {
             await _cacheService.FlushAll();
-            return RedirectToAction("Index", "Home", new {Message = "Cachen har rensats" });
+            return RedirectToAction("Index", "Home", new { Message = "Cachen har rensats" });
         }
     }
 }

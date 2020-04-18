@@ -78,7 +78,7 @@ namespace Tolk.BusinessLogic.Entities
         private bool CreatedByUsersUnit(IEnumerable<int> customerUnits) => CustomerUnitId != null && (customerUnits?.Contains(CustomerUnitId.Value) ?? false);
 
 
-        public string ContactInformation => (CustomerUnit == null && CreatedByUser == null ) ? null : 
+        public string ContactInformation => (CustomerUnit == null && CreatedByUser == null) ? null :
             (CustomerUnit == null ? CreatedByUser.CompleteContactInformation : $"{CreatedByUser.FullName}\n{CustomerUnit.Name}\n{CustomerUnit.Email}");
 
         public string ContactEmail => CustomerUnit == null ? CreatedByUser.Email : CustomerUnit.Email;

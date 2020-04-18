@@ -187,7 +187,7 @@ namespace Tolk.Web.Models
         public bool HasOnsiteLocation => RankedInterpreterLocationFirst == InterpreterLocation.OnSite || RankedInterpreterLocationFirst == InterpreterLocation.OffSiteDesignatedLocation
         || RankedInterpreterLocationSecond == InterpreterLocation.OnSite || RankedInterpreterLocationSecond == InterpreterLocation.OffSiteDesignatedLocation
         || RankedInterpreterLocationThird == InterpreterLocation.OnSite || RankedInterpreterLocationThird == InterpreterLocation.OffSiteDesignatedLocation;
-        
+
         public EventLogModel EventLog { get; set; }
 
         public IEnumerable<InterpreterLocation> RankedInterpreterLocations
@@ -617,11 +617,11 @@ namespace Tolk.Web.Models
                     }).Union(order.Group?.Attachments
                         .Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == order.OrderId))
                         .Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }) ?? Enumerable.Empty<FileModel>()).ToList()
+                        {
+                            Id = a.Attachment.AttachmentId,
+                            FileName = a.Attachment.FileName,
+                            Size = a.Attachment.Blob.Length
+                        }) ?? Enumerable.Empty<FileModel>()).ToList()
                 },
                 PriceInformation = new PriceInformation
                 {

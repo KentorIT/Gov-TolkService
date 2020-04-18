@@ -194,7 +194,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"RequestGroup {RequestGroupId} is {Status}. Only Received and Created RequestGroups can be cancelled");
             }
-            Requests.ForEach(r => r.Cancel(cancelledAt, userId, impersonatorId, message, isCancelledFromGroup : true));
+            Requests.ForEach(r => r.Cancel(cancelledAt, userId, impersonatorId, message, isCancelledFromGroup: true));
             Status = RequestStatus.CancelledByCreator;
             CancelledAt = cancelledAt;
             CancelledBy = userId;

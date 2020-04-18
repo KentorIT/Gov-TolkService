@@ -102,18 +102,18 @@ namespace Tolk.BusinessLogic.Services
             List<PriceInformationBrokerFee> priceListBrokerFee = new List<PriceInformationBrokerFee>();
             foreach (var item in prices)
             {
-                priceListBrokerFee.AddRange(ranks.Select(r => new PriceInformationBrokerFee 
-                { 
-                    BrokerFee = r.BrokerFee, 
-                    FirstValidDateRanking = r.FirstValidDate, 
-                    LastValidDateRanking = r.LastValidDate, 
-                    RankingId = r.RankingId, 
-                    CompetenceLevel = item.CompetenceLevel, 
-                    EndDatePriceList = item.EndDate, 
-                    BasePrice = item.Price, 
-                    PriceListRowId = item.PriceListRowId.Value, 
-                    StartDatePriceList = item.StartDate, 
-                    RoundDecimals = _options.RoundPriceDecimals 
+                priceListBrokerFee.AddRange(ranks.Select(r => new PriceInformationBrokerFee
+                {
+                    BrokerFee = r.BrokerFee,
+                    FirstValidDateRanking = r.FirstValidDate,
+                    LastValidDateRanking = r.LastValidDate,
+                    RankingId = r.RankingId,
+                    CompetenceLevel = item.CompetenceLevel,
+                    EndDatePriceList = item.EndDate,
+                    BasePrice = item.Price,
+                    PriceListRowId = item.PriceListRowId.Value,
+                    StartDatePriceList = item.StartDate,
+                    RoundDecimals = _options.RoundPriceDecimals
                 }).ToList());
             }
             return priceListBrokerFee;

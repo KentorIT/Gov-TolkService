@@ -129,7 +129,7 @@ namespace Tolk.Web.Models
         public bool UserCanCreateComplaint { get; set; } = false;
         public bool UserCanAccept { get; set; } = false;
         public bool UserCanCanCreateRequisition { get; set; } = false;
-        public bool UserCanCancelRequest{ get; set; } = false;
+        public bool UserCanCancelRequest { get; set; } = false;
         #endregion
 
         public bool RequestCanBeCancelled { get; set; } = false;

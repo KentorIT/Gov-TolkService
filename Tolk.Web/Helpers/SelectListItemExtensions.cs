@@ -25,7 +25,7 @@ namespace Tolk.Web.Helpers
                 Text = i.Text,
                 Disabled = i.Disabled,
                 Selected = i.Selected,
-                });
+            });
         }
     }
 }

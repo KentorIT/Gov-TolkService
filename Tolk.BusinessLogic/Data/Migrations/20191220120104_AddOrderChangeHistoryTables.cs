@@ -114,7 +114,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_OrderContactPersonHistory_AspNetUsers_ImpersonatingChangeUserId",
                 table: "OrderContactPersonHistory");
-         
+
             migrationBuilder.DropIndex(
                 name: "IX_OrderContactPersonHistory_ChangedBy",
                 table: "OrderContactPersonHistory");

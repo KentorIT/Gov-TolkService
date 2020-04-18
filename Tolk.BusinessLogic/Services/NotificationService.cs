@@ -105,11 +105,11 @@ namespace Tolk.BusinessLogic.Services
                 var occasionText = requestGroup.OrderGroup.IsSingleOccasion ? "Tillfället skulle ha startat " : "Första tillfället skulle ha startat ";
                 var body = $"Sammanhållen bokningsförfrågan med boknings-ID {orderNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{requestGroup.CancelMessage}\n" +
                      $"{occasionText + requestGroup.OrderGroup.FirstOrder.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}.";
-                    
-                    CreateEmail(email.ContactInformation, $"Avbokad sammanhållen bokningsförfrågan boknings-ID {orderNumber}",
-                        body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
-                        HtmlHelper.ToHtmlBreak(body) + GoToRequestGroupButton(requestGroup.RequestGroupId),
-                        true);
+
+                CreateEmail(email.ContactInformation, $"Avbokad sammanhållen bokningsförfrågan boknings-ID {orderNumber}",
+                    body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToRequestGroupButton(requestGroup.RequestGroupId),
+                    true);
             }
             var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCancelledByCustomer, NotificationChannel.Webhook);
             if (webhook != null)
@@ -1262,7 +1262,7 @@ Sammanställning:
         }
 
         private static string GetRequireApprovementText(DateTimeOffset? latestAnswerDate) => latestAnswerDate.HasValue ?
-            $"Observera att ni måste godkänna tillsatt tolk för tolkuppdraget eftersom ni har begärt att få förhandsgodkänna resekostnader. Senaste svarstid för att godkänna tillsättning är {latestAnswerDate.Value.ToSwedishString("yyyy-MM-dd HH:mm")}. Om tillsättning inte besvarats vid denna tidpunkt kommer bokningen att annulleras." : 
+            $"Observera att ni måste godkänna tillsatt tolk för tolkuppdraget eftersom ni har begärt att få förhandsgodkänna resekostnader. Senaste svarstid för att godkänna tillsättning är {latestAnswerDate.Value.ToSwedishString("yyyy-MM-dd HH:mm")}. Om tillsättning inte besvarats vid denna tidpunkt kommer bokningen att annulleras." :
             "Observera att ni måste godkänna tillsatt tolk för tolkuppdraget eftersom ni har begärt att få förhandsgodkänna resekostnader. Om godkännande inte görs kommer bokningen att annulleras.";
 
         private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, bool isBrokerMail = false, bool addContractInfo = true)

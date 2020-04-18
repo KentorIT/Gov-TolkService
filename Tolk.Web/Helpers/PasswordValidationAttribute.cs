@@ -74,7 +74,7 @@ namespace Tolk.Web.Helpers
             {
                 if (!string.IsNullOrEmpty(notValidLength))
                 {
-                    return new ValidationResult(notValidLength + (missingChars.Any() ? " Lösenordet saknade också " + string.Join(", ", missingChars) + "." : string.Empty ) + " Regler för lösenord finns under i-symbolen.");
+                    return new ValidationResult(notValidLength + (missingChars.Any() ? " Lösenordet saknade också " + string.Join(", ", missingChars) + "." : string.Empty) + " Regler för lösenord finns under i-symbolen.");
                 }
                 else
                 {
