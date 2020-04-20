@@ -158,6 +158,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForRequest(this IQueryable<OrderRequirementRequestAnswer> answers, int id)
            => answers.Include(a => a.OrderRequirement).Where(a => a.RequestId == id);
+
         public static IQueryable<RequestView> GetActiveViewsForRequest(this IQueryable<RequestView> views, int id)
            => views.Include(a => a.ViewedByUser).Where(a => a.RequestId == id);
 
@@ -188,6 +189,20 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<Request> GetSimpleRequestById(this IQueryable<Request> requests, int id)
             => await requests.Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order)
+                .SingleAsync(r => r.RequestId == id);
+
+        public static async Task<Request> GetRequestsForAcceptById(this IQueryable<Request> requests, int id)
+            => await requests.Include(r => r.Interpreter)
+                .Include(r => r.RequestGroup)
+                .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
+                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.IsExtraInterpreterForOrder)
+                .Include(r => r.Order).ThenInclude(o => o.ExtraInterpreterOrder)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
                 .SingleAsync(r => r.RequestId == id);
 
         public static async Task<Request> GetActiveRequestByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)

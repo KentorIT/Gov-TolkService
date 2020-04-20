@@ -29,6 +29,8 @@ namespace Tolk.Web.Models
 
         public OrderViewModel OrderViewModel { get; set; }
 
+        public RequestViewModel ProcessReplacementRequestViewModel { get; set; }
+
         public int? OrderId
         {
             get

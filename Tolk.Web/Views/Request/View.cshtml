@@ -104,7 +104,7 @@
                 }
                 @await Html.PartialAsync("_RequestSummary", Model.ActiveRequest, new ViewDataDictionary(ViewData) { { "showHeader", false }, { "isBroker", true } })
                 <div class="row">
-                    @if (Model.ActiveRequestPriceInformationModel != null)
+                    @if (Model.ActiveRequestPriceInformationModel?.TotalPriceToDisplay > 0)
                     {
                         <div class="col-sm-6">
                             @await Html.PartialAsync("_PriceInformationDisplay", Model.ActiveRequestPriceInformationModel)

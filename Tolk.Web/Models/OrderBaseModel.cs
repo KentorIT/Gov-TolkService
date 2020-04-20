@@ -198,7 +198,7 @@ namespace Tolk.Web.Models
 
         #endregion
 
-        public virtual DateTimeOffset? StartAt
+        public virtual DateTimeOffset? StartAt 
         {
             get;
         }

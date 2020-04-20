@@ -51,7 +51,7 @@ namespace Tolk.Web.Services
                 .Select(r => r.CompetenceLevel)
                 .ToListAsync();
 
-            model.RequestedCompetenceLevelFirst = competenceRequirements.FirstOrDefault();
+            model.RequestedCompetenceLevelFirst = competenceRequirements.Any() ? (CompetenceAndSpecialistLevel?)competenceRequirements.FirstOrDefault() : null;
             model.RequestedCompetenceLevelSecond = competenceRequirements.Count > 1 ? (CompetenceAndSpecialistLevel?)competenceRequirements[1] : null;
 
             model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForOrderAndGroup(id, model.OrderGroupId), "Bifogade filer från myndighet");

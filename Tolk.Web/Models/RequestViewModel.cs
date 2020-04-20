@@ -15,6 +15,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Status på förfrågan")]
         public RequestStatus Status { get; set; }
 
+        public bool IsReplacingOrderRequest { get; set; }
+
         public int? ReplacingOrderRequestId { get; set; }
 
         public int? ReplacedByOrderRequestId { get; set; }
@@ -87,7 +89,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string LanguageAndDialect { get; set; }
 
-        [Display(Name = "Region")]
+        [Display(Name = "Län")]
         public string RegionName { get; set; }
 
         [Display(Name = "Datum och tid")]
@@ -98,7 +100,7 @@ namespace Tolk.Web.Models
         //THINGS IN NEED OF VALIDATION!!!!!!!
         public bool RequestIsAnswered => Status != RequestStatus.InterpreterReplaced && Status != RequestStatus.Created && Status != RequestStatus.Received && RequestId > 0;
         public bool RequestIsDeclinedByBroker => Status == RequestStatus.DeclinedByBroker || Status == RequestStatus.DeniedByTimeLimit;
-        public bool IsReplacedRequest => Status == RequestStatus.Received && ReplacingOrderRequestId > 0;
+        public bool AnswerReplacedRequest => Status == RequestStatus.Received && IsReplacingOrderRequest;
 
         public bool IsCancelled { get; set; }
 

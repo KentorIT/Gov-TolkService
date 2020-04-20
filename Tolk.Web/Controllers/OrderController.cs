@@ -107,7 +107,6 @@ namespace Tolk.Web.Controllers
                 {
                     model.UserCanCreateComplaint = (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded;
                     model.ActiveRequest = RequestViewModel.GetModelFromRequest(request, order.AllowExceedingTravelCost);
-                    model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
                 }
                 else
                 {
@@ -122,6 +121,7 @@ namespace Tolk.Web.Controllers
 
                 //LISTS
                 await _listToModelService.AddInformationFromListsToModel(model);
+                model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
 
                 model.EventLog = new EventLogModel
                 {
@@ -668,6 +668,7 @@ namespace Tolk.Web.Controllers
                 model.RequestAttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForRequest(request.RequestId, request.RequestGroupId), "Bifogade filer från förmedling");
                 model.ActiveRequest.RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId));
                 model.ActiveRequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToListAsync(), PriceInformationType.Request, order.MealBreakIncluded ?? false);
+                model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
 
                 model.ActiveRequest.InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null;
                 model.ActiveRequest.Interpreter = request.Interpreter.FullName;

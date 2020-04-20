@@ -60,7 +60,7 @@
                 <display-entry asp-for="TimeRange" />
                 @if (!string.IsNullOrEmpty(Model.DisplayMealBreakIncluded))
                 {
-                    <div class="detail-text neg-padding-top">
+                    <div class="detail-text mealbreak-info">
                         @Model.DisplayMealBreakIncluded
                     </div>
                 }
@@ -79,7 +79,7 @@
                     <display-entry asp-for="Interpreter" asp-empty="Tolk ej tillsatt" />
                 </div>
                 <div class="col-sm-4">
-                    @if ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.IsReplacedRequest)
+                    @if ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.AnswerReplacedRequest)
                     {
                         <display-entry asp-for="InterpreterCompetenceLevel" />
                     }
@@ -107,7 +107,7 @@
                         }
                     }
                 </div>
-                @if ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.IsReplacedRequest)
+                @if ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker))
                 {
                     <div class="col-sm-4">
                         <display-entry asp-for="InterpreterLocation" label-override="Inställelsesätt enligt svar" />
@@ -115,7 +115,7 @@
                 }
             }
         </div>
-        @if ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.IsReplacedRequest)
+        @if ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.AnswerReplacedRequest)
         {
             <div class="row">
                 @if (Model.RequirementAnswers.Any(r => r.IsRequired))
@@ -181,7 +181,7 @@
             </div>
         }
 
-        @if (Model.DisplayExpectedTravelCostInfo && ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.IsReplacedRequest))
+        @if (Model.DisplayExpectedTravelCostInfo && ((Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker) || Model.AnswerReplacedRequest))
         {
             <div class="row">
                 <div class="col-sm-4">

@@ -107,7 +107,7 @@ namespace Tolk.Web.Models
         public string CancelMessage { get; set; }
 
         [Display(Name = "Är tolkanvändare samma person som bokar")]
-        public bool IsCreatorInterpreterUser { get; set; }
+        public bool? IsCreatorInterpreterUser { get; set; }
 
         #endregion
 
@@ -293,7 +293,7 @@ namespace Tolk.Web.Models
                 DisplayMealBreakIncludedText = order.MealBreakTextToDisplay,
                 Description = order.Description,
                 UnitName = order.UnitName,
-                IsCreatorInterpreterUser = order.CreatorIsInterpreterUser ?? true,
+                IsCreatorInterpreterUser = order.CreatorIsInterpreterUser,
                 MealbreakIncluded = order.MealBreakIncluded ?? false,
             };
             if (request != null)

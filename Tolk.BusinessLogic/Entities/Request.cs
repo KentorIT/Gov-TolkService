@@ -242,7 +242,7 @@ namespace Tolk.BusinessLogic.Entities
             Interpreter = interpreter ?? throw new InvalidOperationException($"Interpreter is not set.");
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
-            RequirementAnswers.AddRange(requirementAnswers);
+            RequirementAnswers = requirementAnswers;
             Attachments = attachedFiles;
             PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
