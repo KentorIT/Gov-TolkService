@@ -152,6 +152,7 @@ namespace Tolk.Web.Controllers
             {
                 if (order.ActiveRequest.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
                 {
+#warning Gör en egen modell för Replace, för den behöver inte allt från order model. Det tar bort behovet av en hel del onödiga hiddenfält också...
                     ReplaceOrderModel model = _mapper.Map<ReplaceOrderModel>(OrderModel.GetModelFromOrder(order));
                     model.ReplacedTimeRange = new TimeRange
                     {
@@ -225,6 +226,7 @@ namespace Tolk.Web.Controllers
                     .GetOrderedCompetenceRequirementsForOrder(id)
                     .Select(r => new { r.CompetenceLevel })
                     .ToListAsync();
+#warning gör en egen metod i _list som fyller de listor som hör till base! Det skulle ta bort massor av dupliceringar, utan att behöva få onödiga listningar...
                 model.OrderRequirements = await OrderRequirementModel.GetFromList(_dbContext.OrderRequirements.GetRequirementsForOrder(id));
                 model.RequestedCompetenceLevelFirst = competenceRequirements.FirstOrDefault()?.CompetenceLevel;
                 model.RequestedCompetenceLevelSecond = competenceRequirements.Count > 1 ? competenceRequirements[1]?.CompetenceLevel : null;
