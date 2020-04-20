@@ -659,7 +659,6 @@ namespace Tolk.Web.Controllers
             model.ActiveRequest = RequestViewModel.GetModelFromRequest(request, order.AllowExceedingTravelCost);
             model.ActiveRequest.DisplayMealBreakIncluded = order.MealBreakTextToDisplay;
 
-            model.ActiveRequest.RequestCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(request);
             if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
             {
                 model.ActiveRequest.Info48HCancelledByCustomer = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(request.CancelledAt.Value.DateTime, request.Order.StartAt.DateTime) < 2 ? "Detta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, inklusive bland annat spilltid och förmedlingsavgift, i de fall något ersättningsuppdrag inte kan ordnas av kund. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "Detta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.";
@@ -675,7 +674,7 @@ namespace Tolk.Web.Controllers
 
             //LISTS
             await _listToModelService.AddInformationFromListsToModel(model);
-
+            model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
 #warning detta måste tillbaka innan du mergar till github!
             model.DisplayOrderChangeText = model.DisplayOrderChange ? await GetOrderChangeText(order, request.Ranking.BrokerId, (InterpreterLocation)request.InterpreterLocation.Value) : string.Empty;
 
