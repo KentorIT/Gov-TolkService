@@ -104,8 +104,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Process(int id)
         {
-            var request = await GetRequestToProcess(id);
-
+            var request = await _dbContext.Requests.GetRequestById(id);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
                 if (!request.IsToBeProcessedByBroker)
@@ -124,7 +123,7 @@ namespace Tolk.Web.Controllers
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 model.ExpectedTravelCosts = null;
                 model.AllowProcessing = !request.RequestGroupId.HasValue;
-                if(model.OrderViewModel.ReplacingOrderId.HasValue)
+                if (model.OrderViewModel.ReplacingOrderId.HasValue)
                 {
                     model.ProcessReplacementRequestViewModel = RequestViewModel.GetModelFromRequest(request, request.Order.AllowExceedingTravelCost);
                     model.ProcessReplacementRequestViewModel.LanguageAndDialect = model.OrderViewModel.LanguageAndDialect;
@@ -141,7 +140,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Change(int id)
         {
-            var request = await GetRequestToProcess(id);
+            var request = await _dbContext.Requests.GetRequestById(id);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanChangeInterpreter(_clock.SwedenNow))
             {
                 RequestModel model = await GetModel(request);
@@ -263,31 +262,8 @@ namespace Tolk.Web.Controllers
                     }
                     catch (ArgumentException ex)
                     {
-                        request = await GetRequestToProcess(model.RequestId);
-                        RequestModel requestModel = await GetModel(request);
-                        requestModel.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
-                        if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                        {
-                            requestModel.Status = RequestStatus.AcceptedNewInterpreterAppointed;
-                            requestModel.OldInterpreterId = request.InterpreterBrokerId;
-                            requestModel.OtherInterpreterId = _requestService.GetOtherInterpreterIdForSameOccasion(request);
-                        }
-
-                        //Set the temporarly saved Files if any
-                        if (model.Files != null && model.Files.Any())
-                        {
-                            List<FileModel> files = _dbContext.Attachments.
-                                Where(a => model.Files.Select(f => f.Id).Contains(a.AttachmentId)).ToList()
-                                .Select(a => new FileModel
-                                {
-                                    Id = a.AttachmentId,
-                                    FileName = a.FileName,
-                                    Size = a.Blob.Length
-                                }).ToList();
-                            requestModel.Files = files.Any() ? files : null;
-                        }
-                        ModelState.AddModelError(ex.ParamName, ex.Message);
-                        return View(nameof(Process), requestModel);
+                        _logger.LogError("Accept for request {model.RequestId} failed. Message {ex.Message}", model.RequestId, ex.Message);
+                        return RedirectToAction("Index", "Home", new { errormessage = "Något gick fel i behandlingen av bokningsförfrågan" });
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -306,23 +282,23 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-#warning move include
-                var request = _dbContext.Requests
-                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                    .Include(r => r.Order.CreatedByUser)
-                    .Include(r => r.Order.ContactPersonUser)
-                    .Include(r => r.Interpreter)
-                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .SingleOrDefault(r => r.RequestId == model.RequestId && r.Status == RequestStatus.Approved);
+                var request = await _dbContext.Requests.GetRequestsWithContactsById(model.RequestId);
                 if (request == null)
                 {
                     return RedirectToAction("Index", "Home", new { ErrorMessage = "Tillfället kunde inte avbokas" });
                 }
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Cancel)).Succeeded && request != null)
                 {
-                    _requestService.CancelByBroker(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
-                    _dbContext.SaveChanges();
+                    try
+                    {
+                        _requestService.CancelByBroker(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
+                        _dbContext.SaveChanges();
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        _logger.LogError("Cancel by broker Request {request.Status}, RequestId: {request.RequestId}. Exception {ex.Message}", request.Status, request.RequestId, ex.Message);
+                        return RedirectToAction("Index", "Home", new { errormessage = "Det gick inte att avboka uppdraget" });
+                    }
                     return RedirectToAction("Index", "Home", new { message = "Avbokning har genomförts" });
                 }
                 return Forbid();
@@ -334,17 +310,8 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Decline(RequestDeclineModel model)
         {
-#warning include-fest
-#warning kolla hur order gör detta, det är tidigare brokers som behöver komma med...
-            var request = _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order.CreatedByUser)
-                .Include(r => r.Order.ContactPersonUser)
-                .Include(r => r.Order.CustomerUnit)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests)
-                .Include(r => r.Interpreter)
-                .Single(r => r.RequestId == model.DeniedRequestId);
+
+            var request = await _dbContext.Requests.GetRequestsWithContactsById(model.DeniedRequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanDecline)
             {
@@ -447,17 +414,21 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> ConfirmOrderChange(ConfirmOrderChangeModel model)
         {
             Request request = await GetOrderChangedRequest(model.RequestId);
-            if ((request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && (await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                try
+                if (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                 {
-                    await _requestService.ConfirmOrderChange(request, model.ConfirmedOrderChangeLogEntries, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
-                    return RedirectToAction("Index", "Home", new { message = "Bokningsändringar bekräftade" });
+                    try
+                    {
+                        await _requestService.ConfirmOrderChange(request, model.ConfirmedOrderChangeLogEntries, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                        return RedirectToAction("Index", "Home", new { message = "Bokningsändringar bekräftade" });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                    }
                 }
-                catch (InvalidOperationException ex)
-                {
-                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
-                }
+                return RedirectToAction("Index", "Home", new { errormessage = "Det gick inte att bekräfta bokningsändringarna" });
             }
             return Forbid();
         }
@@ -480,9 +451,8 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public JsonResult AddRequestView(int requestId)
         {
-#warning include-fest
-            var request = _dbContext.Requests
-               .Include(r => r.RequestViews).Single(r => r.RequestId == requestId);
+            var request = _dbContext.Requests.Single(r => r.RequestId == requestId);
+            request.RequestViews = _dbContext.RequestViews.GetRequestViewsForRequest(request.RequestId).ToList();
             if (request != null)
             {
                 request.AddRequestView(User.GetUserId(), User.TryGetImpersonatorId(), _clock.SwedenNow);
@@ -523,36 +493,6 @@ namespace Tolk.Web.Controllers
                 });
             }
             return Forbid();
-        }
-
-        private async Task<Request> GetRequestToProcess(int requestId)
-        {
-#warning include-fest
-            return await _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Order).ThenInclude(o => o.Requirements)
-                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
-                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.Region)
-                .Include(r => r.Order).ThenInclude(o => o.Group).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment).ThenInclude(at => at.OrderAttachmentHistoryEntries).ThenInclude(oh => oh.OrderChangeLogEntry)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.IsExtraInterpreterForOrder).ThenInclude(r => r.Requests)
-                .Include(r => r.Order).ThenInclude(o => o.ExtraInterpreterOrder).ThenInclude(r => r.Requests)
-                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
-                .Include(r => r.Interpreter)
-                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
-                .Include(r => r.Requisitions)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.RequirementAnswers)
-                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-                .SingleAsync(r => r.RequestId == requestId);
         }
 
         private async Task<Request> GetRequestForEventlog(int requestId)
@@ -600,27 +540,23 @@ namespace Tolk.Web.Controllers
 
         private async Task<Request> GetConfirmedRequest(int requestId)
         {
-#warning include-fest
-            return await _dbContext.Requests
-                .Include(r => r.Ranking)
-                .Include(r => r.Order)
-                .Include(r => r.RequestStatusConfirmations)
-                .SingleAsync(r => r.RequestId == requestId);
+            var request = await _dbContext.Requests.GetSimpleRequestById(requestId);
+            request.RequestStatusConfirmations = await _dbContext.RequestStatusConfirmation.GetStatusConfirmationsForRequest(request.RequestId).ToListAsync();
+            return request;
         }
 
         private async Task<Request> GetOrderChangedRequest(int requestId)
         {
-#warning include-fest
-            return await _dbContext.Requests
-                .Include(r => r.Ranking)
-                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation)
-                .SingleAsync(r => r.RequestId == requestId);
+            var request = await _dbContext.Requests.GetSimpleRequestById(requestId);
+            request.Order.OrderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntiesForOrder(request.OrderId).ToListAsync();
+            return request;
         }
 
         private async Task<RequestModel> GetModel(Request request)
         {
+            request.Order = await _dbContext.Orders.GetFullOrderByRequestId(request.RequestId);
+            request.Order.Requirements = await _dbContext.OrderRequirements.GetRequirementsForOrder(request.OrderId).ToListAsync();
             var model = RequestModel.GetModelFromRequest(request);
-            model.RequestCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(request);
             model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.OrderViewModel.RequestedCompetenceLevels);
             if (request.InterpreterLocation != null)
             {
@@ -638,6 +574,7 @@ namespace Tolk.Web.Controllers
                 CreatedAt = model.CreatedAt
             };
             model.OrderViewModel = await _listToModelService.AddInformationFromListsToModel(model.OrderViewModel);
+ 
             return model;
         }
 
@@ -646,8 +583,7 @@ namespace Tolk.Web.Controllers
             var order = await _dbContext.Orders.GetFullOrderByRequestId(request.RequestId);
             var model = OrderViewModel.GetModelFromOrder(order, request);
             model.StartAtIsInFuture = order.StartAt > _clock.SwedenNow;
-#warning Borde ha en policies koll...
-            model.UserCanCanCreateRequisition = true;
+            model.UserCanCanCreateRequisition = _authorizationService.AuthorizeAsync(User, request, Policies.Edit).Result.Succeeded;
             model.UserCanCancelRequest = _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
 
             model.ActiveRequest = RequestViewModel.GetModelFromRequest(request, order.AllowExceedingTravelCost);
@@ -669,8 +605,6 @@ namespace Tolk.Web.Controllers
             //LISTS
             await _listToModelService.AddInformationFromListsToModel(model);
             model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
-#warning detta måste tillbaka innan du mergar till github!
-            model.DisplayOrderChangeText = model.DisplayOrderChange ? await GetOrderChangeText(order, request.Ranking.BrokerId, (InterpreterLocation)request.InterpreterLocation.Value) : string.Empty;
 
             model.EventLog = new EventLogModel
             {
@@ -679,78 +613,6 @@ namespace Tolk.Web.Controllers
                 DynamicLoadPath = $"Request/{nameof(GetEventLog)}/{request.RequestId}",
             };
             return model;
-        }
-
-#warning flytta till listservice eller gör read only i model
-        private bool DisplayOrderChange(Request request) => (request.Status == RequestStatus.Approved || request.Status == RequestStatus.AcceptedNewInterpreterAppointed) && request.Order.EndAt > _clock.SwedenNow &&
-            request.Order.OrderChangeLogEntries.Any(oc => oc.BrokerId == request.Ranking.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null);
-
-        private async Task<string> GetOrderChangeText(Order order, int brokerId, InterpreterLocation interpreterLocation)
-        {
-            StringBuilder sb = new StringBuilder();
-            var unconfirmedOrderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntiesForOrder(order.OrderId)
-                .Where(oc => oc.OrderChangeConfirmation == null && oc.BrokerId == brokerId)
-                .OrderBy(oc => oc.OrderChangeLogEntryId).ToListAsync();
-
-            var orderChangeLogEntries = unconfirmedOrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.OrderInformationFields || oc.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields).ToList();
-
-
-            var interpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(order.OrderId).ToListAsync();
-
-            string interpreterLocationText = interpreterLocation == InterpreterLocation.OffSitePhone || interpreterLocation == InterpreterLocation.OffSiteVideo ?
-               interpreterLocations.Where(il => il.InterpreterLocation == interpreterLocation).Single().OffSiteContactInformation :
-               interpreterLocations.Where(il => il.InterpreterLocation == interpreterLocation).Single().Street;
-            int i = 0;
-            foreach (OrderChangeLogEntry oce in orderChangeLogEntries)
-            {
-                i++;
-                var nextToCompareTo = orderChangeLogEntries.Count > i ? orderChangeLogEntries[i] : null;
-                var date = $"{oce.LoggedAt.ToSwedishString("yyyy-MM-dd HH:mm")} - ";
-                foreach (OrderHistoryEntry oh in oce.OrderHistories)
-                {
-                    switch (oh.ChangeOrderType)
-                    {
-                        case ChangeOrderType.LocationStreet:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? interpreterLocationText : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.LocationStreet).Value));
-                            break;
-                        case ChangeOrderType.OffSiteContactInformation:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? interpreterLocationText : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.OffSiteContactInformation).Value));
-                            break;
-                        case ChangeOrderType.Description:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? order.Description : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.Description).Value));
-                            break;
-                        case ChangeOrderType.InvoiceReference:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? order.InvoiceReference : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.InvoiceReference).Value));
-                            break;
-                        case ChangeOrderType.CustomerReferenceNumber:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? order.CustomerReferenceNumber : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.CustomerReferenceNumber).Value));
-                            break;
-                        case ChangeOrderType.CustomerDepartment:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? order.UnitName : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.CustomerDepartment).Value));
-                            break;
-                        default:
-                            throw new NotImplementedException();
-                    }
-                }
-            }
-            var orderAttachmentChangeLogEntries = unconfirmedOrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.Attachment || oc.OrderChangeLogType == OrderChangeLogType.AttachmentAndOrderInformationFields).ToList();
-            if (orderAttachmentChangeLogEntries.Any())
-            {
-                sb.Append("\n");
-                foreach (OrderChangeLogEntry oce in orderAttachmentChangeLogEntries)
-                {
-                    sb.Append($"{oce.LoggedAt.ToSwedishString("yyyy-MM-dd HH:mm")} - Bifogade bilagor ändrade\n");
-                }
-            }
-            return sb.ToString();
-        }
-
-        private static string GetOrderFieldText(string date, OrderHistoryEntry oh, string newValue)
-        {
-            return (string.IsNullOrEmpty(newValue) && string.IsNullOrEmpty(oh.Value)) ? string.Empty :
-                string.IsNullOrEmpty(newValue) ? $"{date}{oh.ChangeOrderType.GetDescription()} - Informationen togs bort\n" :
-                newValue.Equals(oh.Value, StringComparison.OrdinalIgnoreCase) ? string.Empty :
-                $"{date}{oh.ChangeOrderType.GetDescription()} - Nytt värde: {newValue}\n";
         }
 
         private PriceInformationModel GetPriceinformationOrderToDisplay(Request request, List<CompetenceAndSpecialistLevel> requestedCompetenceLevels)

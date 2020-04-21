@@ -231,6 +231,10 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(order, nameof(CreateRequest), nameof(OrderService));
             Request request = null;
             DateTimeOffset? expiry = latestAnswerBy ?? CalculateExpiryForNewRequest(order.StartAt);
+            if (order.OrderId > 0)
+            {
+                order.Requests = await _tolkDbContext.Requests.GetRequestsForOrder(order.OrderId).ToListAsync();
+            }
             var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);//ska vi ha med offset time här?
 
             if (expiredRequest != null)
@@ -370,7 +374,6 @@ namespace Tolk.BusinessLogic.Services
             var createRequest = !request.TerminateOnDenial;
             request.Deny(_clock.SwedenNow, userId, impersonatorId, message);
             var order = request.Order;
-            order.Requests = await _tolkDbContext.Requests.GetRequestsForOrder(order.OrderId).ToListAsync();
             if (createRequest)
             {
                 await CreateRequest(order, request);

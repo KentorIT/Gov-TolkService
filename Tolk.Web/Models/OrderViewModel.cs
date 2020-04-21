@@ -175,9 +175,6 @@ namespace Tolk.Web.Models
 
         public bool AllowConfirmCancellationByCreator => RequestStatus == BusinessLogic.Enums.RequestStatus.CancelledByCreatorWhenApproved && !HasCancelledByCreatorWhenApprovedConfirmation;
 
-        public bool DisplayOrderChange => (RequestStatus == BusinessLogic.Enums.RequestStatus.Approved || RequestStatus == BusinessLogic.Enums.RequestStatus.AcceptedNewInterpreterAppointed) && StartAtIsInFuture &&
-            ConfirmedOrderChangeLogEntries.Any();
-
         public override bool AllowProcessing
         {
             get => ActiveRequestIsAnswered && (AllowProcessingOrderBelongsToGroup || AllowProcessingOrderNotBelongsToGroup);

@@ -145,6 +145,8 @@ namespace Tolk.Web.Authorization
                 case CustomerUnitUser unituser:
                     return (user.IsInRole(Roles.CentralAdministrator) && user.TryGetCustomerOrganisationId() == unituser.CustomerUnit.CustomerOrganisationId) ||
                         IsUserLocalAdminOfCustomerUnit(unituser.CustomerUnitId, localAdminCustomerUnits);
+                case Request request:
+                    return (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && request.Ranking.BrokerId == user.GetBrokerId());
                 default:
                     throw new NotImplementedException();
             }

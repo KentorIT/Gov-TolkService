@@ -203,14 +203,8 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        internal static RequestModel GetModelFromRequest(Request request, bool requestSummaryOnly = false)
-        {
-            var complaint = request.Complaints?.FirstOrDefault();
-            var replacingOrderRequest = requestSummaryOnly ? null : request.Order.ReplacingOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
-            var replacedByOrderRequest = requestSummaryOnly ? null : request.Order.ReplacedByOrder?.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault(r => r.Ranking.BrokerId == request.Ranking.BrokerId);
-            var attach = request.Attachments;
-            var verificationResult = (request.InterpreterCompetenceVerificationResultOnStart ?? request.InterpreterCompetenceVerificationResultOnAssign);
-            bool? isInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null;
+        internal static RequestModel GetModelFromRequest(Request request)
+        {           
             return new RequestModel
             {
                 Status = request.Status,
@@ -225,12 +219,7 @@ namespace Tolk.Web.Models
                 CreatedAt = request.CreatedAt,
                 ExpiresAt = request.ExpiresAt,
                 Interpreter = request.Interpreter?.CompleteContactInformation,
-                IsInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null,
-                InterpreterVerificationMessage = verificationResult.HasValue ? verificationResult.Value.GetDescription() : null,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
-                ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
-                ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
-                RequisitionId = request.Requisitions?.OrderByDescending(r => r.RequisitionId).FirstOrDefault()?.RequisitionId,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
                 {
                     OrderRequirementId = r.OrderRequirementId,
@@ -258,33 +247,9 @@ namespace Tolk.Web.Models
                     Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
                     CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                 }).ToList(),
-
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
-                DisplayExpectedTravelCostInfo = GetDisplayExpectedTravelCostInfo(request.Order, request.InterpreterLocation ?? 0),
                 OrderViewModel = OrderViewModel.GetModelFromOrder(request.Order, request),
-                ComplaintId = complaint?.ComplaintId,
                 LatestAnswerTimeForCustomer = request.LatestAnswerTimeForCustomer,
-                ReplacingOrderRequestId = requestSummaryOnly ? null : replacingOrderRequest?.RequestId,
-                ReplacedByOrderRequestStatus = requestSummaryOnly ? null : replacedByOrderRequest?.Status,
-                ReplacedByOrderRequestId = requestSummaryOnly ? null : replacedByOrderRequest?.RequestId,
-                AttachmentListModel = new AttachmentListModel
-                {
-                    AllowDelete = false,
-                    AllowDownload = true,
-                    AllowUpload = false,
-                    Title = "Bifogade filer från förmedling",
-                    DisplayFiles = request.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }).Union(request.RequestGroup?.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }) ?? Enumerable.Empty<FileModel>()).ToList()
-                }
             };
         }
 
