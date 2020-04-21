@@ -112,8 +112,6 @@ namespace Tolk.Web.Models
 
         public long? CombinedMaxSizeAttachments { get; set; }
 
-        public override DateTimeOffset? StartAt => TimeRange?.StartDateTime;
-
         #region details
 
 

@@ -19,6 +19,8 @@ namespace Tolk.Web.Models
 
         public int? OrderGroupId { get; set; }
 
+        public override DateTimeOffset? StartAt => TimeRange?.StartDateTime;
+
         public string OrderGroupNumber { get; set; }
 
         public OrderStatus? OrderGroupStatus { get; set; }
