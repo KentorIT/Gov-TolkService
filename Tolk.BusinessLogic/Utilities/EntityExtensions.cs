@@ -144,8 +144,8 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<OrderChangeLogEntry> GetOrderChangeLogEntiesForOrder(this IQueryable<OrderChangeLogEntry> rows, int id)
             => rows.Include(c => c.OrderChangeConfirmation).Where(c => c.OrderId == id);
 
-        public static IQueryable<OrderHistoryEntry> GetOrderHistoriesForOrderChangeConfirmation(this IQueryable<OrderHistoryEntry> rows, int id)
-          => rows.Where(c => c.OrderChangeLogEntryId == id);
+        public static IQueryable<OrderHistoryEntry> GetOrderHistoriesForOrderChangeConfirmations(this IQueryable<OrderHistoryEntry> rows, List<int> ids)
+          => rows.Where(c => ids.Contains(c.OrderChangeLogEntryId));
 
         #endregion
 

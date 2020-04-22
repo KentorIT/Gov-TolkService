@@ -81,7 +81,7 @@ namespace Tolk.Web.Services
                 model.RequisitionId = requestChecks.LatestRequisitionId;
                 model.HasActiveRequests = requestChecks.HasActiveRequests;
                 model.ActiveRequest.RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(model.RequestId.Value));
-                //borde köra detta endast för för broker-rollen
+#warning om roll skickas med så borde man bara göra nedan för broker 
                 var orderChanges = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntiesForOrder(id).Where(oc => oc.BrokerId == model.ActiveRequest.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null).ToListAsync();
                 model.ConfirmedOrderChangeLogEntries = orderChanges.Select(oc => oc.OrderChangeLogEntryId).ToList();
                 if (orderChanges.Any() && (model.ActiveRequest.Status == RequestStatus.Approved || model.ActiveRequest.Status == RequestStatus.AcceptedNewInterpreterAppointed) && model.StartAtIsInFuture)
@@ -112,33 +112,33 @@ namespace Tolk.Web.Services
                interpreterLocations.Where(il => il.InterpreterLocation == interpreterLocation).Single().OffSiteContactInformation :
                interpreterLocations.Where(il => il.InterpreterLocation == interpreterLocation).Single().Street;
             int i = 0;
+            var orderHistories = await _dbContext.OrderHistoryEntries.GetOrderHistoriesForOrderChangeConfirmations(orderChangeLogEntries.Select(o => o.OrderChangeLogEntryId).ToList()).ToListAsync();
             foreach (OrderChangeLogEntry oce in orderChangeLogEntries)
             {
                 i++;
                 var nextToCompareTo = orderChangeLogEntries.Count > i ? orderChangeLogEntries[i] : null;
                 var date = $"{oce.LoggedAt.ToSwedishString("yyyy-MM-dd HH:mm")} - ";
-#warning todo include-histories correct
-                foreach (OrderHistoryEntry oh in await _dbContext.OrderHistoryEntries.GetOrderHistoriesForOrderChangeConfirmation(oce.OrderChangeLogEntryId).ToListAsync())
+                foreach (OrderHistoryEntry oh in orderHistories.Where(oh => oh.OrderChangeLogEntryId == oce.OrderChangeLogEntryId))
                 {
                     switch (oh.ChangeOrderType)
                     {
                         case ChangeOrderType.LocationStreet:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? interpreterLocationText : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.LocationStreet).Value));
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? interpreterLocationText : orderHistories.Where(ohe => ohe.OrderChangeLogEntryId == nextToCompareTo.OrderChangeLogEntryId).SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.LocationStreet).Value));
                             break;
                         case ChangeOrderType.OffSiteContactInformation:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? interpreterLocationText : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.OffSiteContactInformation).Value));
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? interpreterLocationText : orderHistories.Where(ohe => ohe.OrderChangeLogEntryId == nextToCompareTo.OrderChangeLogEntryId).SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.OffSiteContactInformation).Value));
                             break;
                         case ChangeOrderType.Description:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? description : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.Description).Value));
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? description : orderHistories.Where(ohe => ohe.OrderChangeLogEntryId == nextToCompareTo.OrderChangeLogEntryId).SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.Description).Value));
                             break;
                         case ChangeOrderType.InvoiceReference:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? invoiceRef : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.InvoiceReference).Value));
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? invoiceRef : orderHistories.Where(ohe => ohe.OrderChangeLogEntryId == nextToCompareTo.OrderChangeLogEntryId).SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.InvoiceReference).Value));
                             break;
                         case ChangeOrderType.CustomerReferenceNumber:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? custRefNo : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.CustomerReferenceNumber).Value));
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? custRefNo : orderHistories.Where(ohe => ohe.OrderChangeLogEntryId == nextToCompareTo.OrderChangeLogEntryId).SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.CustomerReferenceNumber).Value));
                             break;
                         case ChangeOrderType.CustomerDepartment:
-                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? unitName : nextToCompareTo.OrderHistories.SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.CustomerDepartment).Value));
+                            sb.Append(GetOrderFieldText(date, oh, nextToCompareTo == null ? unitName : orderHistories.Where(ohe => ohe.OrderChangeLogEntryId == nextToCompareTo.OrderChangeLogEntryId).SingleOrDefault(o => o.ChangeOrderType == ChangeOrderType.CustomerDepartment).Value));
                             break;
                         default:
                             throw new NotImplementedException();
