@@ -29,12 +29,8 @@ namespace Tolk.Web.Api.Services
 
         public async Task<Order> GetOrderAsync(string orderNumber, int brokerId)
         {
-#warning include-fest
-            var order = await _dbContext.Orders
-                .Include(o => o.Requests).ThenInclude(r => r.Ranking)
-                .SingleOrDefaultAsync(o => o.OrderNumber == orderNumber &&
-                //Must have a request connected to the order for the broker, any status...
-                o.Requests.Any(r => r.Ranking.BrokerId == brokerId));
+            var order = await _dbContext.Orders.GetOrderWithBrokerAndOrderNumber(orderNumber, brokerId);
+
             if (order == null)
             {
                 _logger.LogWarning($"Broker with broker id {brokerId}, tried to get order {orderNumber}, but it could not be returned. This could happen if the order number is wrong, or that the broker has no request connected.");
@@ -65,7 +61,15 @@ namespace Tolk.Web.Api.Services
             {
                 return null;
             }
-            var attachments = getAttachments ? GetAttachments(request.RequestId) : Enumerable.Empty<AttachmentInformationModel>();
+            request.RequirementAnswers = _dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId).ToList();
+            request.PriceRows = _dbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToList();
+            request.Order.Requirements = _dbContext.OrderRequirements.GetRequirementsForOrder(request.OrderId).ToList();
+            request.Order.InterpreterLocations = _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToList();
+            request.Order.CompetenceRequirements = _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.OrderId).ToList();
+            request.Order.PriceRows = _dbContext.OrderPriceRows.GetPriceRowsForOrder(request.OrderId).ToList();
+
+            var attachments = getAttachments ? GetAttachments(request) : Enumerable.Empty<AttachmentInformationModel>();
+            
             return new RequestDetailsResponse
             {
                 Status = request.Status.GetCustomName(),
@@ -237,19 +241,11 @@ namespace Tolk.Web.Api.Services
             };
         }
 
-        private IEnumerable<AttachmentInformationModel> GetAttachments(int requestId)
+        private IEnumerable<AttachmentInformationModel> GetAttachments(Request request)
         {
-#warning include-fest
-            return _dbContext.Attachments
-                .Include(a => a.Orders).ThenInclude(a => a.Attachment)
-                .Include(a => a.OrderGroups).ThenInclude(a => a.Attachment)
-                .Include(a => a.RequestGroups).ThenInclude(a => a.Attachment)
-                .Include(a => a.Requests).ThenInclude(a => a.Attachment)
-                .Where(a =>
-                    a.Requests.Any(r => r.RequestId == requestId) ||
-                    a.RequestGroups.Any(rg => rg.RequestGroup.Requests.Any(r => r.RequestId == requestId)) ||
-                    a.OrderGroups.Any(og => og.OrderGroup.Orders.Any(o => o.Requests.Any(r => r.RequestId == requestId))) ||
-                    a.Orders.Any(o => o.Order.Requests.Any(r => r.RequestId == requestId)))
+            var attachments = _dbContext.Attachments.GetAttachmentsForOrderAndGroup(request.OrderId, request.Order.OrderGroupId).ToList();
+            attachments.AddRange(_dbContext.Attachments.GetAttachmentsForRequest(request.RequestId, request.RequestGroupId).ToList());
+            return attachments
                 .Select(a => new AttachmentInformationModel
                 {
                     AttachmentId = a.AttachmentId,

@@ -162,9 +162,6 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 var request = await _dbContext.Requests.GetRequestsForAcceptById(model.RequestId);
-                request.PriceRows = await _dbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToListAsync();
-                request.Order.Requirements = await _dbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
-                request.Order.InterpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
@@ -247,7 +244,7 @@ namespace Tolk.Web.Controllers
                         }
                         else
                         {
-                            _requestService.AcceptReplacement(
+                           await _requestService.AcceptReplacement(
                                 request,
                                 _clock.SwedenNow,
                                 User.GetUserId(),

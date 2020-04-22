@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 
@@ -63,6 +64,9 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Accept), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(Accept), nameof(RequestService));
+            //maybe should be moved to AcceptRequest depending on ordergroup requesting each...
+            request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
+            request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(Accept));
             AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel), latestAnswerTimeForCustomer: latestAnswerTimeForCustomer);
             //Create notification
@@ -199,7 +203,7 @@ namespace Tolk.BusinessLogic.Services
             requestGroup.Received(acknowledgeTime, userId, impersonatorId);
         }
 
-        public void AcceptReplacement(
+        public async Task AcceptReplacement(
             Request request,
             DateTimeOffset acceptTime,
             int userId,
@@ -212,6 +216,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptReplacement), nameof(RequestService));
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(AcceptReplacement));
+            request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
             request.AcceptReplacementOrder(
                 acceptTime,
                 userId,
@@ -293,10 +298,13 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(request, nameof(ChangeInterpreter), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(ChangeInterpreter), nameof(RequestService));
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(ChangeInterpreter));
+            request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
+            request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
             if (interpreter.InterpreterBrokerId == GetOtherInterpreterIdForSameOccasion(request) && !(interpreter.Interpreter?.IsProtected ?? false))
             {
                 throw new InvalidOperationException("Det går inte att tillsätta samma tolk som redan är tillsatt som extra tolk för samma tillfälle.");
             }
+
             Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt, isChangeInterpreter: true, requestGroup: request.RequestGroup)
             {
                 Order = request.Order,
@@ -318,7 +326,7 @@ namespace Tolk.BusinessLogic.Services
                 interpreterLocation,
                 competenceLevel,
                 requirementAnswers,
-                attachedFiles.Select(f => new RequestAttachment { AttachmentId = f.AttachmentId }),
+                attachedFiles,
                 _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts),
                 noNeedForUserAccept,
                 request,
@@ -545,7 +553,6 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
             //Get prices
             var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
-            // Acccept the request
             request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, verificationResult, overrideRequireAccept);
         }
 
@@ -590,6 +597,7 @@ namespace Tolk.BusinessLogic.Services
 
         public int? GetOtherInterpreterIdForSameOccasion(Request request)
         {
+#warning get_the_requests_for_IsExtraInterpreterForOrder/ExtraInterpreterOrder_if_needed
             NullCheckHelper.ArgumentCheckNull(request, nameof(GetOtherInterpreterIdForSameOccasion), nameof(RequestService));
             return request.Order.IsExtraInterpreterForOrder != null ? request.Order.IsExtraInterpreterForOrder.Requests.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId :
                  request.Order.ExtraInterpreterOrder?.Requests.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
@@ -601,6 +609,10 @@ namespace Tolk.BusinessLogic.Services
             {
                 return true;
             }
+
+#warning get_the_requests_here_if_needed
+            return true;
+           
             decimal largestApprovedAmount = request.Order.Requests
                 .Where(req => (req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced) && req.AnswerProcessedAt.HasValue && req.RankingId == request.RankingId)
                 .Select(r => r.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.TravelCost).Sum(pr => pr.Price) as decimal?)

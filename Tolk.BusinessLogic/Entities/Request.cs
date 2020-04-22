@@ -244,7 +244,7 @@ namespace Tolk.BusinessLogic.Entities
             CompetenceLevel = (int?)competenceLevel;
             RequirementAnswers = requirementAnswers;
             Attachments = attachedFiles;
-            PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
+            PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
             ExpectedTravelCostInfo = expectedTravelCostInfo;
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
@@ -414,7 +414,7 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnsweredBy = impersonatorId;
             InterpreterLocation = (int?)interpreterLocation;
             ExpectedTravelCostInfo = expectedTravelCostInfo;
-            PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
+            PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
             if (RequiresAccept)
             {
                 Status = RequestStatus.Accepted;
@@ -473,7 +473,7 @@ namespace Tolk.BusinessLogic.Entities
             PriceRows = new List<RequestPriceRow>();
             RequirementAnswers = requirementAnswers;
             Attachments = attachments.ToList();
-            PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)));
+            PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
             ExpectedTravelCostInfo = expectedTravelCostInfo;
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;

@@ -210,9 +210,38 @@ namespace Tolk.BusinessLogic.Utilities
                     .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
                     .SingleAsync(r => r.RequestId == id);
 
-
         public static async Task<Request> GetRequestsWithContactsById(this IQueryable<Request> requests, int id)
              => await requests.GetRequestsWithBaseIncludes().SingleAsync(r => r.RequestId == id);
+
+        public static async Task<Request> GetRequestsForAcceptWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId)
+            => await requests.GetRequestsWithBaseIncludes()
+                    .Include(r => r.RequestGroup)
+                    .Include(r => r.Order).ThenInclude(o => o.Language)
+                    .Include(r => r.Order).ThenInclude(o => o.Region)
+                    .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
+                    .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
+                    r.Ranking.BrokerId == brokerId && r.ReplacingRequest == null);
+
+        public static async Task<Order> GetOrderWithBrokerAndOrderNumber(this IQueryable<Order> orders, string orderNumber, int brokerId)
+           => await orders
+                .SingleOrDefaultAsync(o => o.OrderNumber == orderNumber && o.Requests.Any(r => r.Ranking.BrokerId == brokerId));
+
+        public static async Task<Request> GetActiveRequestForApiWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId)
+             => await requests.GetRequestsWithBaseIncludes()
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.Region)
+                .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
+                    r.Ranking.BrokerId == brokerId && r.ReplacingRequest == null);
+
+        public static async Task<Request> GetConfirmedRequestForApiWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId, IEnumerable<RequestStatus> statuses)
+            => await requests.GetRequestsWithBaseIncludesForApi()
+                .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
+                    r.Ranking.BrokerId == brokerId && statuses.Contains(r.Status));
+
+        public static async Task<Request> GetSimpleActiveRequestForApiWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId)
+           => await requests.GetRequestsWithBaseIncludesForApi()
+               .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
+                   r.Ranking.BrokerId == brokerId && r.ReplacingRequest == null);
 
         public static async Task<Request> GetActiveRequestByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
         {
@@ -321,6 +350,11 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Order.CreatedByUser)
                 .Include(r => r.Order.ContactPersonUser);
+
+        private static IQueryable<Request> GetRequestsWithBaseIncludesForApi(this IQueryable<Request> requests)
+            => requests
+            .Include(r => r.Ranking)
+            .Include(r => r.Order);
     }
 
 }
