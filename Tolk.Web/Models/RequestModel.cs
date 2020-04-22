@@ -248,18 +248,9 @@ namespace Tolk.Web.Models
                     CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
                 }).ToList(),
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
-                OrderViewModel = OrderViewModel.GetModelFromOrder(request.Order, request),
+                OrderViewModel = OrderViewModel.GetModelFromOrder(request.Order, request, true),
                 LatestAnswerTimeForCustomer = request.LatestAnswerTimeForCustomer,
             };
-        }
-
-        private static bool GetDisplayExpectedTravelCostInfo(Order o, int locationAnswer)
-        {
-            if (o.AllowExceedingTravelCost.HasValue && (o.AllowExceedingTravelCost.Value == AllowExceedingTravelCost.YesShouldBeApproved || o.AllowExceedingTravelCost.Value == AllowExceedingTravelCost.YesShouldNotBeApproved))
-            {
-                return locationAnswer == (int)BusinessLogic.Enums.InterpreterLocation.OnSite || locationAnswer == (int)BusinessLogic.Enums.InterpreterLocation.OffSiteDesignatedLocation;
-            }
-            return false;
         }
 
         #endregion

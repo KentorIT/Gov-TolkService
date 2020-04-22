@@ -581,7 +581,7 @@ namespace Tolk.Web.Controllers
         private async Task<OrderViewModel> GetModelForView(Request request)
         {
             var order = await _dbContext.Orders.GetFullOrderByRequestId(request.RequestId);
-            var model = OrderViewModel.GetModelFromOrder(order, request);
+            var model = OrderViewModel.GetModelFromOrder(order, request, true);
             model.StartAtIsInFuture = order.StartAt > _clock.SwedenNow;
             model.UserCanCanCreateRequisition = _authorizationService.AuthorizeAsync(User, request, Policies.Edit).Result.Succeeded;
             model.UserCanCancelRequest = _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;

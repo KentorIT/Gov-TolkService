@@ -255,12 +255,11 @@ namespace Tolk.Web.Models
 
         public int? RequisitionId { get; set; }
 
-        internal static OrderViewModel GetModelFromOrder(Order order, Request request)
+        internal static OrderViewModel GetModelFromOrder(Order order, Request request, bool isBroker = false)
         {
             var model = new OrderViewModel
             {
-#warning Dont like, should be possible to make lighter.
-                AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
+                AllowExceedingTravelCost = GetAllowExceedingTravelCost(isBroker, order),
                 OrderId = order.OrderId,
                 OrderNumber = order.OrderNumber,
                 Status = order.Status,
@@ -325,6 +324,9 @@ namespace Tolk.Web.Models
             }
             return model;
         }
+
+        private static RadioButtonGroup GetAllowExceedingTravelCost(bool isBroker, Order order)
+            => isBroker ? new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(order.AllowExceedingTravelCost.Value).ToString()) } : new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) };
 
         internal static OrderViewModel GetModelFromOrderForConfirmation(Order order)
         {
