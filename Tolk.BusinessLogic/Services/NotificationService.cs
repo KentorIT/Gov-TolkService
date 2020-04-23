@@ -1175,12 +1175,9 @@ Sammanställning:
             _dbContext.SaveChanges();
         }
 
-        public void NotifyOnFailure(int callId)
+        public async Task NotifyOnFailure(int callId)
         {
-#warning move include
-            OutboundWebHookCall call = _dbContext.OutboundWebHookCalls
-                .Include(c => c.RecipientUser)
-                .Single(c => c.OutboundWebHookCallId == callId);
+            OutboundWebHookCall call = await _dbContext.OutboundWebHookCalls.GetOutboundWebHookCall(callId);
             var email = GetBrokerNotificationSettings(call.RecipientUser.BrokerId.Value, NotificationType.ErrorNotification, NotificationChannel.Email);
             if (email != null)
             {

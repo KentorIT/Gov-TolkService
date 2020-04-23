@@ -52,6 +52,6 @@ namespace Tolk.BusinessLogic.Services
         void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated);
         void RequestGroupExpiredDueToInactivity(RequestGroup expiredRequestGroup);
         void RequestGroupExpiredDueToNoAnswerFromCustomer(RequestGroup expiredRequestGroup);
-        void NotifyOnFailure(int callId);
+        Task NotifyOnFailure(int callId);
     }
 }

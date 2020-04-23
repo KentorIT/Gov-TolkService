@@ -23,7 +23,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void CustomerCreated(CustomerOrganisation customer) { }
 
-        public void NotifyOnFailure(int callId) { }
+        public async Task NotifyOnFailure(int callId) { }
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition) { }
 

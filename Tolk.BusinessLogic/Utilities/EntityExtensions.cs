@@ -335,6 +335,9 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<AspNetUser> GetUser(this IQueryable<AspNetUser> users, int id)
             => await users.Include(u => u.CustomerOrganisation).SingleOrDefaultAsync(u => u.Id == id);
 
+        public static async Task<OutboundWebHookCall> GetOutboundWebHookCall(this IQueryable<OutboundWebHookCall> outboundWebHookCalls, int id)
+            => await outboundWebHookCalls.Include(c => c.RecipientUser).SingleOrDefaultAsync(c => c.OutboundWebHookCallId == id);
+
         #endregion
 
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)
