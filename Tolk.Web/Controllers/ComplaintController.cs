@@ -13,6 +13,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
+using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -23,18 +24,21 @@ namespace Tolk.Web.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly ILogger _logger;
         private readonly ComplaintService _complaintService;
+        private readonly EventLogService _eventLogService;
 
         public ComplaintController(
             TolkDbContext dbContext,
             IAuthorizationService authorizationService,
             ILogger<ComplaintController> logger,
-            ComplaintService complaintService
+            ComplaintService complaintService,
+            EventLogService eventLogService
             )
         {
             _dbContext = dbContext;
             _authorizationService = authorizationService;
             _logger = logger;
             _complaintService = complaintService;
+            _eventLogService = eventLogService;
         }
 
         public IActionResult List()
@@ -270,13 +274,13 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {
-            var complaint = GetComplaint(id);
+            var complaint = await _dbContext.Complaints.GetComplaintForEventLog(id);
             if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
             {
                 return PartialView("_EventLogDynamic", new EventLogModel
                 {
-                    Entries = EventLogHelper.GetEventLog(complaint, complaint.Request.Order.CustomerOrganisation.Name, complaint.Request.Ranking.Broker.Name)
-                        .OrderBy(e => e.Timestamp).ToList()
+                    Entries = _eventLogService.GetEventLogForComplaint(complaint, complaint.Request.Order.CustomerOrganisation.Name, complaint.Request.Ranking.Broker.Name)
+                        .OrderBy(e => e.Timestamp)
                 });
             }
             return Forbid();

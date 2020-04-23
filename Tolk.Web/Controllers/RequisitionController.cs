@@ -17,6 +17,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
+using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -28,13 +29,15 @@ namespace Tolk.Web.Controllers
         private readonly ILogger _logger;
         private readonly TolkOptions _options;
         private readonly RequisitionService _requisitionService;
+        private readonly EventLogService _eventLogService;
 
         public RequisitionController(
             TolkDbContext dbContext,
             IAuthorizationService authorizationService,
             ILogger<RequisitionController> logger,
             IOptions<TolkOptions> options,
-            RequisitionService requisitionService
+            RequisitionService requisitionService,
+            EventLogService eventLogService
             )
         {
             _dbContext = dbContext;
@@ -42,6 +45,7 @@ namespace Tolk.Web.Controllers
             _logger = logger;
             _options = options?.Value;
             _requisitionService = requisitionService;
+            _eventLogService = eventLogService;
         }
 
         public IActionResult List()
@@ -367,13 +371,12 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {
-            var requisition = GetRequisition(id);
+            var requisition = await _dbContext.Requisitions.GetRequisitionForEventLog(id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
             {
                 return PartialView("_EventLogDynamic", new EventLogModel
                 {
-                    Entries = EventLogHelper.GetEventLog(requisition.Request.Requisitions, requisition.Request.Order.CustomerOrganisation.Name, requisition.Request.Ranking.Broker.Name)
-                        .OrderBy(e => e.Timestamp).ToList()
+                    Entries = (await _eventLogService.GetEventLogForRequisitions(requisition.RequestId, requisition.Request.Order.CustomerOrganisation.Name, requisition.Request.Ranking.Broker.Name)).OrderBy(e => e.Timestamp)
                 });
             }
             return Forbid();

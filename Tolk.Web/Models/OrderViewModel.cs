@@ -189,7 +189,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Skapa ersättningsuppdrag")]
         public bool AddReplacementOrder { get; set; } = false;
 
-        public bool AllowComplaintCreation => HasComplaints && RequestIsApprovedOrDelivered && !StartAtIsInFuture && UserCanCreateComplaint;
+        public bool AllowComplaintCreation => !HasComplaints && RequestIsApprovedOrDelivered && !StartAtIsInFuture && UserCanCreateComplaint;
 
         public bool AllowRequestPrint => RequestCanBePrinted && UserCanPrint;
 

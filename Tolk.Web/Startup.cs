@@ -53,6 +53,7 @@ namespace Tolk.Web
             services.AddScoped<MockTellusApiService>();
 
             services.AddScoped<ListToModelService>();
+            services.AddScoped<EventLogService>();
 
             services.ConfigureApplicationCookie(opt =>
             {

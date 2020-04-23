@@ -175,22 +175,6 @@ namespace Tolk.Web.Helpers
             return eventLog;
         }
 
-        private static EventLogEntryModel GetEventRowForNewContactPerson(OrderChangeLogEntry ocPrevious, Order order, int findElementAt)
-        {
-
-            var orderContactPersons = order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt);
-            //try find next row if any else take info from Order.ContactPersonUser
-            string newContactPersonName = orderContactPersons.Count() > findElementAt ? orderContactPersons.ElementAt(findElementAt).OrderContactPersonHistory.PreviousContactPersonUser?.FullName : order.ContactPersonUser?.FullName;
-            return string.IsNullOrWhiteSpace(newContactPersonName) ? null : new EventLogEntryModel
-            {
-                Timestamp = ocPrevious.LoggedAt,
-                EventDetails = $"{newContactPersonName} tilldelades rätt att granska rekvisition",
-                Actor = ocPrevious.UpdatedByUser.FullName,
-                Organization = order.CustomerOrganisation.Name,
-                ActorContactInfo = GetContactinfo(ocPrevious.UpdatedByUser),
-            };
-        }
-
         public static List<EventLogEntryModel> GetEventLog(Request request, string customerName, string brokerName, bool isRequestDetailView = true, IEnumerable<Request> previousRequests = null)
         {
             if (request == null)
@@ -724,6 +708,22 @@ namespace Tolk.Web.Helpers
                 contactInfo += $"Mobil: {user.PhoneNumberCellphone}\n";
             }
             return contactInfo;
+        }
+
+        private static EventLogEntryModel GetEventRowForNewContactPerson(OrderChangeLogEntry ocPrevious, Order order, int findElementAt)
+        {
+
+            var orderContactPersons = order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt);
+            //try find next row if any else take info from Order.ContactPersonUser
+            string newContactPersonName = orderContactPersons.Count() > findElementAt ? orderContactPersons.ElementAt(findElementAt).OrderContactPersonHistory.PreviousContactPersonUser?.FullName : order.ContactPersonUser?.FullName;
+            return string.IsNullOrWhiteSpace(newContactPersonName) ? null : new EventLogEntryModel
+            {
+                Timestamp = ocPrevious.LoggedAt,
+                EventDetails = $"{newContactPersonName} tilldelades rätt att granska rekvisition",
+                Actor = ocPrevious.UpdatedByUser.FullName,
+                Organization = order.CustomerOrganisation.Name,
+                ActorContactInfo = GetContactinfo(ocPrevious.UpdatedByUser),
+            };
         }
     }
 }

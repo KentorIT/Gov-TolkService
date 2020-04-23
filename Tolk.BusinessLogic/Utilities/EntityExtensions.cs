@@ -172,6 +172,14 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<RequestView> GetRequestViewsForRequest(this IQueryable<RequestView> views, int id)
            => views.Where(v => v.RequestId == id);
 
+        public static IQueryable<Requisition> GetRequisitionsForRequest(this IQueryable<Requisition> requisitions, int id)
+            => requisitions
+                .Include(r => r.CreatedByUser)
+                .Include(r => r.ProcessedUser)
+                .Where(r => r.RequestId == id);
+
+        public static IQueryable<RequisitionStatusConfirmation> GetRequisitionsStatusConfirmationsByRequest(this IQueryable<RequisitionStatusConfirmation> confirmations, int id)
+            => confirmations.Include(c => c.ConfirmedByUser).Where(r => r.Requisition.RequestId == id);
 
         #endregion
 
@@ -239,7 +247,6 @@ namespace Tolk.BusinessLogic.Utilities
                 .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
                     r.Ranking.BrokerId == brokerId && r.ReplacingRequest == null);
 
-
         public static async Task<Request> GetConfirmedRequestForApiWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId, IEnumerable<RequestStatus> statuses)
             => await requests.GetRequestsWithBaseIncludesForApi()
                 .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
@@ -267,6 +274,21 @@ namespace Tolk.BusinessLogic.Utilities
                                     (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
             return request;
         }
+
+        public static async Task<Complaint> GetComplaintForEventLog(this IQueryable<Complaint> complaints, int id)
+            => await complaints.Include(r => r.CreatedByUser)
+                .Include(r => r.AnsweringUser)
+                .Include(r => r.AnswerDisputingUser)
+                .Include(r => r.TerminatingUser)
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .SingleOrDefaultAsync(o => o.ComplaintId == id);
+
+        public static async Task<Requisition> GetRequisitionForEventLog(this IQueryable<Requisition> requisitions, int id)
+            => await requisitions
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .SingleOrDefaultAsync(o => o.RequisitionId == id);
 
         public static async Task<AspNetUser> GetUser(this IQueryable<AspNetUser> users, int id)
             => await users.Include(u => u.CustomerOrganisation).SingleOrDefaultAsync(u => u.Id == id);
