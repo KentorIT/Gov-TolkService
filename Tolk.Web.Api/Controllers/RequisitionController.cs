@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
@@ -60,34 +59,21 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
-#warning include-fest
-                var order = await _dbContext.Orders
-                    .Include(o => o.Requests)
-                    .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
-                    .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
-                    .Include(o => o.Requests).ThenInclude(r => r.Ranking)
-                    .Include(o => o.CreatedByUser)
-                    .Include(o => o.CustomerOrganisation)
-                    .Include(o => o.CustomerUnit)
-                    .Include(o => o.ReplacingOrder)
-                    .SingleOrDefaultAsync(o => o.OrderNumber == model.OrderNumber &&
-                       //Must have a request connected to the order for the broker, any status...
-                       o.Requests.Any(r => r.Ranking.BrokerId == brokerId));
-                if (order == null)
-                {
-                    return ReturnError(ErrorCodes.OrderNotFound);
-                }
-                //Possibly the user should be added, if not found?? 
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
 
-                var request = order.Requests.SingleOrDefault(r => brokerId == r.Ranking.BrokerId && (r.Status == RequestStatus.Approved || r.Status == RequestStatus.Delivered));
+                var request = await _dbContext.Requests.GetActiveRequestForApiWithBrokerAndOrderNumber(model.OrderNumber, brokerId);
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);
                 }
+                if (!request.IsApprovedOrDelivered)
+                {
+                    return ReturnError(ErrorCodes.RequestNotInCorrectState);
+                }
                 try
                 {
-                    _requisitionService.Create(request, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message,
+                    await _requisitionService.Create(request, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message,
                         model.Outlay, model.AcctualStartedAt, model.AcctualEndedAt, model.WasteTime, model.WasteTimeInconvenientHour, EnumHelper.GetEnumByCustomName<TaxCardType>(model.TaxCard).Value,
                         new List<RequisitionAttachment>(), Guid.NewGuid(), model.MealBreaks.Select(m => new MealBreak
                         {
@@ -104,7 +90,6 @@ namespace Tolk.Web.Api.Controllers
                     //TODO: Should log the acctual exception here!!
                     return ReturnError(ErrorCodes.RequisitionNotInCorrectState);
                 }
-                //End of service
                 return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
@@ -127,25 +112,31 @@ namespace Tolk.Web.Api.Controllers
             try
             {
                 var brokerId = User.TryGetBrokerId().Value;
-                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
+                _ = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
 
-#warning include-fest
-                var requisition = _dbContext.Requisitions
-                    .Include(r => r.Request).ThenInclude(r => r.Ranking)
-                    .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.MealBreaks)
-                    .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.PriceRows)
-                    .Include(r => r.MealBreaks)
-                    .Include(r => r.PriceRows)
-                    .SingleOrDefault(c => c.Request.Order.OrderNumber == model.OrderNumber &&
-                        c.Request.Ranking.BrokerId == brokerId &&
-                        c.ReplacedByRequisitionId == null);
+                var requisition = await _dbContext.Requisitions.GetActiveRequisitionWithBrokerAndOrderNumber(model.OrderNumber, brokerId);
+
                 if (requisition == null)
                 {
                     return ReturnError(ErrorCodes.RequisitionNotFound);
                 }
-                //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                //End of service
+                requisition.PriceRows = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisition.RequisitionId).ToListAsync();
+                requisition.MealBreaks = await _dbContext.MealBreaks.GetMealBreksForRequisition(requisition.RequisitionId).ToListAsync();
+                if (model.IncludePreviousRequisitions)
+                {
+                    var previousRequisitions = await _dbContext.Requisitions.GetRequisitionsForRequest(requisition.RequestId)
+                        .Where(r => r.ReplacedByRequisitionId.HasValue).ToListAsync();
+                    if (previousRequisitions.Any())
+                    {
+                        requisition.Request.Requisitions = previousRequisitions;
+                        foreach (Requisition r in previousRequisitions)
+                        {
+                            requisition.Request.Requisitions.SingleOrDefault(re => re.RequisitionId == r.RequisitionId).MealBreaks = await _dbContext.MealBreaks.GetMealBreksForRequisition(r.RequisitionId).ToListAsync();
+                            requisition.Request.Requisitions.SingleOrDefault(re => re.RequisitionId == r.RequisitionId).PriceRows = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(r.RequisitionId).ToListAsync();
+                        }
+                    }
+                }
                 return Ok(GetResponseFromRequisition(requisition, model.OrderNumber, model.IncludePreviousRequisitions));
             }
             catch (InvalidApiCallException ex)
@@ -160,7 +151,7 @@ namespace Tolk.Web.Api.Controllers
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} connected to requisition on order {orderNumber}");
             try
             {
-                var order = await _apiOrderService.GetOrderAsync(orderNumber, User.TryGetBrokerId().Value);
+                _ = await _apiOrderService.GetOrderAsync(orderNumber, User.TryGetBrokerId().Value);
 
                 var attachment = (await _dbContext.RequisitionAttachments.SingleOrDefaultAsync(a => a.AttachmentId == attachmentId &&
                     a.Requisition.Request.Order.OrderNumber == orderNumber))?.Attachment;

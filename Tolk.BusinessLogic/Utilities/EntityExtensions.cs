@@ -183,6 +183,16 @@ namespace Tolk.BusinessLogic.Utilities
 
         #endregion
 
+        #region lists connected to requsition
+
+        public static IQueryable<RequisitionPriceRow> GetPriceRowsForRequisition(this IQueryable<RequisitionPriceRow> rows, int id)
+            => rows.Include(p => p.PriceListRow).Where(p => p.RequisitionId == id);
+
+        public static IQueryable<MealBreak> GetMealBreksForRequisition(this IQueryable<MealBreak> rows, int id)
+            => rows.Where(p => p.RequisitionId == id);
+
+        #endregion
+
         #region single entities by id
 
         public static async Task<Order> GetFullOrderById(this IQueryable<Order> orders, int id)
@@ -212,6 +222,12 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Order)
                 .SingleAsync(r => r.RequestId == id);
+
+        public static async Task<Request> GetRequestForRequisitionCreateById(this IQueryable<Request> requests, int id)
+           => await requests.GetRequestsWithBaseIncludes()
+                   .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
+                   .SingleAsync(r => r.RequestId == id);
+
 
         public static async Task<Request> GetRequestsForAcceptById(this IQueryable<Request> requests, int id)
             => await requests.GetRequestsWithBaseIncludes()
@@ -244,6 +260,7 @@ namespace Tolk.BusinessLogic.Utilities
              => await requests.GetRequestsWithBaseIncludes()
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Order).ThenInclude(o => o.Region)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
                 .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
                     r.Ranking.BrokerId == brokerId && r.ReplacingRequest == null);
 
@@ -289,6 +306,18 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .SingleOrDefaultAsync(o => o.RequisitionId == id);
+
+        public static async Task<Requisition> GetActiveRequisitionWithBrokerAndOrderNumber(this IQueryable<Requisition> requisitions, string orderNumber, int brokerId)
+            => await requisitions
+                .Include(r => r.Request)
+                .SingleOrDefaultAsync(r => r.Request.Order.OrderNumber == orderNumber && 
+                r.Request.Ranking.BrokerId == brokerId && r.ReplacedByRequisitionId == null);
+
+        public static async Task<Complaint> GetComplaintWithBrokerAndOrderNumber(this IQueryable<Complaint> complaints, string orderNumber, int brokerId)
+            => await complaints
+                .Include(c => c.CreatedByUser)
+                .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
+                .SingleOrDefaultAsync(c => c.Request.Order.OrderNumber == orderNumber && c.Request.Ranking.BrokerId == brokerId);
 
         public static async Task<AspNetUser> GetUser(this IQueryable<AspNetUser> users, int id)
             => await users.Include(u => u.CustomerOrganisation).SingleOrDefaultAsync(u => u.Id == id);

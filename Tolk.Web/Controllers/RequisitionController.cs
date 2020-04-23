@@ -231,19 +231,8 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-#warning include-fest
-                var request = _dbContext.Requests
-                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.Order.CreatedByUser)
-                    .Include(r => r.Order.ContactPersonUser)
-                    .Include(r => r.Order.CustomerUnit)
-                    .Include(r => r.Requisitions)
-                    .Include(r => r.Ranking)
-                    .Include(r => r.PriceRows)
-                    .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
-                    .Single(o => o.RequestId == model.RequestId);
+                var request = await _dbContext.Requests.GetRequestForRequisitionCreateById(model.RequestId);
 
-                //add swedish offset to mealbreak
                 List<MealBreak> mealbreaks = new List<MealBreak>();
                 if (model.MealBreaks != null)
                 {
@@ -252,14 +241,13 @@ namespace Tolk.Web.Controllers
                         mealbreaks.Add(new MealBreak { StartAt = mb.StartAtTemp.ToDateTimeOffsetSweden(), EndAt = mb.EndAtTemp.ToDateTimeOffsetSweden() });
                     }
                 }
-
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
                 {
                     Requisition requisition;
 
                     try
                     {
-                        requisition = _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.Outlay,
+                        requisition = await _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.Outlay,
                             model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
                             model.TimeWasteIWHTime, model.InterpreterTaxCard.Value, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks, model.CarCompensation, model.PerDiem);
                     }

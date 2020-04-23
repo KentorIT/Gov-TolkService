@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -33,15 +35,17 @@ namespace Tolk.BusinessLogic.Services
             _priceCalculationService = priceCalculationService;
         }
 
-        public Requisition Create(Request request, int userId, int? impersonatorId, string message, decimal? outlay,
+        public async Task<Requisition> Create(Request request, int userId, int? impersonatorId, string message, decimal? outlay,
             DateTimeOffset sessionStartedAt, DateTimeOffset sessionEndedAt, int? timeWasteNormalTime, int? timeWasteIWHTime, TaxCardType interpreterTaxCard,
             List<RequisitionAttachment> attachments, Guid fileGroupKey, List<MealBreak> mealbreaks, int? carCompensation, string perDiem)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Create), nameof(RequisitionService));
+            request.Requisitions = await _dbContext.Requisitions.GetRequisitionsForRequest(request.RequestId).ToListAsync();
             if (!request.CanCreateRequisition)
             {
                 throw new InvalidOperationException($"Cannot create requisition on order {request.OrderId}");
             }
+            request.PriceRows = await _dbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToListAsync();
             var priceInformation = _priceCalculationService.GetPricesRequisition(
                 sessionStartedAt,
                 sessionEndedAt,
@@ -74,15 +78,14 @@ namespace Tolk.BusinessLogic.Services
                     TimeWasteNormalTime = timeWasteNormalTime,
                     TimeWasteIWHTime = timeWasteIWHTime,
                     InterpretersTaxCard = interpreterTaxCard,
-                    PriceRows = new List<RequisitionPriceRow>(),
+                    PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)).ToList(),
                     Attachments = attachments,
                     MealBreaks = mealbreaks,
                     CarCompensation = carCompensation,
-                    PerDiem = perDiem
+                    PerDiem = perDiem,
+                    RequestOrReplacingOrderPeriodUsed = useRequestRows,
                 };
 
-                requisition.RequestOrReplacingOrderPeriodUsed = useRequestRows;
-                requisition.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)));
                 foreach (var tag in _dbContext.TemporaryAttachmentGroups.Where(t => t.TemporaryAttachmentGroupKey == fileGroupKey))
                 {
                     _dbContext.TemporaryAttachmentGroups.Remove(tag);
