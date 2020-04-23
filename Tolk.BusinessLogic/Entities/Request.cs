@@ -165,7 +165,7 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (!CanCreateComplaint)
             {
-                throw new InvalidOperationException("Several complaints cannot be created or request does not have status approved.");
+                throw new InvalidOperationException("Det gick inte att skapa reklamation");
             }
             Complaints.Add(complaint);
         }

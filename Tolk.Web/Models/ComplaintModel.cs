@@ -21,7 +21,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Län")]
         public string RegionName { get; set; }
 
-        [Display(Name = "Myndighetens referensnummer")]
+        [Display(Name = "Myndighetens ärendenummer")]
         public string CustomerReferenceNumber { get; set; }
 
         [Display(Name = "Tolk")]

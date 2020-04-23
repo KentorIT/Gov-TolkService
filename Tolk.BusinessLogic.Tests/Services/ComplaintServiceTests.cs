@@ -47,7 +47,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 Status = status,
                 Complaints = new List<Complaint>()
             };
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.ThrowsAsync<InvalidOperationException>(() =>
                 service.Create(request, 1, null, "apa", ComplaintType.BadDelivery));
         }
 
@@ -60,7 +60,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 Status = RequestStatus.Approved,
                 Complaints = new List<Complaint>() { new Complaint() }
             };
-            Assert.Throws<InvalidOperationException>(() =>
+            Assert.ThrowsAsync<InvalidOperationException>(() =>
                 service.Create(request, 1, null, "apa", ComplaintType.BadDelivery));
         }
 
@@ -74,7 +74,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 Status = status,
                 Complaints = new List<Complaint>()
             };
-            service.Create(request, 1, null, "apa", ComplaintType.BadDelivery);
+            _ = service.Create(request, 1, null, "apa", ComplaintType.BadDelivery);
         }
 
         [Theory]

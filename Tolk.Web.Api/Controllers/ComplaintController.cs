@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
 using Tolk.Api.Payloads.Responses;
@@ -65,7 +63,7 @@ namespace Tolk.Web.Api.Controllers
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
                 _ = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
-                //Get User, if any...
+
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 var complaint = await GetCreatedComplaint(model.OrderNumber, brokerId);
                 _complaintService.Accept(complaint, user?.Id ?? apiUserId, user != null ? (int?)apiUserId : null);
@@ -95,14 +93,13 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
-                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
-                //Get User, if any...
+                _ = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
+
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 var complaint = await GetCreatedComplaint(model.OrderNumber, brokerId);
                 _complaintService.Dispute(complaint, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message);
 
                 await _dbContext.SaveChangesAsync();
-                //End of service
                 return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
@@ -142,18 +139,16 @@ namespace Tolk.Web.Api.Controllers
 
         private async Task<Complaint> GetCreatedComplaint(string orderNumber, int brokerId)
         {
-#warning move include
-            var complaint = await _dbContext.Complaints
-                .Include(c => c.CreatedByUser)
-                .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                .SingleOrDefaultAsync(c => c.Request.Order.OrderNumber == orderNumber &&
-                   c.Request.Ranking.BrokerId == brokerId && c.Status == ComplaintStatus.Created);
+            var complaint = await _dbContext.Complaints.GetComplaintWithBrokerAndOrderNumber(orderNumber, brokerId);
             if (complaint == null)
             {
                 throw new InvalidApiCallException(ErrorCodes.ComplaintNotFound);
             }
+            if (complaint.Status != ComplaintStatus.Created)
+            {
+                throw new InvalidApiCallException(ErrorCodes.ComplaintNotFound);
+            }
             return complaint;
-
         }
 
         //Break out to something more generic...

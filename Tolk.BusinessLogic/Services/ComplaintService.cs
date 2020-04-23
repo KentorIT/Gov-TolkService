@@ -2,7 +2,11 @@
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Helpers;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -26,9 +30,10 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
         }
 
-        public void Create(Request request, int userId, int? impersonatorId, string message, ComplaintType type)
+        public async Task Create(Request request, int userId, int? impersonatorId, string message, ComplaintType type)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Create), nameof(ComplaintService));
+            request.Complaints = await _dbContext.Complaints.GetComplaintsForRequest(request.RequestId).ToListAsync();
             var complaint = new Complaint
             {
                 Request = request,

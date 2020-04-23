@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
@@ -104,7 +105,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id)
         {
-            var complaint = GetComplaint(id);
+            var complaint = await _dbContext.Complaints.GetFullComplaintById(id);
             if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
             {
                 var isCustomer = User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId);
@@ -124,16 +125,15 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Create(int id)
         {
-            Request request = GetRequest(id);
+            Request request = await _dbContext.Requests.GetRequestForComplaintCreateById(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
             {
-                if (!request.CanCreateComplaint)
+                if (!request.IsApprovedOrDelivered)
                 {
                     _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
-                    return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
+                    return RedirectToAction("Index", "Home", new { errormessage = "Bokning har inte rätt status för att kunna göra en reklamation" });
                 }
-                //Get request model from db
                 return View(ComplaintModel.GetModelFromRequest(request));
             }
             return Forbid();
@@ -146,21 +146,19 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-#warning include-fest
-                var request = await _dbContext.Requests
-                    .Include(r => r.Order)
-                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(r => r.Complaints)
-                    .SingleAsync(o => o.RequestId == model.RequestId);
+                var request = await _dbContext.Requests.GetSimpleRequestById(model.RequestId);
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
                 {
-                    if (!request.CanCreateComplaint)
+                    try
                     {
-                        _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
-                        return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
+                        await _complaintService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.ComplaintType.Value);
+                        await _dbContext.SaveChangesAsync();
                     }
-                    _complaintService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.ComplaintType.Value);
-                    await _dbContext.SaveChangesAsync();
+                    catch (InvalidOperationException ex)
+                    {
+                        _logger.LogWarning("Wrong status or complaint exists when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
+                        return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                    }
                     return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
                 }
                 return Forbid();
@@ -173,7 +171,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Broker)]
         public async Task<IActionResult> Accept(int complaintId)
         {
-            var complaint = GetComplaint(complaintId);
+            var complaint = await _dbContext.Complaints.GetFullComplaintById(complaintId);
             if (ModelState.IsValid)
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
@@ -198,7 +196,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Broker)]
         public async Task<IActionResult> Dispute(DisputeComplaintModel model)
         {
-            var complaint = GetComplaint(model.ComplaintId);
+            var complaint = await _dbContext.Complaints.GetFullComplaintById(model.ComplaintId);
             if (ModelState.IsValid)
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
@@ -224,7 +222,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> AcceptDispute(AnswerDisputeComplaintModel model)
         {
-            var complaint = GetComplaint(model.ComplaintId);
+            var complaint = await _dbContext.Complaints.GetFullComplaintById(model.ComplaintId);
             if (ModelState.IsValid)
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
@@ -249,7 +247,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Refute(AnswerDisputeComplaintModel model)
         {
-            var complaint = GetComplaint(model.ComplaintId);
+            var complaint = await _dbContext.Complaints.GetFullComplaintById(model.ComplaintId);
             if (ModelState.IsValid)
             {
                 if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.Accept)).Succeeded)
@@ -274,7 +272,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {
-            var complaint = await _dbContext.Complaints.GetComplaintForEventLog(id);
+            var complaint = await _dbContext.Complaints.GetFullComplaintById(id);
             if ((await _authorizationService.AuthorizeAsync(User, complaint, Policies.View)).Succeeded)
             {
                 return PartialView("_EventLogDynamic", new EventLogModel
@@ -285,36 +283,5 @@ namespace Tolk.Web.Controllers
             }
             return Forbid();
         }
-
-        private Request GetRequest(int id)
-        {
-#warning include-fest
-            return _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Interpreter)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Ranking).ThenInclude(r => r.Region)
-                .Include(r => r.Complaints)
-                .Single(o => o.RequestId == id);
-        }
-
-        private Complaint GetComplaint(int id)
-        {
-#warning move include
-            return _dbContext.Complaints
-                .Include(r => r.CreatedByUser)
-                .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
-                .Include(r => r.AnswerDisputingUser)
-                .Include(r => r.TerminatingUser)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Request).ThenInclude(r => r.Interpreter)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Region)
-                .Single(o => o.ComplaintId == id);
-        }
-
     }
 }
