@@ -417,13 +417,13 @@ namespace Tolk.Web.Models
                 order.InterpreterLocations.Clear();
             }
             var location = RankedInterpreterLocationFirst.Value;
-            order.InterpreterLocations.Add(GetInterpreterLocation(location, 1, RankedInterpreterLocationFirstAddressModel));
+            order.InterpreterLocations.Add(RankedInterpreterLocationFirstAddressModel.GetInterpreterLocation(location, 1));
             if (RankedInterpreterLocationSecond.HasValue)
             {
-                order.InterpreterLocations.Add(GetInterpreterLocation(RankedInterpreterLocationSecond.Value, 2, RankedInterpreterLocationSecondAddressModel));
+                order.InterpreterLocations.Add(RankedInterpreterLocationSecondAddressModel.GetInterpreterLocation(RankedInterpreterLocationSecond.Value, 2));
                 if (RankedInterpreterLocationThird.HasValue)
                 {
-                    order.InterpreterLocations.Add(GetInterpreterLocation(RankedInterpreterLocationThird.Value, 3, RankedInterpreterLocationThirdAddressModel));
+                    order.InterpreterLocations.Add(RankedInterpreterLocationThirdAddressModel.GetInterpreterLocation(RankedInterpreterLocationThird.Value, 3));
                 }
             }
             if (isReplace)
@@ -653,18 +653,6 @@ namespace Tolk.Web.Models
                 RankedInterpreterLocationSecond = UserDefaultSettings.RankedInterpreterLocationSecond;
                 RankedInterpreterLocationThird = UserDefaultSettings.RankedInterpreterLocationThird;
             }
-        }
-
-        private static OrderInterpreterLocation GetInterpreterLocation(InterpreterLocation location, int rank, InterpreterLocationAddressModel addressModel)
-        {
-            return new OrderInterpreterLocation
-            {
-                InterpreterLocation = location,
-                Rank = rank,
-                Street = (location == InterpreterLocation.OffSiteDesignatedLocation || location == InterpreterLocation.OnSite) ? addressModel.LocationStreet : null,
-                City = (location == InterpreterLocation.OffSiteDesignatedLocation || location == InterpreterLocation.OnSite) ? addressModel.LocationCity : null,
-                OffSiteContactInformation = (location == InterpreterLocation.OffSiteVideo || location == InterpreterLocation.OffSitePhone) ? addressModel.OffSiteContactInformation : null,
-            };
         }
 
         #endregion

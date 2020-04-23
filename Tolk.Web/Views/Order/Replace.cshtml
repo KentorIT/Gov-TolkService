@@ -5,6 +5,7 @@
 @{
     ViewData["Title"] = "Ersätt avbokat uppdrag";
     var competenceInfo = Model.SpecificCompetenceLevelRequired ? "Krav på kompetensnivå tolk" : "Önskemål om kompetensnivå tolk";
+    var customerUnitItems = SelectListService.ActiveCustomerUnitsForUser();
 }
 <section aria-label="@ViewData["Title"]">
     <div class="row">
@@ -166,8 +167,6 @@
                     </div>
                     <div id="interpreterLocationValidator" class="d-none text-danger body"></div>
                 </div>
-                <input asp-for="AssignmentType" type="hidden" />
-                <input asp-for="RegionId" type="hidden" />
                 <div class="row">
                     <div class="col-sm-4">
                         <display-entry asp-for="ReplacedTimeRange" />
@@ -179,7 +178,7 @@
                 </div>
                 <div class="row">
                     <div class="col-sm-4">
-                        @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
+                        @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
                     </div>
                     <div class="col-sm-8">
                         <form-entry asp-for="Description" />
@@ -194,7 +193,10 @@
                     </div>
                     <div class="col-sm-4">
                         <form-entry asp-for="UnitName" />
-                        <display-entry asp-for="CustomerUnitName" />
+                        @if (customerUnitItems != null && customerUnitItems.Any())
+                        {
+                            <display-entry asp-for="CustomerUnitName" />
+                        }
                     </div>
                     <div class="col-sm-4">
                         <form-entry asp-for="CustomerReferenceNumber" />

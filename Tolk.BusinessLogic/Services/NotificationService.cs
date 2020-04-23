@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -230,36 +231,34 @@ namespace Tolk.BusinessLogic.Services
                 $"{oh.ChangeOrderType.GetDescription()} - Nytt värde: {newValue}\n";
         }
 
-        public void OrderReplacementCreated(Order order)
+        public async Task OrderReplacementCreated(int replacedRequestId, int newRequestId)
         {
-            NullCheckHelper.ArgumentCheckNull(order, nameof(OrderReplacementCreated), nameof(NotificationService));
-            Request oldRequest = order.Requests.SingleOrDefault(r => r.Status == RequestStatus.CancelledByCreator);
+            Request oldRequest = await _dbContext.Requests.GetRequestById(replacedRequestId);
 
-            Order replacementOrder = order.ReplacedByOrder;
-            Request replacementRequest = replacementOrder.Requests.Single();
+            Request replacementRequest = await _dbContext.Requests.GetRequestById(newRequestId);
             var email = GetBrokerNotificationSettings(replacementRequest.Ranking.BrokerId, NotificationType.RequestReplacementCreated, NotificationChannel.Email);
             if (email != null)
             {
-                var bodyPlain = $"\tOrginal Start: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                   $"\tOrginal Slut: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                   $"\tErsättning Start: {replacementOrder.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                   $"\tErsättning Slut: {replacementOrder.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                var bodyPlain = $"\tOrginal Start: {oldRequest.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                   $"\tOrginal Slut: {oldRequest.Order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                   $"\tErsättning Start: {replacementRequest.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                   $"\tErsättning Slut: {replacementRequest.Order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
                    $"\tSvara senast: {replacementRequest.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}\n\n\n" +
                    $"Gå till ersättningsuppdrag: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, replacementRequest.RequestId)}\n" +
                    $"Gå till ursprungligt uppdrag: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, oldRequest.RequestId)}";
                 var bodyHtml = $@"
 <ul>
-<li>Orginal Start: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
-<li>Orginal Slut: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
-<li>Ersättning Start: {replacementOrder.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
-<li>Ersättning Slut: {replacementOrder.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Orginal Start: {oldRequest.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Orginal Slut: {oldRequest.Order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Ersättning Start: {replacementRequest.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Ersättning Slut: {replacementRequest.Order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
 <li>Svara senast: {replacementRequest.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
 </ul>
 <div>{GoToRequestButton(replacementRequest.RequestId, textOverride: "Gå till ersättningsuppdrag", autoBreakLines: false)}</div>
 <div>{GoToRequestButton(oldRequest.RequestId, textOverride: "Gå till ursprungligt uppdrag", autoBreakLines: false)}</div>";
                 CreateEmail(
                      email.ContactInformation,
-                     $"Bokning {order.OrderNumber} har avbokats, med ersättningsuppdrag: {replacementOrder.OrderNumber}",
+                     $"Bokning {oldRequest.Order.OrderNumber} har avbokats, med ersättningsuppdrag: {replacementRequest.Order.OrderNumber}",
                      bodyPlain,
                      bodyHtml,
                      true);
@@ -270,8 +269,8 @@ namespace Tolk.BusinessLogic.Services
                 CreateWebHookCall(
                     new RequestReplacementCreatedModel
                     {
-                        OriginalRequest = GetRequestModel(oldRequest),
-                        ReplacementRequest = GetRequestModel(GetRequest(replacementRequest.RequestId))
+                        OriginalRequest = await GetRequestModel(oldRequest),
+                        ReplacementRequest = await GetRequestModel(GetRequest(replacementRequest.RequestId))
                     },
                    webhook.ContactInformation,
                    NotificationType.RequestReplacementCreated,
@@ -311,7 +310,7 @@ namespace Tolk.BusinessLogic.Services
             status == OrderStatus.ResponseNotAnsweredByCreator ? $"Tolktillsättning för sammanhållna bokningsförfrågan {orderNumber} besvarades inte i tid. Den sammanhållna bokningsförfrågan är nu avslutad." :
             $"Ingen förmedling kunde tillsätta en tolk för den sammanhållna bokningsförfrågan {orderNumber}. Den sammanhållna bokningsförfrågan är nu avslutad.";
 
-        public void RequestCreated(Request request)
+        public async Task RequestCreated(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCreated), nameof(NotificationService));
             var order = request.Order;
@@ -348,7 +347,7 @@ namespace Tolk.BusinessLogic.Services
             if (webhook != null)
             {
                 CreateWebHookCall(
-                    GetRequestModel(request),
+                    await GetRequestModel(request),
                     webhook.ContactInformation,
                     NotificationType.RequestCreated,
                     webhook.RecipientUserId
@@ -1473,10 +1472,9 @@ Sammanställning:
             return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestGroupViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestGroupId), textOverride ?? "Till bokning");
         }
 
-        private static RequestModel GetRequestModel(Request request)
+        private async Task<RequestModel> GetRequestModel(Request request)
         {
-            var order = request.Order;
-
+            var order = await _dbContext.Orders.GetFullOrderById(request.OrderId);
             return new RequestModel
             {
                 CreatedAt = request.CreatedAt,
@@ -1498,7 +1496,7 @@ Sammanställning:
                     UseSelfInvoicingInterpreter = order.CustomerOrganisation.UseSelfInvoicingInterpreter
                 },
                 //D2 pads any single digit with a zero 1 -> "01"
-                Region = order.Region.RegionId.ToSwedishString("D2"),
+                Region = order.RegionId.ToSwedishString("D2"),
                 Language = new LanguageModel
                 {
                     Key = request.Order.Language?.ISO_639_Code,
@@ -1507,45 +1505,38 @@ Sammanställning:
                 ExpiresAt = request.ExpiresAt,
                 StartAt = order.StartAt,
                 EndAt = order.EndAt,
-                Locations = order.InterpreterLocations.Select(l => new LocationModel
+                Locations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(order.OrderId).Select(l => new LocationModel
                 {
                     OffsiteContactInformation = l.OffSiteContactInformation,
                     Street = l.Street,
                     City = l.City,
                     Rank = l.Rank,
                     Key = EnumHelper.GetCustomName(l.InterpreterLocation)
-                }),
-                CompetenceLevels = order.CompetenceRequirements.Select(c => new CompetenceModel
+                }).ToListAsync(),
+                CompetenceLevels = await _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(order.OrderId).Select(c => new CompetenceModel
                 {
                     Key = EnumHelper.GetCustomName(c.CompetenceLevel),
                     Rank = c.Rank ?? 0
-                }),
+                }).ToListAsync(),
                 AllowMoreThanTwoHoursTravelTime = order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || order.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 CreatorIsInterpreterUser = order.CreatorIsInterpreterUser,
                 AssignmentType = EnumHelper.GetCustomName(order.AssignmentType),
                 Description = order.Description,
                 CompetenceLevelsAreRequired = order.SpecificCompetenceLevelRequired,
                 MealBreakIncluded = order.MealBreakIncluded,
-                Requirements = order.Requirements.Select(r => new RequirementModel
+                Requirements = await _dbContext.OrderRequirements.GetRequirementsForOrder(order.OrderId).Select(r => new RequirementModel
                 {
                     Description = r.Description,
                     IsRequired = r.IsRequired,
                     RequirementId = r.OrderRequirementId,
                     RequirementType = EnumHelper.GetCustomName(r.RequirementType)
-                }),
-                Attachments = order.Attachments.Select(a => new AttachmentInformationModel
+                }).ToListAsync(),
+                Attachments = await _dbContext.Attachments.GetAttachmentsForOrderAndGroup(order.OrderId, order.OrderGroupId).Select(a => new AttachmentInformationModel
                 {
                     AttachmentId = a.AttachmentId,
-                    FileName = a.Attachment.FileName
-                })
-                .Union(order.Group?.Attachments
-                .Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == order.OrderId))
-                .Select(a => new AttachmentInformationModel
-                {
-                    AttachmentId = a.AttachmentId,
-                    FileName = a.Attachment.FileName
-                }) ?? Enumerable.Empty<AttachmentInformationModel>()).ToList(),
-                PriceInformation = order.PriceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee)
+                    FileName = a.FileName
+                }).ToListAsync(),
+                PriceInformation = (await _dbContext.OrderPriceRows.GetPriceRowsForOrder(order.OrderId).ToListAsync()).GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee)
             };
         }
 

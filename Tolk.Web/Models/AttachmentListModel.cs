@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
 
@@ -32,6 +33,22 @@ namespace Tolk.Web.Models
                 AllowUpload = false,
                 Title = title,
                 DisplayFiles = await attachments
+                    .Select(a => new FileModel
+                    {
+                        Id = a.AttachmentId,
+                        FileName = a.FileName,
+                        Size = a.Blob.Length
+                    }).ToListAsync()
+            };
+        internal static async Task<AttachmentListModel> GetEditableModelFromList(IQueryable<Attachment> attachments, string title, string description)
+            => new AttachmentListModel
+            {
+                AllowDelete = true,
+                AllowDownload = true,
+                AllowUpload = true,
+                Title = title,
+                Description = description,
+                Files = await attachments
                     .Select(a => new FileModel
                     {
                         Id = a.AttachmentId,

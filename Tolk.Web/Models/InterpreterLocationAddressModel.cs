@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 using E = Tolk.BusinessLogic.Enums;
@@ -78,6 +79,19 @@ namespace Tolk.Web.Models
         public string Address => InterpreterLocation.HasValue ? !IsOffsite ? $"{LocationStreet}, {LocationCity}" : string.Empty : string.Empty;
 
         private bool IsOffsite => InterpreterLocation.HasValue ? InterpreterLocation.Value == E.InterpreterLocation.OffSitePhone || InterpreterLocation.Value == E.InterpreterLocation.OffSiteVideo : false;
+
+        internal  OrderInterpreterLocation GetInterpreterLocation(E.InterpreterLocation location, int rank)
+        {
+            return new OrderInterpreterLocation
+            {
+                InterpreterLocation = location,
+                Rank = rank,
+                Street = (location == E.InterpreterLocation.OffSiteDesignatedLocation || location == E.InterpreterLocation.OnSite) ? LocationStreet : null,
+                City = (location == E.InterpreterLocation.OffSiteDesignatedLocation || location == E.InterpreterLocation.OnSite) ? LocationCity : null,
+                OffSiteContactInformation = (location == E.InterpreterLocation.OffSiteVideo || location == E.InterpreterLocation.OffSitePhone) ? OffSiteContactInformation : null,
+            };
+        }
+
 
     }
 }

@@ -118,6 +118,8 @@ namespace Tolk.BusinessLogic.Utilities
                         a.OrderGroups.Any(g => g.OrderGroupId == orderGroupId) &&
                             !a.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == id) ||
                         a.Orders.Any(o => o.OrderId == id));
+        public static IQueryable<Attachment> GetAttachmentsForOrder(this IQueryable<Attachment> attachments, int id)
+            => attachments.Where(a => a.Orders.Any(o => o.OrderId == id));
 
         public static IQueryable<OrderAttachment> GetAttachmentsForOrder(this IQueryable<OrderAttachment> attachments, int id)
             => attachments.Include(a => a.Attachment).Where(a => a.Attachment.Orders.Any(o => o.OrderId == id));

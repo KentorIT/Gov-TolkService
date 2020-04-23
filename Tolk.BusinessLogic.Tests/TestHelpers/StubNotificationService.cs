@@ -1,4 +1,5 @@
-﻿using Tolk.BusinessLogic.Entities;
+﻿using System.Threading.Tasks;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
 
@@ -34,7 +35,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void OrderTerminated(Order order) { }
 
-        public void OrderReplacementCreated(Order order) { }
+        public async Task OrderReplacementCreated(int replacedRequestId, int newRequestId) { }
 
         public void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated) { }
 
@@ -60,7 +61,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestCompleted(Request request) { }
 
-        public void RequestCreated(Request request) { }
+        public async Task RequestCreated(Request request) { }
 
         public void RequestCreatedWithoutExpiry(Request request) { }
 

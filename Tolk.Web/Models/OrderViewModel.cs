@@ -333,8 +333,6 @@ namespace Tolk.Web.Models
         {
             bool useRankedInterpreterLocation = order.InterpreterLocations.Count > 1;
 
-            OrderCompetenceRequirement competenceFirst = null;
-            OrderCompetenceRequirement competenceSecond = null;
             //Can get this from list on order since this is an order that has yet to be saved to database.
             var competenceRequirements = order.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
             {
@@ -343,8 +341,8 @@ namespace Tolk.Web.Models
             }).ToList();
 
             competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
-            competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
-            competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
+            OrderCompetenceRequirement competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
+            OrderCompetenceRequirement competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
 
             return new OrderViewModel
             {

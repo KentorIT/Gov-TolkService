@@ -33,28 +33,12 @@ namespace Tolk.Web.Services
 
             //Locations
             var interpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(id).ToListAsync();
-
-            model.RankedInterpreterLocationFirst = interpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation;
-            model.RankedInterpreterLocationSecond = interpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation;
-            model.RankedInterpreterLocationThird = interpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation;
-            model.RankedInterpreterLocationFirstAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.Single(l => l.Rank == 1));
-            model.RankedInterpreterLocationSecondAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.SingleOrDefault(l => l.Rank == 2));
-            model.RankedInterpreterLocationThirdAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.SingleOrDefault(l => l.Rank == 3));
-
-            //Competences
-            List<CompetenceAndSpecialistLevel> competenceRequirements = await _dbContext.OrderCompetenceRequirements
-                .GetOrderedCompetenceRequirementsForOrder(id)
-                .Select(r => r.CompetenceLevel)
-                .ToListAsync();
-
-            model.RequestedCompetenceLevelFirst = competenceRequirements.Any() ? (CompetenceAndSpecialistLevel?)competenceRequirements.FirstOrDefault() : null;
-            model.RequestedCompetenceLevelSecond = competenceRequirements.Count > 1 ? (CompetenceAndSpecialistLevel?)competenceRequirements[1] : null;
+            await GetOrderBaseLists(model, interpreterLocations, id);
 
             model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForOrderAndGroup(id, model.OrderGroupId), "Bifogade filer från myndighet");
             model.PreviousRequests = await BrokerListModel.GetFromList(_dbContext.Requests.GetLostRequestsForOrder(id));
             model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.OrderPriceRows.GetPriceRowsForOrder(id).ToListAsync(), PriceInformationType.Order, model.MealbreakIncluded);
 
-            model.OrderRequirements = await OrderRequirementModel.GetFromList(_dbContext.OrderRequirements.GetRequirementsForOrder(id));
             model.Dialect = model.OrderRequirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.RequirementDescription;
             if (model.RequestId.HasValue)
             {
@@ -89,6 +73,41 @@ namespace Tolk.Web.Services
                     model.DisplayOrderChangeText = await GetOrderChangeTextToDisplay(model.ActiveRequest.BrokerId, interpreterLocations, model.InterpreterLocationAnswer, orderChanges, model.Description, model.UnitName, model.InvoiceReference, model.CustomerReferenceNumber);
                 }
             }
+            return model;
+        }
+
+        internal async Task<ReplaceOrderModel> AddInformationFromListsToModel(ReplaceOrderModel model)
+        {
+            int id = model.ReplacingOrderId;
+            //LISTS
+            await GetOrderBaseLists(model, await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(id).ToListAsync(),  id);
+
+            model.AttachmentListModel = await AttachmentListModel.GetEditableModelFromList(_dbContext.Attachments.GetAttachmentsForOrder(model.ReplacingOrderId), string.Empty, "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk");
+            model.Files = model.AttachmentListModel.Files.Any() ? model.AttachmentListModel.Files : null;
+
+            return model;
+        }
+
+        private async Task<OrderBaseModel> GetOrderBaseLists(OrderBaseModel model, IEnumerable<OrderInterpreterLocation> interpreterLocations, int orderId)
+        {
+            //Locations
+
+            model.RankedInterpreterLocationFirst = interpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation;
+            model.RankedInterpreterLocationSecond = interpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation;
+            model.RankedInterpreterLocationThird = interpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation;
+            model.RankedInterpreterLocationFirstAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.Single(l => l.Rank == 1));
+            model.RankedInterpreterLocationSecondAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.SingleOrDefault(l => l.Rank == 2));
+            model.RankedInterpreterLocationThirdAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.SingleOrDefault(l => l.Rank == 3));
+
+            //Competences
+            List<CompetenceAndSpecialistLevel> competenceRequirements = await _dbContext.OrderCompetenceRequirements
+                .GetOrderedCompetenceRequirementsForOrder(orderId)
+                .Select(r => r.CompetenceLevel)
+                .ToListAsync();
+
+            model.RequestedCompetenceLevelFirst = competenceRequirements.Any() ? (CompetenceAndSpecialistLevel?)competenceRequirements.FirstOrDefault() : null;
+            model.RequestedCompetenceLevelSecond = competenceRequirements.Count > 1 ? (CompetenceAndSpecialistLevel?)competenceRequirements[1] : null;
+            model.OrderRequirements = await OrderRequirementModel.GetFromList(_dbContext.OrderRequirements.GetRequirementsForOrder(orderId));
             return model;
         }
 

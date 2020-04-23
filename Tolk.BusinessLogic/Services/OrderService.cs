@@ -279,7 +279,7 @@ namespace Tolk.BusinessLogic.Services
                         request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
                     if (notify)
                     {
-                        _notificationService.RequestCreated(newRequest);
+                        await _notificationService.RequestCreated(newRequest);
                     }
                 }
                 else
@@ -309,38 +309,42 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(ReplaceOrder), nameof(OrderService));
             NullCheckHelper.ArgumentCheckNull(replacementOrder, nameof(ReplaceOrder), nameof(OrderService));
-            var request = order.ActiveRequest;
+            var request = await _tolkDbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
             if (request == null)
             {
                 throw new InvalidOperationException($"Order {order.OrderId} has no active requests that can be cancelled");
             }
             var replacingRequest = new Request(request, order.StartAt, _clock.SwedenNow);
-            replacementOrder.Requests.Add(replacingRequest);
             await _tolkDbContext.AddAsync(replacementOrder);
+            replacingRequest.Order = replacementOrder;
+            await _tolkDbContext.AddAsync(replacingRequest);
+#warning Testa detta
             await CancelOrder(order, userId, impersonatorId, cancelMessage, true);
             replacementOrder.CreatedAt = _clock.SwedenNow;
             replacementOrder.CreatedBy = userId;
             replacementOrder.ImpersonatingCreator = impersonatorId;
-            replacementOrder.Requirements = order.Requirements.Select(r => new OrderRequirement
+#warning Testa detta
+            replacementOrder.Requirements = await _tolkDbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId).Select(a => new OrderRequirement
             {
-                Description = r.Description,
-                IsRequired = r.IsRequired,
-                RequirementType = r.RequirementType,
-                RequirementAnswers = r.RequirementAnswers
-                .Where(a => a.RequestId == request.RequestId)
-                .Select(a => new OrderRequirementRequestAnswer
+                Description = a.OrderRequirement.Description,
+                IsRequired = a.OrderRequirement.IsRequired,
+                RequirementType = a.OrderRequirement.RequirementType,
+                RequirementAnswers = new List<OrderRequirementRequestAnswer>
                 {
-                    Answer = a.Answer,
-                    CanSatisfyRequirement = a.CanSatisfyRequirement,
-                    RequestId = replacingRequest.RequestId
-                }).ToList(),
-            }).ToList();
+                    new OrderRequirementRequestAnswer
+                    {
+                        Answer = a.Answer,
+                        CanSatisfyRequirement = a.CanSatisfyRequirement,
+                        RequestId = replacingRequest.RequestId
+                    }
+                }
+            }).ToListAsync();
 
             //Generate new price rows from current times, might be subject to change!!!
             CreatePriceInformation(replacementOrder);
             await _tolkDbContext.SaveChangesAsync();
 
-            _notificationService.OrderReplacementCreated(order);
+            await _notificationService.OrderReplacementCreated(request.RequestId, replacingRequest.RequestId);
             _logger.LogInformation("Order {orderId} replaced by customer {userId}.", order.OrderId, userId);
         }
 

@@ -67,6 +67,7 @@ namespace Tolk.BusinessLogic.Services
             //maybe should be moved to AcceptRequest depending on ordergroup requesting each...
             request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
+            request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(Accept));
             AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel), latestAnswerTimeForCustomer: latestAnswerTimeForCustomer);
             //Create notification

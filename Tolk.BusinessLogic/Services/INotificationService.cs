@@ -1,4 +1,5 @@
-﻿using Tolk.BusinessLogic.Entities;
+﻿using System.Threading.Tasks;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Services
@@ -17,7 +18,7 @@ namespace Tolk.BusinessLogic.Services
         void OrderContactPersonChanged(Order order, AspNetUser previousContactUser);
         void OrderGroupCancelledByCustomer(RequestGroup requestGroup);
         void OrderTerminated(Order order);
-        void OrderReplacementCreated(Order order);
+        Task OrderReplacementCreated(int replacedRequestId, int newRequestId);
         void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup);
         void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup);
         void RemindUnhandledRequest(Request request);
@@ -29,7 +30,7 @@ namespace Tolk.BusinessLogic.Services
         void RequestCancelledByBroker(Request request);
         void RequestChangedInterpreter(Request request);
         void RequestChangedInterpreterAccepted(Request request, InterpereterChangeAcceptOrigin changeOrigin = InterpereterChangeAcceptOrigin.User);
-        void RequestCreated(Request request);
+        Task RequestCreated(Request request);
         void RequestCreatedWithoutExpiry(Request request);
         void RequestDeclinedByBroker(Request request);
         void RequestGroupAccepted(RequestGroup requestGroup);

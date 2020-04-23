@@ -136,7 +136,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-#warning Flytta hela kollen till servicen, skicka bara orderStart, och returnera bool
+#warning Flytta hela kollen till servicen
         private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart)
         {
             var noOfDays = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(_clock.SwedenNow.DateTime, orderStart.DateTime);
@@ -146,32 +146,15 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)
         {
-            var order = GetOrder(replacingOrderId);
+            Order order = await _dbContext.Orders.GetFullOrderById(replacingOrderId);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
             {
-                if (order.ActiveRequest.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
+#warning requesten behöver bara Order och Ranking.Broker, egentligen
+                var request = await _dbContext.Requests.GetActiveRequestByOrderId(replacingOrderId);
+                if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
                 {
-#warning Gör en egen modell för Replace, för den behöver inte allt från order model. Det tar bort behovet av en hel del onödiga hiddenfält också...
-                    ReplaceOrderModel model = _mapper.Map<ReplaceOrderModel>(OrderModel.GetModelFromOrder(order));
-                    model.ReplacedTimeRange = new TimeRange
-                    {
-                        StartDateTime = order.StartAt,
-                        EndDateTime = order.EndAt
-                    };
-                    model.OrderId = null;
-                    model.ReplacingOrderNumber = order.OrderNumber;
-                    model.ReplacingOrderId = replacingOrderId;
-                    model.CancelMessage = cancelMessage;
-                    //Set the Files-list and the used FileGroupKey
-                    List<FileModel> files = order.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }).ToList();
-                    model.Files = files.Any() ? files : null;
-                    return View(model);
+                    return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name)));
                 }
                 else
                 {
@@ -186,30 +169,33 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(ReplaceOrderModel model)
         {
+#warning Gör en egen SaveReplaceOrderModel, som BARA innehåller det den behöver...
             if (ModelState.IsValid)
             {
-                Order order = GetOrder(model.ReplacingOrderId.Value);
+                Order order = await _dbContext.Orders.GetFullOrderById(model.ReplacingOrderId);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
                 {
-                    if (order.ActiveRequest.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
+#warning requesten behöver bara Order, egentligen
+                    var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
+                    if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
                     {
                         using (var trn = await _dbContext.Database.BeginTransactionAsync())
                         {
+                            // add a few lists, used when copying in constructor
+                            order.CompetenceRequirements = await _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(order.OrderId).ToListAsync();
+                            order.InterpreterLocations = new List<OrderInterpreterLocation>();
                             Order replacementOrder = new Order(order);
-                            model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value, isReplace: true);
+                            model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value);
+#warning Det är i denna som det finns en massa saker som behöver kollas!!!
                             await _orderService.ReplaceOrder(order, replacementOrder, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
                             await _dbContext.SaveChangesAsync();
                             trn.Commit();
                             return RedirectToAction("Index", "Home", new { message = "Ersättningsuppdrag är skickat" });
                         }
                     }
-                    else
-                    {
-                        return RedirectToAction(nameof(View), new { id = order.OrderId, errorMessage = "Det gick inte att skapa ett ersättningsuppdrag för uppdraget, så ingen avbokning kunde heller ske" });
-                    }
                 }
             }
-            return View(model);
+            return RedirectToAction(nameof(View), new { id = model.ReplacingOrderId, errorMessage = "Det gick inte att skapa ett ersättningsuppdrag för uppdraget, så ingen avbokning kunde heller ske" });
         }
 
         [Authorize(Policy = Policies.Customer)]
