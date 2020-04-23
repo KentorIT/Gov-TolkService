@@ -70,7 +70,7 @@ namespace Tolk.Web.Api.Controllers
 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId.Value);
 
-                var request = await _dbContext.Requests.GetRequestsForAcceptWithBrokerAndOrderNumber(model.OrderNumber, User.TryGetBrokerId().Value);
+                var request = await _dbContext.Requests.GetActiveRequestForApiWithBrokerAndOrderNumber(model.OrderNumber, User.TryGetBrokerId().Value);
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);
@@ -283,7 +283,7 @@ namespace Tolk.Web.Api.Controllers
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
 
-                var request = await _dbContext.Requests.GetRequestsForAcceptWithBrokerAndOrderNumber(model.OrderNumber, User.TryGetBrokerId().Value);
+                var request = await _dbContext.Requests.GetRequestsForChangeInterpreterWithBrokerAndOrderNumber(model.OrderNumber, User.TryGetBrokerId().Value);
 
                 if (request == null)
                 {
@@ -368,7 +368,7 @@ namespace Tolk.Web.Api.Controllers
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
 
-                var request = await _dbContext.Requests.GetRequestsForAcceptWithBrokerAndOrderNumber(model.OrderNumber, User.TryGetBrokerId().Value);
+                var request = await _dbContext.Requests.GetActiveRequestForApiWithBrokerAndOrderNumber(model.OrderNumber, User.TryGetBrokerId().Value);
 
                 if (request == null)
                 {

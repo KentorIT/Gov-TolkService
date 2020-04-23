@@ -140,13 +140,13 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Change(int id)
         {
-            var request = await _dbContext.Requests.GetRequestById(id);
+            var request = await _dbContext.Requests.GetRequestsForAcceptById(id);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanChangeInterpreter(_clock.SwedenNow))
             {
                 RequestModel model = await GetModel(request);
                 model.Status = RequestStatus.AcceptedNewInterpreterAppointed;
                 model.OldInterpreterId = request.InterpreterBrokerId;
-                model.OtherInterpreterId = _requestService.GetOtherInterpreterIdForSameOccasion(request);
+                model.OtherInterpreterId = await _requestService.GetOtherInterpreterIdForSameOccasion(request);
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 model.LatestAnswerTimeForCustomer = null;

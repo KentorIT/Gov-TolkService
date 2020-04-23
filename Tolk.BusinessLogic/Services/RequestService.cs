@@ -301,7 +301,8 @@ namespace Tolk.BusinessLogic.Services
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(ChangeInterpreter));
             request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
-            if (interpreter.InterpreterBrokerId == GetOtherInterpreterIdForSameOccasion(request) && !(interpreter.Interpreter?.IsProtected ?? false))
+            request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
+            if (interpreter.InterpreterBrokerId == await GetOtherInterpreterIdForSameOccasion(request) && !(interpreter.Interpreter?.IsProtected ?? false))
             {
                 throw new InvalidOperationException("Det går inte att tillsätta samma tolk som redan är tillsatt som extra tolk för samma tillfälle.");
             }
@@ -311,7 +312,7 @@ namespace Tolk.BusinessLogic.Services
                 Order = request.Order,
                 Status = RequestStatus.AcceptedNewInterpreterAppointed
             };
-            bool noNeedForUserAccept = NoNeedForUserAccept(request, expectedTravelCosts);
+            bool noNeedForUserAccept = await NoNeedForUserAccept(request, expectedTravelCosts);
             request.Order.Requests.Add(newRequest);
             VerificationResult? verificationResult = null;
             if (competenceLevel != CompetenceAndSpecialistLevel.OtherInterpreter && _tolkBaseOptions.Tellus.IsActivated)
@@ -596,31 +597,39 @@ namespace Tolk.BusinessLogic.Services
             return verificationResult;
         }
 
-        public int? GetOtherInterpreterIdForSameOccasion(Request request)
+        public async Task<int?> GetOtherInterpreterIdForSameOccasion(Request request)
         {
-#warning get_the_requests_for_IsExtraInterpreterForOrder/ExtraInterpreterOrder_if_needed
             NullCheckHelper.ArgumentCheckNull(request, nameof(GetOtherInterpreterIdForSameOccasion), nameof(RequestService));
-            return request.Order.IsExtraInterpreterForOrder != null ? request.Order.IsExtraInterpreterForOrder.Requests.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId :
-                 request.Order.ExtraInterpreterOrder?.Requests.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
+            List<Request> requests = null;
+            if (request.Order.IsExtraInterpreterForOrder != null)
+            {
+                requests = await _tolkDbContext.Requests.GetRequestsForOrder(request.Order.IsExtraInterpreterForOrder.OrderId).ToListAsync();
+            }
+            else if (request.Order.ExtraInterpreterOrder != null)
+            {
+                requests = await _tolkDbContext.Requests.GetRequestsForOrder(request.Order.ExtraInterpreterOrder.OrderId).ToListAsync();
+            }
+            return requests?.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
         }
 
-        private static bool NoNeedForUserAccept(Request request, decimal? expectedTravelCosts)
+        private async Task<bool> NoNeedForUserAccept(Request request, decimal? expectedTravelCosts)
         {
-            if (!expectedTravelCosts.HasValue || request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)
+            if (!expectedTravelCosts.HasValue || expectedTravelCosts == 0 || request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)
             {
                 return true;
             }
+            var requests = await _tolkDbContext.Requests.GetRequestsForOrder(request.OrderId).ToListAsync();
+            var requestsToCheck = requests.Where(req => (req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced)
+                && req.AnswerProcessedAt.HasValue && req.RankingId == request.RankingId).ToList();
+            if (!requestsToCheck.Any())
+            {
+                return false;
+            }
+            List<decimal?> travelcosts = new List<decimal?>();
+            requestsToCheck.ForEach(r => travelcosts.Add(_tolkDbContext.RequestPriceRows.GetPriceRowsForRequest(r.RequestId).ToList().Where(pr => pr.PriceRowType == PriceRowType.TravelCost).Sum(pr => pr.Price)));
 
-#warning get_the_requests_here_if_needed
-            return true;
-           
-            decimal largestApprovedAmount = request.Order.Requests
-                .Where(req => (req.Status == RequestStatus.Approved || req.Status == RequestStatus.InterpreterReplaced) && req.AnswerProcessedAt.HasValue && req.RankingId == request.RankingId)
-                .Select(r => r.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.TravelCost).Sum(pr => pr.Price) as decimal?)
-                .Max() ?? 0;
-            return largestApprovedAmount >= expectedTravelCosts.Value;
+            return (travelcosts.Max() ?? 0) >= expectedTravelCosts;
         }
-
         private async Task SendErrorMail(string methodname, Exception ex)
         {
             await _emailService.SendErrorEmail(nameof(RequestService), methodname, ex);
