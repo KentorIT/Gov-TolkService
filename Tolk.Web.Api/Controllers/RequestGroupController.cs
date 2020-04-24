@@ -80,6 +80,7 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requests)
                     .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.InterpreterLocations)
                     .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
+                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requirements)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
@@ -88,6 +89,7 @@ namespace Tolk.Web.Api.Controllers
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Language)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.ContactPersonUser)
+                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
                     .SingleOrDefaultAsync(r =>
                         r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber &&
                         brokerId == r.Ranking.BrokerId &&
@@ -106,7 +108,7 @@ namespace Tolk.Web.Api.Controllers
                 var now = _timeService.SwedenNow;
                 if (requestGroup.Status == RequestStatus.Created)
                 {
-                    _requestService.AcknowledgeGroup(requestGroup, now, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
+                    await _requestService.AcknowledgeGroup(requestGroup, now, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
                 }
                 try
                 {
@@ -165,7 +167,7 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);
                 }
-                _requestService.AcknowledgeGroup(requestGroup, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
+                await _requestService.AcknowledgeGroup(requestGroup, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
                 await _dbContext.SaveChangesAsync();
                 //End of service
                 return Ok(new ResponseBase());

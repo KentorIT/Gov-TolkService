@@ -170,7 +170,7 @@ namespace Tolk.BusinessLogic.Entities
             Complaints.Add(complaint);
         }
 
-        public override void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
+        internal override void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
         {
             if (Status != RequestStatus.Created)
             {
@@ -190,7 +190,7 @@ namespace Tolk.BusinessLogic.Entities
             Received(receiveTime, userId, impersonatorId);
         }
 
-        public override void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
+        internal override void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
             if (!IsAccepted)
             {
@@ -492,7 +492,7 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        public override void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
+        internal override void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
             if (!CanDeny)
             {
@@ -502,7 +502,7 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.Requested;
         }
 
-        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false, bool isCancelledFromGroup = false, List<MealBreak> mealbreaks = null, PriceInformation pi = null)
+        internal void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false, bool isCancelledFromGroup = false, List<MealBreak> mealbreaks = null, PriceInformation pi = null)
         {
             if ((!isCancelledFromGroup && !CanCancel) || (isCancelledFromGroup && !CanCancelFromGroup))
             {

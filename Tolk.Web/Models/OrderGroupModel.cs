@@ -49,8 +49,7 @@ namespace Tolk.Web.Models
         public string ExtraInterpreterExpectedTravelCostInfo { get; set; }
 
         public bool AllowCancellation { get; set; } = false;
-        public bool AllowPrint { get; set; } = false;
-        public bool AllowDenial { get; set; } = false;
+
         public bool AllowUpdateExpiry { get; set; } = false;
 
         [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker i närtid, måste sista svarstid anges.")]

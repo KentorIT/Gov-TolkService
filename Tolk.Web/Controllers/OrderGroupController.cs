@@ -12,6 +12,7 @@ using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Controllers
 {
@@ -45,10 +46,12 @@ namespace Tolk.Web.Controllers
             //Get order model from db
             OrderGroup orderGroup = await GetOrderGroup(id);
 
-            var activeRequestGroup = orderGroup.ActiveRequestToBeProcessedForCustomer ?? orderGroup.RequestGroups.OrderBy(r => r.RequestGroupId).Last();
-
             if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
             {
+
+                var allowEdit = (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
+                var activeRequestGroup = orderGroup.RequestGroups.OrderBy(r => r.RequestGroupId).Last();
+
                 var model = OrderGroupModel.GetModelFromOrderGroup(orderGroup, activeRequestGroup);
                 model.CustomerInformationModel = new CustomerInformationModel
                 {
@@ -65,9 +68,9 @@ namespace Tolk.Web.Controllers
                 model.ActiveRequestGroup = RequestGroupViewModel.GetModelFromRequestGroup(activeRequestGroup);
                 model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;
                 model.AllowCancellation = orderGroup.AllowCancellation && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Cancel)).Succeeded;
-                model.AllowNoAnswerConfirmation = orderGroup.AllowNoAnswerConfirmation && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
-                model.AllowResponseNotAnsweredConfirmation = orderGroup.AllowResponseNotAnsweredConfirmation && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
-                model.AllowUpdateExpiry = orderGroup.AllowUpdateExpiry && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
+                model.AllowNoAnswerConfirmation = orderGroup.AllowNoAnswerConfirmation && allowEdit;
+                model.AllowResponseNotAnsweredConfirmation = orderGroup.AllowResponseNotAnsweredConfirmation && allowEdit;
+                model.AllowUpdateExpiry = orderGroup.AllowUpdateExpiry && allowEdit;
                 return View(model);
             }
             return Forbid();
@@ -78,12 +81,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Approve(ProcessRequestGroupModel model)
         {
-#warning include-fest
-            var requestGroup = await _dbContext.RequestGroups
-                .Include(r => r.Requests).ThenInclude(r => r.Order)
-                .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
-                .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
-                .SingleAsync(r => r.RequestGroupId == model.RequestGroupId);
+            var requestGroup = await _dbContext.RequestGroups.GetRequestGroupById(model.RequestGroupId);
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup.OrderGroup, Policies.Accept)).Succeeded)
             {
@@ -92,7 +90,7 @@ namespace Tolk.Web.Controllers
                     _logger.LogWarning("Wrong status when trying to Approve request group. Status: {requestGroup.Status}, RequestGroupId: {requestGroup.RequestGroupId}", requestGroup.Status, requestGroup.RequestGroupId);
                     return RedirectToAction(nameof(View), new { id = requestGroup.OrderGroupId });
                 }
-                _orderService.ApproveRequestGroupAnswer(requestGroup, User.GetUserId(), User.TryGetImpersonatorId());
+                await _orderService.ApproveRequestGroupAnswer(requestGroup, User.GetUserId(), User.TryGetImpersonatorId());
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = requestGroup.OrderGroupId });
             }
@@ -104,15 +102,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Cancel(CancelOrderGroupModel model)
         {
-#warning include-fest
-            var orderGroup = await _dbContext.OrderGroups
-                .Include(o => o.CustomerOrganisation)
-                .Include(o => o.CustomerUnit)
-                .Include(o => o.CreatedByUser)
-                .Include(o => o.Orders)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Ranking)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests)
-                .SingleAsync(o => o.OrderGroupId == model.OrderGroupId);
+            var orderGroup = await _dbContext.OrderGroups.GetOrderGroupById(model.OrderGroupId);
 
             if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Cancel)).Succeeded)
             {
@@ -122,7 +112,7 @@ namespace Tolk.Web.Controllers
                 }
                 try
                 {
-                    _orderService.CancelOrderGroup(orderGroup, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
+                    await _orderService.CancelOrderGroup(orderGroup, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
                     await _dbContext.SaveChangesAsync();
                     return RedirectToAction("Index", "Home", new { Message = "Den sammanhållna bokningen är nu avbokad" });
                 }
@@ -189,14 +179,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Deny(ProcessRequestGroupModel model)
         {
-#warning include-fest
-            var requestGroup = await _dbContext.RequestGroups
-                .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
-                .Include(r => r.Requests)
-                .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
-                .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(rg => rg.Ranking)
-                .SingleAsync(r => r.RequestGroupId == model.RequestGroupId);
+            var requestGroup = await _dbContext.RequestGroups.GetRequestGroupById(model.RequestGroupId);
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup.OrderGroup, Policies.Accept)).Succeeded)
             {
@@ -232,7 +215,6 @@ namespace Tolk.Web.Controllers
             }
             return Forbid();
         }
-
 
         private async Task<OrderGroup> GetOrderGroup(int id)
         {

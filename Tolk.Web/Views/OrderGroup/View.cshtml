@@ -190,12 +190,6 @@
                         </form>
                     </div>
                 }
-                @if (Model.AllowPrint)
-                {
-                    <div class="col-sm-4">
-                        <a class="btn btn-primary btn-large" href="@Url.Action("Print", "OrderGroup", new { id = Model.OrderGroupId })">Skriv ut bekräftelse &nbsp;<span class="center-glyphicon glyphicon glyphicon-print"></span></a>
-                    </div>
-                }
                 @if (Model.AllowProcessing)
                 {
                     <div class="col-sm-4">

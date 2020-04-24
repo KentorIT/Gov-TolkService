@@ -390,7 +390,7 @@ namespace Tolk.Web.Api.Controllers
                 //Add transaction here!!!
                 if (request.Status == RequestStatus.Created)
                 {
-                    request.Received(now, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
+                    _requestService.Acknowledge(request, now, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
                 }
                 await _requestService.AcceptReplacement(
                     request,

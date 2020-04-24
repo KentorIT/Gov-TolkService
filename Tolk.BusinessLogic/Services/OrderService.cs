@@ -364,9 +364,11 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void ApproveRequestGroupAnswer(RequestGroup requestGroup, int userId, int? impersonatorId)
+        public async Task ApproveRequestGroupAnswer(RequestGroup requestGroup, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(ApproveRequestGroupAnswer), nameof(OrderService));
+            requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            requestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             requestGroup.Approve(_clock.SwedenNow, userId, impersonatorId);
 
             _notificationService.RequestGroupAnswerApproved(requestGroup);
@@ -389,9 +391,12 @@ namespace Tolk.BusinessLogic.Services
             }
             _notificationService.RequestAnswerDenied(request);
         }
+
         public async Task DenyRequestGroupAnswer(RequestGroup requestGroup, int userId, int? impersonatorId, string message)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(DenyRequestGroupAnswer), nameof(OrderService));
+            requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            requestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             requestGroup.Deny(_clock.SwedenNow, userId, impersonatorId, message);
             await CreateRequestGroup(requestGroup.OrderGroup, requestGroup);
             _notificationService.RequestGroupAnswerDenied(requestGroup);
@@ -486,16 +491,19 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogInformation("Order {orderId} cancelled by customer {userId}.", order.OrderId, userId);
         }
 
-        public void CancelOrderGroup(OrderGroup orderGroup, int userId, int? impersonatorId, string message)
+        public async Task CancelOrderGroup(OrderGroup orderGroup, int userId, int? impersonatorId, string message)
         {
             NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(CancelOrderGroup), nameof(OrderService));
-            var requestGroup = orderGroup.ActiveUnAnsweredRequestGroup;
+            var requestGroup = await _tolkDbContext.RequestGroups.GetActiveRequestGroupByOrderGroupId(orderGroup.OrderGroupId);
             if (requestGroup == null)
             {
                 throw new InvalidOperationException($"Order group {orderGroup.OrderGroupId} has no active request group that can be cancelled");
             }
             try
             {
+                requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+                requestGroup.Requests.ForEach(r => r.Requisitions = new List<Requisition>());
+                requestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
                 requestGroup.Cancel(_clock.SwedenNow, userId, impersonatorId, message);
                 _logger.LogInformation("Order group {orderGroupId} cancelled by customer {userId}.", orderGroup.OrderGroupId, userId);
                 _notificationService.OrderGroupCancelledByCustomer(requestGroup);

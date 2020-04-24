@@ -123,7 +123,7 @@ namespace Tolk.BusinessLogic.Entities
             OrderGroup.SetStatus(OrderStatus.Requested, false);
         }
 
-        public override void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
+        internal override void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
             if (!CanDeny)
             {
@@ -134,7 +134,7 @@ namespace Tolk.BusinessLogic.Entities
             OrderGroup.SetStatus(OrderStatus.Requested, false);
         }
 
-        public override void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
+        internal override void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
         {
             if (Status != RequestStatus.Created)
             {
@@ -177,7 +177,7 @@ namespace Tolk.BusinessLogic.Entities
             StatusConfirmations.Add(new RequestGroupStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, RequestStatus = Status, ConfirmedAt = confirmedAt });
         }
 
-        public override void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
+        internal override void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
             if (!IsAccepted)
             {
@@ -188,7 +188,7 @@ namespace Tolk.BusinessLogic.Entities
             OrderGroup.SetStatus(OrderStatus.ResponseAccepted, false);
         }
 
-        public void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message)
+        internal void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message)
         {
             if (!IsToBeProcessedByBroker)
             {

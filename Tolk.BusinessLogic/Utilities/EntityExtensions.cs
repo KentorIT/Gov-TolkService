@@ -524,6 +524,33 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(c => c.AnsweringUser)
                 .Include(c => c.AnswerDisputingUser)
                 .Include(c => c.TerminatingUser);
+
+
+        #region Added by johan
+
+        public static async Task<RequestGroup> GetRequestGroupById(this IQueryable<RequestGroup> groups, int id)
+            =>  await groups
+                .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
+                .SingleAsync(r => r.RequestGroupId == id);
+
+        public static async Task<RequestGroup> GetActiveRequestGroupByOrderGroupId(this IQueryable<RequestGroup> groups, int id)
+            =>  await groups
+            .Include(r => r.Ranking)
+            .Include(r => r.OrderGroup).ThenInclude(og => og.CustomerOrganisation)
+            .SingleOrDefaultAsync(r => r.OrderGroupId == id && r.Status == RequestStatus.Created || r.Status == RequestStatus.Received);
+
+       public static IQueryable<Request> GetRequestsForRequestGroup(this IQueryable<Request> requests, int id)
+            => requests.Include(o => o.Order).Where(r => r.RequestGroupId == id);
+
+        public static IQueryable<Order> GetOrdersForOrderGroup(this IQueryable<Order> orders, int id)
+            => orders.Where(r => r.OrderGroupId == id);
+
+
+        public async static Task<OrderGroup> GetOrderGroupById(this IQueryable<OrderGroup> groups, int id)
+            => await groups.SingleOrDefaultAsync(og => og.OrderGroupId == id);
+
+        #endregion
     }
 
 }

@@ -131,7 +131,7 @@ namespace Tolk.BusinessLogic.Entities
             get => Status == RequestStatus.Created || Status == RequestStatus.Received;
         }
 
-        public virtual void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
+        internal virtual void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
         {
             Status = RequestStatus.Received;
             RecievedAt = receiveTime;
@@ -152,7 +152,7 @@ namespace Tolk.BusinessLogic.Entities
             DenyMessage = message;
         }
 
-        public virtual void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
+        internal virtual void Deny(DateTimeOffset denyTime, int userId, int? impersonatorId, string message)
         {
             Status = RequestStatus.DeniedByCreator;
             AnswerProcessedAt = denyTime;
@@ -161,7 +161,7 @@ namespace Tolk.BusinessLogic.Entities
             DenyMessage = message;
         }
 
-        public virtual void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
+        internal virtual void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
             Status = RequestStatus.Approved;
             AnswerProcessedAt = approveTime;
