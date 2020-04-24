@@ -528,7 +528,7 @@ namespace Tolk.Web.Controllers
         private async Task<Request> GetOrderChangedRequest(int requestId)
         {
             var request = await _dbContext.Requests.GetSimpleRequestById(requestId);
-            request.Order.OrderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntiesForOrder(request.OrderId).ToListAsync();
+            request.Order.OrderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntitesForOrder(request.OrderId).ToListAsync();
             return request;
         }
 

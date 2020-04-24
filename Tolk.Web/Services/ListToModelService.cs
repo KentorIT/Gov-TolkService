@@ -66,7 +66,7 @@ namespace Tolk.Web.Services
                 model.HasActiveRequests = requestChecks.HasActiveRequests;
                 model.ActiveRequest.RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(model.RequestId.Value));
 #warning om roll skickas med så borde man bara göra nedan för broker 
-                var orderChanges = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntiesForOrder(id).Where(oc => oc.BrokerId == model.ActiveRequest.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null).ToListAsync();
+                var orderChanges = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntitesForOrder(id).Where(oc => oc.BrokerId == model.ActiveRequest.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null).ToListAsync();
                 model.ConfirmedOrderChangeLogEntries = orderChanges.Select(oc => oc.OrderChangeLogEntryId).ToList();
                 if (orderChanges.Any() && (model.ActiveRequest.Status == RequestStatus.Approved || model.ActiveRequest.Status == RequestStatus.AcceptedNewInterpreterAppointed) && model.StartAtIsInFuture)
                 {

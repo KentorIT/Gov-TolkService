@@ -20,6 +20,142 @@ namespace Tolk.Web.Services
             _dbContext = dbContext;
         }
 
+        public async Task<List<EventLogEntryModel>> GetEventLogForOrder(int orderId)
+        {
+            var order = await _dbContext.Orders.GetOrderForEventLog(orderId);
+            if (order == null)
+            {
+                return new List<EventLogEntryModel>();
+            }
+            var orderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntitesForOrderEventLog(orderId).ToListAsync();
+            var orderStatusConfirmations = await _dbContext.OrderStatusConfirmation.GetStatusConfirmationsForOrderEventLog(orderId).ToListAsync();
+            var customerName = order.CustomerOrganisation.Name;
+            var eventLog = new List<EventLogEntryModel>
+            {
+                // Order creation
+                new EventLogEntryModel
+                {
+                    Timestamp = order.CreatedAt,
+                    EventDetails = order.ReplacingOrder != null ? $"Ersättningsuppdrag skapat (ersätter {order.ReplacingOrder.OrderNumber})" : "Bokningsförfrågan skapad",
+                    Actor = order.CreatedByUser.FullName,
+                    Organization = customerName,
+                    ActorContactInfo = GetContactinfo(order.CreatedByUser),
+                }
+            };
+            // Add all request logs (including their requisition and complaint logs)'
+            eventLog.AddRange(await GetEventLogForRequestsOnOrder(orderId, customerName, null));
+            // Order replaced
+            if (order.ReplacedByOrder != null)
+            {
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = order.ReplacedByOrder.CreatedAt,
+                    EventDetails = $"Bokning ersatt av {order.ReplacedByOrder.OrderNumber}",
+                    Actor = order.ReplacedByOrder.CreatedByUser.FullName,
+                    Organization = customerName,
+                    ActorContactInfo = GetContactinfo(order.ReplacedByOrder.CreatedByUser),
+                });
+            }
+            // Change of contact person  
+            int i = 0;
+            var orderContactPersons = orderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson);
+            foreach (OrderChangeLogEntry oc in orderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson))
+            {
+                //if previous contact is null, a new contact person is added - get the new contact
+                if (oc.OrderContactPersonHistory.PreviousContactPersonId == null)
+                {
+                    EventLogEntryModel eventRow = GetEventRowForNewContactPerson(oc, order, orderContactPersons,  i + 1);
+                    if (eventRow != null)
+                    {
+                        eventLog.Add(eventRow);
+                    }
+                }
+                //if previous contact person is not null, then contact person is changed or just removed
+                else
+                {
+                    //add a row for removed person
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = oc.LoggedAt,
+                        EventDetails = $"{oc.OrderContactPersonHistory.PreviousContactPersonUser?.FullName} fråntogs rätt att granska rekvisition",
+                        Actor = oc.UpdatedByUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
+                    });
+                    //find if removed or changed (if removed we don't add a row else add row for new contact)
+                    EventLogEntryModel eventRow = GetEventRowForNewContactPerson(oc, order, orderContactPersons, i + 1);
+                    if (eventRow != null)
+                    {
+                        eventLog.Add(eventRow);
+                    }
+                }
+                i++;
+            }
+            if (orderChangeLogEntries.Any(oc => oc.OrderChangeLogType != OrderChangeLogType.ContactPerson))
+            {
+                foreach (OrderChangeLogEntry oc in orderChangeLogEntries.Where(oc => oc.OrderChangeLogType != OrderChangeLogType.ContactPerson))
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = oc.LoggedAt,
+                        EventDetails = oc.OrderChangeLogType.GetDescription() + " ändrade",
+                        Actor = oc.UpdatedByUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(oc.UpdatedByUser),
+                    });
+                    if (oc.OrderChangeConfirmation != null)
+                    {
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Timestamp = oc.OrderChangeConfirmation.ConfirmedAt,
+                            EventDetails = "Bokningsändring bekräftad",
+                            Actor = oc.OrderChangeConfirmation.ConfirmedByUser.FullName,
+                            Organization = oc.Broker.Name,
+                            ActorContactInfo = GetContactinfo(oc.OrderChangeConfirmation.ConfirmedByUser)
+                        });
+                    }
+                }
+                eventLog = eventLog.Distinct(new EventLogEntryModel.EventLogEntryComparer()).ToList();
+            }
+            if (orderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder))
+            {
+                var c = orderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = c.ConfirmedAt,
+                    EventDetails = $"Bekräftat bokningsförfrågan avslutad",
+                    Actor = c.ConfirmedByUser.FullName,
+                    Organization = customerName,
+                    ActorContactInfo = GetContactinfo(c.ConfirmedByUser),
+                });
+            }
+
+            if (order.Status == OrderStatus.ResponseNotAnsweredByCreator)
+            {
+                var req = await _dbContext.Requests.GetLastRequestForOrder(orderId);
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = req.LatestAnswerTimeForCustomer ?? order.StartAt,
+                    EventDetails = "Obesvarad tillsättning, tiden gick ut, bokning avslutad",
+                    Actor = "Systemet",
+                });
+                // Check if confirmed
+                if (orderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator))
+                {
+                    OrderStatusConfirmation osc = orderStatusConfirmations.First(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator);
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = osc.ConfirmedAt,
+                        EventDetails = $"Obesvarad tillsättning bekräftad av myndighet",
+                        Actor = osc.ConfirmedByUser?.FullName ?? "Systemet",
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(osc.ConfirmedByUser),
+                    });
+                }
+            }
+            return eventLog;
+        }
+
         public async Task<List<EventLogEntryModel>> GetEventLogForRequestsOnOrder(int orderId, string customerName, string brokerName, int? brokerId = null)
         {
             var requests = await _dbContext.Requests.GetRequestsForOrderForEventLog(orderId, brokerId).ToListAsync();
@@ -34,7 +170,7 @@ namespace Tolk.Web.Services
             //Order change history just in detailed view (for broker, customer has its' own)
             if (brokerId.HasValue)
             {
-                var orderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntiesForOrder(orderId)
+                var orderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntitesForOrder(orderId)
                     .Where(oc => (oc.OrderChangeLogType != OrderChangeLogType.ContactPerson) && oc.BrokerId == brokerId).OrderBy(ch => ch.LoggedAt).ToListAsync();
                 foreach (OrderChangeLogEntry oc in orderChangeLogEntries)
                 {
@@ -60,6 +196,37 @@ namespace Tolk.Web.Services
                 }
                 eventLog = eventLog.Distinct(new EventLogEntryModel.EventLogEntryComparer()).ToList();
             }
+            else
+            {
+                if (requests.All(r => r.Status == RequestStatus.DeclinedByBroker || r.Status == RequestStatus.DeniedByTimeLimit))
+                {
+                    var terminatingRequest = requests.OrderBy( r => r.RequestId).Last();
+
+                    // No one accepted order
+                    if (terminatingRequest.Order.Status == OrderStatus.NoBrokerAcceptedOrder)
+                    {
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Weight = 200,
+                            Timestamp = terminatingRequest.Status == RequestStatus.DeniedByTimeLimit
+                                ? terminatingRequest.ExpiresAt ?? terminatingRequest.Order.StartAt
+                                : terminatingRequest.AnswerDate.Value,
+                            EventDetails = "Bokningsförfrågan avslutad, pga avböjd av samtliga förmedlingar",
+                            Actor = "Systemet",
+                        });
+                    }
+                    else if (terminatingRequest.Order.Status == OrderStatus.NoDeadlineFromCustomer)
+                    {
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Weight = 200,
+                            Timestamp = terminatingRequest.Order.StartAt,
+                            EventDetails = "Bokningsförfrågan avslutad, pga utebliven sista svarstid från myndighet",
+                            Actor = "Systemet",
+                        });
+                    }
+                }
+            }
 
             // Add all requisition logs
 
@@ -82,8 +249,128 @@ namespace Tolk.Web.Services
             return eventLog;
         }
 
+
+        public async Task<IEnumerable<EventLogEntryModel>> GetEventLogForRequisitions(int requestId, string customerName, string brokerName)
+        {
+            List<EventLogEntryModel> list = GetEventLogEntriesFromRequisitionList(_dbContext.Requisitions.GetRequisitionsForRequest(requestId), customerName, brokerName);
+            var archived = await _dbContext.RequisitionStatusConfirmations.GetRequisitionsStatusConfirmationsByRequest(requestId).FirstOrDefaultAsync(r => r.RequisitionStatus == RequisitionStatus.Created);
+            if (archived != null)
+            {
+                list.Add(GetArchivedRequisitionConfirmation(archived, customerName));
+            }
+            return list;
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Prettier code, really")]
-        public List<EventLogEntryModel> GetEventLogForRequest(Request request, string customerName, string brokerName, IEnumerable<RequestStatusConfirmation> confirmations, bool isRequestDetailView = true)
+        public IEnumerable<EventLogEntryModel> GetEventLogForComplaint(Complaint complaint, string customerName, string brokerName = null)
+        {
+            if (complaint == null)
+            {
+                yield break;
+            }
+            if (string.IsNullOrEmpty(brokerName))
+            {
+                brokerName = complaint.Request.Ranking.Broker.Name;
+            }
+            // Complaint creation
+            yield return new EventLogEntryModel
+            {
+                Timestamp = complaint.CreatedAt,
+                EventDetails = "Reklamation registrerad",
+                Actor = complaint.CreatedByUser.FullName,
+                Organization = customerName,
+                ActorContactInfo = GetContactinfo(complaint.CreatedByUser)
+            };
+            // Complaint answer
+            if (complaint.AnsweredAt.HasValue)
+            {
+                if (complaint.Status == ComplaintStatus.AutomaticallyConfirmedDueToNoAnswer)
+                {
+                    yield return new EventLogEntryModel
+                    {
+                        Timestamp = complaint.AnsweredAt.Value,
+                        EventDetails = complaint.Status.GetDescription(),
+                        Actor = "Systemet",
+                    };
+                }
+                else if (complaint.Status == ComplaintStatus.Confirmed)
+                {
+                    yield return new EventLogEntryModel
+                    {
+                        Timestamp = complaint.AnsweredAt.Value,
+                        EventDetails = "Reklamation accepterad av förmedling",
+                        Actor = complaint.AnsweringUser.FullName,
+                        Organization = brokerName,
+                        ActorContactInfo = GetContactinfo(complaint.AnsweringUser),
+                    };
+                }
+                else
+                {
+                    yield return new EventLogEntryModel
+                    {
+                        Timestamp = complaint.AnsweredAt.Value,
+                        EventDetails = "Reklamation är bestriden av förmedling",
+                        Actor = complaint.AnsweringUser.FullName,
+                        Organization = brokerName,
+                        ActorContactInfo = GetContactinfo(complaint.AnsweringUser),
+                    };
+                }
+            }
+            // Complaint answer disputation
+            if (complaint.AnswerDisputedAt.HasValue)
+            {
+                if (complaint.Status == ComplaintStatus.TerminatedAsDisputeAccepted)
+                {
+                    yield return new EventLogEntryModel
+                    {
+                        Timestamp = complaint.AnswerDisputedAt.Value,
+                        EventDetails = "Reklamation är återtagen av myndighet",
+                        Actor = complaint.AnswerDisputingUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(complaint.AnswerDisputingUser),
+                    };
+                }
+                else
+                {
+                    yield return new EventLogEntryModel
+                    {
+                        Timestamp = complaint.AnswerDisputedAt.Value,
+                        EventDetails = "Reklamation kvarstår, avvaktar extern process",
+                        Actor = complaint.AnswerDisputingUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(complaint.AnswerDisputingUser),
+                    };
+                }
+            }
+            // Complaint termination
+            if (complaint.TerminatedAt.HasValue)
+            {
+                if (complaint.Status == ComplaintStatus.TerminatedTrialConfirmedComplaint)
+                {
+                    yield return new EventLogEntryModel
+                    {
+                        Timestamp = complaint.TerminatedAt.Value,
+                        EventDetails = "Reklamation avslutad, bistådd av extern process",
+                        Actor = complaint.TerminatingUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(complaint.TerminatingUser),
+                    };
+                }
+                else
+                {
+                    yield return new EventLogEntryModel
+                    {
+                        Timestamp = complaint.TerminatedAt.Value,
+                        EventDetails = "Reklamation avslutad, avslagen av extern process",
+                        Actor = complaint.TerminatingUser.FullName,
+                        Organization = customerName,
+                        ActorContactInfo = GetContactinfo(complaint.TerminatingUser),
+                    };
+                }
+            }
+        }
+
+        private static List<EventLogEntryModel> GetEventLogForRequest(Request request, string customerName, string brokerName, IEnumerable<RequestStatusConfirmation> confirmations, bool isRequestDetailView = true)
         {
             if (request == null)
             {
@@ -372,126 +659,6 @@ namespace Tolk.Web.Services
             return eventLog;
         }
 
-        public async Task<IEnumerable<EventLogEntryModel>> GetEventLogForRequisitions(int requestId, string customerName, string brokerName)
-        {
-            List<EventLogEntryModel> list = GetEventLogEntriesFromRequisitionList(_dbContext.Requisitions.GetRequisitionsForRequest(requestId), customerName, brokerName);
-            var archived = await _dbContext.RequisitionStatusConfirmations.GetRequisitionsStatusConfirmationsByRequest(requestId).FirstOrDefaultAsync(r => r.RequisitionStatus == RequisitionStatus.Created);
-            if (archived != null)
-            {
-                list.Add(GetArchivedRequisitionConfirmation(archived, customerName));
-            }
-            return list;
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Prettier code, really")]
-        public IEnumerable<EventLogEntryModel> GetEventLogForComplaint(Complaint complaint, string customerName, string brokerName = null)
-        {
-            if (complaint == null)
-            {
-                yield break;
-            }
-            if (string.IsNullOrEmpty(brokerName))
-            {
-                brokerName = complaint.Request.Ranking.Broker.Name;
-            }
-            // Complaint creation
-            yield return new EventLogEntryModel
-            {
-                Timestamp = complaint.CreatedAt,
-                EventDetails = "Reklamation registrerad",
-                Actor = complaint.CreatedByUser.FullName,
-                Organization = customerName,
-                ActorContactInfo = GetContactinfo(complaint.CreatedByUser)
-            };
-            // Complaint answer
-            if (complaint.AnsweredAt.HasValue)
-            {
-                if (complaint.Status == ComplaintStatus.AutomaticallyConfirmedDueToNoAnswer)
-                {
-                    yield return new EventLogEntryModel
-                    {
-                        Timestamp = complaint.AnsweredAt.Value,
-                        EventDetails = complaint.Status.GetDescription(),
-                        Actor = "Systemet",
-                    };
-                }
-                else if (complaint.Status == ComplaintStatus.Confirmed)
-                {
-                    yield return new EventLogEntryModel
-                    {
-                        Timestamp = complaint.AnsweredAt.Value,
-                        EventDetails = "Reklamation accepterad av förmedling",
-                        Actor = complaint.AnsweringUser.FullName,
-                        Organization = brokerName,
-                        ActorContactInfo = GetContactinfo(complaint.AnsweringUser),
-                    };
-                }
-                else
-                {
-                    yield return new EventLogEntryModel
-                    {
-                        Timestamp = complaint.AnsweredAt.Value,
-                        EventDetails = "Reklamation är bestriden av förmedling",
-                        Actor = complaint.AnsweringUser.FullName,
-                        Organization = brokerName,
-                        ActorContactInfo = GetContactinfo(complaint.AnsweringUser),
-                    };
-                }
-            }
-            // Complaint answer disputation
-            if (complaint.AnswerDisputedAt.HasValue)
-            {
-                if (complaint.Status == ComplaintStatus.TerminatedAsDisputeAccepted)
-                {
-                    yield return new EventLogEntryModel
-                    {
-                        Timestamp = complaint.AnswerDisputedAt.Value,
-                        EventDetails = "Reklamation är återtagen av myndighet",
-                        Actor = complaint.AnswerDisputingUser.FullName,
-                        Organization = customerName,
-                        ActorContactInfo = GetContactinfo(complaint.AnswerDisputingUser),
-                    };
-                }
-                else
-                {
-                    yield return new EventLogEntryModel
-                    {
-                        Timestamp = complaint.AnswerDisputedAt.Value,
-                        EventDetails = "Reklamation kvarstår, avvaktar extern process",
-                        Actor = complaint.AnswerDisputingUser.FullName,
-                        Organization = customerName,
-                        ActorContactInfo = GetContactinfo(complaint.AnswerDisputingUser),
-                    };
-                }
-            }
-            // Complaint termination
-            if (complaint.TerminatedAt.HasValue)
-            {
-                if (complaint.Status == ComplaintStatus.TerminatedTrialConfirmedComplaint)
-                {
-                    yield return new EventLogEntryModel
-                    {
-                        Timestamp = complaint.TerminatedAt.Value,
-                        EventDetails = "Reklamation avslutad, bistådd av extern process",
-                        Actor = complaint.TerminatingUser.FullName,
-                        Organization = customerName,
-                        ActorContactInfo = GetContactinfo(complaint.TerminatingUser),
-                    };
-                }
-                else
-                {
-                    yield return new EventLogEntryModel
-                    {
-                        Timestamp = complaint.TerminatedAt.Value,
-                        EventDetails = "Reklamation avslutad, avslagen av extern process",
-                        Actor = complaint.TerminatingUser.FullName,
-                        Organization = customerName,
-                        ActorContactInfo = GetContactinfo(complaint.TerminatingUser),
-                    };
-                }
-            }
-        }
-
         private static List<EventLogEntryModel> GetEventLogEntriesFromRequisitionList(IQueryable<Requisition> requisitions, string customerName, string brokerName = null)
         {
             var list = new List<EventLogEntryModel>();
@@ -576,10 +743,8 @@ namespace Tolk.Web.Services
             return contactInfo;
         }
 
-        private static EventLogEntryModel GetEventRowForNewContactPerson(OrderChangeLogEntry ocPrevious, Order order, int findElementAt)
+        private static EventLogEntryModel GetEventRowForNewContactPerson(OrderChangeLogEntry ocPrevious, Order order, IEnumerable<OrderChangeLogEntry> orderContactPersons, int findElementAt)
         {
-
-            var orderContactPersons = order.OrderChangeLogEntries.Where(oc => oc.OrderChangeLogType == OrderChangeLogType.ContactPerson).OrderBy(ch => ch.LoggedAt);
             //try find next row if any else take info from Order.ContactPersonUser
             string newContactPersonName = orderContactPersons.Count() > findElementAt ? orderContactPersons.ElementAt(findElementAt).OrderContactPersonHistory.PreviousContactPersonUser?.FullName : order.ContactPersonUser?.FullName;
             return string.IsNullOrWhiteSpace(newContactPersonName) ? null : new EventLogEntryModel

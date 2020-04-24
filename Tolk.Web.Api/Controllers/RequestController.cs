@@ -637,7 +637,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 throw new InvalidApiCallException(ErrorCodes.RequestNotFound);
             }
-            request.Order.OrderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntiesForOrder(request.OrderId).ToListAsync();
+            request.Order.OrderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntitesForOrder(request.OrderId).ToListAsync();
             return request;
         }
 

@@ -39,6 +39,7 @@ namespace Tolk.Web.Controllers
         private readonly IMapper _mapper;
         private readonly CacheService _cacheService;
         private readonly ListToModelService _listToModelService;
+        private readonly EventLogService _eventLogService;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -52,7 +53,8 @@ namespace Tolk.Web.Controllers
             UserManager<AspNetUser> usermanager,
             IMapper mapper,
             CacheService cacheService,
-            ListToModelService listToModelService
+            ListToModelService listToModelService,
+            EventLogService eventLogService
             )
         {
             _dbContext = dbContext;
@@ -67,6 +69,7 @@ namespace Tolk.Web.Controllers
             _mapper = mapper;
             _cacheService = cacheService;
             _listToModelService = listToModelService;
+            _eventLogService = eventLogService;
         }
 
         public IActionResult List()
@@ -352,18 +355,13 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {
-            Order order = GetOrder(id);
+            Order order = await _dbContext.Orders.SingleAsync(o => o.OrderId == id);
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
                 return PartialView("_EventLogDynamic", new EventLogModel
                 {
-                    Entries = EventLogHelper.GetEventLog(order, order.Requests.All(r => r.Status == RequestStatus.DeclinedByBroker || r.Status == RequestStatus.DeniedByTimeLimit)
-                        ? order.Requests.OrderBy(r => r.RequestId).Last()
-                        : null)
-                            .OrderBy(e => e.Timestamp)
-                            .ThenBy(e => e.Weight)
-                            .ToList()
+                    Entries = (await _eventLogService.GetEventLogForOrder(id)).OrderBy(e => e.Timestamp).ThenBy(e => e.Weight).ToList()
                 });
             }
             return Forbid();
@@ -1024,53 +1022,6 @@ namespace Tolk.Web.Controllers
             return (user, impersonatingUser);
         }
 
-        private Order GetOrder(int id)
-        {
-#warning include-fest
-            return _dbContext.Orders
-                .Include(o => o.ReplacedByOrder)
-                .Include(o => o.ReplacingOrder)
-                .Include(o => o.ReplacingOrder).ThenInclude(o => o.CreatedByUser)
-                .Include(o => o.CreatedByUser)
-                .Include(o => o.ContactPersonUser)
-                .Include(o => o.Region)
-                .Include(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(o => o.CustomerOrganisation)
-                .Include(o => o.Language)
-                .Include(o => o.CustomerUnit)
-                .Include(o => o.InterpreterLocations)
-                .Include(o => o.CompetenceRequirements)
-                .Include(o => o.Group).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment).ThenInclude(at => at.OrderAttachmentHistoryEntries).ThenInclude(oh => oh.OrderChangeLogEntry)
-                .Include(o => o.OrderStatusConfirmations).ThenInclude(os => os.ConfirmedByUser)
-                .Include(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation).ThenInclude(occ => occ.ConfirmedByUser).ThenInclude(cu => cu.Broker)
-                .Include(o => o.Attachments).ThenInclude(o => o.Attachment)
-                .Include(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderContactPersonHistory).ThenInclude(cph => cph.PreviousContactPersonUser)
-                .Include(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.UpdatedByUser)
-                .Include(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
-                .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(o => o.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(o => o.Requests).ThenInclude(r => r.Requisitions).ThenInclude(r => r.CreatedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.AnsweringUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
-                .Include(o => o.Requests).ThenInclude(r => r.AnsweringUser)
-                .Include(o => o.Requests).ThenInclude(r => r.ReceivedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.ProcessingUser)
-                .Include(o => o.Requests).ThenInclude(r => r.CancelledByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Ranking).ThenInclude(ra => ra.Broker)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Requisitions).ThenInclude(u => u.CreatedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(rr => rr.Complaints).ThenInclude(u => u.CreatedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.ReplacingRequest).ThenInclude(r => r.Interpreter)
-                .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.RequestUpdateLatestAnswerTime).ThenInclude(ru => ru.UpdatedByUser)
-                .Include(o => o.Requests).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
-                .Include(o => o.Requests).ThenInclude(r => r.RequestGroup).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
-                .Include(o => o.Requests).ThenInclude(r => r.Order)
-                .Single(o => o.OrderId == id);
-        }
         private IEnumerable<OrderOccasionDisplayModel> GetModelsForGroupOrders(int id)
         {
             var list = new List<OrderOccasionDisplayModel>();

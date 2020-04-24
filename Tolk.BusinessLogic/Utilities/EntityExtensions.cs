@@ -104,6 +104,18 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<OrderStatusConfirmation> GetStatusConfirmationsForOrder(this IQueryable<OrderStatusConfirmation> confirmations, int id)
             => confirmations.Where(o => o.OrderId == id);
 
+        public static IQueryable<OrderStatusConfirmation> GetStatusConfirmationsForOrderEventLog(this IQueryable<OrderStatusConfirmation> confirmations, int id)
+            => confirmations.GetStatusConfirmationsForOrder(id)
+                .Include(c => c.ConfirmedByUser);
+
+        public static IQueryable<OrderChangeLogEntry> GetOrderChangeLogEntitesForOrderEventLog(this IQueryable<OrderChangeLogEntry> rows, int id)
+            => rows.GetOrderChangeLogEntitesForOrder(id)
+                    .Include(ch => ch.UpdatedByUser)
+                    .Include(ch => ch.Broker)
+                    .Include(ch => ch.OrderContactPersonHistory).ThenInclude(h => h.PreviousContactPersonUser)
+                    .Include(ch => ch.OrderChangeConfirmation).ThenInclude(c => c.ConfirmedByUser)
+                    .OrderBy(ch => ch.LoggedAt);
+
         public static IQueryable<OrderInterpreterLocation> GetOrderedInterpreterLocationsForOrder(this IQueryable<OrderInterpreterLocation> locations, int id)
              => locations.Where(r => r.OrderId == id).OrderBy(r => r.Rank);
 
@@ -141,7 +153,7 @@ namespace Tolk.BusinessLogic.Utilities
             => requests.Include(r => r.Ranking).Where(r => r.OrderId == id);
 
         public static IQueryable<Request> GetRequestsForOrderForEventLog(this IQueryable<Request> requests, int id, int? brokerId = null)
-        { 
+        {
             var list = requests
                 .Include(r => r.ReceivedByUser)
                 .Include(r => r.AnsweringUser)
@@ -163,13 +175,13 @@ namespace Tolk.BusinessLogic.Utilities
         }
 
         public static IQueryable<RequestStatusConfirmation> GetRequestStatusConfirmationsForOrder(this IQueryable<RequestStatusConfirmation> confirmations, int id)
-            => confirmations.Include(c=> c.ConfirmedByUser).Where(c => c.Request.OrderId == id);
+            => confirmations.Include(c => c.ConfirmedByUser).Where(c => c.Request.OrderId == id);
 
 
         public static IQueryable<OrderPriceRow> GetPriceRowsForOrder(this IQueryable<OrderPriceRow> rows, int id)
             => rows.Include(p => p.PriceListRow).Where(p => p.OrderId == id);
 
-        public static IQueryable<OrderChangeLogEntry> GetOrderChangeLogEntiesForOrder(this IQueryable<OrderChangeLogEntry> rows, int id)
+        public static IQueryable<OrderChangeLogEntry> GetOrderChangeLogEntitesForOrder(this IQueryable<OrderChangeLogEntry> rows, int id)
             => rows.Include(c => c.OrderChangeConfirmation).Where(c => c.OrderId == id);
 
         public static IQueryable<OrderHistoryEntry> GetOrderHistoriesForOrderChangeConfirmations(this IQueryable<OrderHistoryEntry> rows, List<int> ids)
@@ -246,6 +258,19 @@ namespace Tolk.BusinessLogic.Utilities
         #endregion
 
         #region single entities by id
+
+        public static async Task<Request> GetLastRequestForOrder(this IQueryable<Request> requests, int id)
+            => await requests.Where(r => r.OrderId == id).OrderBy(r => r.RequestId).LastAsync();
+
+        public static async Task<Order> GetOrderForEventLog(this IQueryable<Order> orders, int id)
+            => await orders
+                .Include(o => o.ReplacingOrder)
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.ContactPersonUser)
+                .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CustomerUnit)
+                .Include(o => o.ReplacedByOrder).ThenInclude(o => o.CreatedByUser)
+                .SingleOrDefaultAsync(o => o.OrderId == id);
 
         public static async Task<Order> GetFullOrderById(this IQueryable<Order> orders, int id)
             => await orders.GetOrdersWithInclude().SingleAsync(o => o.OrderId == id);
@@ -368,7 +393,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .SingleOrDefaultAsync(o => o.ComplaintId == id);
-        public static async Task<Complaint> GetComplaintForEventLogByOrderId(this IQueryable<Complaint> complaints, int id, int? brokerId =null)
+        public static async Task<Complaint> GetComplaintForEventLogByOrderId(this IQueryable<Complaint> complaints, int id, int? brokerId = null)
             => await complaints.GetComplaintsForEventLog()
                 .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
