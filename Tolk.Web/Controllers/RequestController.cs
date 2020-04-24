@@ -35,6 +35,7 @@ namespace Tolk.Web.Controllers
         private readonly RequestService _requestService;
         private readonly InterpreterService _interpreterService;
         private readonly ListToModelService _listToModelService;
+        private readonly EventLogService _eventLogService;
 
         public RequestController(
             TolkDbContext dbContext,
@@ -46,7 +47,8 @@ namespace Tolk.Web.Controllers
             IOptions<TolkOptions> options,
             RequestService requestService,
             InterpreterService interpreterService,
-            ListToModelService listToModelService
+            ListToModelService listToModelService,
+            EventLogService eventLogService
         )
         {
             _dbContext = dbContext;
@@ -59,6 +61,7 @@ namespace Tolk.Web.Controllers
             _requestService = requestService;
             _interpreterService = interpreterService;
             _listToModelService = listToModelService;
+            _eventLogService = eventLogService;
         }
 
         public IActionResult List()
@@ -244,16 +247,16 @@ namespace Tolk.Web.Controllers
                         }
                         else
                         {
-                           await _requestService.AcceptReplacement(
-                                request,
-                                _clock.SwedenNow,
-                                User.GetUserId(),
-                                User.TryGetImpersonatorId(),
-                                model.InterpreterLocation.Value,
-                                model.ExpectedTravelCosts,
-                                model.ExpectedTravelCostInfo,
-                                (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null
-                            );
+                            await _requestService.AcceptReplacement(
+                                 request,
+                                 _clock.SwedenNow,
+                                 User.GetUserId(),
+                                 User.TryGetImpersonatorId(),
+                                 model.InterpreterLocation.Value,
+                                 model.ExpectedTravelCosts,
+                                 model.ExpectedTravelCostInfo,
+                                 (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null
+                             );
                         }
                         await _dbContext.SaveChangesAsync();
                     }
@@ -466,27 +469,7 @@ namespace Tolk.Web.Controllers
             {
                 return PartialView("_EventLogDynamic", new EventLogModel
                 {
-                    Entries = EventLogHelper.GetEventLog(request, request.Order.CustomerOrganisation.Name, request.Ranking.Broker.Name,
-#warning include-fest
-                    previousRequests: _dbContext.Requests
-                        .Include(r => r.ReceivedByUser)
-                        .Include(r => r.AnsweringUser)
-                        .Include(r => r.ProcessingUser)
-                        .Include(r => r.CancelledByUser)
-                        .Include(r => r.Interpreter)
-                        .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.AnsweringUser)
-                        .Include(r => r.ReplacedByRequest).ThenInclude(rbr => rbr.Interpreter)
-                        .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(ru => ru.UpdatedByUser)
-                        .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                        .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser)
-                        .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)
-                        .Include(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
-                        .Include(r => r.Complaints).ThenInclude(c => c.AnsweringUser)
-                        .Include(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
-                        .Include(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
-                        .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
-                        .Where(r => r.OrderId == request.OrderId && r.RequestId != request.RequestId))
-                    .OrderBy(e => e.Timestamp).ToList()
+                    Entries = (await _eventLogService.GetEventLogForRequestsOnOrder(request.OrderId, request.Order.CustomerOrganisation.Name, request.Ranking.Broker.Name, User.GetBrokerId())).OrderBy(e => e.Timestamp).ThenBy(e => e.Weight).ToList()
                 });
             }
             return Forbid();
@@ -571,7 +554,7 @@ namespace Tolk.Web.Controllers
                 CreatedAt = model.CreatedAt
             };
             model.OrderViewModel = await _listToModelService.AddInformationFromListsToModel(model.OrderViewModel);
- 
+
             return model;
         }
 

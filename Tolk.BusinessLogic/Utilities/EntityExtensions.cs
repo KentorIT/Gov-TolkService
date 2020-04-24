@@ -140,6 +140,32 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<Request> GetRequestsForOrder(this IQueryable<Request> requests, int id)
             => requests.Include(r => r.Ranking).Where(r => r.OrderId == id);
 
+        public static IQueryable<Request> GetRequestsForOrderForEventLog(this IQueryable<Request> requests, int id, int? brokerId = null)
+        { 
+            var list = requests
+                .Include(r => r.ReceivedByUser)
+                .Include(r => r.AnsweringUser)
+                .Include(r => r.ProcessingUser)
+                .Include(r => r.CancelledByUser)
+                .Include(r => r.Interpreter)
+                .Include(r => r.ReplacedByRequest).ThenInclude(r => r.Interpreter)
+                .Include(r => r.ReplacedByRequest).ThenInclude(r => r.AnsweringUser)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.CreatedByUser)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(r => r.UpdatedByUser)
+                .Where(r => r.OrderId == id);
+            if (brokerId.HasValue)
+            {
+                list = list.Where(r => r.Ranking.BrokerId == brokerId);
+            }
+            return list;
+        }
+
+        public static IQueryable<RequestStatusConfirmation> GetRequestStatusConfirmationsForOrder(this IQueryable<RequestStatusConfirmation> confirmations, int id)
+            => confirmations.Include(c=> c.ConfirmedByUser).Where(c => c.Request.OrderId == id);
+
+
         public static IQueryable<OrderPriceRow> GetPriceRowsForOrder(this IQueryable<OrderPriceRow> rows, int id)
             => rows.Include(p => p.PriceListRow).Where(p => p.OrderId == id);
 
@@ -178,11 +204,34 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.ProcessedUser)
                 .Where(r => r.RequestId == id);
 
+        public static IQueryable<Requisition> GetRequisitionsForOrder(this IQueryable<Requisition> requisitions, int id, int? brokerId = null)
+        {
+            var list = requisitions
+                .Include(r => r.CreatedByUser)
+                .Include(r => r.ProcessedUser)
+                .Where(r => r.Request.OrderId == id);
+            if (brokerId.HasValue)
+            {
+                list = list.Where(r => r.Request.Ranking.BrokerId == brokerId);
+            }
+            return list;
+        }
+
         public static IQueryable<RequisitionStatusConfirmation> GetRequisitionsStatusConfirmationsByRequest(this IQueryable<RequisitionStatusConfirmation> confirmations, int id)
             => confirmations.Include(c => c.ConfirmedByUser).Where(r => r.Requisition.RequestId == id);
 
         public static IQueryable<Complaint> GetComplaintsForRequest(this IQueryable<Complaint> complaints, int id)
            => complaints.Where(c => c.RequestId == id);
+
+        public static IQueryable<RequisitionStatusConfirmation> GetRequisitionsStatusConfirmationsForOrder(this IQueryable<RequisitionStatusConfirmation> confirmations, int id, int? brokerId = null)
+        {
+            var list = confirmations.Include(c => c.ConfirmedByUser).Where(r => r.Requisition.RequestId == id);
+            if (brokerId.HasValue)
+            {
+                list = list.Where(c => c.Requisition.Request.Ranking.BrokerId == brokerId);
+            }
+            return list;
+        }
 
         #endregion
 
@@ -303,6 +352,10 @@ namespace Tolk.BusinessLogic.Utilities
             return request;
         }
 
+        public static async Task<Complaint> GetComplaintForEventLog(this IQueryable<Complaint> complaints, int id)
+            => await complaints.GetComplaintsForEventLog()
+                .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
         public static async Task<Complaint> GetFullComplaintById(this IQueryable<Complaint> complaints, int id)
             => await complaints.Include(r => r.CreatedByUser)
                 .Include(r => r.AnsweringUser)
@@ -313,6 +366,15 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .SingleOrDefaultAsync(o => o.ComplaintId == id);
+        public static async Task<Complaint> GetComplaintForEventLogByOrderId(this IQueryable<Complaint> complaints, int id, int? brokerId =null)
+            => await complaints.GetComplaintsForEventLog()
+                .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .SingleOrDefaultAsync(c => c.Request.OrderId == id && (brokerId == null || c.Request.Ranking.BrokerId == brokerId));
+
+        public static async Task<Complaint> GetComplaintForEventLogByRequestId(this IQueryable<Complaint> complaints, int id)
+            => await complaints.GetComplaintsForEventLog()
+                .SingleOrDefaultAsync(c => c.RequestId == id);
 
         public static async Task<Requisition> GetRequisitionForEventLog(this IQueryable<Requisition> requisitions, int id)
             => await requisitions
@@ -429,6 +491,12 @@ namespace Tolk.BusinessLogic.Utilities
             => requests
             .Include(r => r.Ranking)
             .Include(r => r.Order);
+
+        private static IQueryable<Complaint> GetComplaintsForEventLog(this IQueryable<Complaint> complaints)
+            => complaints.Include(c => c.CreatedByUser)
+                .Include(c => c.AnsweringUser)
+                .Include(c => c.AnswerDisputingUser)
+                .Include(c => c.TerminatingUser);
     }
 
 }
