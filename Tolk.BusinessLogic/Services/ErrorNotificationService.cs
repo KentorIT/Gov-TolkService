@@ -59,7 +59,7 @@ namespace Tolk.BusinessLogic.Services
                         else
                         {
                             _logger.LogInformation("Notifying failure on {callId} of type {notificationType}", callId, call.NotificationType);
-                            _notificationService.NotifyOnFailure(callId);
+                            await _notificationService.NotifyOnFailure(callId);
                             call.HasNotifiedFailure = true;
                             await _tolkDbContext.SaveChangesAsync();
                         }

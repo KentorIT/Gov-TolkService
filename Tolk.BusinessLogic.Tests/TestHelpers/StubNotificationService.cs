@@ -23,7 +23,13 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void CustomerCreated(CustomerOrganisation customer) { }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task NotifyOnFailure(int callId) { }
+
+        public async Task OrderReplacementCreated(int replacedRequestId, int newRequestId) { }
+
+        public async Task RequestCreated(Request request) { }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition) { }
 
@@ -34,8 +40,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void OrderGroupCancelledByCustomer(RequestGroup requestGroup) { }
 
         public void OrderTerminated(Order order) { }
-
-        public async Task OrderReplacementCreated(int replacedRequestId, int newRequestId) { }
 
         public void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated) { }
 
@@ -61,7 +65,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestCompleted(Request request) { }
 
-        public async Task RequestCreated(Request request) { }
 
         public void RequestCreatedWithoutExpiry(Request request) { }
 
