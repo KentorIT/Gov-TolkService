@@ -356,6 +356,8 @@ namespace Tolk.BusinessLogic.Utilities
             => await complaints.GetComplaintsForEventLog()
                 .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .SingleOrDefaultAsync(o => o.ComplaintId == id);
+
         public static async Task<Complaint> GetFullComplaintById(this IQueryable<Complaint> complaints, int id)
             => await complaints.Include(r => r.CreatedByUser)
                 .Include(r => r.AnsweringUser)
