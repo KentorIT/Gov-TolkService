@@ -29,6 +29,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public async Task OrderReplacementCreated(int replacedRequestId, int newRequestId) { }
 
         public async Task RequestCreated(Request request) { }
+
+        public async Task RequestGroupCreated(RequestGroup requestGroup) { }
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition) { }
@@ -81,8 +83,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void RequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup) { }
 
         public void RequestGroupAnswerDenied(RequestGroup requestGroup) { }
-
-        public void RequestGroupCreated(RequestGroup requestGroup) { }
 
         public void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup) { }
 

@@ -46,7 +46,7 @@ namespace Tolk.BusinessLogic.Services
         void RequisitionCreated(Requisition requisition);
         void RequisitionReviewed(Requisition requisition);
         bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null);
-        void RequestGroupCreated(RequestGroup requestGroup);
+        Task RequestGroupCreated(RequestGroup requestGroup);
         void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup);
         void OrderGroupTerminated(OrderGroup terminatedOrderGroup);
         void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated);

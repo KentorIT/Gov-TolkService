@@ -237,6 +237,19 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
+        internal void SetExpiryManually(DateTimeOffset now, DateTimeOffset expiry, int userId, int? impersonatingUserId)
+        {
+            if (Status != RequestStatus.AwaitingDeadlineFromCustomer)
+            {
+                throw new InvalidOperationException($"There is no request awaiting deadline from customer on this order group {OrderGroupId}");
+            }
+            ExpiresAt = expiry;
+            OrderGroup.SetStatus(OrderStatus.Requested);
+            SetStatus(RequestStatus.Created);
+            RequestGroupUpdateLatestAnswerTime = new RequestGroupUpdateLatestAnswerTime { UpdatedAt = now, UpdatedBy = userId, ImpersonatorUpdatedBy = impersonatingUserId };
+
+        }
+
         #endregion
     }
 }

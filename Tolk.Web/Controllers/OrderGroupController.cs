@@ -129,11 +129,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmNoAnswer(int orderGroupId)
         {
-#warning include-fest
-            var orderGroup = await _dbContext.OrderGroups
-                .Include(og => og.StatusConfirmations)
-                .Include(og => og.Orders).ThenInclude(o => o.OrderStatusConfirmations)
-                .SingleAsync(og => og.OrderGroupId == orderGroupId);
+            var orderGroup = await _dbContext.OrderGroups.GetOrderGroupById(orderGroupId);
             if (orderGroup.Status == OrderStatus.NoBrokerAcceptedOrder && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
             {
                 try
@@ -154,11 +150,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmResponseNotAnswered(int orderGroupId)
         {
-            var orderGroup = await _dbContext.OrderGroups
-#warning include-fest
-                .Include(og => og.StatusConfirmations)
-                .Include(og => og.Orders).ThenInclude(o => o.OrderStatusConfirmations)
-                .SingleAsync(og => og.OrderGroupId == orderGroupId);
+            var orderGroup = await _dbContext.OrderGroups.GetOrderGroupById(orderGroupId);
             if (orderGroup.Status == OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
             {
                 try
@@ -199,17 +191,17 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> UpdateExpiry(int orderGroupId, DateTimeOffset latestAnswerBy)
         {
-            OrderGroup orderGroup = await GetOrderGroup(orderGroupId);
+            var orderGroup = await _dbContext.OrderGroups.GetOrderGroupById(orderGroupId);
 
             if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded)
             {
-                var requestGroup = orderGroup.RequestGroups.SingleOrDefault(r => r.Status == RequestStatus.AwaitingDeadlineFromCustomer);
+                var requestGroup = await _dbContext.RequestGroups.GetRequestGroupsForOrderGroup(orderGroupId).SingleOrDefaultAsync(r => r.Status == RequestStatus.AwaitingDeadlineFromCustomer);
                 if (requestGroup == null)
                 {
                     return RedirectToAction("Index", "Home", new { ErrorMessage = "Denna sammanhållna bokning behöver inte få sista svarstid satt." });
                 }
 
-                _orderService.SetRequestGroupExpiryManually(requestGroup, latestAnswerBy, User.GetUserId(), User.TryGetImpersonatorId());
+                await _orderService.SetRequestGroupExpiryManually(requestGroup, latestAnswerBy, User.GetUserId(), User.TryGetImpersonatorId());
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction("Index", "Home", new { message = $"Sista svarstid för sammanhållen bokning {orderGroup.OrderGroupNumber} är satt" });
             }

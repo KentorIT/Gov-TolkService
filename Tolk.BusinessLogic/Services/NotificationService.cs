@@ -355,7 +355,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void RequestGroupCreated(RequestGroup requestGroup)
+        public async Task RequestGroupCreated(RequestGroup requestGroup)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupCreated), nameof(NotificationService));
             var orderGroup = requestGroup.OrderGroup;
@@ -391,7 +391,7 @@ namespace Tolk.BusinessLogic.Services
             if (webhook != null)
             {
                 CreateWebHookCall(
-                    GetRequestGroupModel(requestGroup),
+                    await GetRequestGroupModel(requestGroup),
                     webhook.ContactInformation,
                     NotificationType.RequestGroupCreated,
                     webhook.RecipientUserId
@@ -1635,10 +1635,15 @@ Sammanställning:
             return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetWebHookListUrl(_tolkBaseOptions.TolkWebBaseUrl), textOverride);
         }
 
-        private static RequestGroupModel GetRequestGroupModel(RequestGroup requestGroup)
+        private async Task<RequestGroupModel> GetRequestGroupModel(RequestGroup requestGroup)
         {
             var orderGroup = requestGroup.OrderGroup;
-            var order = orderGroup.FirstOrder;
+            var order = await _dbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).OrderBy(o => o.OrderId).FirstAsync();
+            var locations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(order.OrderId).ToListAsync();
+            var competenceRequirements = await _dbContext.OrderGroupCompetenceRequirements.GetOrderedCompetenceRequirementsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            var requirements = await _dbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            var attachments = await _dbContext.Attachments.GetAttachmentsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            var priceRows = await _dbContext.OrderPriceRows.GetPriceRowsForOrderInOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             return new RequestGroupModel
             {
                 CreatedAt = requestGroup.CreatedAt,
@@ -1667,7 +1672,7 @@ Sammanställning:
                     Description = orderGroup.OtherLanguage ?? orderGroup.Language.Name,
                 },
                 ExpiresAt = requestGroup.ExpiresAt,
-                Locations = order.InterpreterLocations.Select(l => new LocationModel
+                Locations = locations.Select(l => new LocationModel
                 {
                     OffsiteContactInformation = l.OffSiteContactInformation,
                     Street = l.Street,
@@ -1675,7 +1680,7 @@ Sammanställning:
                     Rank = l.Rank,
                     Key = EnumHelper.GetCustomName(l.InterpreterLocation)
                 }),
-                CompetenceLevels = orderGroup.CompetenceRequirements.Select(c => new CompetenceModel
+                CompetenceLevels = competenceRequirements.Select(c => new CompetenceModel
                 {
                     Key = EnumHelper.GetCustomName(c.CompetenceLevel),
                     Rank = c.Rank ?? 0
@@ -1685,17 +1690,17 @@ Sammanställning:
                 AssignmentType = EnumHelper.GetCustomName(orderGroup.AssignmentType),
                 Description = order.Description,
                 CompetenceLevelsAreRequired = orderGroup.SpecificCompetenceLevelRequired,
-                Requirements = orderGroup.Requirements.Select(r => new RequirementModel
+                Requirements = requirements.Select(r => new RequirementModel
                 {
                     Description = r.Description,
                     IsRequired = r.IsRequired,
                     RequirementId = r.OrderGroupRequirementId,
                     RequirementType = EnumHelper.GetCustomName(r.RequirementType)
                 }),
-                Attachments = orderGroup.Attachments.Select(a => new AttachmentInformationModel
+                Attachments = attachments.Select(a => new AttachmentInformationModel
                 {
                     AttachmentId = a.AttachmentId,
-                    FileName = a.Attachment.FileName
+                    FileName = a.FileName
                 }),
                 Occasions = orderGroup.Orders.Select(o => new OccasionModel
                 {
@@ -1703,7 +1708,7 @@ Sammanställning:
                     StartAt = o.StartAt,
                     EndAt = o.EndAt,
                     IsExtraInterpreterForOrderNumber = o.IsExtraInterpreterForOrder?.OrderNumber,
-                    PriceInformation = o.PriceRows.GetPriceInformationModel(o.PriceCalculatedFromCompetenceLevel.GetCustomName(), requestGroup.Ranking.BrokerFee),
+                    PriceInformation = priceRows.Where(p => p.OrderId == o.OrderId).GetPriceInformationModel(o.PriceCalculatedFromCompetenceLevel.GetCustomName(), requestGroup.Ranking.BrokerFee),
                     MealBreakIncluded = o.MealBreakIncluded
                 })
             };

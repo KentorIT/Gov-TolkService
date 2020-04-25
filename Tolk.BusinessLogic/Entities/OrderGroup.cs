@@ -188,7 +188,7 @@ namespace Tolk.BusinessLogic.Entities
             return requestGroup;
         }
 
-        public void ConfirmNoAnswer(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        internal void ConfirmNoAnswer(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
         {
             if (Status != OrderStatus.NoBrokerAcceptedOrder)
             {
@@ -201,7 +201,7 @@ namespace Tolk.BusinessLogic.Entities
             AddStatusConfirmations(confirmedAt, userId, impersonatorId);
         }
 
-        public void ConfirmResponseNotAnswered(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
+        internal void ConfirmResponseNotAnswered(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
         {
             if (Status != OrderStatus.ResponseNotAnsweredByCreator)
             {
@@ -216,7 +216,7 @@ namespace Tolk.BusinessLogic.Entities
 
         private void AddStatusConfirmations(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
         {
-            Orders.Where(o => !o.OrderStatusConfirmations.Any(os => os.OrderStatus == Status) && o.Status == Status).ToList().ForEach(o => o.OrderStatusConfirmations.Add(new OrderStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, OrderStatus = Status, ConfirmedAt = confirmedAt }));
+            Orders.ForEach(o => o.OrderStatusConfirmations.Add(new OrderStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, OrderStatus = Status, ConfirmedAt = confirmedAt }));
             StatusConfirmations.Add(new OrderGroupStatusConfirmation { ConfirmedBy = userId, ImpersonatingConfirmedBy = impersonatorId, OrderStatus = Status, ConfirmedAt = confirmedAt });
         }
 

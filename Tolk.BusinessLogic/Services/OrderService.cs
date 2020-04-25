@@ -148,7 +148,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",
                         requestGroup.RequestGroupId, requestGroup.OrderGroupId, requestGroup.Ranking.BrokerId, requestGroup.ExpiresAt);
-                    _notificationService.RequestGroupCreated(newRequestGroup);
+                    await _notificationService.RequestGroupCreated(newRequestGroup);
                     return;
                 }
                 else
@@ -202,7 +202,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",
                         partialRequestGroup.RequestGroupId, partialRequestGroup.OrderGroupId, partialRequestGroup.Ranking.BrokerId, partialRequestGroup.ExpiresAt);
-                    _notificationService.RequestGroupCreated(newRequestGroup);
+                    await _notificationService.RequestGroupCreated(newRequestGroup);
                     return;
                 }
                 else
@@ -436,6 +436,10 @@ namespace Tolk.BusinessLogic.Services
         public async Task ConfirmGroupNoAnswer(OrderGroup orderGroup, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(ConfirmGroupNoAnswer), nameof(OrderService));
+            orderGroup.StatusConfirmations = await  _tolkDbContext.OrderGroupStatusConfirmations.GetStatusConfirmationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.Orders.ForEach(r => r.OrderStatusConfirmations = new List<OrderStatusConfirmation>());
+
             orderGroup.ConfirmNoAnswer(_clock.SwedenNow, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
         }
@@ -443,6 +447,9 @@ namespace Tolk.BusinessLogic.Services
         public async Task ConfirmGroupResponeNotAnswered(OrderGroup orderGroup, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(ConfirmGroupResponeNotAnswered), nameof(OrderService));
+            orderGroup.StatusConfirmations = await _tolkDbContext.OrderGroupStatusConfirmations.GetStatusConfirmationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.Orders.ForEach(r => r.OrderStatusConfirmations = new List<OrderStatusConfirmation>());
             orderGroup.ConfirmResponseNotAnswered(_clock.SwedenNow, userId, impersonatorId);
             await _tolkDbContext.SaveChangesAsync();
         }
@@ -532,21 +539,16 @@ namespace Tolk.BusinessLogic.Services
             _notificationService.RequestCreated(request);
         }
 
-        public void SetRequestGroupExpiryManually(RequestGroup requestGroup, DateTimeOffset expiry, int userId, int? impersonatingUserId)
+        public async Task SetRequestGroupExpiryManually(RequestGroup requestGroup, DateTimeOffset expiry, int userId, int? impersonatingUserId)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(SetRequestGroupExpiryManually), nameof(OrderService));
-            if (requestGroup.Status != RequestStatus.AwaitingDeadlineFromCustomer)
-            {
-                throw new InvalidOperationException($"There is no request awaiting deadline from customer on this order group {requestGroup.OrderGroupId}");
-            }
-            requestGroup.ExpiresAt = expiry;
-            requestGroup.OrderGroup.SetStatus(OrderStatus.Requested);
-            requestGroup.SetStatus(RequestStatus.Created);
-            requestGroup.RequestGroupUpdateLatestAnswerTime = new RequestGroupUpdateLatestAnswerTime { UpdatedAt = _clock.SwedenNow, UpdatedBy = userId, ImpersonatorUpdatedBy = impersonatingUserId };
 
-            // Log and notify
+            requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            requestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+
+            requestGroup.SetExpiryManually(_clock.SwedenNow, expiry, userId, impersonatingUserId);
             _logger.LogInformation($"Expiry {expiry} manually set on request group {requestGroup.RequestGroupId}");
-            _notificationService.RequestGroupCreated(requestGroup);
+            await _notificationService.RequestGroupCreated(requestGroup);
         }
 
         public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl)

@@ -550,6 +550,29 @@ namespace Tolk.BusinessLogic.Utilities
         public async static Task<OrderGroup> GetOrderGroupById(this IQueryable<OrderGroup> groups, int id)
             => await groups.SingleOrDefaultAsync(og => og.OrderGroupId == id);
 
+        public static IQueryable<OrderGroupStatusConfirmation> GetStatusConfirmationsForOrderGroup(this IQueryable<OrderGroupStatusConfirmation> confirmations, int id)
+            => confirmations.Where(o => o.OrderGroupId == id);
+        public static IQueryable<RequestGroup> GetRequestGroupsForOrderGroup(this IQueryable<RequestGroup> requestGroups, int id)
+            => requestGroups
+                .Include(r => r.OrderGroup).ThenInclude(og => og.CreatedByUser)
+                .Include(r => r.OrderGroup).ThenInclude(og => og.CustomerOrganisation)
+                .Include(r => r.OrderGroup).ThenInclude(og => og.Region)
+                .Include(r => r.OrderGroup).ThenInclude(og => og.Language)
+                .Include(r => r.OrderGroup).ThenInclude(og => og.CustomerUnit)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker);
+
+        public static IQueryable<OrderGroupCompetenceRequirement> GetOrderedCompetenceRequirementsForOrderGroup(this IQueryable<OrderGroupCompetenceRequirement> requirements, int id)
+            => requirements.Where(o => o.OrderGroupId == id);
+
+        public static IQueryable<OrderGroupRequirement> GetRequirementsForOrderGroup(this IQueryable<OrderGroupRequirement> requirements, int id)
+            => requirements.Where(o => o.OrderGroupId == id);
+
+        public static IQueryable<Attachment> GetAttachmentsForOrderGroup(this IQueryable<Attachment> attachments, int id)
+            => attachments.Where(a =>  a.OrderGroups.Any(g => g.OrderGroupId == id));
+
+        public static IQueryable<OrderPriceRow> GetPriceRowsForOrderInOrderGroup(this IQueryable<OrderPriceRow> rows, int id)
+            => rows.Include(p => p.PriceListRow).Where(p => p.Order.OrderGroupId == id);
+
         #endregion
     }
 
