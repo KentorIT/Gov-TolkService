@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 
@@ -61,7 +60,6 @@ namespace Tolk.Web.Models
                 SessionStartedAt = requisition.SessionStartedAt,
                 TimeWasteIWHTime = requisition.TimeWasteIWHTime,
                 TimeWasteNormalTime = requisition.TimeWasteNormalTime,
-                Outlay = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price,
                 PerDiem = requisition.PerDiem,
                 CarCompensation = requisition.CarCompensation,
                 InterpreterTaxCard = requisition.InterpretersTaxCard,

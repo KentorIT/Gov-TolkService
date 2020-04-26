@@ -1,7 +1,6 @@
 ﻿using DataTables.AspNet.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -10,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
@@ -30,6 +28,7 @@ namespace Tolk.Web.Controllers
         private readonly TolkOptions _options;
         private readonly RequisitionService _requisitionService;
         private readonly EventLogService _eventLogService;
+        private readonly ListToModelService _listToModelService;
 
         public RequisitionController(
             TolkDbContext dbContext,
@@ -37,6 +36,7 @@ namespace Tolk.Web.Controllers
             ILogger<RequisitionController> logger,
             IOptions<TolkOptions> options,
             RequisitionService requisitionService,
+            ListToModelService listToModelService,
             EventLogService eventLogService
             )
         {
@@ -45,6 +45,7 @@ namespace Tolk.Web.Controllers
             _logger = logger;
             _options = options?.Value;
             _requisitionService = requisitionService;
+            _listToModelService = listToModelService;
             _eventLogService = eventLogService;
         }
 
@@ -111,39 +112,32 @@ namespace Tolk.Web.Controllers
         public JsonResult ListColumnDefinition()
         {
             var definition = AjaxDataTableHelper.GetColumnDefinitions<RequisitionListItemModel>().ToList();
-            definition.Single(d => d.Name == nameof(RequisitionListItemModel.CustomerName)).Visible = User.TryGetBrokerId().HasValue; //or is sys/app admin 
-            definition.Single(d => d.Name == nameof(RequisitionListItemModel.BrokerName)).Visible = User.TryGetCustomerOrganisationId().HasValue; //or is sys/app admin 
+            definition.Single(d => d.Name == nameof(RequisitionListItemModel.CustomerName)).Visible = User.TryGetBrokerId().HasValue; 
+            definition.Single(d => d.Name == nameof(RequisitionListItemModel.BrokerName)).Visible = User.TryGetCustomerOrganisationId().HasValue; 
             return Json(definition);
         }
 
-        public async Task<IActionResult> View(int id)
+        public async Task<IActionResult> View(int id, bool returnPartial = false)
         {
-            var requisition = GetRequisition(id);
+            var requisition = await _dbContext.Requisitions.GetFullRequisitionById(id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
             {
                 var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
-                var isAdmin = User.IsInRole(Roles.SystemAdministrator);
-                var customerId = User.TryGetCustomerOrganisationId();
-                model.AllowCreation = !isAdmin && !customerId.HasValue
-                    && requisition.Request.Requisitions.All(r => r.Status == RequisitionStatus.Commented)
-                    && requisition.Request.Requisitions.OrderBy(r => r.CreatedAt).Last().RequisitionId == requisition.RequisitionId;
-                model.AllowProcessing = customerId.HasValue && requisition.ProcessAllowed && (await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded;
-                model.AllowConfirmNoReview = customerId.HasValue && requisition.CofirmNoReviewAllowed && (await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded;
-                model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
-                model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
+
+                model.UserCanAccept = (await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded;
+                model.UserCanCreate = (await _authorizationService.AuthorizeAsync(User, requisition.Request, Policies.Edit)).Succeeded;
                 model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
-                model.PreviousRequisitionView = GetPreviousRequisitionView(requisition.Request);
-                model.RelatedRequisitions = requisition.Request.Requisitions
-                    .OrderBy(r => r.CreatedAt)
-                    .Select(r => r.RequisitionId)
-                    .ToList();
+
+                await _listToModelService.AddInformationFromListsToModel(model);
+
                 model.EventLog = new EventLogModel
                 {
                     Header = "Rekvisitionshändelser",
                     Id = "EventLog_Requisition",
                     DynamicLoadPath = $"Requisition/{nameof(GetEventLog)}/{id}",
                 };
-                return PartialView(model);
+                if (returnPartial) { return PartialView(model); }
+                return View(model);
             }
             return Forbid();
         }
@@ -155,71 +149,29 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Broker)]
         public async Task<IActionResult> Create(int id)
         {
-#warning include-fest
-            var request = _dbContext.Requests
-                .Include(r => r.Requisitions).ThenInclude(r => r.Attachments).ThenInclude(a => a.Attachment)
-                .Include(r => r.Requisitions).ThenInclude(r => r.PriceRows)
-                .Include(r => r.Requisitions).ThenInclude(r => r.MealBreaks)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.Interpreter)
-                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Ranking).ThenInclude(r => r.Region)
-                .Include(r => r.PriceRows)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Single(o => o.RequestId == id);
+            var request = await _dbContext.Requests.GetRequestForOtherViewsById(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateRequisition)).Succeeded)
             {
-                if (!request.CanCreateRequisition)
+                try
                 {
-                    _logger.LogWarning("Wrong status when trying to Create requisition. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
-                    return RedirectToAction("View", "Request", new { id, tab = "requisition" });
-                }
+                    var model = RequisitionModel.GetModelFromRequest(request);
+                    Guid groupKey = Guid.NewGuid();
 
-                var model = RequisitionModel.GetModelFromRequest(request);
-                Guid groupKey = Guid.NewGuid();
-
-                //Get request model from db
-                if (model.PreviousRequisition != null)
-                {
-#warning include-fest
-                    var previousRequisition = _dbContext.Requisitions.Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                    .SingleOrDefault(r => r.RequisitionId == model.PreviousRequisition.RequisitionId);
-                    // Get the attachments from the previous requisition.
-                    List<FileModel> files = previousRequisition.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }).ToList();
-                    model.Files = files.Any() ? files : null;
-                    model.PreviousRequisition.ResultPriceInformationModel = GetRequisitionPriceInformation(previousRequisition, true);
-                    model.SessionStartedAt = previousRequisition.SessionStartedAt;
-                    model.SessionEndedAt = previousRequisition.SessionEndedAt;
-                    model.MealBreaks = previousRequisition.MealBreaks.Any() ? previousRequisition.MealBreaks : null;
+                    await _listToModelService.AddInformationFromListsToModel(model);
+                    model.FileGroupKey = groupKey;
+                    model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                    //beövs de nullas??
+                    model.Outlay = null;
+                    model.CarCompensation = null;
+                    model.PerDiem = null;
+                    return View(model);
                 }
-                if (model.MealBreaks != null && model.MealBreaks.Any())
+                catch (InvalidOperationException)
                 {
-                    foreach (MealBreak mb in model.MealBreaks)
-                    {
-                        mb.StartAtTemp = mb.StartAt.DateTime;
-                        mb.EndAtTemp = mb.EndAt.DateTime;
-                    }
+                    _logger.LogWarning("Can't create requisition. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
+                    return RedirectToAction("Index", "Home", new { errorMessage = $"Det gick inte att registrera rekvisition för {request.Order.OrderNumber}, det kan bero på att det redan finns en rekvisition registrerad." });
                 }
-                model.FileGroupKey = groupKey;
-                model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
-                model.RequestPriceInformationModel = GetRequisitionPriceInformation(request);
-                model.Outlay = null;
-                model.CarCompensation = null;
-                model.PerDiem = null;
-                if (request.RequestViews != null && request.RequestViews.Any(rv => rv.ViewedBy != User.GetUserId()))
-                {
-                    model.ViewedByUser = request.RequestViews.First(rv => rv.ViewedBy != User.GetUserId()).ViewedByUser.FullName + " håller också på med denna förfrågan";
-                }
-                return View(model);
             }
             return Forbid();
         }
@@ -267,20 +219,15 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Review(int requisitionId)
         {
-#warning include-fest
-            var requisition = _dbContext.Requisitions
-                .Include(r => r.Request).ThenInclude(r => r.Order)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.CreatedByUser)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Single(r => r.RequisitionId == requisitionId);
+            var requisition = await _dbContext.Requisitions.GetRequisitionById(requisitionId);
+
             if (ModelState.IsValid)
             {
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
                     try
                     {
-                        _requisitionService.Review(requisition, User.GetUserId(), User.TryGetImpersonatorId());
+                        await _requisitionService.Review(requisition, User.GetUserId(), User.TryGetImpersonatorId());
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -299,18 +246,15 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmNoReview(int requisitionId)
         {
-#warning include-fest
-            var requisition = _dbContext.Requisitions
-                .Include(r => r.Request).ThenInclude(r => r.Order)
-                    .Include(r => r.RequisitionStatusConfirmations)
-                .Single(r => r.RequisitionId == requisitionId);
+            var requisition = await _dbContext.Requisitions.GetRequisitionById(requisitionId);
+
             if (ModelState.IsValid)
             {
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
                     try
                     {
-                        _requisitionService.ConfirmNoReview(requisition, User.GetUserId(), User.TryGetImpersonatorId());
+                        await _requisitionService.ConfirmNoReview(requisition, User.GetUserId(), User.TryGetImpersonatorId());
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -331,18 +275,13 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-#warning include-fest
-                var requisition = _dbContext.Requisitions
-                    .Include(r => r.Request).ThenInclude(r => r.Order)
-                    .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(r => r.CreatedByUser)
-                    .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                    .Single(r => r.RequisitionId == model.RequisitionId);
+                var requisition = await _dbContext.Requisitions.GetRequisitionById(model.RequisitionId);
+
                 if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.Accept)).Succeeded)
                 {
                     try
                     {
-                        _requisitionService.Comment(requisition, User.GetUserId(), User.TryGetImpersonatorId(), model.CustomerComment);
+                        await _requisitionService.Comment(requisition, User.GetUserId(), User.TryGetImpersonatorId(), model.CustomerComment);
                     }
                     catch (InvalidOperationException ex)
                     {
@@ -359,7 +298,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {
-            var requisition = await _dbContext.Requisitions.GetRequisitionForEventLog(id);
+            var requisition = await _dbContext.Requisitions.GetRequisitionById(id);
             if ((await _authorizationService.AuthorizeAsync(User, requisition, Policies.View)).Succeeded)
             {
                 return PartialView("_EventLogDynamic", new EventLogModel
@@ -368,97 +307,6 @@ namespace Tolk.Web.Controllers
                 });
             }
             return Forbid();
-        }
-
-        private Requisition GetRequisition(int id)
-        {
-#warning include-fest
-            return _dbContext.Requisitions
-                .Include(r => r.CreatedByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.ProcessedUser)
-                .Include(r => r.RequisitionStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(req => req.RequisitionStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(pr => pr.PriceRows).ThenInclude(plr => plr.PriceListRow)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.CreatedByUser)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(req => req.Attachments).ThenInclude(a => a.Attachment)
-                .Include(r => r.Request).ThenInclude(r => r.Requisitions).ThenInclude(req => req.MealBreaks)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
-                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Request).ThenInclude(r => r.PriceRows).ThenInclude(r => r.PriceListRow)
-                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-                .Include(r => r.MealBreaks)
-                .Single(o => o.RequisitionId == id);
-        }
-
-        private static PriceInformationModel GetRequisitionPriceInformation(Requisition requisition, bool useDisplayHideInfo = false)
-        {
-            if (requisition.PriceRows == null)
-            {
-                return null;
-            }
-            List<MealBreakInformation> mealBreakInformation = null;
-
-            if (requisition.MealBreaks?.Count > 0)
-            {
-                mealBreakInformation = requisition.MealBreaks.Select(m => new MealBreakInformation
-                {
-                    StartAt = m.StartAt,
-                    EndAt = m.EndAt
-                }).ToList();
-            }
-            if (mealBreakInformation == null)
-            {
-                mealBreakInformation = new List<MealBreakInformation>();
-            }
-
-            PriceInformationModel pi = new PriceInformationModel
-            {
-                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = useDisplayHideInfo ? "Pris enligt tidigare rekvisition" : string.Empty,
-                UseDisplayHideInfo = useDisplayHideInfo,
-
-            };
-            pi.PriceInformationToDisplay.MealBreaks = mealBreakInformation;
-
-            return pi;
-        }
-
-        private static PriceInformationModel GetRequisitionPriceInformation(Request request)
-        {
-            if (request.PriceRows == null)
-            {
-                return null;
-            }
-            return new PriceInformationModel
-            {
-                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList()),
-                Header = "Beräknat pris enligt bokningsbekräftelse",
-                UseDisplayHideInfo = true,
-                MealBreakIsNotDetucted = request.Order.MealBreakIncluded ?? false,
-                Description = "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt"
-            };
-        }
-
-        private static RequisitionViewModel GetPreviousRequisitionView(Request request)
-        {
-            if (request.Requisitions == null || request.Requisitions.Count < 2)
-            {
-                return null;
-            }
-            var requisition = request.Requisitions
-                .Where(r => r.Status == RequisitionStatus.Commented || r.Status == RequisitionStatus.DeniedByCustomer)
-                .OrderByDescending(r => r.CreatedAt)
-                .First();
-            var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
-            model.ResultPriceInformationModel = GetRequisitionPriceInformation(requisition);
-            model.RequestPriceInformationModel = GetRequisitionPriceInformation(requisition.Request);
-            model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
-            return model;
         }
     }
 }

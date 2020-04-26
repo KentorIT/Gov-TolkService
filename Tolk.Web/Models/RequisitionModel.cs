@@ -59,18 +59,19 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Förväntad resekostnad (exkl. moms) i SEK")]
         [DataType(DataType.Currency)]
-        public decimal ExpectedTravelCosts { get; set; }
+        public virtual decimal ExpectedTravelCosts { get; set; }
 
         [Display(Name = "Faktisk resekostnad (exkl. moms) i SEK")]
         [DataType(DataType.Currency)]
-        public decimal TotalTravelCosts { get => Outlay ?? 0; }
+        public virtual decimal TotalTravelCosts => Outlay ?? 0;
+
 
         [Display(Name = "Utlägg för resa (exkl. moms) i SEK", Description = "Ange uppgift om utlägg utöver kostnader för eventuell bilersättning och traktamente")]
         [RegularExpression(@"^[^.]*$", ErrorMessage = "Värdet får inte innehålla punkttecken, ersätt med kommatecken")] // validate.js regex allows dots, despite explicitly ignoring them
         [Range(0, 999999, ErrorMessage = "Kontrollera värdet för utlägg")]
         [DataType(DataType.Currency)]
         [Placeholder("Utlägg i SEK")]
-        public decimal? Outlay { get; set; }
+        public virtual decimal? Outlay { get; set; }
 
         [Display(Name = "Bilersättning (antal km)", Description = "Ange uppgift om bilersättning ska utgå. Ange i antal hela kilometer.")]
         [Range(0, 100000, ErrorMessage = "Kontrollera värdet för bilersättning")]
@@ -170,13 +171,11 @@ namespace Tolk.Web.Models
                 ExpectedStartedAt = request.Order.StartAt,
                 SessionEndedAt = request.Order.EndAt,
                 SessionStartedAt = request.Order.StartAt,
-                ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 Interpreter = request.Interpreter.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 OrderNumber = request.Order.OrderNumber,
                 RegionName = request.Ranking.Region.Name,
-                PreviousRequisition = PreviousRequisitionViewModel.GetViewModelFromPreviousRequisition(request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Commented && !r.ReplacedByRequisitionId.HasValue)),
                 InterpreterLocation = (InterpreterLocation)request.InterpreterLocation,
                 MealBreakIncluded = request.Order.MealBreakIncluded
             };

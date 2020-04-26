@@ -125,7 +125,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Create(int id)
         {
-            Request request = await _dbContext.Requests.GetRequestForComplaintCreateById(id);
+            Request request = await _dbContext.Requests.GetRequestForOtherViewsById(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
             {

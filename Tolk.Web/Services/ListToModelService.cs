@@ -37,7 +37,7 @@ namespace Tolk.Web.Services
 
             model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForOrderAndGroup(id, model.OrderGroupId), "Bifogade filer från myndighet");
             model.PreviousRequests = await BrokerListModel.GetFromList(_dbContext.Requests.GetLostRequestsForOrder(id));
-            model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.OrderPriceRows.GetPriceRowsForOrder(id).ToListAsync(), PriceInformationType.Order, model.MealbreakIncluded);
+            model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.OrderPriceRows.GetPriceRowsForOrder(id).ToListAsync(), PriceInformationType.Order, mealBreakIncluded: model.MealbreakIncluded);
 
             model.Dialect = model.OrderRequirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.RequirementDescription;
             if (model.RequestId.HasValue)
@@ -49,7 +49,7 @@ namespace Tolk.Web.Services
                 model.HasResponseNotAnsweredByCreatorBrokerConfirmation = requestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator);
                 model.HasCancelledByCreatorWhenApprovedConfirmation = requestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved);
 
-                model.ActiveRequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(model.RequestId.Value).ToListAsync(), PriceInformationType.Request, model.MealbreakIncluded);
+                model.ActiveRequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(model.RequestId.Value).ToListAsync(), PriceInformationType.Request, mealBreakIncluded: model.MealbreakIncluded);
                 model.RequestAttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForRequest(model.RequestId.Value, model.RequestGroupId), "Bifogade filer från förmedling");
                 var requestChecks = await _dbContext.Requests
                     .Where(r => r.RequestId == model.RequestId.Value)
@@ -76,11 +76,84 @@ namespace Tolk.Web.Services
             return model;
         }
 
+        internal async Task<RequisitionModel> AddInformationFromListsToModel(RequisitionModel model)
+        {
+            model.RequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(model.RequestId).ToListAsync(), PriceInformationType.Request, mealBreakIncluded: model.MealBreakIncluded ?? false, description: "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt");
+            model.ExpectedTravelCosts = model.RequestPriceInformationModel.ExpectedTravelCosts;
+            var previousRequisition = await _dbContext.Requisitions.GetPreviosRequisitionByRequestId(model.RequestId);
+            if (previousRequisition != null)
+            {
+                previousRequisition.PriceRows = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(previousRequisition.RequisitionId).ToListAsync();
+                previousRequisition.Attachments = await _dbContext.RequisitionAttachments.GetRequisitionAttachmentsForRequisition(previousRequisition.RequisitionId).ToListAsync();
+                previousRequisition.MealBreaks = await _dbContext.MealBreaks.GetMealBreksForRequisition(previousRequisition.RequisitionId).ToListAsync();
+
+                model.PreviousRequisition = PreviousRequisitionViewModel.GetViewModelFromPreviousRequisition(previousRequisition);
+                model.PreviousRequisition.Outlay = previousRequisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price;
+                model.PreviousRequisition.ResultPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplayForRequisition(previousRequisition, true);
+
+                model.SessionStartedAt = previousRequisition.SessionStartedAt;
+                model.SessionEndedAt = previousRequisition.SessionEndedAt;
+                model.MealBreaks = previousRequisition.MealBreaks.Any() ? previousRequisition.MealBreaks : null;
+                if (model.MealBreaks != null && model.MealBreaks.Any())
+                {
+                    foreach (MealBreak mb in model.MealBreaks)
+                    {
+                        mb.StartAtTemp = mb.StartAt.DateTime;
+                        mb.EndAtTemp = mb.EndAt.DateTime;
+                    }
+                }
+                var files = previousRequisition.Attachments.Select(a => new FileModel
+                {
+                    Id = a.Attachment.AttachmentId,
+                    FileName = a.Attachment.FileName,
+                    Size = a.Attachment.Blob.Length
+                }).ToList();
+                model.Files = files.Any() ? files : null;
+            }
+            return model;
+        }
+
+        internal async Task<RequisitionViewModel> AddInformationFromListsToModel(RequisitionViewModel model)
+        {
+            var requisitions = await _dbContext.Requisitions.GetRequisitionsForRequest(model.RequestId).ToListAsync();
+            var viewedRequisition = requisitions.SingleOrDefault(r => r.RequisitionId == model.RequisitionId);
+            viewedRequisition.RequisitionStatusConfirmations = await _dbContext.RequisitionStatusConfirmations.GetRequisitionStatusConfirmationsForRequisition(viewedRequisition.RequisitionId).ToListAsync();
+            model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForRequisition(viewedRequisition.RequisitionId), "Bifogade filer");
+
+            model.CanProcess = viewedRequisition.ProcessAllowed;
+            model.CanConfirmNoReview = viewedRequisition.CofirmNoReviewAllowed;
+            model.CanReplaceRequisition = requisitions.All(r => r.Status == RequisitionStatus.Commented) && requisitions.OrderBy(r => r.CreatedAt).Last().RequisitionId == viewedRequisition.RequisitionId;
+            viewedRequisition.PriceRows = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(viewedRequisition.RequisitionId).ToListAsync();
+            viewedRequisition.MealBreaks = await _dbContext.MealBreaks.GetMealBreksForRequisition(viewedRequisition.RequisitionId).ToListAsync();
+            model.ResultPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplayForRequisition (viewedRequisition, false);
+            model.RequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(model.RequestId).ToListAsync(), PriceInformationType.Request, mealBreakIncluded: model.MealBreakIncluded ?? false, description : "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt");
+            if (requisitions.Count < 2)
+            {
+                return null;
+            }
+            var previousRequisition = requisitions
+                .Where(r => r.Status == RequisitionStatus.Commented || r.Status == RequisitionStatus.DeniedByCustomer)
+                .OrderByDescending(r => r.CreatedAt)
+                .First();
+
+            model.PreviousRequisitionView = RequisitionViewModel.GetPreviousRequisitionView(previousRequisition.Request);
+            model.PreviousRequisitionView.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForRequisition(previousRequisition.RequisitionId), "Bifogade filer");
+            previousRequisition.PriceRows = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(previousRequisition.RequisitionId).ToListAsync();
+            previousRequisition.MealBreaks = await _dbContext.MealBreaks.GetMealBreksForRequisition(previousRequisition.RequisitionId).ToListAsync();
+            model.PreviousRequisitionView.ResultPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplayForRequisition(previousRequisition, false);
+
+            model.RelatedRequisitions = requisitions
+                .OrderBy(r => r.CreatedAt)
+                .Select(r => r.RequisitionId)
+                .ToList();
+            return model;
+        }
+
         internal async Task<ReplaceOrderModel> AddInformationFromListsToModel(ReplaceOrderModel model)
         {
             int id = model.ReplacingOrderId;
             //LISTS
-            await GetOrderBaseLists(model, await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(id).ToListAsync(),  id);
+            await GetOrderBaseLists(model, await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(id).ToListAsync(), id);
 
             model.AttachmentListModel = await AttachmentListModel.GetEditableModelFromList(_dbContext.Attachments.GetAttachmentsForOrder(model.ReplacingOrderId), string.Empty, "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk");
             model.Files = model.AttachmentListModel.Files.Any() ? model.AttachmentListModel.Files : null;

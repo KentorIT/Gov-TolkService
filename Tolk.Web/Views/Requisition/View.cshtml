@@ -48,7 +48,7 @@
         <div class="col-sm-6">
             <display-entry asp-for="CustomerComment"></display-entry>
         </div>
-        @if (Model.AllowCreation)
+        @if (Model.AllowCreateNewRequisition)
         {
             <div class="col-sm-6">
                 <a class="btn btn-large btn-danger pull-right" href="@Url.Action("Create", new { id = Model.RequestId })">Ersätt rekvisition</a>

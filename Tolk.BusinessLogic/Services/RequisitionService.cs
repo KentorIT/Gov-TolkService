@@ -91,13 +91,13 @@ namespace Tolk.BusinessLogic.Services
                     _dbContext.TemporaryAttachmentGroups.Remove(tag);
                 }
                 request.CreateRequisition(requisition);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
                 var replacingRequisition = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Commented &&
                     !r.ReplacedByRequisitionId.HasValue);
                 if (replacingRequisition != null)
                 {
                     replacingRequisition.ReplacedByRequisitionId = requisition.RequisitionId;
-                    _dbContext.SaveChanges();
+                    await _dbContext.SaveChangesAsync();
                 }
                 transaction.Commit();
                 _logger.LogDebug($"Created requisition {requisition.RequisitionId} for request {request.RequestId}");
@@ -106,27 +106,28 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void Review(Requisition requisition, int userId, int? impersonatorId)
+        public async Task Review(Requisition requisition, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(requisition, nameof(Review), nameof(RequisitionService));
             requisition.Review(_clock.SwedenNow, userId, impersonatorId);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
             _logger.LogDebug($"Requisition reviewed {requisition.RequisitionId}");
             _notificationService.RequisitionReviewed(requisition);
         }
-        public void ConfirmNoReview(Requisition requisition, int userId, int? impersonatorId)
+        public async Task ConfirmNoReview(Requisition requisition, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(requisition, nameof(ConfirmNoReview), nameof(RequisitionService));
+            requisition.RequisitionStatusConfirmations = await _dbContext.RequisitionStatusConfirmations.GetRequisitionStatusConfirmationsForRequisition(requisition.RequisitionId).ToListAsync();
             requisition.CofirmNoReview(_clock.SwedenNow, userId, impersonatorId);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
             _logger.LogDebug($"Requisition confirmed with no review {requisition.RequisitionId}");
         }
 
-        public void Comment(Requisition requisition, int userId, int? impersonatorId, string message)
+        public async Task Comment(Requisition requisition, int userId, int? impersonatorId, string message)
         {
             NullCheckHelper.ArgumentCheckNull(requisition, nameof(Comment), nameof(RequisitionService));
             requisition.Comment(_clock.SwedenNow, userId, impersonatorId, message);
-            _dbContext.SaveChanges();
+            await _dbContext.SaveChangesAsync();
             _logger.LogDebug($"Requisition commented {requisition.RequisitionId}");
             _notificationService.RequisitionCommented(requisition);
         }

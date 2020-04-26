@@ -31,27 +31,43 @@ namespace Tolk.Web.Models
 
         public AttachmentListModel AttachmentListModel { get; set; }
 
-        public bool AllowCreation { get; set; }
+        public bool AllowCreateNewRequisition => UserCanCreate && CanReplaceRequisition;
 
-        public bool AllowProcessing { get; set; }
+        public bool CanReplaceRequisition { get; set; }
 
-        public bool AllowConfirmNoReview { get; set; }
+        public bool CanConfirmNoReview { get; set; }
+
+        public bool CanProcess { get; set; }
+
+        public bool UserCanAccept { get; set; }
+
+        public bool UserCanCreate { get; set; }
+
+        public bool AllowProcessing => UserCanAccept && CanProcess;
+
+        public bool AllowConfirmNoReview => UserCanAccept && CanProcess;
 
         [Display(Name = "Total summa")]
         [DataType(DataType.Currency)]
-        public decimal TotalPrice { get => ResultPriceInformationModel?.TotalPriceToDisplay ?? 0; }
+        public decimal TotalPrice => ResultPriceInformationModel?.TotalPriceToDisplay ?? 0; 
 
         public EventLogModel EventLog { get; set; }
 
-        public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequisitionStatus(Status); }
+        public string ColorClassName => CssClassHelper.GetColorClassNameForRequisitionStatus(Status); 
 
         public RequisitionViewModel PreviousRequisitionView { get; set; }
+
+        public override decimal ExpectedTravelCosts
+        {
+            get => ResultPriceInformationModel.ExpectedTravelCosts;
+            set => base.ExpectedTravelCosts = value;
+        }
 
         public IEnumerable<int> RelatedRequisitions { get; set; }
 
         #region methods
 
-        public static RequisitionViewModel GetViewModelFromRequisition(Requisition requisition)
+        internal static RequisitionViewModel GetViewModelFromRequisition(Requisition requisition)
         {
             if (requisition == null)
             {
@@ -61,7 +77,6 @@ namespace Tolk.Web.Models
             {
                 RequisitionId = requisition.RequisitionId,
                 RequestId = requisition.RequestId,
-                PreviousRequisition = PreviousRequisitionViewModel.GetViewModelFromPreviousRequisition(requisition.Request.Requisitions.SingleOrDefault(r => r.ReplacedByRequisitionId == requisition.RequisitionId)),
                 ReplacingRequisitionId = requisition.ReplacedByRequisitionId,
                 BrokerName = requisition.Request.Ranking.Broker.Name,
                 BrokerOrganizationnumber = requisition.Request.Ranking.Broker.OrganizationNumber,
@@ -71,8 +86,6 @@ namespace Tolk.Web.Models
                 ExpectedStartedAt = requisition.Request.Order.StartAt,
                 SessionEndedAt = requisition.SessionEndedAt,
                 SessionStartedAt = requisition.SessionStartedAt,
-                ExpectedTravelCosts = requisition.Request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
-                Outlay = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price ?? 0,
                 PerDiem = requisition.PerDiem,
                 CarCompensation = requisition.CarCompensation,
                 TimeWasteTotalTime = requisition.TimeWasteTotalTime,
@@ -85,19 +98,22 @@ namespace Tolk.Web.Models
                 CustomerComment = requisition.CustomerComment,
                 ContactPerson = requisition.Request.Order.ContactPersonUser?.CompleteContactInformation,
                 MealBreakIncluded = requisition.Request.Order.MealBreakIncluded,
-                AttachmentListModel = new AttachmentListModel
-                {
-                    AllowDelete = false,
-                    AllowDownload = true,
-                    AllowUpload = false,
-                    DisplayFiles = requisition.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }).ToList()
-                }
             };
+        }
+
+        internal static RequisitionViewModel GetPreviousRequisitionView(Request request)
+        {
+            if (request.Requisitions == null || request.Requisitions.Count < 2)
+            {
+                return null;
+            }
+            var requisition = request.Requisitions
+                .Where(r => r.Status == RequisitionStatus.Commented || r.Status == RequisitionStatus.DeniedByCustomer)
+                .OrderByDescending(r => r.CreatedAt)
+                .First();
+            var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
+            model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
+            return model;
         }
 
         #endregion

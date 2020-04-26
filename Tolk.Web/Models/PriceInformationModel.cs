@@ -43,7 +43,7 @@ namespace Tolk.Web.Models
             return GetPriceinformationToDisplay(order.PriceRows.OfType<PriceRowBase>().ToList(), PriceInformationType.Order, initialCollapse, order.MealBreakIncluded ?? false);
         }
 
-        internal static PriceInformationModel GetPriceinformationToDisplay(IEnumerable<PriceRowBase> priceRows, PriceInformationType type, bool initialCollapse = true, bool mealBreakIncluded = false)
+        internal static PriceInformationModel GetPriceinformationToDisplay(IEnumerable<PriceRowBase> priceRows, PriceInformationType type, bool initialCollapse = true, bool mealBreakIncluded = false, string description = null)
         {
             return new PriceInformationModel
             {
@@ -52,7 +52,8 @@ namespace Tolk.Web.Models
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(priceRows),
                 UseDisplayHideInfo = true,
                 InitialCollapse = initialCollapse,
-                ExpectedTravelCosts = priceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0
+                ExpectedTravelCosts = priceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
+                Description = description
             };
         }
 
@@ -63,6 +64,34 @@ namespace Tolk.Web.Models
                 return null;
             }
             return GetPriceinformationToDisplay(request.PriceRows.OfType<PriceRowBase>().ToList(), PriceInformationType.Request, initialCollapse, request.Order.MealBreakIncluded ?? false);
+        }
+
+        internal static PriceInformationModel GetPriceinformationToDisplayForRequisition(Requisition requisition, bool useDisplayHideInfo)
+        {
+            if (requisition.PriceRows == null)
+            {
+                return null;
+            }
+            List<MealBreakInformation> mealBreakInformation = new List<MealBreakInformation>();
+
+            if (requisition.MealBreaks?.Count > 0)
+            {
+                mealBreakInformation = requisition.MealBreaks.Select(m => new MealBreakInformation
+                {
+                    StartAt = m.StartAt,
+                    EndAt = m.EndAt
+                }).ToList();
+            }
+
+            PriceInformationModel pi = new PriceInformationModel
+            {
+                PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList()),
+                Header = useDisplayHideInfo ? "Pris enligt tidigare rekvisition" : string.Empty,
+                UseDisplayHideInfo = useDisplayHideInfo,
+            };
+            pi.PriceInformationToDisplay.MealBreaks = mealBreakInformation;
+
+            return pi;
         }
 
     }
