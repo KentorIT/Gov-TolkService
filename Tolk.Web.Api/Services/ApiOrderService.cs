@@ -13,6 +13,7 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
+using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web.Api.Services
 {
@@ -20,11 +21,13 @@ namespace Tolk.Web.Api.Services
     {
         private readonly TolkDbContext _dbContext;
         private readonly ILogger _logger;
+        private readonly CacheService _cacheService;
 
-        public ApiOrderService(TolkDbContext dbContext, ILogger<ApiOrderService> logger)
+        public ApiOrderService(TolkDbContext dbContext, ILogger<ApiOrderService> logger, CacheService cacheService)
         {
             _logger = logger;
             _dbContext = dbContext;
+            _cacheService = cacheService;
         }
 
         public async Task<Order> GetOrderAsync(string orderNumber, int brokerId)
@@ -91,8 +94,8 @@ namespace Tolk.Web.Api.Services
                     ReferenceNumber = request.Order.CustomerReferenceNumber,
                     UnitName = request.Order.CustomerUnit?.Name,
                     DepartmentName = request.Order.UnitName,
-                    UseSelfInvoicingInterpreter = request.Order.CustomerOrganisation.UseSelfInvoicingInterpreter
-                },
+                    UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter))
+        },
                 Region = request.Order.Region.Name,
                 ExpiresAt = request.ExpiresAt,
                 Language = new LanguageModel
@@ -199,7 +202,7 @@ namespace Tolk.Web.Api.Services
                     PriceListType = orderGroup.CustomerOrganisation.PriceListType.GetCustomName(),
                     TravelCostAgreementType = orderGroup.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
                     UnitName = orderGroup.CustomerUnit?.Name,
-                    UseSelfInvoicingInterpreter = orderGroup.CustomerOrganisation.UseSelfInvoicingInterpreter
+                    UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == orderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter))
                 },
                 Region = orderGroup.Region.Name,
                 ExpiresAt = requestGroup.ExpiresAt,

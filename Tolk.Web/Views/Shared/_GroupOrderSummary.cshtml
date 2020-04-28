@@ -274,16 +274,19 @@ else
                 <display-entry asp-for="Description" />
             </div>
             <div class="col-sm-4">
-                @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
+                @if (Model.UseAttachments)
                 {
-                    @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+                    @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
+                    {
+                        @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+                    }
+                    else
+                    {
+                        <label>Bifogade filer</label>
+                        <div class="no-value-info">Inga filer har bifogats</div>
+                    }
                 }
-                else
-                {
-                    <label>Bifogade filer</label>
-                    <div class="no-value-info">Inga filer har bifogats</div>
-                }
-            </div>
+                </div>
         }
     </div>
     <br />

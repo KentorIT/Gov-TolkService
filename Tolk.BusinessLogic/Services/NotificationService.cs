@@ -1490,7 +1490,7 @@ Sammanställning:
                     ReferenceNumber = order.CustomerReferenceNumber,
                     UnitName = order.CustomerUnit?.Name,
                     DepartmentName = order.UnitName,
-                    UseSelfInvoicingInterpreter = order.CustomerOrganisation.UseSelfInvoicingInterpreter
+                    UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter))
                 },
                 //D2 pads any single digit with a zero 1 -> "01"
                 Region = order.RegionId.ToSwedishString("D2"),
@@ -1662,7 +1662,7 @@ Sammanställning:
                     ReferenceNumber = order.CustomerReferenceNumber,
                     UnitName = orderGroup.CustomerUnit?.Name,
                     DepartmentName = order.UnitName,
-                    UseSelfInvoicingInterpreter = orderGroup.CustomerOrganisation.UseSelfInvoicingInterpreter
+                    UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == orderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter))
                 },
                 //D2 pads any single digit with a zero 1 -> "01"
                 Region = orderGroup.Region.RegionId.ToSwedishString("D2"),

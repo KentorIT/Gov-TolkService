@@ -22,6 +22,7 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly IAuthorizationService _authorizationService;
         private readonly OrderService _orderService;
+        private readonly CacheService _cacheService;
         private readonly ISwedishClock _clock;
         private readonly ILogger _logger;
 
@@ -30,7 +31,8 @@ namespace Tolk.Web.Controllers
             IAuthorizationService authorizationService,
             OrderService orderService,
             ISwedishClock clock,
-            ILogger<OrderController> logger
+            ILogger<OrderController> logger,
+            CacheService cacheService
             )
         {
             _dbContext = dbContext;
@@ -38,6 +40,7 @@ namespace Tolk.Web.Controllers
             _orderService = orderService;
             _clock = clock;
             _logger = logger;
+            _cacheService = cacheService;
         }
 
         public async Task<IActionResult> View(int id)
@@ -48,7 +51,6 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
             {
-
                 var allowEdit = (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
                 var activeRequestGroup = orderGroup.RequestGroups.OrderBy(r => r.RequestGroupId).Last();
 
@@ -63,7 +65,7 @@ namespace Tolk.Web.Controllers
                     DepartmentName = model.UnitName,
                     ReferenceNumber = model.CustomerReferenceNumber,
                     InvoiceReference = model.InvoiceReference,
-                    UseSelfInvoicingInterpreter = model.CustomerUseSelfInvoicingInterpreter
+                    UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == orderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter))
                 };
                 model.ActiveRequestGroup = RequestGroupViewModel.GetModelFromRequestGroup(activeRequestGroup);
                 model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;
@@ -71,6 +73,8 @@ namespace Tolk.Web.Controllers
                 model.AllowNoAnswerConfirmation = orderGroup.AllowNoAnswerConfirmation && allowEdit;
                 model.AllowResponseNotAnsweredConfirmation = orderGroup.AllowResponseNotAnsweredConfirmation && allowEdit;
                 model.AllowUpdateExpiry = orderGroup.AllowUpdateExpiry && allowEdit;
+                model.UseAttachments = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == orderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseAttachments));
+
                 return View(model);
             }
             return Forbid();

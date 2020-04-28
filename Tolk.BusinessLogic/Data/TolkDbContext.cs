@@ -90,6 +90,9 @@ namespace Tolk.BusinessLogic.Data
             builder.Entity<UserDefaultSetting>()
                 .HasKey(uds => new { uds.UserId, uds.DefaultSettingType });
 
+            builder.Entity<CustomerSetting>()
+                .HasKey(uds => new { uds.CustomerOrganisationId, uds.CustomerSettingType });
+
             builder.Entity<Order>()
                 .HasOne(o => o.CreatedByUser)
                 .WithMany()
@@ -617,6 +620,12 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<QuarantineHistoryEntry> QuarantineHistoryEntries { get; set; }
 
         public DbSet<UserDefaultSetting> UserDefaultSettings { get; set; }
+
+        public DbSet<CustomerSetting> CustomerSettings { get; set; }
+
+        public DbSet<CustomerSettingHistoryEntry> CustomerSettingHistoryEntries { get; set; }
+
+        public DbSet<CustomerChangeLogEntry> CustomerChangeLogEntries { get; set; }
 
         public DbSet<UserDefaultSettingHistoryEntry> UserDefaultSettingHistoryEntries { get; set; }
 

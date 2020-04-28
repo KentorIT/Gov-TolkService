@@ -207,6 +207,8 @@ namespace Tolk.Web.Models
 
         public bool TerminateOnDenial { get; set; } = false;
 
+        public bool UseAttachments { get; set; }
+
         private string DialectDescription
         {
             get

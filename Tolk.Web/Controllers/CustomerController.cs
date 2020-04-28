@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
@@ -11,6 +13,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
@@ -26,6 +29,7 @@ namespace Tolk.Web.Controllers
         private readonly RoleManager<IdentityRole<int>> _roleManager;
         private readonly INotificationService _notificationService;
         private readonly CacheService _cacheService;
+        private readonly ISwedishClock _clock;
 
         private int CentralAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
         private int CentralOrderHandlerRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
@@ -35,14 +39,15 @@ namespace Tolk.Web.Controllers
             IAuthorizationService authorizationService,
             RoleManager<IdentityRole<int>> roleManager,
             INotificationService notificationService,
-            CacheService cacheService
-        )
+            CacheService cacheService,
+            ISwedishClock clock)
         {
             _dbContext = dbContext;
             _authorizationService = authorizationService;
             _roleManager = roleManager;
             _notificationService = notificationService;
             _cacheService = cacheService;
+            _clock = clock;
         }
 
         public ActionResult Index()
@@ -76,10 +81,8 @@ namespace Tolk.Web.Controllers
 
         public async Task<ActionResult> View(int id, string message)
         {
-#warning move include
-            var customer = await _dbContext.CustomerOrganisations
-                .Include(c => c.ParentCustomerOrganisation)
-                .SingleAsync(c => c.CustomerOrganisationId == id);
+            var customer = await _dbContext.CustomerOrganisations.GetCustomerById(id);
+            customer.CustomerSettings = await _dbContext.CustomerSettings.GetCustomerSettingsForCustomer(id).ToListAsync();
             if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.View)).Succeeded)
             {
                 return View(CustomerModel.GetModelFromCustomer(customer, message, (await _authorizationService.AuthorizeAsync(User, customer, Policies.Edit)).Succeeded));
@@ -91,6 +94,7 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> Edit(int id)
         {
             var customer = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == id);
+            customer.CustomerSettings = await _dbContext.CustomerSettings.GetCustomerSettingsForCustomer(id).ToListAsync();
             if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.Edit)).Succeeded)
             {
                 return View(CustomerModel.GetModelFromCustomer(customer));
@@ -104,11 +108,14 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> Edit(CustomerModel model)
         {
             var customer = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == model.CustomerId);
+            customer.CustomerSettings = await _dbContext.CustomerSettings.GetCustomerSettingsForCustomer(customer.CustomerOrganisationId).ToListAsync();
             if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.Edit)).Succeeded)
             {
-                if (ModelState.IsValid && ValidateCustomer(model))
+                if (ModelState.IsValid)
                 {
                     model.UpdateCustomer(customer);
+                    var customerSettings = model.CustomerSettings.Select(cs => new CustomerSetting { CustomerSettingType = cs.CustomerSettingType, Value = cs.Value });
+                    customer.UpdateCustomerSettings(_clock.SwedenNow, User.GetUserId(), customerSettings);
                     await _dbContext.SaveChangesAsync();
                     await _cacheService.Flush(CacheKeys.Customers);
                     return RedirectToAction(nameof(View), new { Id = model.CustomerId, Message = "Myndighet har uppdaterats" });
@@ -121,8 +128,12 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.ApplicationAdministrator)]
         public ActionResult Create()
         {
-            return View(new CustomerModel { IsCreating = true });
+            return View(new CustomerModel { IsCreating = true, CustomerSettings = EmptyCustomerSettings });
         }
+
+        private static List<CustomerSettingModel> EmptyCustomerSettings => 
+            EnumHelper.GetAllDescriptions<CustomerSettingType>().OrderBy(e => e.Description)
+            .Select(e => new CustomerSettingModel() { CustomerSettingType = e.Value, Value = false }).ToList();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -132,17 +143,11 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid && ValidateCustomer(model))
             {
                 CustomerOrganisation customer = new CustomerOrganisation();
-                model.UpdateCustomer(customer);
-                customer.PriceListType = model.PriceListType.Value;
-                customer.OrganisationPrefix = model.OrganisationPrefix;
-                customer.TravelCostAgreementType = model.TravelCostAgreementType.Value;
+                model.UpdateCustomer(customer, true);
                 _dbContext.Add(customer);
                 await _cacheService.Flush(CacheKeys.Customers);
                 await _dbContext.SaveChangesAsync();
-#warning move include
-                customer = await _dbContext.CustomerOrganisations
-                    .Include(c => c.ParentCustomerOrganisation)
-                    .SingleAsync(c => c.CustomerOrganisationId == customer.CustomerOrganisationId);
+                customer = await _dbContext.CustomerOrganisations.GetCustomerById(customer.CustomerOrganisationId);
                 _notificationService.CustomerCreated(customer);
                 return RedirectToAction(nameof(View), new { Id = customer.CustomerOrganisationId, Message = "Myndighet har skapats" });
             }

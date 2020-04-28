@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -40,8 +41,25 @@ namespace Tolk.BusinessLogic.Entities
         [Required]
         public TravelCostAgreementType TravelCostAgreementType { get; set; }
 
-        public bool UseOrderGroups { get; set; }
+        public List<CustomerSetting> CustomerSettings { get; set; } = new List<CustomerSetting>();
 
-        public bool UseSelfInvoicingInterpreter { get; set; }
+        public List<CustomerChangeLogEntry> CustomerChangeLogEntries { get; set; } = new List<CustomerChangeLogEntry>();
+
+        public void UpdateCustomerSettings(DateTimeOffset changedAt, int userId, IEnumerable<CustomerSetting> updatedCustomerSettings)
+        {
+            var customerSettings = CustomerSettings.Select(c => new CustomerSettingHistoryEntry { CustomerSettingType = c.CustomerSettingType, Value = c.Value });
+            CustomerChangeLogEntries.Add(new CustomerChangeLogEntry
+            {
+                LoggedAt = changedAt,
+                UpdatedByUserId = userId,
+                CustomerChangeLogType = CustomerChangeLogType.Settings,
+                CustomerSettingHistories = customerSettings.ToList()
+            });
+            foreach (CustomerSetting cs in updatedCustomerSettings.ToList())
+            {
+                CustomerSettings.SingleOrDefault(c => c.CustomerSettingType == cs.CustomerSettingType).Value = cs.Value;
+            }
+        }
+
     }
 }

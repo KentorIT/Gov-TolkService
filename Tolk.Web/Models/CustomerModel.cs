@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Collections.Generic;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
@@ -54,6 +56,9 @@ namespace Tolk.Web.Models
 
         public AdminUnitFilterModel UnitFilterModel { get; set; }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
+        public List<CustomerSettingModel> CustomerSettings { get; set; }
+
         [Display(Name = "Använd sammanhållen bokning")]
         public bool UseOrderGroups { get; set; }
 
@@ -81,20 +86,25 @@ namespace Tolk.Web.Models
                     BackAction = "View",
                     BackId = customer.CustomerOrganisationId.ToSwedishString()
                 },
-                UseOrderGroups = customer.UseOrderGroups,
-                UseSelfInvoicingInterpreter = customer.UseSelfInvoicingInterpreter,
+                CustomerSettings = customer.CustomerSettings.Select(c => new CustomerSettingModel { CustomerSettingType = c.CustomerSettingType, Value = c.Value }).OrderBy(csm => csm.CustomerSettingType.GetDescription()).ToList(),
                 AllowEdit = allowEdit
             };
         }
 
-        internal void UpdateCustomer(CustomerOrganisation customer)
+        internal void UpdateCustomer(CustomerOrganisation customer, bool isNewCustomer = false)
         {
             customer.Name = Name;
             customer.ParentCustomerOrganisationId = ParentId;
             customer.EmailDomain = EmailDomain;
             customer.OrganisationNumber = OrganisationNumber;
-            customer.UseOrderGroups = UseOrderGroups;
-            customer.UseSelfInvoicingInterpreter = UseSelfInvoicingInterpreter;
+            if (isNewCustomer)
+            {
+                customer.PriceListType = PriceListType.Value;
+                customer.OrganisationPrefix = OrganisationPrefix;
+                customer.TravelCostAgreementType = TravelCostAgreementType.Value;
+                customer.CustomerSettings.AddRange(CustomerSettings.Select(c => new CustomerSetting { CustomerSettingType = c.CustomerSettingType, Value = c.Value }).ToList());
+            }
         }
+
     }
 }

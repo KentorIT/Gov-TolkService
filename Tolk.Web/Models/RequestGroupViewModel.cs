@@ -128,8 +128,7 @@ namespace Tolk.Web.Models
                     DepartmentName = order.UnitName,
                     InvoiceReference = order.InvoiceReference,
                     OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
-                    ReferenceNumber = order.CustomerReferenceNumber,
-                    UseSelfInvoicingInterpreter = orderGroup.CustomerOrganisation.UseSelfInvoicingInterpreter
+                    ReferenceNumber = order.CustomerReferenceNumber
                 },
 
                 AttachmentListModel = new AttachmentListModel

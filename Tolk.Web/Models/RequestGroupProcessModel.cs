@@ -13,6 +13,7 @@ namespace Tolk.Web.Models
     {
         //The following two properties will be used later, if AllowDeclineExtraInterpreter is allowed.
         public bool ShouldAssignInterpreter { get; set; } = true;
+
         public bool ShouldAssignExtraInterpreter { get; set; } = true;
 
         public bool AllowDeclineExtraInterpreter { get; set; }
@@ -149,8 +150,7 @@ namespace Tolk.Web.Models
                     DepartmentName = order.UnitName,
                     InvoiceReference = order.InvoiceReference,
                     OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
-                    ReferenceNumber = order.CustomerReferenceNumber,
-                    UseSelfInvoicingInterpreter = orderGroup.CustomerOrganisation.UseSelfInvoicingInterpreter
+                    ReferenceNumber = order.CustomerReferenceNumber
                 },
                 Description = order.Description,
                 LanguageName = orderGroup.LanguageName,

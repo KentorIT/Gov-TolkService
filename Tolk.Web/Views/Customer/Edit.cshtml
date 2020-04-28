@@ -1,6 +1,7 @@
 ﻿@model CustomerModel
 @inject SelectListService SelectListService
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Utilities
 @{
     ViewData["Title"] = "Ändra " + Model.Name;
 }
@@ -25,7 +26,16 @@
                 <form-entry asp-for="OrganisationNumber" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="UseOrderGroups" />
+                @if (Model.CustomerSettings.Any())
+                {
+                    int i = 0;
+                    foreach (CustomerSettingModel c in Model.CustomerSettings)
+                    {
+                        <input type="hidden" asp-for="CustomerSettings[i].CustomerSettingType" />
+                        <form-entry asp-for="CustomerSettings[i].Value" label-override="@EnumHelper.GetDescription(c.CustomerSettingType)" />
+                        i++;
+                    }
+                }
             </div>
             <div class="col-sm-4">
                 <display-entry asp-for="PriceListType" />
@@ -33,10 +43,9 @@
         </div>
         <div class="row">
             <div class="col-sm-4">
-                <form-entry asp-for="OrganisationPrefix" />
+                <display-entry asp-for="OrganisationPrefix" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="UseSelfInvoicingInterpreter" />
             </div>
             <div class="col-sm-4">
                 <display-entry asp-for="TravelCostAgreementType" />

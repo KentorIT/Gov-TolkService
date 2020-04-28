@@ -44,27 +44,27 @@
     <div id="@divId" class="@divClass">
         @if (displayGeneralOrderInfo)
         {
-        <div class="row">
-            <div class="col-sm-4">
-                <display-entry asp-for="LanguageAndDialect" />
+            <div class="row">
+                <div class="col-sm-4">
+                    <display-entry asp-for="LanguageAndDialect" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="RegionName" />
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="TimeRange" />
+                    @if (!string.IsNullOrEmpty(Model.DisplayMealBreakIncludedText))
+                    {
+                        <div class="detail-text mealbreak-info">
+                            @Model.DisplayMealBreakIncludedText
+                        </div>
+                    }
+                    @if (Model.LatestAnswerBy != null)
+                    {
+                        <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
+                    }
+                </div>
             </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="RegionName" />
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="TimeRange" />
-                @if (!string.IsNullOrEmpty(Model.DisplayMealBreakIncludedText))
-                {
-                    <div class="detail-text mealbreak-info">
-                        @Model.DisplayMealBreakIncludedText
-                    </div>
-                }
-                @if (Model.LatestAnswerBy != null)
-                {
-                    <display-entry asp-for="LatestAnswerBy" id="LatestAnswerBy" />
-                }
-            </div>
-        </div>
         }
         <div class="row">
             <div class="col-sm-4">
@@ -203,17 +203,6 @@
         </div>
         <div class="row">
             <div class="col-sm-4">
-                @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
-                {
-                    @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-                }
-                else
-                {
-                    <label>Bifogade filer</label>
-                    <div class="no-value-info">Inga filer har bifogats</div>
-                }
-            </div>
-            <div class="col-sm-4">
                 @if (Model.IsCreatorInterpreterUser != null)
                 {
                     <display-entry asp-for="IsCreatorInterpreterUser" />
@@ -226,6 +215,20 @@
             </div>
             <div class="col-sm-4">
                 <display-entry asp-for="Description" />
+            </div>
+            <div class="col-sm-4">
+                @if (Model.UseAttachments)
+                {
+                    @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
+                    {
+                        @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
+                    }
+                    else
+                    {
+                        <label>Bifogade filer</label>
+                        <div class="no-value-info">Inga filer har bifogats</div>
+                    }
+                }
             </div>
         </div>
         @if (ShowCalculatedPrice && Model.OrderCalculatedPriceInformationModel != null)

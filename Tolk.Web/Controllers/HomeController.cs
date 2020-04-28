@@ -204,7 +204,7 @@ namespace Tolk.Web.Controllers
             //Accepted ordergroups to approve 
             try
             {
-                if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UseOrderGroups))
+                if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)))
                 {
 #warning include-fest
                     actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
@@ -335,7 +335,7 @@ namespace Tolk.Web.Controllers
             //Ordergroups not answered by creator, no broker accepted order
             try
             {
-                if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UseOrderGroups))
+                if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)))
                 {
 #warning include-fest
                     actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
@@ -499,7 +499,7 @@ namespace Tolk.Web.Controllers
             //Sent ordergroups
             try
             {
-                if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UseOrderGroups))
+                if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)))
                 {
 #warning include-fest
                     sentOrders.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)

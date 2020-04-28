@@ -45,6 +45,8 @@
     <Compile Remove="Data\Migrations\20200131080842_NewTableOrderChangeConfirmation.Designer.cs" />
     <Compile Remove="Data\Migrations\20200325170835_AddTableUserDefaultSettingOrderRequirementHistoryEntry.cs" />
     <Compile Remove="Data\Migrations\20200325170835_AddTableUserDefaultSettingOrderRequirementHistoryEntry.Designer.cs" />
+    <Compile Remove="Data\Migrations\20200427194405_AddColumnToCustomerChangeLogEntry.cs" />
+    <Compile Remove="Data\Migrations\20200427194405_AddColumnToCustomerChangeLogEntry.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

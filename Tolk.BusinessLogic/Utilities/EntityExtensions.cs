@@ -536,6 +536,14 @@ namespace Tolk.BusinessLogic.Utilities
 
         #region Liv
 
+        public static async Task<CustomerOrganisation> GetCustomerById(this IQueryable<CustomerOrganisation> customers, int id)
+           => await customers
+               .Include(c => c.ParentCustomerOrganisation)
+               .SingleAsync(c => c.CustomerOrganisationId == id);
+
+        public static IQueryable<CustomerSetting> GetCustomerSettingsForCustomer(this IQueryable<CustomerSetting> customerSettings, int id)
+           => customerSettings.Where(c => c.CustomerOrganisationId == id);
+
         public static async Task<Requisition> GetPreviosRequisitionByRequestId(this IQueryable<Requisition> requisitions, int id)
             => await requisitions
                 .Include(r => r.CreatedByUser)

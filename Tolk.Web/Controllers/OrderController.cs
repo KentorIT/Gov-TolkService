@@ -105,6 +105,7 @@ namespace Tolk.Web.Controllers
                 model.OrderUpdateIsEnabled = _options.EnableOrderUpdate;
                 model.TimeIsValidForOrderReplacement = TimeIsValidForOrderReplacement(order.StartAt);
                 model.StartAtIsInFuture = order.StartAt > _clock.SwedenNow;
+                model.UseAttachments = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseAttachments));
 
                 if (request != null)
                 {
@@ -393,7 +394,8 @@ namespace Tolk.Web.Controllers
                 NextLastTimeForRequiringLatestAnswerBy = nextPanicTime.ToSwedishString("yyyy-MM-dd"),
                 CreatedByName = user.FullName,
                 UserDefaultSettings = DefaultSettingsModel.GetModel(user),
-                EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UseOrderGroups)
+                EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)),
+                UseAttachments = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseAttachments))
             };
             model.UpdateModelWithDefaultSettings(user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList());
             return View(model);
@@ -504,7 +506,7 @@ namespace Tolk.Web.Controllers
             updatedModel.LanguageName = order.OtherLanguage ?? language.Name;
             updatedModel.LatestAnswerBy = model.LatestAnswerBy;
             updatedModel.WarningOrderRequiredCompetenceInfo = CheckOrderCompetenceRequirements(order, language);
-
+            updatedModel.UseAttachments = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseAttachments));
             if (order.Attachments?.Count > 0)
             {
                 List<FileModel> attachments = new List<FileModel>();

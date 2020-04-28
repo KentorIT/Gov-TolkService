@@ -272,9 +272,6 @@
                             </div>
                             <div class="row">
                                 <div class="col-sm-4">
-                                    @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "För att bifoga dokument som är relevanta för tillsättning av tolk, klicka på knappen ”Bifoga filer” och följ instruktionerna. Beakta eventuell informationssekretess innan filer bifogas", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
-                                </div>
-                                <div class="col-sm-4">
                                     <label>Tillkommande krav <span class="form-entry-information glyphicon glyphicon-info-sign" title="Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål."></span> @HelpLinkService.Anchor("nybokning_krav")</label>
                                     <br />
                                     <a href="#" class="add-requirement-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addRequirement"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till krav</a>
@@ -295,6 +292,12 @@
                                             <tbody></tbody>
                                         </table>
                                     </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    @if (Model.UseAttachments)
+                                    {
+                                        @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "För att bifoga dokument som är relevanta för tillsättning av tolk, klicka på knappen ”Bifoga filer” och följ instruktionerna. Beakta eventuell informationssekretess innan filer bifogas", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
+                                    }
                                 </div>
                             </div>
                         </div>

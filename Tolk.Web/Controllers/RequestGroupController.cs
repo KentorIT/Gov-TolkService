@@ -31,6 +31,7 @@ namespace Tolk.Web.Controllers
         private readonly TolkOptions _options;
         private readonly InterpreterService _interpreterService;
         private readonly PriceCalculationService _priceCalculationService;
+        private readonly CacheService _cacheService;
 
         public RequestGroupController(
             TolkDbContext dbContext,
@@ -40,7 +41,8 @@ namespace Tolk.Web.Controllers
             ILogger<OrderController> logger,
             IOptions<TolkOptions> options,
             InterpreterService interpreterService,
-            PriceCalculationService priceCalculationService)
+            PriceCalculationService priceCalculationService,
+            CacheService cacheService)
         {
             _dbContext = dbContext;
             _authorizationService = authorizationService;
@@ -50,6 +52,7 @@ namespace Tolk.Web.Controllers
             _options = options.Value;
             _interpreterService = interpreterService;
             _priceCalculationService = priceCalculationService;
+            _cacheService = cacheService;
         }
 
         public async Task<IActionResult> View(int id)
@@ -63,6 +66,7 @@ namespace Tolk.Web.Controllers
                 }
                 var model = RequestGroupViewModel.GetModelFromRequestGroup(requestGroup, false);
                 model.CustomerInformationModel.IsCustomer = false;
+                model.CustomerInformationModel.UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == requestGroup.OrderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
                 model.OrderGroupModel = OrderGroupModel.GetModelFromOrderGroup(requestGroup.OrderGroup, requestGroup, true);
                 if (requestGroup.QuarantineId.HasValue)
                 {
@@ -74,6 +78,7 @@ namespace Tolk.Web.Controllers
                     }
                     model.OccasionList.Occasions = tempOccasionList;
                 }
+                model.OrderGroupModel.UseAttachments = true;
                 return View(model);
             }
             return Forbid();
@@ -82,7 +87,6 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Process(int id)
         {
             var requestGroup = await GetRequestGroupToProcess(id);
-
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
             {
@@ -98,6 +102,7 @@ namespace Tolk.Web.Controllers
                 }
                 var model = RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, Guid.NewGuid(), _options.CombinedMaxSizeAttachments, User.GetUserId(), _options.AllowDeclineExtraInterpreterOnRequestGroups);
                 model.CustomerInformationModel.IsCustomer = false;
+                model.CustomerInformationModel.UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == requestGroup.OrderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
                 //if not first broker in rank (requests are not answered and have no pricerows) we need to get a calculated price with correct broker fee 
                 if (requestGroup.Ranking.Rank != 1)
                 {

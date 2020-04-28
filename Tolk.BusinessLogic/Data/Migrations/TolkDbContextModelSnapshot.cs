@@ -403,6 +403,29 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("Complaints");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerChangeLogEntry", b =>
+                {
+                    b.Property<int>("CustomerChangeLogEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CustomerChangeLogType");
+
+                    b.Property<int>("CustomerOrganisationId");
+
+                    b.Property<DateTimeOffset>("LoggedAt");
+
+                    b.Property<int>("UpdatedByUserId");
+
+                    b.HasKey("CustomerChangeLogEntryId");
+
+                    b.HasIndex("CustomerOrganisationId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.ToTable("CustomerChangeLogEntries");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisation", b =>
                 {
                     b.Property<int>("CustomerOrganisationId")
@@ -429,15 +452,43 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("TravelCostAgreementType");
 
-                    b.Property<bool>("UseOrderGroups");
-
-                    b.Property<bool>("UseSelfInvoicingInterpreter");
-
                     b.HasKey("CustomerOrganisationId");
 
                     b.HasIndex("ParentCustomerOrganisationId");
 
                     b.ToTable("CustomerOrganisations");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSetting", b =>
+                {
+                    b.Property<int>("CustomerOrganisationId");
+
+                    b.Property<int>("CustomerSettingType");
+
+                    b.Property<bool>("Value");
+
+                    b.HasKey("CustomerOrganisationId", "CustomerSettingType");
+
+                    b.ToTable("CustomerSettings");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSettingHistoryEntry", b =>
+                {
+                    b.Property<int>("CustomerSettingHistoryEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CustomerChangeLogEntryId");
+
+                    b.Property<int>("CustomerSettingType");
+
+                    b.Property<bool>("Value");
+
+                    b.HasKey("CustomerSettingHistoryEntryId");
+
+                    b.HasIndex("CustomerChangeLogEntryId");
+
+                    b.ToTable("CustomerSettingHistoryEntries");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnit", b =>
@@ -2494,11 +2545,40 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerChangeLogEntry", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
+                        .WithMany("CustomerChangeLogEntries")
+                        .HasForeignKey("CustomerOrganisationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisation", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "ParentCustomerOrganisation")
                         .WithMany("SubCustomerOrganisations")
                         .HasForeignKey("ParentCustomerOrganisationId");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSetting", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
+                        .WithMany("CustomerSettings")
+                        .HasForeignKey("CustomerOrganisationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSettingHistoryEntry", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerChangeLogEntry", "CustomerChangeLogEntry")
+                        .WithMany("CustomerSettingHistories")
+                        .HasForeignKey("CustomerChangeLogEntryId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnit", b =>

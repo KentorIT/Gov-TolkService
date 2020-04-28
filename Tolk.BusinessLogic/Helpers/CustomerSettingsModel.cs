@@ -8,7 +8,8 @@ namespace Tolk.BusinessLogic.Helpers
     public class CustomerSettingsModel
     {
         public int CustomerOrganisationId { get; set; }
-        public bool UseOrderGroups { get; set; }
-        public bool UseSelfInvoicingInterpreter { get; set; }
+
+        public IEnumerable<CustomerSettingType> UsedCustomerSettingTypes { get; set; }
+
     }
 }

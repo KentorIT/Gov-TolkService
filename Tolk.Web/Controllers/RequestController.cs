@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -36,6 +35,7 @@ namespace Tolk.Web.Controllers
         private readonly InterpreterService _interpreterService;
         private readonly ListToModelService _listToModelService;
         private readonly EventLogService _eventLogService;
+        private readonly CacheService _cacheService;
 
         public RequestController(
             TolkDbContext dbContext,
@@ -48,8 +48,8 @@ namespace Tolk.Web.Controllers
             RequestService requestService,
             InterpreterService interpreterService,
             ListToModelService listToModelService,
-            EventLogService eventLogService
-        )
+            EventLogService eventLogService,
+            CacheService cacheService)
         {
             _dbContext = dbContext;
             _clock = clock;
@@ -62,6 +62,7 @@ namespace Tolk.Web.Controllers
             _interpreterService = interpreterService;
             _listToModelService = listToModelService;
             _eventLogService = eventLogService;
+            _cacheService = cacheService;
         }
 
         public IActionResult List()
@@ -136,6 +137,7 @@ namespace Tolk.Web.Controllers
                     model.ProcessReplacementRequestViewModel.IsReplacingOrderRequest = true;
                     model.ProcessReplacementRequestViewModel.RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId));
                 }
+                model.OrderViewModel.UseAttachments = true;
                 return View(model);
             }
             return Forbid();
@@ -553,8 +555,9 @@ namespace Tolk.Web.Controllers
                 Status = request.Status,
                 CreatedAt = model.CreatedAt
             };
+            model.OrderViewModel.UseAttachments = true;
             model.OrderViewModel = await _listToModelService.AddInformationFromListsToModel(model.OrderViewModel);
-
+            model.OrderViewModel.CustomerUseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
             return model;
         }
 
@@ -581,11 +584,11 @@ namespace Tolk.Web.Controllers
             model.ActiveRequest.TimeRange = model.TimeRange;
             model.ActiveRequest.DisplayMealBreakIncluded = model.DisplayMealBreakIncludedText;
             model.ActiveRequest.IsCancelled = model.Status == OrderStatus.CancelledByCreator || model.Status == OrderStatus.CancelledByBroker;
-
+            model.CustomerUseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
             //LISTS
             await _listToModelService.AddInformationFromListsToModel(model);
             model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
-
+            model.UseAttachments = true;
             model.EventLog = new EventLogModel
             {
                 Header = "Bokningshändelser",
