@@ -1,7 +1,9 @@
-﻿Ska kolla unika e-post enligt incheckat script.
+﻿Ska kolla unika e-post enligt incheckat script - körs med fördel kvällen innan
 
 Höj loggningsnivå på EF-loggningen (fundera på om det ska vara påslaget ett tag i början om vi lyft till 3.1) under "Logging":
  "Microsoft.EntityFrameworkCore": "Warning"
 
 Ev. fråga KamK, förmedlingarna om det är någon ska ha påslaget att tolk fakturerar.
 KT-1334 - Myndigheter som vill att tolken fakturerar själv s.k. YRKA-uppdrag
+
+Efter vi releasat lägg till CustomerChangeLog och kolla i CustomerSettingstabellen enligt incheckat script
