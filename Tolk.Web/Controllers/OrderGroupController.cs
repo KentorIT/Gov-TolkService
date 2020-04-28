@@ -73,7 +73,7 @@ namespace Tolk.Web.Controllers
                 model.AllowNoAnswerConfirmation = orderGroup.AllowNoAnswerConfirmation && allowEdit;
                 model.AllowResponseNotAnsweredConfirmation = orderGroup.AllowResponseNotAnsweredConfirmation && allowEdit;
                 model.AllowUpdateExpiry = orderGroup.AllowUpdateExpiry && allowEdit;
-                model.UseAttachments = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == orderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseAttachments));
+                model.UseAttachments = CachedUseAttachentSetting(orderGroup.CustomerOrganisationId);
 
                 return View(model);
             }
@@ -211,6 +211,8 @@ namespace Tolk.Web.Controllers
             }
             return Forbid();
         }
+
+        private bool CachedUseAttachentSetting(int customerOrganisationId) => _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseAttachments));
 
         private async Task<OrderGroup> GetOrderGroup(int id)
         {

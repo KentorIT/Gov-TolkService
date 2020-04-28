@@ -117,9 +117,6 @@
                 </div>
                 <div class="row">
                     <div class="col-sm-4">
-                        @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
-                    </div>
-                    <div class="col-sm-4">
                         <display-entry asp-for="SelectedInterpreterLocation" />
                         @if (!string.IsNullOrEmpty(Model.LocationStreet))
                         {
@@ -129,6 +126,12 @@
                         else
                         {
                             <form-entry asp-for="OffSiteContactInformation" />
+                        }
+                    </div>
+                    <div class="col-sm-4">
+                        @if (Model.UseAttachments)
+                        {
+                            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta vid tillsättning av tolk", Title = string.Empty })
                         }
                     </div>
                 </div>
