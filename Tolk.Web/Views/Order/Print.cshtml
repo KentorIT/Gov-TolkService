@@ -103,7 +103,7 @@
                             <td class="order-print-column">
                                 <span class="bold">Datum och tid för uppdrag: </span>@Model.TimeRange.StartDateTime.Value.ToString("yyyy-MM-dd HH:mm")-@Model.TimeRange.EndDateTime.Value.ToString("HH:mm")<br />
                                 <span class="bold">Språk: </span>@Model.LanguageName @Model.Dialect<br />
-                                <span class="bold">Är tolkanvändare samma person som bokar: </span>@(Model.CreatorIsInterpreterUser?.SelectedItem == null ? "Ej angivet" : @Model.CreatorIsInterpreterUser.SelectedItem.Text)<br /><br />
+                                <span class="bold">Är tolkanvändare samma person som bokar: </span>@(Model.IsCreatorInterpreterUser.HasValue ? @Model.IsCreatorInterpreterUser.Value ? "Ja" : "Nej" : "Ej angivet")<br /><br />
                                 <span class="bold">Inställelsesätt: </span>@Model.InterpreterLocationAnswer.GetDescription()<br />
                                 @Model.InterpreterLocationInfoAnswer<br /><br />
                                 @if (Model.ActiveRequest.DisplayExpectedTravelCostInfo)
@@ -165,14 +165,14 @@
                                     </span>
                                     <table>
                                         <tbody>
-                                                @foreach (var file in Model.RequestAttachmentListModel.DisplayFiles)
-                                                {
-                                                    <tr>
-                                                        <td>
-                                                            @file.FileName
-                                                        </td>
-                                                    </tr>
-                                                }
+                                            @foreach (var file in Model.RequestAttachmentListModel.DisplayFiles)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @file.FileName
+                                                    </td>
+                                                </tr>
+                                            }
                                         </tbody>
                                     </table>
 

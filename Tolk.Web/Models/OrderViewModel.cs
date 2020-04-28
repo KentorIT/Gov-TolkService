@@ -108,9 +108,6 @@ namespace Tolk.Web.Models
         [Placeholder("Beskriv anledning till avbokning.")]
         public string CancelMessage { get; set; }
 
-        [Display(Name = "Är tolkanvändare samma person som bokar")]
-        public bool? IsCreatorInterpreterUser { get; set; }
-
         #endregion
 
         public bool OrderUpdateIsEnabled { get; set; } = false;
@@ -343,13 +340,12 @@ namespace Tolk.Web.Models
             competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
             OrderCompetenceRequirement competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
             OrderCompetenceRequirement competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
-
             return new OrderViewModel
             {
                 //Dont like, should be possible to make lighter.
                 AllowExceedingTravelCost = new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) },
                 AssignmentType = order.AssignmentType,
-                CreatorIsInterpreterUser = order.CreatorIsInterpreterUser.HasValue ? new RadioButtonGroup { SelectedItem = SelectListService.BoolList.Single(e => e.Value == (order.CreatorIsInterpreterUser.Value ? TrueFalse.Yes.ToString() : TrueFalse.No.ToString())) } : null,
+                IsCreatorInterpreterUser = order.CreatorIsInterpreterUser,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 InvoiceReference = order.InvoiceReference,
                 TimeRange = new TimeRange

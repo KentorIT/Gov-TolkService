@@ -97,9 +97,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden", Description = "Vid tolkning med inställelsesätt På plats eller Distans i anvisad lokal har förmedlingen rätt att debitera kostnader för tolkens resor upp till ramavtalets gränsvärden på 2 timmars restid eller 100 km resväg. Resekostnader som överskrider gränsvärdena måste godkännas av myndighet i förväg. Genom att du markerat denna ruta måste förmedlingen ange bedömd resekostnad för tillsatt tolk i sin bekräftelse. Du får ett e-postmeddelande när bekräftelsen kommit. Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen.")]
         public RadioButtonGroup AllowExceedingTravelCost { get; set; }
 
-        [Display(Name = "Är tolkanvändare samma person som bokar", Description = "Ange om du som bokar är den som ska använda tolken, annars har du möjlighet att fylla i uppgifter om tolkanvändaren i fältet för Övrig information om uppdraget.")]
-        [ClientRequired]
-        public RadioButtonGroup CreatorIsInterpreterUser { get; set; }
+        [Display(Name = "Är tolkanvändare samma person som bokar")]
+        public bool? IsCreatorInterpreterUser { get; set; }
 
         public IEnumerable<OrderOccasionDisplayModel> OrderOccasionDisplayModels { get; set; }
 

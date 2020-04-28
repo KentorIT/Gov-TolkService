@@ -92,6 +92,10 @@ namespace Tolk.Web.Models
         [StringLength(255)]
         public string OtherLanguage { get; set; }
 
+        [Display(Name = "Är tolkanvändare samma person som bokar", Description = "Ange om du som bokar är den som ska använda tolken, annars har du möjlighet att fylla i uppgifter om tolkanvändaren i fältet för Övrig information om uppdraget.")]
+        [ClientRequired]
+        public RadioButtonGroup CreatorIsInterpreterUser { get; set; }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderOccasionModel> Occasions { get; set; }
 

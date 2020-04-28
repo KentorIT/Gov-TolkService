@@ -244,7 +244,6 @@ namespace Tolk.Web.Controllers
                     model.LocationCity = selectedLocation.City;
                     model.LocationStreet = selectedLocation.Street;
                 }
-                model.ContactPersonId = order.ContactPersonId;
                 model.UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId());
                 return View(model);
             }

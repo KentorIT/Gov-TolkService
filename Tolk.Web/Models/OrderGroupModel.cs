@@ -92,11 +92,7 @@ namespace Tolk.Web.Models
                         SelectedItem = orderGroup.FirstOrder.AllowExceedingTravelCost == null ? null :
                     SelectListService.AllowExceedingTravelCost.Single(e => e.Value == orderGroup.FirstOrder.AllowExceedingTravelCost.ToString())
                     },
-                CreatorIsInterpreterUser = orderGroup.CreatorIsInterpreterUser.HasValue ? new RadioButtonGroup
-                {
-                    SelectedItem = SelectListService.BoolList.Single(e => e.Value == (orderGroup.CreatorIsInterpreterUser.Value ?
-                    TrueFalse.Yes.ToString() : TrueFalse.No.ToString()))
-                } : null,
+                IsCreatorInterpreterUser = orderGroup.CreatorIsInterpreterUser,
 
                 Description = orderGroup.FirstOrder.Description,
 

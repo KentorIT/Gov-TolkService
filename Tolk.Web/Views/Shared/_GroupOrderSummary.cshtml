@@ -258,9 +258,9 @@ else
     </div>
     <div class="row">
         <div class="col-sm-4">
-            @if (Model.CreatorIsInterpreterUser != null && Model.CreatorIsInterpreterUser.SelectedItem != null)
+            @if (Model.IsCreatorInterpreterUser != null)
             {
-                <display-entry asp-for="CreatorIsInterpreterUser" />
+                <display-entry asp-for="IsCreatorInterpreterUser" />
             }
             else
             {

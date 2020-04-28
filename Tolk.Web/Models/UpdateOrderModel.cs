@@ -88,6 +88,8 @@ namespace Tolk.Web.Models
                 InvoiceReference = order.InvoiceReference,
                 CustomerUnitName = order.CustomerUnit?.Name,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
+                IsCreatorInterpreterUser = order.CreatorIsInterpreterUser,
+                ContactPersonId = order.ContactPersonId
             };
         }
     }

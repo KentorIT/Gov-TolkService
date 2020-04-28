@@ -68,7 +68,7 @@ namespace Tolk.Web.Models
                 },
                 CustomerUnitName = order.CustomerUnit?.Name,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
-                CreatorIsInterpreterUser = order.CreatorIsInterpreterUser.HasValue ? new RadioButtonGroup { SelectedItem = SelectListService.BoolList.Single(e => e.Value == (order.CreatorIsInterpreterUser.Value ? TrueFalse.Yes.ToString() : TrueFalse.No.ToString())) } : null,
+                IsCreatorInterpreterUser = order.CreatorIsInterpreterUser,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 ReplacedTimeRange = new TimeRange
                 {
