@@ -105,7 +105,6 @@ namespace Tolk.Web.Controllers
                 model.OrderUpdateIsEnabled = _options.EnableOrderUpdate;
                 model.TimeIsValidForOrderReplacement = TimeIsValidForOrderReplacement(order.StartAt);
                 model.StartAtIsInFuture = order.StartAt > _clock.SwedenNow;
-                model.UseAttachments = CachedUseAttachentSetting(order.CustomerOrganisationId); 
 
                 if (request != null)
                 {
@@ -124,6 +123,7 @@ namespace Tolk.Web.Controllers
                 model.ActiveRequest.IsCancelled = model.Status == OrderStatus.CancelledByCreator || model.Status == OrderStatus.CancelledByBroker;
 
                 //LISTS
+                model.UseAttachments = CachedUseAttachentSetting(order.CustomerOrganisationId);
                 await _listToModelService.AddInformationFromListsToModel(model);
                 model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
 
@@ -158,7 +158,7 @@ namespace Tolk.Web.Controllers
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(replacingOrderId);
                 if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
                 {
-                    return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name)));
+                    return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()))));
                 }
                 else
                 {
@@ -189,7 +189,7 @@ namespace Tolk.Web.Controllers
                             order.CompetenceRequirements = await _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(order.OrderId).ToListAsync();
                             order.InterpreterLocations = new List<OrderInterpreterLocation>();
                             Order replacementOrder = new Order(order);
-                            model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value);
+                            model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value, CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
 #warning Det är i denna som det finns en massa saker som behöver kollas!!!
                             await _orderService.ReplaceOrder(order, replacementOrder, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
                             await _dbContext.SaveChangesAsync();
@@ -222,15 +222,18 @@ namespace Tolk.Web.Controllers
                 model.RequestedCompetenceLevelSecond = competenceRequirements.Count > 1 ? competenceRequirements[1]?.CompetenceLevel : null;
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
-                var files = await _dbContext.Attachments.GetAttachmentsForOrderAndGroup(id, order.OrderGroupId)
-                    .Select(a => new FileModel
-                    {
-                        FileName = a.FileName,
-                        Id = a.AttachmentId,
-                        Size = a.Blob.Length
-                    }).ToListAsync();
-                model.Files = files.Any() ? files : null;
-
+                model.UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId());
+                if (model.UseAttachments)
+                {
+                    var files = await _dbContext.Attachments.GetAttachmentsForOrderAndGroup(id, order.OrderGroupId)
+                        .Select(a => new FileModel
+                        {
+                            FileName = a.FileName,
+                            Id = a.AttachmentId,
+                            Size = a.Blob.Length
+                        }).ToListAsync();
+                    model.Files = files.Any() ? files : null;
+                }
                 var locations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(model.OrderId).ToListAsync();
                 var selectedLocation = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(model.OrderId).SingleAsync(l => l.InterpreterLocation == selectedInterpreterLocation);
                 model.RankedInterpreterLocationFirst = locations.Single(l => l.Rank == 1).InterpreterLocation;
@@ -244,7 +247,6 @@ namespace Tolk.Web.Controllers
                     model.LocationCity = selectedLocation.City;
                     model.LocationStreet = selectedLocation.Street;
                 }
-                model.UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId());
                 return View(model);
             }
             return Forbid();
@@ -396,7 +398,7 @@ namespace Tolk.Web.Controllers
                 UserDefaultSettings = DefaultSettingsModel.GetModel(user),
                 EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)),
                 UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId())
-        };
+            };
             model.UpdateModelWithDefaultSettings(user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList());
             return View(model);
         }
@@ -422,7 +424,7 @@ namespace Tolk.Web.Controllers
                     if (model.IsMultipleOrders)
                     {
                         var orderGroup = await CreateNewOrderGroup(await GetOrdersForGroup(model));
-                        model.UpdateOrderGroup(orderGroup);
+                        model.UpdateOrderGroup(orderGroup, CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
                         await _dbContext.AddAsync(orderGroup);
                         //TODO: LASTANSWER BY HAS TO BE NULL IF NOT ONLY ONE OCCASION WITH EXTRA INTERPRETER!!
                         await _orderService.CreateRequestGroup(orderGroup, latestAnswerBy: model.LatestAnswerBy);
@@ -435,7 +437,7 @@ namespace Tolk.Web.Controllers
                     {
                         Order order = await CreateNewOrder();
                         var firstOccasion = model.FirstOccasion;
-                        model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
+                        model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
                         await _dbContext.AddAsync(order);
                         await _dbContext.SaveChangesAsync(); // Save changes to get id for event log
 
@@ -460,7 +462,7 @@ namespace Tolk.Web.Controllers
             OrderViewModel updatedModel = null;
             var firstOccasion = model.FirstOccasion;
             string warningOrderTimeInfo = string.Empty;
-            model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden());
+            model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
 #warning Här har jag inte fixat alla delar än...
             updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
             if (model.IsMultipleOrders)
@@ -525,7 +527,6 @@ namespace Tolk.Web.Controllers
                     DisplayFiles = attachments
                 };
             }
-
             var user = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single();
             updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
             updatedModel.CreatedBy = order.ContactInformation;
@@ -1001,7 +1002,7 @@ namespace Tolk.Web.Controllers
         }
 
         private bool CachedUseAttachentSetting(int customerOrganisationId) => _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseAttachments));
-        
+
         private async Task<OrderGroup> CreateNewOrderGroup(List<Order> orders)
         {
             (AspNetUser user, AspNetUser impersonatingUser) = await GetUsers();

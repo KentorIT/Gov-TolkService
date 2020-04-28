@@ -272,9 +272,9 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        internal void UpdateOrderGroup(OrderGroup orderGroup)
+        internal void UpdateOrderGroup(OrderGroup orderGroup, bool useAttachments)
         {
-            orderGroup.Attachments = Files?.Select(f => new OrderGroupAttachment { AttachmentId = f.Id }).ToList();
+            orderGroup.Attachments = useAttachments ? Files?.Select(f => new OrderGroupAttachment { AttachmentId = f.Id }).ToList() : null;
             var location = RankedInterpreterLocationFirst.Value;
             orderGroup.InterpreterLocations.Add(new OrderGroupInterpreterLocation { Rank = 1, InterpreterLocation = location });
             if (RankedInterpreterLocationSecond.HasValue)
@@ -401,7 +401,7 @@ namespace Tolk.Web.Models
             }
         }
 
-        internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false, bool isGroupOrder = false)
+        internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false, bool isGroupOrder = false, bool useAttachments = false)
         {
             order.CustomerReferenceNumber = CustomerReferenceNumber;
             order.StartAt = startAt;
@@ -409,7 +409,7 @@ namespace Tolk.Web.Models
             order.Description = Description;
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;
-            if (!isGroupOrder)
+            if (!isGroupOrder && useAttachments)
             {
                 order.Attachments = Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList();
             }

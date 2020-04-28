@@ -45,7 +45,7 @@ namespace Tolk.Web.Models
         [StayWithinOriginalRange(ErrorMessage = "Uppdraget måste ske inom tiden för det ersatta uppdraget", OtherRangeProperty = nameof(ReplacedTimeRange))]
         public TimeRange TimeRange { get; set; }
 
-        internal static ReplaceOrderModel GetModelFromOrder(Order order, string cancelMessage, string brokerName)
+        internal static ReplaceOrderModel GetModelFromOrder(Order order, string cancelMessage, string brokerName, bool useAttachments)
         {
             var model = new ReplaceOrderModel
             {
@@ -84,10 +84,11 @@ namespace Tolk.Web.Models
                 },
                 Description = order.Description,
                 UnitName = order.UnitName,
+                UseAttachments = useAttachments
             };
             return model;
         }
-        internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt)
+        internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool useAttachments)
         {
             order.ReplacingOrderId = ReplacingOrderId;
             order.CustomerReferenceNumber = CustomerReferenceNumber;
@@ -96,7 +97,7 @@ namespace Tolk.Web.Models
             order.Description = Description;
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;
-            order.Attachments = Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList();
+            order.Attachments = useAttachments ? Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList() : null;
             order.InvoiceReference = InvoiceReference;
             // need to be able to change the locations after getting the replaced order´s information copied...
             order.InterpreterLocations.Clear();

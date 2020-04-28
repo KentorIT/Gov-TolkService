@@ -586,9 +586,9 @@ namespace Tolk.Web.Controllers
             model.ActiveRequest.IsCancelled = model.Status == OrderStatus.CancelledByCreator || model.Status == OrderStatus.CancelledByBroker;
             model.CustomerUseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
             //LISTS
+            model.UseAttachments = true;
             await _listToModelService.AddInformationFromListsToModel(model);
             model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
-            model.UseAttachments = true;
             model.EventLog = new EventLogModel
             {
                 Header = "Bokningshändelser",
