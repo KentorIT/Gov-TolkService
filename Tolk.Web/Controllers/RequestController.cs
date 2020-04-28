@@ -556,7 +556,8 @@ namespace Tolk.Web.Controllers
                 CreatedAt = model.CreatedAt
             };
             model.OrderViewModel.UseAttachments = true;
-            model.OrderViewModel = await _listToModelService.AddInformationFromListsToModel(model.OrderViewModel);
+            await _listToModelService.AddInformationFromListsToModel(model.OrderViewModel);
+            model.AttachmentListModel = model.OrderViewModel.RequestAttachmentListModel;
             model.OrderViewModel.CustomerUseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
             return model;
         }
@@ -588,6 +589,7 @@ namespace Tolk.Web.Controllers
             //LISTS
             model.UseAttachments = true;
             await _listToModelService.AddInformationFromListsToModel(model);
+            model.ActiveRequest.AttachmentListModel = model.RequestAttachmentListModel;
             model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
             model.EventLog = new EventLogModel
             {

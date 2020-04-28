@@ -126,7 +126,7 @@ namespace Tolk.Web.Controllers
                 model.UseAttachments = CachedUseAttachentSetting(order.CustomerOrganisationId);
                 await _listToModelService.AddInformationFromListsToModel(model);
                 model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
-
+                model.ActiveRequest.AttachmentListModel = model.RequestAttachmentListModel;
                 model.EventLog = new EventLogModel
                 {
                     Header = "Bokningshändelser",
