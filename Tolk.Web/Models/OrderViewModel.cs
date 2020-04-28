@@ -279,6 +279,8 @@ namespace Tolk.Web.Models
                 LanguageName = order.OtherLanguage ?? order.Language?.Name,
                 CustomerUnitName = order.CustomerUnit?.Name,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
+                CustomerName = order.CustomerOrganisation.Name,
+                CustomerOrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 CompetenceIsRequired = order.SpecificCompetenceLevelRequired,
                 TimeRange = new TimeRange
