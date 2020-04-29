@@ -1114,6 +1114,14 @@ li.placeholder::before {
   font-size: 14px;
   padding-left: 4px;
 }
+.italic-gray {
+  font-style: italic;
+  color: #333333;
+}
+.info-message-x-small {
+  font-size: 13px;
+  padding-left: 4px;
+}
 .shortcut-box {
   color: #587573;
 }

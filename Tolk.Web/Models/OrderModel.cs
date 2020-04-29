@@ -92,7 +92,7 @@ namespace Tolk.Web.Models
         [StringLength(255)]
         public string OtherLanguage { get; set; }
 
-        [Display(Name = "Är tolkanvändare samma person som bokar", Description = "Ange om du som bokar är den som ska använda tolken, annars har du möjlighet att fylla i uppgifter om tolkanvändaren i fältet för Övrig information om uppdraget.")]
+        [Display(Name = "Är tolkanvändare samma person som bokar", Description = "Ange om du som bokar är den som ska använda tolken, dvs hålla i mötet. Om du bokar åt annan person på myndigheten så har du möjlighet att ange kontaktuppgifter till denna i fältet för ”Övrig information om uppdraget”. (Obs. avser ej namn på klienten)")]
         [ClientRequired]
         public RadioButtonGroup CreatorIsInterpreterUser { get; set; }
 

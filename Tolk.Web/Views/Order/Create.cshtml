@@ -264,7 +264,7 @@
                             <div class="row">
                                 <div class="col-sm-6">
                                     <form-entry asp-for="CreatorIsInterpreterUser" asp-items="SelectListService.BoolList" checked-value="@creatorIsInterpreterUser" />
-                                    <div id="CreatorIsNotInterpreterUserInfo" class="d-none warning-info-yellow"><span class="glyphicon message-icon glyphicon-exclamation-sign yellow-glyphicon"></span><span class="info-message-small" role="alert">Du kan fylla i namn och eventuell kontaktinformation till tolkanvändaren i fältet för Övrig information om uppdraget.</span></div>
+                                    <div id="CreatorIsNotInterpreterUserInfo" class="d-none warning-info-yellow"><span class="glyphicon message-icon glyphicon-exclamation-sign yellow-glyphicon"></span><span class="info-message-x-small" role="alert">Du kan fylla i namn och eventuell kontaktinformation till tolkanvändaren i fältet för Övrig information om uppdraget.<br /><span class="italic-gray">OBS! Tolkanvändare avser myndighetsperson som närvarar vid tolktillfället (ej klient) </span></span></div>
                                 </div>
                                 <div class="col-sm-6">
                                     <form-entry asp-for="Description" help-link="@HelpLinkService.GenerateUrl("nybokning_extrainfo")" />
