@@ -532,6 +532,7 @@ namespace Tolk.Web.Controllers
             updatedModel.CreatedBy = order.ContactInformation;
             updatedModel.CustomerName = user.CustomerOrganisation.Name;
             updatedModel.CustomerOrganisationNumber = user.CustomerOrganisation.OrganisationNumber;
+            updatedModel.CompetenceIsRequired = order.SpecificCompetenceLevelRequired;
             return PartialView(nameof(Confirm), updatedModel);
         }
 
