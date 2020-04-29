@@ -126,21 +126,9 @@ namespace Tolk.BusinessLogic.Services
                 var customers = _cache.Get(CacheKeys.Customers).FromByteArray<IEnumerable<CustomerSettingsModel>>();
                 if (customers == null)
                 {
-                    var customerOrganisations = _dbContext.CustomerOrganisations.ToList();
-#warning better to get all settings for all customers and then select them  for customer?
                     //only get the used settings (value = true)
-                    foreach(CustomerOrganisation c in customerOrganisations)
-                    {
-                        c.CustomerSettings = _dbContext.CustomerSettings.GetCustomerSettingsForCustomer(c.CustomerOrganisationId).Where(cu => cu.Value).ToList();
-                    }
-
-                    customers = customerOrganisations
-                        .Select(c => new CustomerSettingsModel
-                        {
-                            CustomerOrganisationId = c.CustomerOrganisationId,
-                            UsedCustomerSettingTypes = c.CustomerSettings.Select(cs => cs.CustomerSettingType).ToList()
-                        })
-                        .ToList().AsReadOnly();
+                    var customerSettings = _dbContext.CustomerSettings.ToList().GroupBy(cs => cs.CustomerOrganisationId);
+                    customers = customerSettings.Select(cs => new CustomerSettingsModel { CustomerOrganisationId = cs.Key, UsedCustomerSettingTypes = cs.Where(c => c.Value).Select(c => c.CustomerSettingType).ToList() }).ToList();
                     _cache.Set(CacheKeys.Customers, customers.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
                 }
                 return customers;
