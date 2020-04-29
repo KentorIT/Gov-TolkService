@@ -42,6 +42,7 @@ namespace Tolk.Web.Services
             model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.OrderPriceRows.GetPriceRowsForOrder(id).ToListAsync(), PriceInformationType.Order, mealBreakIncluded: model.MealbreakIncluded);
 
             model.Dialect = model.OrderRequirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.RequirementDescription;
+#warning kanske borde man bara hämta vissa listor beroende på status och om tillfälle varit 
             if (model.RequestId.HasValue)
             {
                 var requestStatusConfirmations = await _dbContext.RequestStatusConfirmation.GetStatusConfirmationsForRequest(model.RequestId.Value).ToListAsync();
@@ -68,12 +69,26 @@ namespace Tolk.Web.Services
                 model.HasActiveRequests = requestChecks.HasActiveRequests;
                 model.ActiveRequest.RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(model.RequestId.Value));
 #warning om roll skickas med så borde man bara göra nedan för broker 
+                //just for broker 
                 var orderChanges = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntitesForOrder(id).Where(oc => oc.BrokerId == model.ActiveRequest.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null).ToListAsync();
                 model.ConfirmedOrderChangeLogEntries = orderChanges.Select(oc => oc.OrderChangeLogEntryId).ToList();
                 if (orderChanges.Any() && (model.ActiveRequest.Status == RequestStatus.Approved || model.ActiveRequest.Status == RequestStatus.AcceptedNewInterpreterAppointed) && model.StartAtIsInFuture)
                 {
                     model.DisplayOrderChangeText = await GetOrderChangeTextToDisplay(model.ActiveRequest.BrokerId, interpreterLocations, model.InterpreterLocationAnswer, orderChanges, model.Description, model.UnitName, model.InvoiceReference, model.CustomerReferenceNumber);
                 }
+                if (model.ReplacedByOrderId.HasValue)
+                {
+                    var request = await _dbContext.Requests.GetLastRequestWithRankingForOrder(model.ReplacedByOrderId.Value);
+                    if (request.Ranking.BrokerId == model.ActiveRequest.BrokerId)
+                    {
+                        model.ActiveRequest.ReplacedByOrderRequestId = request.RequestId;
+                    }
+                }
+                if (model.ReplacingOrderId.HasValue)
+                {
+                    model.ActiveRequest.ReplacingOrderRequestId = (await _dbContext.Requests.GetLastRequestForOrder(model.ReplacingOrderId.Value)).RequestId;
+                }
+                //end just for broker
             }
             return model;
         }
@@ -98,11 +113,7 @@ namespace Tolk.Web.Services
                 model.MealBreaks = previousRequisition.MealBreaks.Any() ? previousRequisition.MealBreaks : null;
                 if (model.MealBreaks != null && model.MealBreaks.Any())
                 {
-                    foreach (MealBreak mb in model.MealBreaks)
-                    {
-                        mb.StartAtTemp = mb.StartAt.DateTime;
-                        mb.EndAtTemp = mb.EndAt.DateTime;
-                    }
+                    model.MealBreaks.ForEach(mb => SetMealbreakTimes(mb));
                 }
                 var files = previousRequisition.Attachments.Select(a => new FileModel
                 {
@@ -113,6 +124,12 @@ namespace Tolk.Web.Services
                 model.Files = files.Any() ? files : null;
             }
             return model;
+        }
+
+        private static void SetMealbreakTimes(MealBreak mb)
+        {
+            mb.StartAtTemp = mb.StartAt.DateTime;
+            mb.EndAtTemp = mb.EndAt.DateTime;
         }
 
         internal async Task<RequisitionViewModel> AddInformationFromListsToModel(RequisitionViewModel model)

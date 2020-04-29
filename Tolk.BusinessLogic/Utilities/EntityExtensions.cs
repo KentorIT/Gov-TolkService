@@ -557,6 +557,11 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<RequisitionAttachment> GetRequisitionAttachmentsForRequisition(this IQueryable<RequisitionAttachment> attachments, int id)
             => attachments.Include(a => a.Attachment).Where(a => a.RequisitionId == id);
 
+        public static async Task<Request> GetLastRequestWithRankingForOrder(this IQueryable<Request> requests, int id)
+            => await requests.Where(r => r.OrderId == id)
+            .Include(r => r.Ranking)
+            .OrderBy(r => r.RequestId).LastAsync();
+
         #endregion
 
 
