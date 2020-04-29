@@ -45,7 +45,7 @@ namespace Tolk.Web.Models
 
         public bool AllowProcessing => UserCanAccept && CanProcess;
 
-        public bool AllowConfirmNoReview => UserCanAccept && CanProcess;
+        public bool AllowConfirmNoReview => UserCanAccept && CanConfirmNoReview;
 
         [Display(Name = "Total summa")]
         [DataType(DataType.Currency)]
