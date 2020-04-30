@@ -468,7 +468,7 @@ namespace Tolk.BusinessLogic.Services
             //check if late cancelling, if so we check for mealbreaks
             bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2;
 
-            var mealbreaks = (createFullCompensationRequisition && (request.Order.MealBreakIncluded ?? false)) ? new List<MealBreak> { new MealBreak { StartAt = request.Order.StartAt.AddHours(1).ToDateTimeOffsetSweden(), EndAt = request.Order.StartAt.AddHours(2).ToDateTimeOffsetSweden() } } : null;
+            var mealbreaks = (createFullCompensationRequisition && (request.Order.MealBreakIncluded ?? false)) ? new List<MealBreak> { new MealBreak { StartAt = request.Order.StartAt.AddHours(2).ToDateTimeOffsetSweden(), EndAt = request.Order.StartAt.AddHours(3).ToDateTimeOffsetSweden() } } : null;
 
             //if mealbreaks and full compensation we must get correct prices with mealbreaks reducted (else they will be added in Request.Cancel)
             var priceInformation = (createFullCompensationRequisition && mealbreaks != null) ? _priceCalculationService.GetPricesRequisition(

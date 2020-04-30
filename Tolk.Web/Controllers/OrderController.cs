@@ -975,7 +975,7 @@ namespace Tolk.Web.Controllers
                 {
                     list.Add(occasion.OrderOccasionId.Value, order);
                 }
-                order.MealBreakIncluded = occasion.MealBreakIncluded;
+                order.MealBreakIncluded = occasion.MealBreakIncluded && ((int)(occasion.OccasionEndDateTime - occasion.OccasionStartDateTime).TotalMinutes > 240);
                 orders.Add(order);
             }
             return orders;

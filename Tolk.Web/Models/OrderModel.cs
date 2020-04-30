@@ -436,7 +436,7 @@ namespace Tolk.Web.Models
             }
             else
             {
-                order.MealBreakIncluded = MealBreakIncluded;
+                order.MealBreakIncluded = MealBreakIncluded && ((int)(endAt.DateTime - startAt.DateTime).TotalMinutes > 240);
                 order.LanguageId = LanguageId;
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;

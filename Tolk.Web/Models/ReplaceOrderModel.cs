@@ -99,6 +99,8 @@ namespace Tolk.Web.Models
             order.ContactPersonId = ContactPersonId;
             order.Attachments = useAttachments ? Files?.Select(f => new OrderAttachment { AttachmentId = f.Id }).ToList() : null;
             order.InvoiceReference = InvoiceReference;
+            //mealbreak is already set from original order but set it to false if replace occasion time is not more than four hours
+            order.MealBreakIncluded = (order.MealBreakIncluded ?? false) && ((int)(endAt.DateTime - startAt.DateTime).TotalMinutes > 240);
             // need to be able to change the locations after getting the replaced order´s information copied...
             order.InterpreterLocations.Clear();
             order.InterpreterLocations.Add(RankedInterpreterLocationFirstAddressModel.GetInterpreterLocation(RankedInterpreterLocationFirst.Value, 1));

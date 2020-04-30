@@ -104,7 +104,7 @@ else
                 <span>Avdrag för måltidspauser</span><br />
                 @foreach (MealBreakInformation mealBreak in Model.PriceInformationToDisplay.MealBreaks.OrderBy(m => m.StartAt))
                 {
-                    <span class="left-padding detail-text">Måltidspaus: @mealBreak.StartAt.ToString("HH:mm") - @mealBreak.EndAt.ToString("HH:mm")</span><br />
+                    <span class="left-padding detail-text">Måltidspaus: @mealBreak.StartAt.ToString("HH:mm")-@mealBreak.EndAt.ToString("HH:mm")</span><br />
                 }
             }
         </div>
