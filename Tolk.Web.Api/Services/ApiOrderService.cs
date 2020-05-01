@@ -167,23 +167,17 @@ namespace Tolk.Web.Api.Services
                 return null;
             }
             OrderGroup orderGroup = requestGroup.OrderGroup;
-#warning include-fest
+#warning move include
             var occasions = _dbContext.Requests
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.RequirementAnswers)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Interpreter)
                 .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(o => o.Region)
                 .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.Requirements)
-                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-                .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Where(r => r.RequestGroupId == requestGroup.RequestGroupId && r.ReplacedByRequest == null)
-                .Select(r => GetResponseFromRequest(r, false)).ToList();
+                .ToList().Select(r => GetResponseFromRequest(r, false));
             return new RequestGroupDetailsResponse
             {
                 Status = requestGroup.Status.GetCustomName(),
