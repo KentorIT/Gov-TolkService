@@ -158,14 +158,14 @@
             @if (Model.RequestIsAnswered && !Model.RequestIsDeclinedByBroker)
             {
                 <div class="row">
-                    @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.RequiredRequirementAnswers != null)
+                    @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.DisplayRequiredRequirementAnswers != null)
                     {
-                        @if (Model.InterpreterAnswerModel.RequiredRequirementAnswers.Any())
+                        @if (Model.InterpreterAnswerModel.DisplayRequiredRequirementAnswers.Any())
                         {
                             <div class="col-sm-4">
                                 <label>Tillkommande krav</label>
                                 <ul>
-                                    @foreach (var req in Model.InterpreterAnswerModel.RequiredRequirementAnswers.Where(r => r.IsRequired))
+                                    @foreach (var req in Model.InterpreterAnswerModel.DisplayRequiredRequirementAnswers.Where(r => r.IsRequired))
                                     {
                                         <li class="detail-text">
                                             @EnumHelper.GetDescription(req.RequirementType): @req.Description
@@ -180,16 +180,16 @@
                             </div>
                         }
                     }
-                    @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.DesiredRequirementAnswers != null)
+                    @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.DisplayDesiredRequirementAnswers != null)
                     {
-                        @if (Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any())
+                        @if (Model.InterpreterAnswerModel.DisplayDesiredRequirementAnswers.Any())
                         {
-                            @if (Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any(r => r.CanMeetRequirement))
+                            @if (Model.InterpreterAnswerModel.DisplayDesiredRequirementAnswers.Any(r => r.CanMeetRequirement))
                             {
                                 <div class="col-sm-4">
                                     <label>Uppfyllda tillkommande önskemål</label>
                                     <ul>
-                                        @foreach (var req in Model.InterpreterAnswerModel.DesiredRequirementAnswers.Where(r => r.CanMeetRequirement))
+                                        @foreach (var req in Model.InterpreterAnswerModel.DisplayDesiredRequirementAnswers.Where(r => r.CanMeetRequirement))
                                         {
                                             <li class="detail-text">
                                                 @EnumHelper.GetDescription(req.RequirementType): @req.Description
@@ -203,12 +203,12 @@
                                     </ul>
                                 </div>
                             }
-                            @if (Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any(r => !r.CanMeetRequirement))
+                            @if (Model.InterpreterAnswerModel.DisplayDesiredRequirementAnswers.Any(r => !r.CanMeetRequirement))
                             {
                                 <div class="col-sm-4">
                                     <label>Ej uppfyllda tillkommande önskemål</label>
                                     <ul>
-                                        @foreach (var req in Model.InterpreterAnswerModel.DesiredRequirementAnswers.Where(r => !r.CanMeetRequirement))
+                                        @foreach (var req in Model.InterpreterAnswerModel.DisplayDesiredRequirementAnswers.Where(r => !r.CanMeetRequirement))
                                         {
                                             <li class="detail-text">
                                                 @EnumHelper.GetDescription(req.RequirementType): @req.Description
@@ -281,14 +281,14 @@
                         }
                     </div>
                     <div class="row bg-gray">
-                        @if (Model.ExtraInterpreterAnswerModel != null && Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers != null)
+                        @if (Model.ExtraInterpreterAnswerModel != null && Model.ExtraInterpreterAnswerModel.DisplayRequiredRequirementAnswers != null)
                         {
-                            @if (Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers.Any())
+                            @if (Model.ExtraInterpreterAnswerModel.DisplayRequiredRequirementAnswers.Any())
                             {
                                 <div class="col-sm-4">
                                     <label>Tillkommande krav</label>
                                     <ul>
-                                        @foreach (var req in Model.ExtraInterpreterAnswerModel.RequiredRequirementAnswers.Where(r => r.IsRequired))
+                                        @foreach (var req in Model.ExtraInterpreterAnswerModel.DisplayRequiredRequirementAnswers.Where(r => r.IsRequired))
                                         {
                                             <li class="detail-text">
                                                 @EnumHelper.GetDescription(req.RequirementType): @req.Description
@@ -303,16 +303,16 @@
                                 </div>
                             }
                         }
-                        @if (Model.ExtraInterpreterAnswerModel != null && Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers != null)
+                        @if (Model.ExtraInterpreterAnswerModel != null && Model.ExtraInterpreterAnswerModel.DisplayDesiredRequirementAnswers != null)
                         {
-                            @if (Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Any())
+                            @if (Model.ExtraInterpreterAnswerModel.DisplayDesiredRequirementAnswers.Any())
                             {
-                                @if (Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Any(r => r.CanMeetRequirement))
+                                @if (Model.ExtraInterpreterAnswerModel.DisplayDesiredRequirementAnswers.Any(r => r.CanMeetRequirement))
                                 {
                                     <div class="col-sm-4">
                                         <label>Uppfyllda tillkommande önskemål</label>
                                         <ul>
-                                            @foreach (var req in Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Where(r => r.CanMeetRequirement))
+                                            @foreach (var req in Model.ExtraInterpreterAnswerModel.DisplayDesiredRequirementAnswers.Where(r => r.CanMeetRequirement))
                                             {
                                                 <li class="detail-text">
                                                     @EnumHelper.GetDescription(req.RequirementType): @req.Description
@@ -326,12 +326,12 @@
                                         </ul>
                                     </div>
                                 }
-                                @if (Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Any(r => !r.CanMeetRequirement))
+                                @if (Model.ExtraInterpreterAnswerModel.DisplayDesiredRequirementAnswers.Any(r => !r.CanMeetRequirement))
                                 {
                                     <div class="col-sm-4">
                                         <label>Ej uppfyllda tillkommande önskemål</label>
                                         <ul>
-                                            @foreach (var req in Model.ExtraInterpreterAnswerModel.DesiredRequirementAnswers.Where(r => !r.CanMeetRequirement))
+                                            @foreach (var req in Model.ExtraInterpreterAnswerModel.DisplayDesiredRequirementAnswers.Where(r => !r.CanMeetRequirement))
                                             {
                                                 <li class="detail-text">
                                                     @EnumHelper.GetDescription(req.RequirementType): @req.Description

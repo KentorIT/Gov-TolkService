@@ -476,44 +476,10 @@ namespace Tolk.Web.Controllers
 
         private async Task<Request> GetRequestForEventlog(int requestId)
         {
-#warning include-fest
+#warning move include
             return await _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Order).ThenInclude(r => r.Requirements)
-                .Include(r => r.Order).ThenInclude(r => r.CreatedByUser).ThenInclude(u => u.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(r => r.ContactPersonUser)
-                .Include(r => r.Order).ThenInclude(l => l.InterpreterLocations)
                 .Include(r => r.Order).ThenInclude(r => r.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                .Include(r => r.Order).ThenInclude(r => r.Language)
-                .Include(r => r.Order).ThenInclude(r => r.Region)
-                .Include(r => r.Order).ThenInclude(r => r.CompetenceRequirements)
-                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.UpdatedByUser)
-                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderChangeConfirmation).ThenInclude(rs => rs.ConfirmedByUser)
-                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries).ThenInclude(oc => oc.OrderHistories)
-                .Include(r => r.Order).ThenInclude(o => o.Group).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment).ThenInclude(at => at.OrderAttachmentHistoryEntries).ThenInclude(oh => oh.OrderChangeLogEntry)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.RequestViews).ThenInclude(rv => rv.ViewedByUser)
-                .Include(r => r.Interpreter)
-                .Include(r => r.RequestGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(r => r.RequirementAnswers)
-                .Include(r => r.Requisitions).ThenInclude(u => u.CreatedByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.Requisitions).ThenInclude(u => u.ProcessedUser)
-                .Include(r => r.Complaints).ThenInclude(c => c.CreatedByUser)
-                .Include(r => r.Complaints).ThenInclude(c => c.AnsweringUser).ThenInclude(u => u.Broker)
-                .Include(r => r.Complaints).ThenInclude(c => c.AnswerDisputingUser)
-                .Include(r => r.Complaints).ThenInclude(c => c.TerminatingUser)
-                .Include(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Attachments).ThenInclude(r => r.Attachment)
-                .Include(r => r.AnsweringUser).ThenInclude(u => u.Broker)
-                .Include(r => r.ProcessingUser)
-                .Include(r => r.ReceivedByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.CancelledByUser).ThenInclude(u => u.Broker)
-                .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(r => r.UpdatedByUser)
-                .Include(r => r.RequestStatusConfirmations).ThenInclude(rs => rs.ConfirmedByUser)
                 .SingleAsync(r => r.RequestId == requestId);
         }
 

@@ -273,6 +273,20 @@ namespace Tolk.BusinessLogic.Services
             string message)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(DeclineGroup), nameof(RequestService));
+            //Add requests and orders...
+            if (requestGroup.Requests == null)
+            {
+                requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            }
+            if (requestGroup.OrderGroup.Orders == null)
+            {
+                requestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            }
+            if (requestGroup.OrderGroup.RequestGroups == null)
+            {
+                requestGroup.OrderGroup.RequestGroups = await _tolkDbContext.RequestGroups.GetRequestGroupsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            }
+
             requestGroup.Decline(declinedAt, userId, impersonatorId, message);
             await _orderService.CreateRequestGroup(requestGroup.OrderGroup, requestGroup);
             _notificationService.RequestGroupDeclinedByBroker(requestGroup);

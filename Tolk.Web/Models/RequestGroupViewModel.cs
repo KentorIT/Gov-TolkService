@@ -90,13 +90,9 @@ namespace Tolk.Web.Models
 
         #region methods
 
-
-        internal static RequestGroupViewModel GetModelFromRequestGroup(RequestGroup requestGroup, bool isCustomer = true)
+        internal static RequestGroupViewModel GetModelFromRequestGroup(OrderGroup orderGroup, RequestGroup requestGroup, Request request, Request requestExtraInterpreter)
         {
-            OrderGroup orderGroup = requestGroup.OrderGroup;
-            Order order = requestGroup.FirstRequestForFirstInterpreter.Order;
-            Request request = requestGroup.FirstRequestForFirstInterpreter;
-            Request requestExtraInterpreter = requestGroup.HasExtraInterpreter ? requestGroup.FirstRequestForExtraInterpreter : null;
+            Order order = request.Order;
             Order orderExtraInterpreter = requestExtraInterpreter?.Order;
 
             var verificationResult = request.InterpreterCompetenceVerificationResultOnStart ?? request.InterpreterCompetenceVerificationResultOnAssign;
@@ -106,97 +102,21 @@ namespace Tolk.Web.Models
 
             return new RequestGroupViewModel
             {
-                AllowConfirmationDenial = requestGroup.Status == RequestStatus.DeniedByCreator && !requestGroup.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator),
-                AllowConfirmNoAnswer = requestGroup.Status == RequestStatus.ResponseNotAnsweredByCreator && !requestGroup.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator),
-                AssignmentType = order.AssignmentType,
+                AssignmentType = orderGroup.AssignmentType,
                 CreatedAt = orderGroup.CreatedAt,
                 OrderGroupId = requestGroup.OrderGroupId,
                 RequestGroupId = requestGroup.RequestGroupId,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
                 AnsweredBy = requestGroup.AnsweringUser?.CompleteContactInformation,
                 BrokerName = requestGroup.Ranking.Broker.Name,
-                BrokerOrganizationNumber = requestGroup.Ranking?.Broker.OrganizationNumber,
+                BrokerOrganizationNumber = requestGroup.Ranking.Broker.OrganizationNumber,
                 DenyMessage = requestGroup.DenyMessage,
                 CancelMessage = requestGroup.CancelMessage,
                 ExpiresAt = requestGroup.ExpiresAt ?? null,
                 LatestAnswerTimeForCustomer = requestGroup.LatestAnswerTimeForCustomer,
-                CustomerInformationModel = new CustomerInformationModel
-                {
-                    CreatedBy = orderGroup.CreatedByUser.CompleteContactInformation,
-                    Name = orderGroup.CustomerOrganisation.Name,
-                    UnitName = orderGroup.CustomerUnit?.Name,
-                    DepartmentName = order.UnitName,
-                    InvoiceReference = order.InvoiceReference,
-                    OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
-                    ReferenceNumber = order.CustomerReferenceNumber
-                },
-
-                AttachmentListModel = new AttachmentListModel
-                {
-                    AllowDelete = false,
-                    AllowDownload = true,
-                    AllowUpload = false,
-                    Title = "Bifogade filer från förmedling",
-                    DisplayFiles = requestGroup.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }).ToList()
-                },
-                OccasionList = new OccasionListModel
-                {
-                    Occasions = requestGroup.Requests.Where(r => r.Status != RequestStatus.InterpreterReplaced)
-                        .Select(r => OrderOccasionDisplayModel.GetModelFromOrder(r.Order, PriceInformationModel.GetPriceinformationToDisplay(r.Order, alwaysUseOrderPriceRows: false), request: isCustomer ? null : r)),
-                    AllOccasions = orderGroup.Orders.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, request: isCustomer ? null : o.Requests.OrderBy(re => re.RequestId).Last())),
-                    DisplayDetailedList = true
-                },
-                InterpreterAnswerModel = new InterpreterAnswerModel
-                {
-                    RequiredRequirementAnswers = order.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
-                    {
-                        OrderRequirementId = r.OrderRequirementId,
-                        IsRequired = true,
-                        Description = r.Description,
-                        RequirementType = r.RequirementType,
-                        Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                        CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
-                    }).ToList(),
-                    DesiredRequirementAnswers = order.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
-                    {
-                        OrderRequirementId = r.OrderRequirementId,
-                        IsRequired = false,
-                        Description = r.Description,
-                        RequirementType = r.RequirementType,
-                        Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                        CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
-                    }).ToList(),
-                },
-                ExtraInterpreterAnswerModel = requestGroup.HasExtraInterpreter ? new InterpreterAnswerModel
-                {
-                    RequiredRequirementAnswers = orderExtraInterpreter.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
-                    {
-                        OrderRequirementId = r.OrderRequirementId,
-                        IsRequired = true,
-                        Description = r.Description,
-                        RequirementType = r.RequirementType,
-                        Answer = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                        CanMeetRequirement = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.Any() ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
-                    }).ToList(),
-                    DesiredRequirementAnswers = orderExtraInterpreter.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
-                    {
-                        OrderRequirementId = r.OrderRequirementId,
-                        IsRequired = false,
-                        Description = r.Description,
-                        RequirementType = r.RequirementType,
-                        Answer = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                        CanMeetRequirement = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.Any() ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
-                    }).ToList(),
-                } : null,
                 HasExtraInterpreter = requestGroup.HasExtraInterpreter,
                 Description = order.Description,
                 LanguageName = orderGroup.LanguageName,
-                Dialect = orderGroup.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? orderGroup.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
                 LanguageHasAuthorizedInterpreter = orderGroup.LanguageHasAuthorizedInterpreter,
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
                 DisplayExpectedTravelCostInfo = GetDisplayExpectedTravelCostInfo(request.Order, request.InterpreterLocation ?? 0),
@@ -209,10 +129,6 @@ namespace Tolk.Web.Models
                 ExtraInterpreterVerificationMessage = extraInterpreterVerificationResult.HasValue ? extraInterpreterVerificationResult.Value.GetDescription() : null,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 ExtraInterpreterCompetenceLevel = requestGroup.HasExtraInterpreter ? (CompetenceAndSpecialistLevel?)requestExtraInterpreter.CompetenceLevel : null,
-                ExpectedTravelCosts = request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
-                ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
-                ExtraInterpreterExpectedTravelCosts = requestGroup.HasExtraInterpreter ? requestExtraInterpreter.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0 : 0,
-                ExtraInterpreterExpectedTravelCostInfo = requestGroup.HasExtraInterpreter ? requestExtraInterpreter.ExpectedTravelCostInfo : null,
                 RegionName = orderGroup.Region.Name,
                 SpecificCompetenceLevelRequired = orderGroup.SpecificCompetenceLevelRequired,
                 Status = requestGroup.Status,

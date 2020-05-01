@@ -63,8 +63,10 @@ namespace Tolk.BusinessLogic.Entities
 
         #region Methods
 
+        [Obsolete("Detta behöver hämtas från db direkt istället")]
         public Request FirstRequestForFirstInterpreter => Requests.First(r => r.Order.IsExtraInterpreterForOrderId == null);
 
+        [Obsolete("Detta behöver hämtas från db direkt istället")]
         public Request FirstRequestForExtraInterpreter => Requests.First(r => r.Order.IsExtraInterpreterForOrderId != null);
 
         internal void SetStatus(RequestStatus status, bool updateRequests = true)
@@ -97,6 +99,7 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
+        [Obsolete("Funkar inte att ha det så här!!!")]
         public bool HasExtraInterpreter => OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
 
         public bool RequiresApproval(bool hasTravelCosts)
@@ -107,7 +110,7 @@ namespace Tolk.BusinessLogic.Entities
                     r.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
         }
 
-        public override void Decline(
+        internal override void Decline(
             DateTimeOffset declinedAt,
             int userId,
             int? impersonatorId,

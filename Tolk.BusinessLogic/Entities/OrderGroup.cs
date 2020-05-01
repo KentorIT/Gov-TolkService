@@ -95,10 +95,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool AllowCancellation => Status == OrderStatus.Requested;
 
-        public bool AllowNoAnswerConfirmation => Status == OrderStatus.NoBrokerAcceptedOrder && !StatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
-
-        public bool AllowResponseNotAnsweredConfirmation => Status == OrderStatus.ResponseNotAnsweredByCreator && !StatusConfirmations.Any(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator);
-
         public bool AllowUpdateExpiry => Status == OrderStatus.AwaitingDeadlineFromCustomer;
 
         public void SetStatus(OrderStatus status, bool updateOrders = true)

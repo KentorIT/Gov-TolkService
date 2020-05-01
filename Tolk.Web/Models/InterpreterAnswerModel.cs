@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
@@ -56,7 +57,7 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string ExpectedTravelCostInfo { get; set; }
 
-        [Display(Name = "Kommentar till tacka nej", Description = "Beskriv varför det inte är mökligt att tillsätta den extra tolken")]
+        [Display(Name = "Kommentar till tacka nej", Description = "Beskriv varför det inte är möjligt att tillsätta den extra tolken")]
         [Placeholder("Ange en anledning till varför ni inte kan tillsätta denna tolk")]
         [StringLength(1000)]
         [DataType(DataType.MultilineText)]
@@ -64,10 +65,14 @@ namespace Tolk.Web.Models
         public string DeclineMessage { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
+        public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
+        public List<RequestRequirementAnswerModel> DisplayRequiredRequirementAnswers => RequirementAnswers.Where(a => a.IsRequired).ToList();
+        public List<RequestRequirementAnswerModel> DisplayDesiredRequirementAnswers => RequirementAnswers.Where(a => !a.IsRequired).ToList();
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> DesiredRequirementAnswers { get; set; }
-
     }
 }

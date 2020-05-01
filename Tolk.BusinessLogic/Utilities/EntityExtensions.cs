@@ -799,8 +799,24 @@ namespace Tolk.BusinessLogic.Utilities
             .Include(r => r.OrderGroup).ThenInclude(og => og.CustomerOrganisation)
             .SingleOrDefaultAsync(r => r.OrderGroupId == id && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
 
+        public static async Task<RequestGroup> GetFullActiveRequestGroupByOrderGroupId(this IQueryable<RequestGroup> groups, int id, bool includeNotAnsweredByCreator = false)
+            => await groups
+            .Include(r => r.AnsweringUser)
+            .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+            .Include(r => r.OrderGroup).ThenInclude(og => og.CustomerOrganisation)
+            .SingleOrDefaultAsync(r => r.OrderGroupId == id &&
+                                    r.Status != RequestStatus.InterpreterReplaced &&
+                                    r.Status != RequestStatus.DeniedByTimeLimit &&
+                                    r.Status != RequestStatus.DeniedByCreator &&
+                                    r.Status != RequestStatus.DeclinedByBroker &&
+                                    r.Status != RequestStatus.LostDueToQuarantine &&
+                                    (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
+
         public static IQueryable<Request> GetRequestsForRequestGroup(this IQueryable<Request> requests, int id)
              => requests.Include(o => o.Order).Where(r => r.RequestGroupId == id);
+
+        public static IQueryable<Request> GetActiveRequestsForRequestGroup(this IQueryable<Request> requests, int id)
+             => requests.GetRequestsForRequestGroup(id).Where(r => r.ReplacedByRequest == null);
 
         public static IQueryable<Order> GetOrdersForOrderGroup(this IQueryable<Order> orders, int id)
             => orders.Where(r => r.OrderGroupId == id);
@@ -809,8 +825,17 @@ namespace Tolk.BusinessLogic.Utilities
         public async static Task<OrderGroup> GetOrderGroupById(this IQueryable<OrderGroup> groups, int id)
             => await groups.SingleOrDefaultAsync(og => og.OrderGroupId == id);
 
+        public async static Task<OrderGroup> GetFullOrderGroupById(this IQueryable<OrderGroup> groups, int id)
+            => await groups.Include(o => o.Language)
+                .Include(o => o.Region)
+                .Include(o => o.CustomerOrganisation)
+                .Include(o => o.CreatedByUser)
+                .Include(o => o.CustomerUnit)
+                .SingleOrDefaultAsync(og => og.OrderGroupId == id);
+
         public static IQueryable<OrderGroupStatusConfirmation> GetStatusConfirmationsForOrderGroup(this IQueryable<OrderGroupStatusConfirmation> confirmations, int id)
             => confirmations.Where(o => o.OrderGroupId == id);
+
         public static IQueryable<RequestGroup> GetRequestGroupsForOrderGroup(this IQueryable<RequestGroup> requestGroups, int id)
             => requestGroups
                 .Include(r => r.OrderGroup).ThenInclude(og => og.CreatedByUser)
@@ -818,10 +843,21 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.OrderGroup).ThenInclude(og => og.Region)
                 .Include(r => r.OrderGroup).ThenInclude(og => og.Language)
                 .Include(r => r.OrderGroup).ThenInclude(og => og.CustomerUnit)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker);
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Where(r => r.OrderGroupId == id);
+
+        public static IQueryable<RequestGroup> GetLostRequestGroupsForOrderGroup(this IQueryable<RequestGroup> requestGroups, int id)
+           => requestGroups.Where(r =>
+                             r.OrderGroupId == id &&
+           (
+                             r.Status == RequestStatus.DeclinedByBroker ||
+                             r.Status == RequestStatus.DeniedByTimeLimit ||
+                             r.Status == RequestStatus.DeniedByCreator ||
+                             r.Status == RequestStatus.LostDueToQuarantine
+           ));
 
         public static IQueryable<OrderGroupCompetenceRequirement> GetOrderedCompetenceRequirementsForOrderGroup(this IQueryable<OrderGroupCompetenceRequirement> requirements, int id)
-            => requirements.Where(o => o.OrderGroupId == id);
+            => requirements.Where(o => o.OrderGroupId == id).OrderBy(r => r.Rank);
 
         public static IQueryable<OrderGroupRequirement> GetRequirementsForOrderGroup(this IQueryable<OrderGroupRequirement> requirements, int id)
             => requirements.Where(o => o.OrderGroupId == id);
@@ -831,6 +867,19 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<OrderPriceRow> GetPriceRowsForOrderInOrderGroup(this IQueryable<OrderPriceRow> rows, int id)
             => rows.Include(p => p.PriceListRow).Where(p => p.Order.OrderGroupId == id);
+
+        public static IQueryable<RequestGroupStatusConfirmation> GetStatusConfirmationsForRequestGroup(this IQueryable<RequestGroupStatusConfirmation> confirmations, int id)
+            => confirmations.Where(r => r.RequestGroupId == id);
+
+        public static IQueryable<Attachment> GetAttachmentsForRequestGroup(this IQueryable<Attachment> attachments, int id)
+            => attachments.Where(a => a.RequestGroups.Any(g => g.RequestGroupId == id));
+        
+        public static IQueryable<RequestGroupView> GetActiveViewsForRequestGroup(this IQueryable<RequestGroupView> views, int id)
+           => views.Include(a => a.ViewedByUser).Where(v => v.RequestGroupId == id);
+
+        public async static Task<bool> HasExtraInterpreter( this IQueryable<OrderGroup> groups, int id)
+            => await groups.AnyAsync(g => g.OrderGroupId == id && g.Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
+
 
         #endregion
     }

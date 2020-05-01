@@ -42,5 +42,15 @@ namespace Tolk.Web.Models
                 Answer = r.Answer
             }).ToListAsync();
         }
+        internal static async Task<List<RequestRequirementAnswerModel>> GetFromList(IQueryable<OrderGroupRequirement> requirements)
+        {
+            return await requirements.Select(r => new RequestRequirementAnswerModel
+            {
+                OrderRequirementId = r.OrderGroupRequirementId,
+                Description = r.Description,
+                IsRequired = r.IsRequired,
+                RequirementType = r.RequirementType,
+            }).ToListAsync();
+        }
     }
 }

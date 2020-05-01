@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Org.BouncyCastle.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
+using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
@@ -32,6 +34,7 @@ namespace Tolk.Web.Controllers
         private readonly InterpreterService _interpreterService;
         private readonly PriceCalculationService _priceCalculationService;
         private readonly CacheService _cacheService;
+        private readonly ListToModelService _listToModelService;
 
         public RequestGroupController(
             TolkDbContext dbContext,
@@ -42,7 +45,8 @@ namespace Tolk.Web.Controllers
             IOptions<TolkOptions> options,
             InterpreterService interpreterService,
             PriceCalculationService priceCalculationService,
-            CacheService cacheService)
+            CacheService cacheService,
+            ListToModelService listToModelService)
         {
             _dbContext = dbContext;
             _authorizationService = authorizationService;
@@ -53,6 +57,7 @@ namespace Tolk.Web.Controllers
             _interpreterService = interpreterService;
             _priceCalculationService = priceCalculationService;
             _cacheService = cacheService;
+            _listToModelService = listToModelService;
         }
 
         public async Task<IActionResult> View(int id)
@@ -64,10 +69,26 @@ namespace Tolk.Web.Controllers
                 {
                     return RedirectToAction(nameof(Process), new { id = requestGroup.RequestGroupId });
                 }
-                var model = RequestGroupViewModel.GetModelFromRequestGroup(requestGroup, false);
+                Order firstOrder = await _dbContext.Orders.GetOrdersForOrderGroup(id).OrderBy(o => o.StartAt).FirstOrDefaultAsync();
+                //GET FROM EXTENSION
+#warning Detta kommer inte funka...
+                Request firstRequest = requestGroup.FirstRequestForFirstInterpreter;
+                //GET FROM EXTENSION
+                Request requestExtraInterpreter = requestGroup.HasExtraInterpreter ? requestGroup.FirstRequestForExtraInterpreter : null;
+
+#warning Gör om denna metod nu, behöver ha koll på att denna sida inte missar något...
+                var model = RequestGroupViewModel.GetModelFromRequestGroup(requestGroup.OrderGroup, requestGroup, firstRequest, requestExtraInterpreter);
                 model.CustomerInformationModel.IsCustomer = false;
                 model.CustomerInformationModel.UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == requestGroup.OrderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
-                model.OrderGroupModel = OrderGroupModel.GetModelFromOrderGroup(requestGroup.OrderGroup, requestGroup, true);
+#warning Gör om denna metod nu, behöver ha koll på att denna sida inte missar något...
+                model.OrderGroupModel = OrderGroupModel.GetModelFromOrderGroup(requestGroup.OrderGroup, firstOrder, requestGroup, true);
+                //_listtoModelService.Add(model.OrderGroupModel);
+                //_listtoModelService.Add(model);
+                //model.ActiveRequestGroup.ExpectedTravelCosts = model.ExpectedTravelCosts;
+                //model.ActiveRequestGroup.ExpectedTravelCostInfo = model.ExpectedTravelCostInfo;
+                //model.ActiveRequestGroup.ExtraInterpreterExpectedTravelCosts = model.ExtraInterpreterExpectedTravelCosts;
+                //model.ActiveRequestGroup.ExtraInterpreterExpectedTravelCostInfo = model.ExtraInterpreterExpectedTravelCostInfo;
+
                 if (requestGroup.QuarantineId.HasValue)
                 {
                     List<OrderOccasionDisplayModel> tempOccasionList = new List<OrderOccasionDisplayModel>();
@@ -100,8 +121,12 @@ namespace Tolk.Web.Controllers
                     await _requestService.AcknowledgeGroup(requestGroup, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
                     await _dbContext.SaveChangesAsync();
                 }
-                var model = RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, Guid.NewGuid(), _options.CombinedMaxSizeAttachments, User.GetUserId(), _options.AllowDeclineExtraInterpreterOnRequestGroups);
+                var firstOrder = await _dbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).OrderBy(o => o.OrderId).FirstAsync();
+                bool hasExtraInterpreter = await _dbContext.OrderGroups.HasExtraInterpreter(requestGroup.OrderGroupId);
+                var model = RequestGroupProcessModel.GetModelFromRequestGroup(requestGroup, firstOrder, Guid.NewGuid(), _options.CombinedMaxSizeAttachments, User.GetUserId(), _options.AllowDeclineExtraInterpreterOnRequestGroups);
                 model.CustomerInformationModel.IsCustomer = false;
+                model.ViewedByUser = await _listToModelService.GetOtherGroupViewer(id, User.GetUserId());
+                await _listToModelService.AddInformationFromListsToModel(model, firstOrder.OrderId, hasExtraInterpreter);
                 model.CustomerInformationModel.UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == requestGroup.OrderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
                 //if not first broker in rank (requests are not answered and have no pricerows) we need to get a calculated price with correct broker fee 
                 if (requestGroup.Ranking.Rank != 1)
@@ -340,20 +365,13 @@ namespace Tolk.Web.Controllers
 
         private async Task<RequestGroup> GetRequestGroupToProcess(int requestGroupId)
         {
-#warning include-fest
+#warning move include
             return await _dbContext.RequestGroups
                .Include(g => g.Ranking)
-               .Include(g => g.Views).ThenInclude(v => v.ViewedByUser)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Requirements)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Region)
                .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
-               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.InterpreterLocations)
-               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders)
                .SingleAsync(r => r.RequestGroupId == requestGroupId);
         }
 

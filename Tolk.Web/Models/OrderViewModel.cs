@@ -123,7 +123,6 @@ namespace Tolk.Web.Models
         #region user rights
 
         public bool UserCanCancelOrder { get; set; } = false;
-        public bool UserCanEdit { get; set; } = false;
         public bool UserCanEditContactPerson { get; set; } = false;
         public bool UserCanPrint { get; set; } = false;
         public bool UserCanCreateComplaint { get; set; } = false;
@@ -141,8 +140,6 @@ namespace Tolk.Web.Models
         public bool TimeIsValidForOrderReplacement { get; set; } = false;
         public bool MealbreakIncluded { get; set; } = false;
 
-        public bool HasNoBrokerAcceptedConfirmation { get; set; } = true;
-        public bool HasResponseNotAnsweredByCreatorConfirmation { get; set; } = true;
         public bool HasCancelledByBrokerConfirmation { get; set; } = true;
         public bool HasNoRequisitionConfirmation { get; set; } = true;
         public bool HasDeniedByCreatorConfirmation { get; set; } = true;
@@ -190,10 +187,6 @@ namespace Tolk.Web.Models
         public bool AllowComplaintCreation => !HasComplaints && RequestIsApprovedOrDelivered && !StartAtIsInFuture && UserCanCreateComplaint;
 
         public bool AllowRequestPrint => RequestCanBePrinted && UserCanPrint;
-
-        public bool AllowNoAnswerConfirmation => UserCanEdit && Status == OrderStatus.NoBrokerAcceptedOrder && !HasNoBrokerAcceptedConfirmation;
-
-        public bool AllowResponseNotAnsweredConfirmation => UserCanEdit && Status == OrderStatus.ResponseNotAnsweredByCreator && !HasResponseNotAnsweredByCreatorConfirmation;
 
         public bool AllowUpdateExpiry => OrderGroupId == null && Status == OrderStatus.AwaitingDeadlineFromCustomer && UserCanEdit;
 

@@ -168,10 +168,6 @@ namespace Tolk.Web.Models
 
         public bool AllowRequestPrint { get; set; } = false;
 
-        public bool AllowNoAnswerConfirmation { get; set; } = false;
-
-        public bool AllowResponseNotAnsweredConfirmation { get; set; } = false;
-
         public bool AllowUpdateExpiry { get; set; } = false;
 
         public bool AllowConfirmCancellation { get; set; } = false;

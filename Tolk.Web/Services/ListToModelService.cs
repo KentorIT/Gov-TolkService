@@ -10,6 +10,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Models;
 using System.Collections.Generic;
 using Tolk.Web.Enums;
+using Microsoft.VisualStudio.Web.CodeGeneration;
 
 namespace Tolk.Web.Services
 {
@@ -144,8 +145,8 @@ namespace Tolk.Web.Services
             model.CanReplaceRequisition = requisitions.All(r => r.Status == RequisitionStatus.Commented) && requisitions.OrderBy(r => r.CreatedAt).Last().RequisitionId == viewedRequisition.RequisitionId;
             viewedRequisition.PriceRows = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(viewedRequisition.RequisitionId).ToListAsync();
             viewedRequisition.MealBreaks = await _dbContext.MealBreaks.GetMealBreksForRequisition(viewedRequisition.RequisitionId).ToListAsync();
-            model.ResultPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplayForRequisition (viewedRequisition, false);
-            model.RequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(model.RequestId).ToListAsync(), PriceInformationType.Request, mealBreakIncluded: model.MealBreakIncluded ?? false, description : "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt");
+            model.ResultPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplayForRequisition(viewedRequisition, false);
+            model.RequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(model.RequestId).ToListAsync(), PriceInformationType.Request, mealBreakIncluded: model.MealBreakIncluded ?? false, description: "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt");
             if (requisitions.Count < 2)
             {
                 return null;
@@ -180,6 +181,151 @@ namespace Tolk.Web.Services
             model.Files = model.AttachmentListModel.Files.Any() ? model.AttachmentListModel.Files : null;
 
             return model;
+        }
+
+        internal async Task<OrderGroupModel> AddInformationFromListsToModel(OrderGroupModel model, Order firstOrder)
+        {
+#warning, kan vara så att det räcker med firstorder id...
+            int id = model.OrderGroupId.Value;
+            var interpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(firstOrder.OrderId).ToListAsync();
+
+            model.RankedInterpreterLocationFirst = interpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation;
+            model.RankedInterpreterLocationSecond = interpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation;
+            model.RankedInterpreterLocationThird = interpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation;
+            model.RankedInterpreterLocationFirstAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.Single(l => l.Rank == 1));
+            model.RankedInterpreterLocationSecondAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.SingleOrDefault(l => l.Rank == 2));
+            model.RankedInterpreterLocationThirdAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.SingleOrDefault(l => l.Rank == 3));
+
+            //Competences
+            List<CompetenceAndSpecialistLevel> competenceRequirements = await _dbContext.OrderGroupCompetenceRequirements
+                .GetOrderedCompetenceRequirementsForOrderGroup(id)
+                .Select(r => r.CompetenceLevel)
+                .ToListAsync();
+
+            model.RequestedCompetenceLevelFirst = competenceRequirements.Any() ? (CompetenceAndSpecialistLevel?)competenceRequirements.FirstOrDefault() : null;
+            model.RequestedCompetenceLevelSecond = competenceRequirements.Count > 1 ? (CompetenceAndSpecialistLevel?)competenceRequirements[1] : null;
+            model.OrderRequirements = await OrderRequirementModel.GetFromList(_dbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(id));
+            if (model.UseAttachments)
+            {
+                model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForOrderGroup(id), "Bifogade filer från myndighet");
+            }
+            var occasions = await _dbContext.Orders.GetOrdersForOrderGroup(id).OrderBy(o => o.StartAt).ToListAsync();
+            var priceRows = await _dbContext.OrderPriceRows.GetPriceRowsForOrderInOrderGroup(id).ToListAsync();
+            model.OccasionList = new OccasionListModel
+            {
+                Occasions = occasions.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o, PriceInformationModel.GetPriceinformationToDisplay(priceRows.Where(ord => ord.OrderId == o.OrderId), PriceInformationType.Order))),
+                AllOccasions = occasions.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o)),
+                DisplayDetailedList = true
+            };
+
+            //those values should only be presented if ordergroup should be approved/denied since they could be changed (or display that this is the first occasions cost)?
+            if (model.RequestGroupId.HasValue)
+            {
+                var requests = await _dbContext.Requests.GetActiveRequestsForRequestGroup(model.RequestGroupId.Value).ToListAsync();
+                var firstRequest = requests.OrderBy(r => r.RequestId).First(r => r.Order.IsExtraInterpreterForOrderId == null);
+                model.ExpectedTravelCostInfo = firstRequest.ExpectedTravelCostInfo;
+                model.ExpectedTravelCosts = _dbContext.RequestPriceRows.GetPriceRowsForRequest(firstRequest.RequestId).FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0;
+                var firstRequestForExtraInterpreter = requests.OrderBy(r => r.RequestId).FirstOrDefault(r => r.Order.IsExtraInterpreterForOrderId != null);
+                if (firstRequestForExtraInterpreter != null)
+                {
+                    model.ExtraInterpreterExpectedTravelCostInfo = firstRequestForExtraInterpreter.ExpectedTravelCostInfo;
+                    model.ExtraInterpreterExpectedTravelCosts = _dbContext.RequestPriceRows.GetPriceRowsForRequest(firstRequestForExtraInterpreter.RequestId).FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0;
+                }
+            }
+            model.PreviousRequestGroups = await _dbContext.RequestGroups.GetLostRequestGroupsForOrderGroup(id)
+                .Select(r => new BrokerListModel
+                {
+                    Status = r.Status,
+                    BrokerName = r.Ranking.Broker.Name,
+                    DenyMessage = r.DenyMessage,
+                }).ToListAsync();
+
+            var orderGroupStatusConfirmations = await _dbContext.OrderGroupStatusConfirmations.GetStatusConfirmationsForOrderGroup(id).ToListAsync();
+            model.HasNoBrokerAcceptedConfirmation = orderGroupStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
+            model.HasResponseNotAnsweredByCreatorConfirmation = orderGroupStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator);
+
+            return model;
+        }
+
+        internal async Task<RequestGroupViewModel> AddInformationFromListsToModel(RequestGroupViewModel model, int firstRequestId, int? firstExtraInterpreterRequestId, bool isCustomer)
+        {
+            var requestGroupStatusConfirmations = await _dbContext.RequestGroupStatusConfirmations.GetStatusConfirmationsForRequestGroup(model.RequestGroupId).ToListAsync();
+            model.AllowConfirmationDenial = model.Status == RequestStatus.DeniedByCreator && !requestGroupStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);
+            model.AllowConfirmNoAnswer = model.Status == RequestStatus.ResponseNotAnsweredByCreator && !requestGroupStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator);
+            model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForRequestGroup(model.RequestGroupId), "Bifogade filer från förmedling");
+
+            var requirementRequestAnswers = _dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(firstRequestId);
+
+            model.InterpreterAnswerModel = new InterpreterAnswerModel
+            {
+                RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(requirementRequestAnswers)
+            };
+            model.ExtraInterpreterAnswerModel = firstExtraInterpreterRequestId.HasValue ? new InterpreterAnswerModel
+            {
+                RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(firstExtraInterpreterRequestId.Value))
+            } : null;
+
+            var requests = await _dbContext.Requests.GetActiveRequestsForRequestGroup(model.RequestGroupId).ToListAsync();
+            var priceRows = await _dbContext.OrderPriceRows.GetPriceRowsForOrderInOrderGroup(model.OrderGroupId).ToListAsync();
+            model.OccasionList = new OccasionListModel
+            {
+                Occasions = requests.Select(r => OrderOccasionDisplayModel.GetModelFromOrder(r.Order, PriceInformationModel.GetPriceinformationToDisplay(priceRows.Where(ord => ord.OrderId == r.Order.OrderId), PriceInformationType.Order), r)),
+                AllOccasions = requests.Select(r => OrderOccasionDisplayModel.GetModelFromOrder(r.Order, request: r)),
+                DisplayDetailedList = true
+            };
+            model.Dialect = requirementRequestAnswers.SingleOrDefault(r => r.OrderRequirement.RequirementType == RequirementType.Dialect)?.OrderRequirement.Description;
+
+            return model;
+        }
+
+        internal async Task<RequestGroupProcessModel> AddInformationFromListsToModel(RequestGroupProcessModel model, int firstOrderId, bool hasExtraInterpreter)
+        {
+            model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForOrderGroup(model.OrderGroupId), "Bifogade filer från myndighet");
+
+            var requirements = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(model.OrderGroupId));
+            model.InterpreterAnswerModel = new InterpreterAnswerModel
+            {
+                RequirementAnswers = requirements,
+                DesiredRequirementAnswers = requirements.Where(r => !r.IsRequired).ToList(),
+                RequiredRequirementAnswers = requirements.Where(r => !r.IsRequired).ToList(),
+            };
+            model.ExtraInterpreterAnswerModel = hasExtraInterpreter ? new InterpreterAnswerModel
+            {
+                DesiredRequirementAnswers = requirements.Where(r => !r.IsRequired).ToList(),
+                RequiredRequirementAnswers = requirements.Where(r => !r.IsRequired).ToList(),
+            } : null;
+            model.Dialect = requirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.Description ?? string.Empty;
+
+            var requests = await _dbContext.Requests.GetActiveRequestsForRequestGroup(model.RequestGroupId).ToListAsync();
+            var priceRows = await _dbContext.OrderPriceRows.GetPriceRowsForOrderInOrderGroup(model.OrderGroupId).ToListAsync();
+            model.OccasionList = new OccasionListModel
+            {
+                Occasions = requests.Select(r => OrderOccasionDisplayModel.GetModelFromOrder(r.Order, PriceInformationModel.GetPriceinformationToDisplay(priceRows.Where(ord => ord.OrderId == r.Order.OrderId), PriceInformationType.Order), r)),
+                AllOccasions = requests.Select(r => OrderOccasionDisplayModel.GetModelFromOrder(r.Order, request: r)),
+            };
+            model.HasExtraInterpreter = hasExtraInterpreter;
+
+            var interpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(firstOrderId).ToListAsync();
+            model.RankedInterpreterLocationFirstAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.Single(l => l.Rank == 1));
+            model.RankedInterpreterLocationSecondAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.SingleOrDefault(l => l.Rank == 2));
+            model.RankedInterpreterLocationThirdAddressModel = OrderBaseModel.GetInterpreterLocation(interpreterLocations.SingleOrDefault(l => l.Rank == 3));
+
+            var competenceRequirements = await _dbContext.OrderGroupCompetenceRequirements
+                .GetOrderedCompetenceRequirementsForOrderGroup(model.OrderGroupId)
+                .Select(r => r.CompetenceLevel)
+                .ToListAsync();
+            model.RequestedCompetenceLevelFirst = competenceRequirements.Any() ? (CompetenceAndSpecialistLevel?)competenceRequirements.FirstOrDefault() : null;
+            model.RequestedCompetenceLevelSecond = competenceRequirements.Count > 1 ? (CompetenceAndSpecialistLevel?)competenceRequirements[1] : null;
+
+            return model;
+        }
+
+        internal async Task<string> GetOtherGroupViewer(int requestGroupId, int currentUserId)
+        {
+            var otherViewer = await _dbContext.RequestGroupViews.GetActiveViewsForRequestGroup(requestGroupId).FirstOrDefaultAsync(rv => rv.ViewedBy != currentUserId);
+            return otherViewer != null ?
+                $"{otherViewer.ViewedByUser.FullName} håller också på med denna förfrågan" :
+                string.Empty;
         }
 
         private async Task<OrderBaseModel> GetOrderBaseLists(OrderBaseModel model, IEnumerable<OrderInterpreterLocation> interpreterLocations, int orderId)

@@ -202,6 +202,14 @@ namespace Tolk.Web.Models
             get;
         }
 
+        public bool HasNoBrokerAcceptedConfirmation { get; set; } = true;
+        public bool HasResponseNotAnsweredByCreatorConfirmation { get; set; } = true;
+        public bool UserCanEdit { get; set; } = false;
+
+        public bool AllowNoAnswerConfirmation => UserCanEdit && Status == OrderStatus.NoBrokerAcceptedOrder && !HasNoBrokerAcceptedConfirmation;
+
+        public bool AllowResponseNotAnsweredConfirmation => UserCanEdit && Status == OrderStatus.ResponseNotAnsweredByCreator && !HasResponseNotAnsweredByCreatorConfirmation;
+
         public virtual bool AllowProcessing { get; set; } = false;
 
         public bool TerminateOnDenial { get; set; } = false;

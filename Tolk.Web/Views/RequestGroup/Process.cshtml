@@ -143,10 +143,10 @@
                         </div>
                         <div class="col-sm-4">
                             <label>Tillkommande krav</label> @HelpLinkService.Anchor("tillkommande-krav")<br />
-                            @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.RequiredRequirementAnswers.Any())
+                            @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.DisplayRequiredRequirementAnswers.Any())
                             {
                                 <ul>
-                                    @foreach (var req in Model.InterpreterAnswerModel.RequiredRequirementAnswers)
+                                    @foreach (var req in Model.InterpreterAnswerModel.DisplayRequiredRequirementAnswers)
                                     {
                                         <li class="detail-text">
                                             @EnumHelper.GetDescription(req.RequirementType): @req.Description
@@ -161,10 +161,10 @@
                         </div>
                         <div class="col-sm-4">
                             <label>Tillkommande önskemål</label> @HelpLinkService.Anchor("tillkommande-onskemal")<br />
-                            @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.DesiredRequirementAnswers.Any())
+                            @if (Model.InterpreterAnswerModel != null && Model.InterpreterAnswerModel.DisplayDesiredRequirementAnswers.Any())
                             {
                                 <ul>
-                                    @foreach (var req in Model.InterpreterAnswerModel.DesiredRequirementAnswers)
+                                    @foreach (var req in Model.InterpreterAnswerModel.DisplayDesiredRequirementAnswers)
                                     {
                                         <li class="detail-text">
                                             @EnumHelper.GetDescription(req.RequirementType): @req.Description
