@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +29,7 @@ namespace Tolk.BusinessLogic.Services
             await _cache.RemoveAsync(CacheKeys.BrokerFees);
             await _cache.RemoveAsync(CacheKeys.BrokerSettings);
             await _cache.RemoveAsync(CacheKeys.Holidays);
-            await _cache.RemoveAsync(CacheKeys.Customers);
+            await _cache.RemoveAsync(CacheKeys.CustomerSettings);
         }
 
         public async Task Flush(string id)
@@ -123,15 +122,15 @@ namespace Tolk.BusinessLogic.Services
         {
             get
             {
-                var customers = _cache.Get(CacheKeys.Customers).FromByteArray<IEnumerable<CustomerSettingsModel>>();
-                if (customers == null)
+                var customerSettings = _cache.Get(CacheKeys.CustomerSettings).FromByteArray<IEnumerable<CustomerSettingsModel>>();
+                if (customerSettings == null)
                 {
                     //only get the used settings (value = true)
-                    var customerSettings = _dbContext.CustomerSettings.ToList().GroupBy(cs => cs.CustomerOrganisationId);
-                    customers = customerSettings.Select(cs => new CustomerSettingsModel { CustomerOrganisationId = cs.Key, UsedCustomerSettingTypes = cs.Where(c => c.Value).Select(c => c.CustomerSettingType).ToList() }).ToList();
-                    _cache.Set(CacheKeys.Customers, customers.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
+                    var tempCustomerSettings = _dbContext.CustomerSettings.ToList().GroupBy(cs => cs.CustomerOrganisationId);
+                    customerSettings = tempCustomerSettings.Select(cs => new CustomerSettingsModel { CustomerOrganisationId = cs.Key, UsedCustomerSettingTypes = cs.Where(c => c.Value).Select(c => c.CustomerSettingType).ToList() }).ToList();
+                    _cache.Set(CacheKeys.CustomerSettings, customerSettings.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
                 }
-                return customers;
+                return customerSettings;
             }
         }
     }

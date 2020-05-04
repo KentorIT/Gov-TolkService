@@ -13,6 +13,7 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Authorization;
 using Tolk.Web.Api.Helpers;
+using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web.Api.Controllers
 {
@@ -21,10 +22,12 @@ namespace Tolk.Web.Api.Controllers
     public class ListController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
+        private readonly CacheService _cacheService;
 
-        public ListController(TolkDbContext tolkDbContext)
+        public ListController(TolkDbContext tolkDbContext, CacheService cacheService)
         {
             _dbContext = tolkDbContext;
+            _cacheService = cacheService;
         }
 
         [Description("Detta är ett försök att få lite dokumentation via description")]
@@ -64,17 +67,19 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ListItemResponse>> Customers()
+        public async Task<ActionResult<IEnumerable<ListItemResponse>>> Customers()
         {
-            return Ok(_dbContext.CustomerOrganisations
-                .OrderBy(c => c.Name).Select(c => new CustomerItemResponse
-                {
-                    Key = c.OrganisationPrefix,
-                    OrganisationNumber = c.OrganisationNumber,
-                    PriceListType = c.PriceListType.GetCustomName(),
-                    Name = c.Name,
-                    Description = c.ParentCustomerOrganisationId != null ? $"Organiserad under {c.ParentCustomerOrganisation.Name}" : null
-                }));
+            var customers = await _dbContext.CustomerOrganisations.GetAllCustomers().ToListAsync();
+            return Ok(customers.Select(c => new CustomerItemResponse
+            {
+                Key = c.OrganisationPrefix,
+                OrganisationNumber = c.OrganisationNumber,
+                PriceListType = c.PriceListType.GetCustomName(),
+                Name = c.Name,
+                TravelCostAgreementType = c.TravelCostAgreementType.GetCustomName(),
+                UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(cs => cs.CustomerOrganisationId == c.CustomerOrganisationId && cs.UsedCustomerSettingTypes.Any(cst => cst == CustomerSettingType.UseSelfInvoicingInterpreter)),
+                Description = c.ParentCustomerOrganisationId != null ? $"Organiserad under {c.ParentCustomerOrganisation.Name}" : null
+            }));
         }
 
         [HttpGet]

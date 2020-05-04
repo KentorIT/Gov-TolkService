@@ -117,7 +117,7 @@ namespace Tolk.Web.Controllers
                     var customerSettings = model.CustomerSettings.Select(cs => new CustomerSetting { CustomerSettingType = cs.CustomerSettingType, Value = cs.Value });
                     customer.UpdateCustomerSettings(_clock.SwedenNow, User.GetUserId(), customerSettings);
                     await _dbContext.SaveChangesAsync();
-                    await _cacheService.Flush(CacheKeys.Customers);
+                    await _cacheService.Flush(CacheKeys.CustomerSettings);
                     return RedirectToAction(nameof(View), new { Id = model.CustomerId, Message = "Myndighet har uppdaterats" });
                 }
                 return View(model);
@@ -145,7 +145,7 @@ namespace Tolk.Web.Controllers
                 CustomerOrganisation customer = new CustomerOrganisation();
                 model.UpdateCustomer(customer, true);
                 _dbContext.Add(customer);
-                await _cacheService.Flush(CacheKeys.Customers);
+                await _cacheService.Flush(CacheKeys.CustomerSettings);
                 await _dbContext.SaveChangesAsync();
                 customer = await _dbContext.CustomerOrganisations.GetCustomerById(customer.CustomerOrganisationId);
                 _notificationService.CustomerCreated(customer);

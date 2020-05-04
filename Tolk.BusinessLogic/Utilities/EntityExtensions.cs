@@ -562,6 +562,10 @@ namespace Tolk.BusinessLogic.Utilities
             .Include(r => r.Ranking)
             .OrderBy(r => r.RequestId).LastAsync();
 
+        public static IQueryable<CustomerOrganisation> GetAllCustomers(this IQueryable<CustomerOrganisation> customerOrganisations)
+            => customerOrganisations.Include(c => c.ParentCustomerOrganisation).OrderBy(c => c.Name);
+
+
         #endregion
 
 

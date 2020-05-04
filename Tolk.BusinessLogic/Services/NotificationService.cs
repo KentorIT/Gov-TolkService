@@ -885,7 +885,8 @@ Sammanställning:
                         PriceListType = customer.PriceListType.GetCustomName(),
                         Name = customer.Name,
                         Description = customer.ParentCustomerOrganisationId != null ? $"Organiserad under {customer.ParentCustomerOrganisation.Name}" : null,
-                        TravelCostAgreementType = customer.TravelCostAgreementType.GetCustomName()
+                        TravelCostAgreementType = customer.TravelCostAgreementType.GetCustomName(),
+                        UseSelfInvoicingInterpreter = customer.CustomerSettings.SingleOrDefault(cs => cs.CustomerSettingType == CustomerSettingType.UseSelfInvoicingInterpreter).Value
                     },
                     webhook.ContactInformation,
                     webhook.NotificationType,
