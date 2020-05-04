@@ -10,7 +10,7 @@ namespace Tolk.BusinessLogic.Enums
         UseOrderGroups = 1,
         [Description("Tolken fakturerar själv tolkarvode")]
         UseSelfInvoicingInterpreter = 2,
-        [Description("Använder bifogade bilagor")]
-        UseAttachments = 3
+        [Description("Dölj fält Bifoga filer")]
+        HideAttachmentField = 3
     }
 }

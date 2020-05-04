@@ -42,13 +42,13 @@ INSERT INTO CustomerSettingHistoryEntries (CustomerChangeLogEntryId, CustomerSet
 	WHERE cs.CustomerSettingType = 2 AND cs.Value = 1
 	ORDER BY co.CustomerOrganisationId, cs.CustomerSettingType 
 
-	-- kolla att alla har bifogade filer typ 3 satt (om vi ska stänga av för FK mm kan vi göra det från UI)
+	-- kolla att ingen har påslaget att dölja bifogade filer typ 3 (om vi ska stänga av för FK mm kan vi göra det från UI)
 	SELECT co.Name, cs.* FROM CustomerOrganisations co
 	JOIN CustomerSettings cs ON co.CustomerOrganisationId = cs.CustomerOrganisationId
 	WHERE cs.CustomerSettingType = 3 AND cs.Value = 1
 	ORDER BY co.CustomerOrganisationId, cs.CustomerSettingType 
 
-	-- kolla att ingen har bifogade filer typ 3 satt (om vi ska stänga av för FK mm kan vi göra det från UI)
+	-- kolla att alla kan se bifogade filer typ 3  (om vi ska stänga av för FK mm kan vi göra det från UI)
 	SELECT co.Name, cs.* FROM CustomerOrganisations co
 	JOIN CustomerSettings cs ON co.CustomerOrganisationId = cs.CustomerOrganisationId
 	WHERE cs.CustomerSettingType = 3 AND cs.Value = 0
