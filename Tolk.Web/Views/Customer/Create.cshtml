@@ -10,57 +10,61 @@
     <form method="post">
         <input type="hidden" asp-for="IsCreating" />
         <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="Name" />
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <form-entry asp-for="Name" />
+                </div>
+                <div class="row col-sm-12">
+                    <form-entry asp-for="EmailDomain" />
+                </div>
+                <div class="row col-sm-12">
+                    <form-entry asp-for="PriceListType" type="select" asp-items="SelectListService.PriceListTypes" />
+                </div>
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <form-entry asp-for="OrganisationNumber" />
+                </div>
+                <div class="row col-sm-12">
+                    <form-entry asp-for="OrganisationPrefix" />
+                </div>
+                <div class="row col-sm-12">
+                    <form-entry asp-for="TravelCostAgreementType" type="select" asp-items="SelectListService.TravelCostAgreementTypes" />
+                </div>
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="EmailDomain" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="OrganisationNumber" />
-            </div>
-            <div class="col-sm-4">
-                @if (Model.CustomerSettings.Any())
-                {
-                    int i = 0;
-                    foreach (CustomerSettingModel c in Model.CustomerSettings)
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+                </div>
+                <div class="row col-sm-12">
+                    @if (Model.CustomerSettings.Any())
                     {
-                        <input type="hidden" asp-for="CustomerSettings[i].CustomerSettingType" />
-                        <form-entry asp-for="CustomerSettings[i].Value" label-override="@EnumHelper.GetDescription(c.CustomerSettingType)" />
-                        i++;
+                        <label>Inställningar</label>
+                        int i = 0;
+                        foreach (CustomerSettingModel c in Model.CustomerSettings)
+                        {
+                            <input type="hidden" asp-for="CustomerSettings[i].CustomerSettingType" />
+                            <form-entry asp-for="CustomerSettings[i].Value" label-override="@EnumHelper.GetDescription(c.CustomerSettingType)" />
+                            i++;
+                        }
                     }
-                }
-            </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="PriceListType" type="select" asp-items="SelectListService.PriceListTypes" />
+                </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="OrganisationPrefix" />
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.List))">Avbryt <span class="btn-remove-times">&times;</span></a>
+                </div>
             </div>
-            <div class="col-sm-4">
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                </div>
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="TravelCostAgreementType" type="select" asp-items="SelectListService.TravelCostAgreementTypes" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                &nbsp;
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.List))">Avbryt <span class="btn-remove-times">&times;</span></a>
-            </div>
-            <div class="col-sm-8">
-                <button type="submit" class="disable-on-click btn btn-large btn-default pull-right">Skapa</button>
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <button type="submit" class="disable-on-click btn btn-large btn-default pull-right">Skapa</button>
+                </div>
             </div>
         </div>
     </form>

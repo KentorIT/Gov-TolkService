@@ -8,7 +8,6 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-
     public class CustomerModel
     {
         public int? CustomerId { get; set; }
@@ -30,7 +29,6 @@ namespace Tolk.Web.Models
         public PriceListType? PriceListType { get; set; }
 
         [Display(Name = "Avtal för bilersättning")]
-        [SubItem]
         [RequiredIf(nameof(IsCreating), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
         public TravelCostAgreementType? TravelCostAgreementType { get; set; }
 
@@ -57,6 +55,7 @@ namespace Tolk.Web.Models
         public AdminUnitFilterModel UnitFilterModel { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
+        [SubItem]
         public List<CustomerSettingModel> CustomerSettings { get; set; }
 
         [Display(Name = "Använd sammanhållen bokning")]

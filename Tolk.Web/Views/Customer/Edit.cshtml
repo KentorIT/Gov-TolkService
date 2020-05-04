@@ -8,55 +8,65 @@
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
     <form method="post">
+
         <div class="row">
-            <input type="hidden" asp-for="IsCreating" />
-            <input type="hidden" asp-for="CustomerId" />
-            <div class="col-sm-4">
-                <form-entry asp-for="Name" />
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <input type="hidden" asp-for="IsCreating" />
+                    <input type="hidden" asp-for="CustomerId" />
+                    <form-entry asp-for="Name" />
+                </div>
+                <div class="row col-sm-12">
+                    <form-entry asp-for="EmailDomain" />
+                </div>
+                <div class="row col-sm-12">
+                    <display-entry asp-for="PriceListType" />
+                </div>
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="EmailDomain" />
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <form-entry asp-for="OrganisationNumber" />
+                </div>
+                <div class="row col-sm-12">
+                    <display-entry asp-for="OrganisationPrefix" />
+                </div>
+                <div class="row col-sm-12">
+                    <display-entry asp-for="TravelCostAgreementType" />
+                </div>
             </div>
-            <div class="col-sm-4">
-                <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <form-entry asp-for="OrganisationNumber" />
-            </div>
-            <div class="col-sm-4">
-                @if (Model.CustomerSettings.Any())
-                {
-                    int i = 0;
-                    foreach (CustomerSettingModel c in Model.CustomerSettings)
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+                </div>
+                <div class="row col-sm-12">
+                    <label>Inställningar</label>
+                    @if (Model.CustomerSettings.Any())
                     {
-                        <input type="hidden" asp-for="CustomerSettings[i].CustomerSettingType" />
-                        <form-entry asp-for="CustomerSettings[i].Value" label-override="@EnumHelper.GetDescription(c.CustomerSettingType)" />
-                        i++;
+                        int i = 0;
+                        foreach (CustomerSettingModel c in Model.CustomerSettings)
+                        {
+                            <input type="hidden" asp-for="CustomerSettings[i].CustomerSettingType" />
+                            <form-entry asp-for="CustomerSettings[i].Value" label-override="@EnumHelper.GetDescription(c.CustomerSettingType)" />
+                            i++;
+                        }
                     }
-                }
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="PriceListType" />
+                </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-sm-4">
-                <display-entry asp-for="OrganisationPrefix" />
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.View), new { id = Model.CustomerId })">Avbryt <span class="btn-remove-times">&times;</span></a>
+                </div>
             </div>
-            <div class="col-sm-4">
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                </div>
             </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="TravelCostAgreementType" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-4">
-                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action(nameof(Tolk.Web.Controllers.CustomerController.View), new { id = Model.CustomerId })">Avbryt <span class="btn-remove-times">&times;</span></a>
-            </div>
-            <div class="col-sm-8">
-                <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
+                </div>
             </div>
         </div>
     </form>
