@@ -568,14 +568,22 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<FaqDisplayUserRole> GetAllFaqWithFaqDisplayUserRoles(this IQueryable<FaqDisplayUserRole> faqDisplayUserRoles)
             => faqDisplayUserRoles.Include(f => f.Faq);
 
-        public static IQueryable <FaqDisplayUserRole> GetFaqWithFaqDisplayUserRolesByFaqId(this IQueryable<FaqDisplayUserRole> faqDisplayUserRoles, int id)
+        public static IQueryable<FaqDisplayUserRole> GetFaqWithFaqDisplayUserRolesByFaqId(this IQueryable<FaqDisplayUserRole> faqDisplayUserRoles, int id)
           => faqDisplayUserRoles.Include(f => f.Faq).Where(f => f.FaqId == id);
 
         public static IQueryable<FaqDisplayUserRole> GetFaqDisplayUserRolesByDisplayUserRoles(this IQueryable<FaqDisplayUserRole> faqDisplayUserRoles, IEnumerable<DisplayUserRole> displayUserRoles)
           => faqDisplayUserRoles.Where(f => displayUserRoles.Contains(f.DisplayUserRole));
-        
+
         public static IQueryable<Faq> GetPublishedFaqWithFaqIds(this IQueryable<Faq> faqs, IQueryable<int> faqIds)
             => faqs.Where(f => faqIds.Contains(f.FaqId) && f.IsDisplayed);
+
+        public static IQueryable<SystemMessage> GetAllSystemMessages(this IQueryable<SystemMessage> systemMessages)
+            => systemMessages
+            .Include(s => s.CreatedByUser)
+            .Include(s => s.LastUpdatedByUser);
+
+        public static async Task<SystemMessage> GetSystemMessageById(this IQueryable<SystemMessage> systemMessages, int id)
+            => await systemMessages.Where(sm => sm.SystemMessageId == id).SingleOrDefaultAsync();
 
         #endregion
 

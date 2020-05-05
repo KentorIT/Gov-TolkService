@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
@@ -32,16 +31,10 @@ namespace Tolk.Web.Controllers
 
         public IActionResult List()
         {
-#warning move include
-            var systemMessages = _dbContext.SystemMessages
-                .Include(s => s.CreatedByUser)
-                .Include(s => s.LastUpdatedByUser).ToList();
-
             return View(new SystemMessageListModel
             {
-                Items =
-                systemMessages.
-                Select(s => new SystemMessageListItemModel
+                Items = _dbContext.SystemMessages.GetAllSystemMessages().ToList()
+                .Select(s => new SystemMessageListItemModel
                 {
                     LastUpdatedCreatedAt = s.LastUpdatedCreatedAt,
                     LastUpdatedCreatedBy = s.LastUpdatedByUser?.FullName ?? s.CreatedByUser.FullName,
@@ -60,20 +53,10 @@ namespace Tolk.Web.Controllers
             return View();
         }
 
-        public ActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var systemMessage = _dbContext.SystemMessages
-                .Single(s => s.SystemMessageId == id);
-
-            return View(new SystemMessageModel
-            {
-                SystemMessageId = systemMessage.SystemMessageId,
-                SystemMessageText = systemMessage.SystemMessageText,
-                SystemMessageHeader = systemMessage.SystemMessageHeader,
-                DisplayedForUserTypeGroup = systemMessage.SystemMessageUserTypeGroup,
-                SystemMessageTypeValue = systemMessage.SystemMessageType,
-                DisplayDate = new RequiredDateRange { Start = systemMessage.ActiveFrom.DateTime, End = systemMessage.ActiveTo.DateTime }
-            });
+            var systemMessage = await _dbContext.SystemMessages.GetSystemMessageById(id);
+            return View(SystemMessageModel.GetModelFromSystemMessage(systemMessage));
         }
 
         [ValidateAntiForgeryToken]
@@ -109,8 +92,7 @@ namespace Tolk.Web.Controllers
             {
                 if (update)
                 {
-                    var sysMessage = _dbContext.SystemMessages
-                   .Single(s => s.SystemMessageId == model.SystemMessageId);
+                    var sysMessage = await _dbContext.SystemMessages.GetSystemMessageById(model.SystemMessageId);
                     sysMessage.Update(_clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId(), model.DisplayDate.Start.ToDateTimeOffsetSweden(), model.DisplayDate.End.ToDateTimeOffsetSweden(), model.SystemMessageHeader, model.SystemMessageText, EnumHelper.Parse<SystemMessageType>(model.SystemMessageType.SelectedItem.Value), model.DisplayedForUserTypeGroup);
                 }
                 else

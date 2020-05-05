@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Entities;
 
 
 namespace Tolk.Web.Models
@@ -32,6 +33,19 @@ namespace Tolk.Web.Models
         [Required]
         [Display(Name = "Visa nyheten för", Description = "Här bestämmer du vilka användare som ska få se nyheten.")]
         public SystemMessageUserTypeGroup DisplayedForUserTypeGroup { get; set; }
+
+        internal static SystemMessageModel GetModelFromSystemMessage(SystemMessage systemMessage)
+        {
+            return new SystemMessageModel
+            {
+                SystemMessageId = systemMessage.SystemMessageId,
+                SystemMessageText = systemMessage.SystemMessageText,
+                SystemMessageHeader = systemMessage.SystemMessageHeader,
+                DisplayedForUserTypeGroup = systemMessage.SystemMessageUserTypeGroup,
+                SystemMessageTypeValue = systemMessage.SystemMessageType,
+                DisplayDate = new RequiredDateRange { Start = systemMessage.ActiveFrom.DateTime, End = systemMessage.ActiveTo.DateTime }
+            };
+        }
 
     }
 }
