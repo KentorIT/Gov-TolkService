@@ -201,7 +201,9 @@ $(function () {
         searching: true,
         sorting: false,
         language: {
-            url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
+            emptyTable: "Det finns inget data att visa",
+            search: "Sök:",
+            zeroRecords: "Sökningen gav inget resultat"
         }
     });
 

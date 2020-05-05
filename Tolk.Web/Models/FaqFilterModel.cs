@@ -18,11 +18,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Visas för")]
         public DisplayUserRole? DisplayedFor { get; set; }
 
-        public bool HasActiveFilters
-        {
-            get => IsDisplayed.HasValue || !string.IsNullOrWhiteSpace(QuestionAnswer) || DisplayedFor.HasValue;
-        }
-
+        public bool HasActiveFilters => IsDisplayed.HasValue || !string.IsNullOrWhiteSpace(QuestionAnswer) || DisplayedFor.HasValue;
+        
         internal IQueryable<Faq> Apply(IQueryable<Faq> faqs)
         {
 #pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...

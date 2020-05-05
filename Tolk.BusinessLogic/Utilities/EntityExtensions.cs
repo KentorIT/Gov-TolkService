@@ -565,6 +565,17 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<CustomerOrganisation> GetAllCustomers(this IQueryable<CustomerOrganisation> customerOrganisations)
             => customerOrganisations.Include(c => c.ParentCustomerOrganisation).OrderBy(c => c.Name);
 
+        public static IQueryable<FaqDisplayUserRole> GetAllFaqWithFaqDisplayUserRoles(this IQueryable<FaqDisplayUserRole> faqDisplayUserRoles)
+            => faqDisplayUserRoles.Include(f => f.Faq);
+
+        public static IQueryable <FaqDisplayUserRole> GetFaqWithFaqDisplayUserRolesByFaqId(this IQueryable<FaqDisplayUserRole> faqDisplayUserRoles, int id)
+          => faqDisplayUserRoles.Include(f => f.Faq).Where(f => f.FaqId == id);
+
+        public static IQueryable<FaqDisplayUserRole> GetFaqDisplayUserRolesByDisplayUserRoles(this IQueryable<FaqDisplayUserRole> faqDisplayUserRoles, IEnumerable<DisplayUserRole> displayUserRoles)
+          => faqDisplayUserRoles.Where(f => displayUserRoles.Contains(f.DisplayUserRole));
+        
+        public static IQueryable<Faq> GetPublishedFaqWithFaqIds(this IQueryable<Faq> faqs, IQueryable<int> faqIds)
+            => faqs.Where(f => faqIds.Contains(f.FaqId) && f.IsDisplayed);
 
         #endregion
 

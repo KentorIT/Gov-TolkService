@@ -9,39 +9,30 @@
     <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     <div class="row">
         <div class="col-md-12">
-            @if (Model.Items.Any())
-            {
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div class="table-responsive table-datatable">
-                            <table class="table searchable-only-table full-row-height">
-                                <thead>
-                                    <tr>
-                                        <th data-sortable="false"></th>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="table-responsive table-datatable">
+                        <table class="table searchable-only-table full-row-height">
+                            <thead>
+                                <tr>
+                                    <th data-sortable="false"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr class="faq-row">
+                                        <td class="gray-border-list-element">
+                                            <div class="faq-question">@item.Question</div>
+                                            <div class="faq-answer">@item.Answer</div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var item in Model.Items)
-                                    {
-                                        <tr class="faq-row">
-                                            <td class="gray-border-list-element">
-                                                <div class="faq-question">@item.Question</div>
-                                                <div class="faq-answer">@item.Answer</div>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
+                                }
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            }
-            else
-            {
-                <span class="no-result-message">
-                    Det finns inga frågor att visa
-                </span>
-            }
+            </div>
         </div>
     </div>
 </section>

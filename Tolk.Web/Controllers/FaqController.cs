@@ -14,7 +14,6 @@ using Tolk.Web.Helpers;
 using Tolk.Web.Models;
 using Tolk.Web.Services;
 
-
 namespace Tolk.Web.Controllers
 {
 
@@ -40,8 +39,8 @@ namespace Tolk.Web.Controllers
             {
                 model = new FaqFilterModel();
             }
-#warning include-fest
-            var faqs = _dbContext.Faq.Include(f => f.FaqDisplayUserRoles).Select(f => f);
+            var faqDisplayUserRolesWithFaqs = _dbContext.FaqDisplayUserRole.GetAllFaqWithFaqDisplayUserRoles().Select(f => f);
+            var faqs = faqDisplayUserRolesWithFaqs.Select(f => f.Faq).Distinct();
 
             faqs = model.Apply(faqs);
             return View(new FaqListModel
@@ -61,20 +60,18 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Faqs()
         {
-            var faqIds = _dbContext.FaqDisplayUserRole
-                .Where(f => DisplayUserRoleForCurrentUser.Contains(f.DisplayUserRole))
+            var faqIds = _dbContext.FaqDisplayUserRole.GetFaqDisplayUserRolesByDisplayUserRoles(DisplayUserRoleForCurrentUser)
                 .Select(f => f.FaqId).Distinct();
 
             return View(new FaqListModel
             {
                 IsBroker = User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId),
-                Items = _dbContext.Faq
-                .Where(f => faqIds.Contains(f.FaqId) && f.IsDisplayed)
-                .Select(f => new FaqListItemModel
-                {
-                    Question = f.Question,
-                    Answer = f.Answer
-                })
+                Items = _dbContext.Faq.GetPublishedFaqWithFaqIds(faqIds)
+               .Select(f => new FaqListItemModel
+               {
+                   Question = f.Question,
+                   Answer = f.Answer
+               })
             });
         }
 
@@ -99,9 +96,8 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.AppOrSysAdmin)]
         public ActionResult Edit(int id)
         {
-#warning include-fest
-            var faq = _dbContext.Faq.Include(f => f.FaqDisplayUserRoles)
-                .Single(f => f.FaqId == id);
+            var faqDisplayUserRolesWithFaq = _dbContext.FaqDisplayUserRole.GetFaqWithFaqDisplayUserRolesByFaqId(id).ToList();
+            var faq = faqDisplayUserRolesWithFaq.Select(f => f.Faq).First();
 
             return View(new FaqModel
             {
@@ -112,7 +108,7 @@ namespace Tolk.Web.Controllers
                 DisplayForRoles = new CheckboxGroup
                 {
                     SelectedItems = SelectListService.DisplayForUserRoles
-                        .Where(item => faq.FaqDisplayUserRoles
+                        .Where(item => faqDisplayUserRolesWithFaq
                             .Select(fd => fd.DisplayUserRole)
                             .Contains(EnumHelper.Parse<DisplayUserRole>(item.Value))
                         )
@@ -138,9 +134,8 @@ namespace Tolk.Web.Controllers
             var displayForRoles = model.DisplayForRoles.SelectedItems.Select(r => EnumHelper.Parse<DisplayUserRole>(r.Value));
             if (update)
             {
-#warning include-fest
-                faq = _dbContext.Faq.Include(f => f.FaqDisplayUserRoles)
-                    .Single(s => s.FaqId == model.FaqId);
+                var faqDisplayUserRolesWithFaq = _dbContext.FaqDisplayUserRole.GetFaqWithFaqDisplayUserRolesByFaqId(model.FaqId).ToList();
+                faq = faqDisplayUserRolesWithFaq.Select(f => f.Faq).First();
                 faq.Update(_clock.SwedenNow, User.GetUserId(), model.IsDisplayed, model.Question, model.Answer, displayForRoles);
             }
             else
