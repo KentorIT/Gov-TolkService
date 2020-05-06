@@ -326,7 +326,7 @@ namespace Tolk.Web.Models
         }
 
         private static RadioButtonGroup GetAllowExceedingTravelCost(bool isBroker, Order order)
-            => isBroker ? new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(order.AllowExceedingTravelCost.Value).ToString()) } : new RadioButtonGroup { SelectedItem = order.AllowExceedingTravelCost == null ? null : SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) };
+            => order.AllowExceedingTravelCost == null ? null : isBroker ? new RadioButtonGroup { SelectedItem = SelectListService.BoolList.Single(e => e.Value == EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(order.AllowExceedingTravelCost.Value).ToString()) } : new RadioButtonGroup { SelectedItem = SelectListService.AllowExceedingTravelCost.Single(e => e.Value == order.AllowExceedingTravelCost.ToString()) };
 
         internal static OrderViewModel GetModelFromOrderForConfirmation(Order order)
         {

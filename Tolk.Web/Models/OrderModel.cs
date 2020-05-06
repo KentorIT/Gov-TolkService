@@ -285,6 +285,10 @@ namespace Tolk.Web.Models
                     orderGroup.InterpreterLocations.Add(new OrderGroupInterpreterLocation { Rank = 3, InterpreterLocation = RankedInterpreterLocationThird.Value });
                 }
             }
+            else
+            {
+                RankedInterpreterLocationThird = null;
+            }
             orderGroup.LanguageId = LanguageId;
             orderGroup.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
             orderGroup.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;
@@ -429,6 +433,10 @@ namespace Tolk.Web.Models
                 {
                     order.InterpreterLocations.Add(RankedInterpreterLocationThirdAddressModel.GetInterpreterLocation(RankedInterpreterLocationThird.Value, 3));
                 }
+            }
+            else
+            {
+                RankedInterpreterLocationThird = null;
             }
             if (isReplace)
             {
