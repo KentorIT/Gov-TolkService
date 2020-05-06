@@ -94,9 +94,9 @@ namespace Tolk.Web.Controllers
         }
 
         [Authorize(Roles = Roles.AppOrSysAdmin)]
-        public ActionResult Edit(int id)
+        public async Task <IActionResult> Edit(int id)
         {
-            var faqDisplayUserRolesWithFaq = _dbContext.FaqDisplayUserRole.GetFaqWithFaqDisplayUserRolesByFaqId(id).ToList();
+            var faqDisplayUserRolesWithFaq = await _dbContext.FaqDisplayUserRole.GetFaqWithFaqDisplayUserRolesByFaqId(id).ToListAsync();
             var faq = faqDisplayUserRolesWithFaq.Select(f => f.Faq).First();
 
             return View(new FaqModel
@@ -134,7 +134,7 @@ namespace Tolk.Web.Controllers
             var displayForRoles = model.DisplayForRoles.SelectedItems.Select(r => EnumHelper.Parse<DisplayUserRole>(r.Value));
             if (update)
             {
-                var faqDisplayUserRolesWithFaq = _dbContext.FaqDisplayUserRole.GetFaqWithFaqDisplayUserRolesByFaqId(model.FaqId).ToList();
+                var faqDisplayUserRolesWithFaq = await _dbContext.FaqDisplayUserRole.GetFaqWithFaqDisplayUserRolesByFaqId(model.FaqId).ToListAsync();
                 faq = faqDisplayUserRolesWithFaq.Select(f => f.Faq).First();
                 faq.Update(_clock.SwedenNow, User.GetUserId(), model.IsDisplayed, model.Question, model.Answer, displayForRoles);
             }

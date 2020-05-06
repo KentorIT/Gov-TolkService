@@ -11,6 +11,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Tolk.Web.Controllers
 {
@@ -29,11 +30,12 @@ namespace Tolk.Web.Controllers
             _clock = clock;
         }
 
-        public IActionResult List()
+        public async Task<IActionResult> List()
         {
+            var systemMessages = await _dbContext.SystemMessages.GetAllSystemMessages().ToListAsync();
             return View(new SystemMessageListModel
             {
-                Items = _dbContext.SystemMessages.GetAllSystemMessages().ToList()
+                Items = systemMessages
                 .Select(s => new SystemMessageListItemModel
                 {
                     LastUpdatedCreatedAt = s.LastUpdatedCreatedAt,
