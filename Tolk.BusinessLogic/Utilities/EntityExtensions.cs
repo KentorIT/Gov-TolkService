@@ -760,6 +760,10 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<Order> GetOrderWithLanguageByOrderId(this IQueryable<Order> orders, int id)
            => await orders.Include(o => o.Language).SingleOrDefaultAsync(o => o.OrderId == id);
 
+        public static async Task<OutboundEmail> GetEmailById(this IQueryable<OutboundEmail> emails, int id)
+            => await emails.Include(e => e.ReplacedByEmail).SingleOrDefaultAsync(e => e.OutboundEmailId == id);
+
+
         #endregion
 
 

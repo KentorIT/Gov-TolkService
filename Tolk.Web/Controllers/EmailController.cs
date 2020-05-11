@@ -1,7 +1,6 @@
 ﻿using DataTables.AspNet.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
@@ -10,6 +9,7 @@ using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Controllers
 {
@@ -58,26 +58,21 @@ namespace Tolk.Web.Controllers
             return Json(AjaxDataTableHelper.GetColumnDefinitions<EmailListItemModel>());
         }
 
-        public IActionResult View(int id)
+        public async Task<IActionResult> View(int id)
         {
-#warning move include
-            return View(EmailModel.GetModelFromOutboundEmail(_dbContext.OutboundEmails
-                .Include(e => e.ReplacedByEmail).Single(e => e.OutboundEmailId == id), User.IsInRole(Roles.ApplicationAdministrator)));
+            return View(EmailModel.GetModelFromOutboundEmail(await _dbContext.OutboundEmails.GetEmailById(id), User.IsInRole(Roles.ApplicationAdministrator)));
         }
 
         [Authorize(Roles = Roles.ApplicationAdministrator)]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Resend(int id)
+        public async Task<IActionResult> Resend(int id)
         {
-#warning move include
-            var oldEmail = _dbContext.OutboundEmails.Include(e => e.ReplacedByEmail)
-                .SingleOrDefault(e => e.OutboundEmailId == id);
+            var oldEmail = await _dbContext.OutboundEmails.GetEmailById(id);
             if (oldEmail == null || oldEmail.ReplacedByEmail != null)
             {
                 return View(nameof(View), EmailModel.GetModelFromOutboundEmail(oldEmail, User.IsInRole(Roles.ApplicationAdministrator), "Det gick inte att skicka om detta e-postmeddelande"));
             }
-
             _notificationService.CreateReplacingEmail(
                 oldEmail.Recipient,
                 oldEmail.Subject,
@@ -86,7 +81,6 @@ namespace Tolk.Web.Controllers
                 oldEmail.OutboundEmailId,
                 User.GetUserId()
             );
-
             return RedirectToAction(nameof(List));
         }
 
