@@ -185,31 +185,31 @@ $(function () {
             || $("#SplitTimeRange_EndTimeHour").val() === "" || $("#SplitTimeRange_EndTimeMinutes").val() === "") {
             return;
         }
-        //else check if longer than 4h
-        var isLongerThan4h = false;
+        //else check if longer than 5h
+        var isLongerThan5h = false;
         var startHour = Number($("#SplitTimeRange_StartTimeHour").val());
         var startMinute = Number($("#SplitTimeRange_StartTimeMinutes").val());
         var endHour = Number($("#SplitTimeRange_EndTimeHour").val());
         var endMinute = Number($("#SplitTimeRange_EndTimeMinutes").val());
 
         if (startHour === endHour) {
-            isLongerThan4h = endMinute <= startMinute;
+            isLongerThan5h = endMinute <= startMinute;
         }
         else if (startHour > endHour) {
             if (startHour - endHour < 20) {
-                isLongerThan4h = true;
+                isLongerThan5h = true;
             }
             else if (startHour - endHour === 20) {
-                isLongerThan4h = endMinute > startMinute;
+                isLongerThan5h = endMinute > startMinute;
             }
         }
-        else if (endHour - startHour > 4) {
-            isLongerThan4h = true;
+        else if (endHour - startHour > 5) {
+            isLongerThan5h = true;
         }
-        else if (endHour - startHour === 4) {
-            isLongerThan4h = endMinute > startMinute;
+        else if (endHour - startHour === 5) {
+            isLongerThan5h = endMinute > startMinute;
         }
-        if (isLongerThan4h) {
+        if (isLongerThan5h) {
             $("#mealbreak-included").show();
         }
         else {
