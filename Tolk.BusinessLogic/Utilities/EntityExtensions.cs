@@ -426,7 +426,7 @@ namespace Tolk.BusinessLogic.Utilities
             => await users.Include(u => u.CustomerOrganisation).SingleOrDefaultAsync(u => u.Id == id);
 
         public static async Task<OutboundWebHookCall> GetOutboundWebHookCall(this IQueryable<OutboundWebHookCall> outboundWebHookCalls, int id)
-            => await outboundWebHookCalls.Include(c => c.RecipientUser).SingleOrDefaultAsync(c => c.OutboundWebHookCallId == id);
+        => await outboundWebHookCalls.Include(c => c.RecipientUser).SingleOrDefaultAsync(c => c.OutboundWebHookCallId == id);
 
         #endregion
 
@@ -762,6 +762,15 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<OutboundEmail> GetEmailById(this IQueryable<OutboundEmail> emails, int id)
             => await emails.Include(e => e.ReplacedByEmail).SingleOrDefaultAsync(e => e.OutboundEmailId == id);
+
+        public static async Task<OutboundWebHookCall> GetWebHookById(this IQueryable<OutboundWebHookCall> webhooks, int id)
+             => await webhooks
+             .Include(wh => wh.RecipientUser).ThenInclude(u => u.Broker)
+             .Include(wh => wh.ReplacingWebHook)
+             .SingleOrDefaultAsync(wh => wh.OutboundWebHookCallId == id);
+
+        public static IQueryable<FailedWebHookCall> GetFailedWebhookCallsByWebHookId(this IQueryable<FailedWebHookCall> failedWebhookCalls, int id)
+             => failedWebhookCalls.Where(f => f.OutboundWebHookCallId == id);
 
         public static IQueryable<Ranking> GetActiveRankings(this IQueryable<Ranking> rankings, DateTime now)
         => rankings

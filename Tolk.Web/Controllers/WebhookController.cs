@@ -78,12 +78,8 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id)
         {
-#warning include-fest
-            var notification = await _dbContext.OutboundWebHookCalls
-                .Include(wh => wh.FailedCalls)
-                .Include(wh => wh.RecipientUser).ThenInclude(u => u.Broker)
-                .Include(wh => wh.ReplacingWebHook)
-                .SingleOrDefaultAsync(wh => wh.OutboundWebHookCallId == id);
+            var notification = await _dbContext.OutboundWebHookCalls.GetWebHookById(id);
+            notification.FailedCalls = await _dbContext.FailedWebHookCalls.GetFailedWebhookCallsByWebHookId(id).ToListAsync();
 
             if (notification != null && (await _authorizationService.AuthorizeAsync(User, notification, Policies.View)).Succeeded)
             {
@@ -110,10 +106,7 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Resend(int webhookId)
         {
-#warning move include
-            var notification = await _dbContext.OutboundWebHookCalls
-                .Include(wh => wh.RecipientUser)
-                .SingleOrDefaultAsync(wh => wh.OutboundWebHookCallId == webhookId);
+            var notification = await _dbContext.OutboundWebHookCalls.GetWebHookById(webhookId);
             if (notification != null && (await _authorizationService.AuthorizeAsync(User, notification, Policies.Replace)).Succeeded)
             {
                 _notificationService.ResendWebHook(notification, User.GetUserId(), User.TryGetImpersonatorId());
