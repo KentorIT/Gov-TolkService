@@ -50,10 +50,7 @@ namespace Tolk.BusinessLogic.Services
             }
             try
             {
-#warning move include
-                var order = await _dbContext.Orders
-                        .Include(o => o.Language)
-                        .SingleAsync(o => o.OrderId == orderId);
+                var order = await _dbContext.Orders.GetOrderWithLanguageByOrderId(orderId);
                 if (string.IsNullOrEmpty(order.Language.TellusName))
                 {
                     return VerificationResult.LanguageNotRegistered;
