@@ -139,7 +139,7 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingReceivedBy = impersonatorId;
         }
 
-        public virtual void Decline(
+        internal virtual void Decline(
             DateTimeOffset declinedAt,
             int userId,
             int? impersonatorId,

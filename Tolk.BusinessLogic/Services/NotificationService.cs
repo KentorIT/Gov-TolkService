@@ -921,24 +921,29 @@ Sammanställning:
             return $"Tolkens kompetensnivå: {((CompetenceAndSpecialistLevel?)competenceInfo)?.GetDescription() ?? "Information saknas"}";
         }
 
-        public void RequestGroupAccepted(RequestGroup requestGroup)
+        public async Task RequestGroupAccepted(RequestGroup requestGroup, Request firstRequest, Request firstExtraInterpreterRequest, IEnumerable<Order> orders = null)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAccepted), nameof(NotificationService));
-            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            Order order = requestGroup.OrderGroup.FirstOrder;
-            var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer)}\n\n" +
-                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
-                $"\tTillfällen: \n" +
-                $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
-                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
-            if (requestGroup.HasExtraInterpreter)
+            NullCheckHelper.ArgumentCheckNull(firstRequest, nameof(RequestGroupAccepted), nameof(NotificationService));
+            OrderGroup orderGroup = requestGroup.OrderGroup;
+            string orderGroupNumber = orderGroup.OrderGroupNumber;
+            if (orders == null)
             {
-                body += GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter, true);
+                orders = await _dbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             }
-            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+            var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer)}\n\n" +
+                $"Språk: {orderGroup.OtherLanguage ?? orderGroup.Language?.Name}\n" +
+                $"\tTillfällen: \n" +
+                $"{GetOccurences(orders)}\n" +
+                GetPossibleInfoNotValidatedInterpreter(firstRequest);
+            if (firstExtraInterpreterRequest != null)
+            {
+                body += GetPossibleInfoNotValidatedInterpreter(firstExtraInterpreterRequest, true);
+            }
+            CreateEmail(GetRecipientsFromOrderGroup(orderGroup),
                 $"Förmedling har accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
-                body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
+                body + GoToOrderGroupPlain(requestGroup.OrderGroupId),
+                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroupId));
         }
 
         public void RequestGroupAnswerApproved(RequestGroup requestGroup)
@@ -1123,38 +1128,36 @@ Sammanställning:
                 HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId));
         }
 
-        public void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup)
+        public void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup, Request firstRequest)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(PartialRequestGroupAnswerAccepted), nameof(NotificationService));
+            NullCheckHelper.ArgumentCheckNull(firstRequest, nameof(PartialRequestGroupAnswerAccepted), nameof(NotificationService));
+            OrderGroup orderGroup = requestGroup.OrderGroup;
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            Order order = requestGroup.OrderGroup.FirstOrder;
             var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Del av bokningsförfrågan har accepterats.\n" +
                 $"Den extra tolk som avropades har gått vidare som en egen förfrågan till nästa förmedling. {GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer)}\n\n" +
-                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
-                $"\tTillfällen: \n" +
-                $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
-                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
-            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+                $"Språk: {orderGroup.OtherLanguage ?? orderGroup.Language?.Name}\n" +
+                GetPossibleInfoNotValidatedInterpreter(firstRequest);
+            CreateEmail(GetRecipientsFromOrderGroup(orderGroup),
                 $"Förmedling har delvis accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
-                body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
+                body + GoToOrderGroupPlain(orderGroup.OrderGroupId),
+                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(orderGroup.OrderGroupId));
         }
 
-        public void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup)
+        public void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup, Request firstRequest)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(PartialRequestGroupAnswerAutomaticallyApproved), nameof(NotificationService));
+            NullCheckHelper.ArgumentCheckNull(firstRequest, nameof(PartialRequestGroupAnswerAutomaticallyApproved), nameof(NotificationService));
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            Order order = requestGroup.OrderGroup.FirstOrder;
+            OrderGroup orderGroup = requestGroup.OrderGroup;
 
             var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Del av bokningsförfrågan har accepterats.\n\n" +
-                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
-                $"\tTillfällen: \n" +
-                $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
-                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
-            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+                $"Språk: {orderGroup.OtherLanguage ?? orderGroup.Language?.Name}\n" +
+                GetPossibleInfoNotValidatedInterpreter(firstRequest);
+            CreateEmail(GetRecipientsFromOrderGroup(orderGroup),
                 $"Förmedling har delvis accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
-                body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
+                body + GoToOrderGroupPlain(orderGroup.OrderGroupId),
+                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(orderGroup.OrderGroupId));
             NotifyBrokerOnAcceptedAnswer(requestGroup, orderGroupNumber);
         }
 

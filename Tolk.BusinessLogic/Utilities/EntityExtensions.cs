@@ -813,7 +813,9 @@ namespace Tolk.BusinessLogic.Utilities
                                     (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
 
         public static IQueryable<Request> GetRequestsForRequestGroup(this IQueryable<Request> requests, int id)
-             => requests.Include(o => o.Order).Where(r => r.RequestGroupId == id);
+             => requests
+                .Include(o => o.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Where(r => r.RequestGroupId == id);
 
         public static IQueryable<Request> GetActiveRequestsForRequestGroup(this IQueryable<Request> requests, int id)
              => requests.GetRequestsForRequestGroup(id).Where(r => r.ReplacedByRequest == null);
@@ -846,6 +848,11 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Where(r => r.OrderGroupId == id);
 
+        public static IQueryable<RequestGroup> GetRequestGroupsForRequestCreationForOrderGroup(this IQueryable<RequestGroup> requestGroups, int id)
+            => requestGroups
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Where(r => r.OrderGroupId == id);
+
         public static IQueryable<RequestGroup> GetLostRequestGroupsForOrderGroup(this IQueryable<RequestGroup> requestGroups, int id)
            => requestGroups.Where(r =>
                              r.OrderGroupId == id &&
@@ -861,6 +868,9 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<OrderGroupRequirement> GetRequirementsForOrderGroup(this IQueryable<OrderGroupRequirement> requirements, int id)
             => requirements.Where(o => o.OrderGroupId == id);
+
+        public static IQueryable<OrderRequirement> GetOrderRequirementsForOrderGroup(this IQueryable<OrderRequirement> requirements, int id)
+            => requirements.Where(o => o.Order.OrderGroupId == id);
 
         public static IQueryable<Attachment> GetAttachmentsForOrderGroup(this IQueryable<Attachment> attachments, int id)
             => attachments.Where(a => a.OrderGroups.Any(g => g.OrderGroupId == id));
@@ -880,6 +890,11 @@ namespace Tolk.BusinessLogic.Utilities
         public async static Task<bool> HasExtraInterpreter( this IQueryable<OrderGroup> groups, int id)
             => await groups.AnyAsync(g => g.OrderGroupId == id && g.Orders.Any(o => o.IsExtraInterpreterForOrderId != null));
 
+        public static IQueryable<OrderInterpreterLocation> GetOrderedInterpreterLocationsForOrderGroup(this IQueryable<OrderInterpreterLocation> locations, int id)
+            => locations.Where(r => r.Order.OrderGroupId == id).OrderBy(r => r.Rank);
+
+        public static IQueryable<OrderCompetenceRequirement> GetOrderedCompetenceRequirementsForOrderGroup(this IQueryable<OrderCompetenceRequirement> requirements, int id)
+            => requirements.Where(r => r.Order.OrderGroupId == id).OrderBy(r => r.Rank);
 
         #endregion
     }

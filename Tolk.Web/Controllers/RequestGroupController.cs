@@ -67,27 +67,20 @@ namespace Tolk.Web.Controllers
             {
                 if (requestGroup.IsToBeProcessedByBroker)
                 {
-                    return RedirectToAction(nameof(Process), new { id = requestGroup.RequestGroupId });
+                    return RedirectToAction(nameof(Process), new { id = id });
                 }
-                Order firstOrder = await _dbContext.Orders.GetOrdersForOrderGroup(id).OrderBy(o => o.StartAt).FirstOrDefaultAsync();
-                //GET FROM EXTENSION
-#warning Detta kommer inte funka...
-                Request firstRequest = requestGroup.FirstRequestForFirstInterpreter;
-                //GET FROM EXTENSION
-                Request requestExtraInterpreter = requestGroup.HasExtraInterpreter ? requestGroup.FirstRequestForExtraInterpreter : null;
+                var requests = await _dbContext.Requests.GetActiveRequestsForRequestGroup(id).ToListAsync();
+                var firstRequest = requests.OrderBy(r => r.RequestId).First(r => r.Order.IsExtraInterpreterForOrderId == null);
+                Order firstOrder = firstRequest.Order;
+                var firstRequestForExtraInterpreter = requests.OrderBy(r => r.RequestId).FirstOrDefault(r => r.Order.IsExtraInterpreterForOrderId != null);
 
-#warning Gör om denna metod nu, behöver ha koll på att denna sida inte missar något...
-                var model = RequestGroupViewModel.GetModelFromRequestGroup(requestGroup.OrderGroup, requestGroup, firstRequest, requestExtraInterpreter);
+                var model = RequestGroupViewModel.GetModelFromRequestGroup(requestGroup.OrderGroup, requestGroup, firstRequest, firstRequestForExtraInterpreter);
                 model.CustomerInformationModel.IsCustomer = false;
                 model.CustomerInformationModel.UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == requestGroup.OrderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
-#warning Gör om denna metod nu, behöver ha koll på att denna sida inte missar något...
+
                 model.OrderGroupModel = OrderGroupModel.GetModelFromOrderGroup(requestGroup.OrderGroup, firstOrder, requestGroup, true);
-                //_listtoModelService.Add(model.OrderGroupModel);
-                //_listtoModelService.Add(model);
-                //model.ActiveRequestGroup.ExpectedTravelCosts = model.ExpectedTravelCosts;
-                //model.ActiveRequestGroup.ExpectedTravelCostInfo = model.ExpectedTravelCostInfo;
-                //model.ActiveRequestGroup.ExtraInterpreterExpectedTravelCosts = model.ExtraInterpreterExpectedTravelCosts;
-                //model.ActiveRequestGroup.ExtraInterpreterExpectedTravelCostInfo = model.ExtraInterpreterExpectedTravelCostInfo;
+                await _listToModelService.AddInformationFromListsToModel(model.OrderGroupModel,requestGroup.OrderGroupId, firstOrder.OrderId);
+                await _listToModelService.AddInformationFromListsToModel(model, firstRequest.RequestId, firstRequestForExtraInterpreter?.RequestId, false);
 
                 if (requestGroup.QuarantineId.HasValue)
                 {
@@ -148,21 +141,12 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Process(RequestGroupProcessModel model)
         {
-#warning include-fest
+#warning move include
             var requestGroup = await _dbContext.RequestGroups
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
-                .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
-                .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requests)
+                .Include(g => g.OrderGroup).ThenInclude(g => g.Language)
                 .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
                 .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerUnit)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requirements)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CompetenceRequirements)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Language)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Region)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.CustomerOrganisation)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
                 .SingleAsync(r => r.RequestGroupId == model.RequestGroupId);
 
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
@@ -193,9 +177,8 @@ namespace Tolk.Web.Controllers
                 {
                     try
                     {
-                        //Collect, if any, attachments
                         await _requestService.AcceptGroup(
-                            requestGroup,
+                        requestGroup,
                             _clock.SwedenNow,
                             User.GetUserId(),
                             User.TryGetImpersonatorId(),
@@ -225,11 +208,9 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Decline(RequestGroupDeclineModel model)
         {
-#warning include-fest
+#warning move include
             var requestGroup = await _dbContext.RequestGroups
-                .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requests)
                 .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .SingleOrDefaultAsync(r => r.RequestGroupId == model.DeniedRequestGroupId);
@@ -377,30 +358,16 @@ namespace Tolk.Web.Controllers
 
         private async Task<RequestGroup> GetRequestGroupToView(int requestGroupId)
         {
-#warning include-fest
+#warning move include
             return await _dbContext.RequestGroups
                .Include(g => g.Ranking).ThenInclude(r => r.Broker)
-               .Include(g => g.StatusConfirmations)
                .Include(g => g.AnsweringUser)
                .Include(g => g.ProcessingUser)
                .Include(g => g.CancelledByUser)
-               .Include(g => g.Attachments).ThenInclude(a => a.Attachment)
-               .Include(g => g.Views).ThenInclude(v => v.ViewedByUser)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
                .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Requirements)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
                .Include(g => g.OrderGroup).ThenInclude(o => o.Region)
                .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Requirements)
-               .Include(g => g.OrderGroup).ThenInclude(o => o.Orders)
-               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.Requirements)
-               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.InterpreterLocations)
-               .Include(g => g.Requests).ThenInclude(r => r.RequirementAnswers)
-               .Include(g => g.Requests).ThenInclude(o => o.Order).ThenInclude(o => o.PriceRows).ThenInclude(r => r.PriceListRow)
-               .Include(g => g.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-               .Include(g => g.Requests).ThenInclude(r => r.Interpreter)
                .SingleAsync(r => r.RequestGroupId == requestGroupId);
         }
 

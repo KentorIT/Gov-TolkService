@@ -72,24 +72,13 @@ namespace Tolk.Web.Api.Controllers
                 }
 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-#warning include-fest
+#warning move include
                 var requestGroup = await _dbContext.RequestGroups
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
-                    .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
-                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requests)
-                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requirements)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Requirements)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.InterpreterLocations)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Language)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.ContactPersonUser)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
                     .SingleOrDefaultAsync(r =>
                         r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber &&
                         brokerId == r.Ranking.BrokerId &&
@@ -101,7 +90,9 @@ namespace Tolk.Web.Api.Controllers
                 var mainInterpreterAnswer = _apiUserService.GetInterpreterModel(model.InterpreterAnswer, brokerId);
 
                 InterpreterAnswerDto extraInterpreterAnswer = null;
-                if (requestGroup.HasExtraInterpreter)
+                bool hasExtraInterpreter = await _dbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).AnyAsync(r => r.Order.IsExtraInterpreterForOrderId != null);
+
+                if (hasExtraInterpreter)
                 {
                     extraInterpreterAnswer = _apiUserService.GetInterpreterModel(model.ExtraInterpreterAnswer, brokerId, false);
                 }

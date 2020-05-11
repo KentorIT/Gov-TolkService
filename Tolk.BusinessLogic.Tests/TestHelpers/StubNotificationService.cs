@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
@@ -34,6 +35,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public async Task RequisitionReviewed(Requisition requisition) { }
 
+        public async Task RequestGroupAccepted(RequestGroup requestGroup, Request firstRequest, Request firstExtraInterpreterRequest, IEnumerable<Order> orders = null) { }
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition) { }
@@ -48,9 +50,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated) { }
 
-        public void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup) { }
+        public void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup, Request firstRequest) { }
 
-        public void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup) { }
+        public void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup, Request firstRequest) { }
 
         public void RemindUnhandledRequest(Request request) { }
 
@@ -79,7 +81,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestExpiredDueToNoAnswerFromCustomer(Request request) { }
 
-        public void RequestGroupAccepted(RequestGroup requestGroup) { }
 
         public void RequestGroupAnswerApproved(RequestGroup requestGroup) { }
 

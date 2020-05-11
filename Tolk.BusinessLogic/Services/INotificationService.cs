@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 
@@ -19,8 +20,8 @@ namespace Tolk.BusinessLogic.Services
         void OrderGroupCancelledByCustomer(RequestGroup requestGroup);
         void OrderTerminated(Order order);
         Task OrderReplacementCreated(int replacedRequestId, int newRequestId);
-        void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup);
-        void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup);
+        void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup, Request firstRequest);
+        void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup, Request firstRequest);
         void RemindUnhandledRequest(Request request);
         void RequestCompleted(Request request);
         void RequestAccepted(Request request);
@@ -33,7 +34,7 @@ namespace Tolk.BusinessLogic.Services
         Task RequestCreated(Request request);
         void RequestCreatedWithoutExpiry(Request request);
         void RequestDeclinedByBroker(Request request);
-        void RequestGroupAccepted(RequestGroup requestGroup);
+        Task RequestGroupAccepted(RequestGroup requestGroup, Request firstRequest, Request firstExtraInterpreterRequest, IEnumerable<Order> orders = null);
         void RequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup);
         void RequestGroupAnswerApproved(RequestGroup requestGroup);
         void RequestGroupDeclinedByBroker(RequestGroup requestGroup);

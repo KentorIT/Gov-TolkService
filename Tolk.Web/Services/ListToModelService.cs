@@ -328,6 +328,12 @@ namespace Tolk.Web.Services
                 string.Empty;
         }
 
+        internal async Task<OrderBaseModel> AddInformationFromListsToModel(OrderBaseModel model, int orderGroupId, int orderId)
+        {
+            model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForOrderGroup(orderGroupId), "Bifogade filer från myndighet");
+            return await GetOrderBaseLists(model, await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(orderId).ToListAsync(), orderId);
+        }
+
         private async Task<OrderBaseModel> GetOrderBaseLists(OrderBaseModel model, IEnumerable<OrderInterpreterLocation> interpreterLocations, int orderId)
         {
             //Locations

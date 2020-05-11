@@ -359,7 +359,7 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        public override void Decline(
+        internal override void Decline(
             DateTimeOffset declinedAt,
             int userId,
             int? impersonatorId,

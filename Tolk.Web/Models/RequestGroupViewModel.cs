@@ -114,27 +114,37 @@ namespace Tolk.Web.Models
                 CancelMessage = requestGroup.CancelMessage,
                 ExpiresAt = requestGroup.ExpiresAt ?? null,
                 LatestAnswerTimeForCustomer = requestGroup.LatestAnswerTimeForCustomer,
-                HasExtraInterpreter = requestGroup.HasExtraInterpreter,
+                HasExtraInterpreter = requestExtraInterpreter != null,
                 Description = order.Description,
                 LanguageName = orderGroup.LanguageName,
                 LanguageHasAuthorizedInterpreter = orderGroup.LanguageHasAuthorizedInterpreter,
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
                 DisplayExpectedTravelCostInfo = GetDisplayExpectedTravelCostInfo(request.Order, request.InterpreterLocation ?? 0),
                 Interpreter = request.Interpreter?.CompleteContactInformation,
-                ExtraInterpreter = requestGroup.HasExtraInterpreter ? requestExtraInterpreter.Interpreter?.CompleteContactInformation : null,
+                ExtraInterpreter = requestExtraInterpreter?.Interpreter?.CompleteContactInformation,
 
                 IsInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null,
                 IsExtraInterpreterVerified = extraInterpreterVerificationResult.HasValue ? (bool?)(extraInterpreterVerificationResult == VerificationResult.Validated) : null,
                 InterpreterVerificationMessage = verificationResult.HasValue ? verificationResult.Value.GetDescription() : null,
                 ExtraInterpreterVerificationMessage = extraInterpreterVerificationResult.HasValue ? extraInterpreterVerificationResult.Value.GetDescription() : null,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
-                ExtraInterpreterCompetenceLevel = requestGroup.HasExtraInterpreter ? (CompetenceAndSpecialistLevel?)requestExtraInterpreter.CompetenceLevel : null,
+                ExtraInterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)requestExtraInterpreter?.CompetenceLevel,
                 RegionName = orderGroup.Region.Name,
                 SpecificCompetenceLevelRequired = orderGroup.SpecificCompetenceLevelRequired,
                 Status = requestGroup.Status,
                 ExtraInterpreterStatus = requestExtraInterpreter?.Status,
                 OrderStatus = orderGroup.Status,
-            };
+                CustomerInformationModel = new CustomerInformationModel
+                {
+                    Name = orderGroup.CustomerOrganisation.Name,
+                    CreatedBy = orderGroup.CreatedByUser.FullName,
+                    OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
+                    UnitName = orderGroup.CustomerUnit?.Name,
+                    DepartmentName = order.UnitName,
+                    ReferenceNumber = order.CustomerReferenceNumber,
+                    InvoiceReference = order.InvoiceReference,
+                }
+        };
 
         }
 

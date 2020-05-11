@@ -83,14 +83,18 @@ namespace Tolk.BusinessLogic.Entities
 
         public RequestGroup ActiveRequestToBeProcessedForCustomer => RequestGroups.SingleOrDefault(r => r.IsAccepted);
 
+        [Obsolete("use entity extensions instead!!")]
         public Order FirstOrder => Orders?.OrderBy(o => o.StartAt).FirstOrDefault();
 
         public string LanguageName => OtherLanguage ?? Language?.Name;
 
+        [Obsolete("use entity extensions instead!!")]
         public DateTimeOffset ClosestStartAt => FirstOrder?.StartAt ?? DateTimeOffset.MinValue;
 
+        [Obsolete("use entity extensions instead!!")]
         public bool IsSingleOccasion => (Orders == null) || (Orders.Count <= 2 && HasExtraInterpreter);
 
+        [Obsolete("use entity extensions instead!!")]
         public bool HasExtraInterpreter => Orders == null ? false : Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
 
         public bool AllowCancellation => Status == OrderStatus.Requested;

@@ -66,8 +66,8 @@ namespace Tolk.Web.Models
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
-        public List<RequestRequirementAnswerModel> DisplayRequiredRequirementAnswers => RequirementAnswers.Where(a => a.IsRequired).ToList();
-        public List<RequestRequirementAnswerModel> DisplayDesiredRequirementAnswers => RequirementAnswers.Where(a => !a.IsRequired).ToList();
+        public List<RequestRequirementAnswerModel> DisplayRequiredRequirementAnswers => RequirementAnswers?.Where(a => a.IsRequired).ToList();
+        public List<RequestRequirementAnswerModel> DisplayDesiredRequirementAnswers => RequirementAnswers?.Where(a => !a.IsRequired).ToList();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; }

@@ -100,26 +100,36 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(AcceptGroup), nameof(RequestService));
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(AcceptGroup));
-            if (requestGroup.HasExtraInterpreter)
+
+            var requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId)
+                .OrderBy(r => r.Order.StartAt)
+                .ToListAsync();
+            bool hasExtraInterpreter = requests.Any(r => r.Order.IsExtraInterpreterForOrderId != null);
+            if (hasExtraInterpreter)
             {
                 NullCheckHelper.ArgumentCheckNull(extraInterpreter, nameof(AcceptGroup), nameof(RequestService));
             }
             var declinedRequests = new List<Request>();
 
-            bool isSingleOccasion = requestGroup.OrderGroup.IsSingleOccasion;
-            bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
+            bool isSingleOccasion = requests.Count <= 2 && hasExtraInterpreter;
             ValidateInterpreters(interpreter, extraInterpreter, hasExtraInterpreter);
 
             bool hasTravelCosts = (interpreter.ExpectedTravelCosts ?? 0) > 0 || (extraInterpreter?.ExpectedTravelCosts ?? 0) > 0;
             var travelCostsShouldBeApproved = hasTravelCosts && requestGroup.OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved;
             bool partialAnswer = false;
             //1. Get the verification results for the interpreter(s)
-            var verificationResult = await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, interpreter.Interpreter, interpreter.CompetenceLevel);
+            int firstOrderId = requests.First().OrderId;
+            var verificationResult = await VerifyInterpreter(firstOrderId, interpreter.Interpreter, interpreter.CompetenceLevel);
             var extraInterpreterVerificationResult = hasExtraInterpreter && extraInterpreter.Accepted ?
-                await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, extraInterpreter.Interpreter, extraInterpreter.CompetenceLevel) :
+                await VerifyInterpreter(firstOrderId, extraInterpreter.Interpreter, extraInterpreter.CompetenceLevel) :
                 null;
-            foreach (var request in requestGroup.Requests)
+            var orderRequirements = await _tolkDbContext.OrderRequirements.GetOrderRequirementsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            var locations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            var competenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            foreach (var request in requests)
             {
+                request.Order.InterpreterLocations = locations.Where(o => o.OrderId == request.OrderId).ToList();
+                request.Order.CompetenceRequirements = competenceRequirements.Where(o => o.OrderId == request.OrderId).ToList();
                 bool isExtraInterpreterOccasion = request.Order.IsExtraInterpreterForOrderId.HasValue;
                 if (isExtraInterpreterOccasion)
                 {
@@ -132,6 +142,7 @@ namespace Tolk.BusinessLogic.Services
                             extraInterpreter,
                             interpreterLocation,
                             Enumerable.Empty<RequestAttachment>().ToList(),
+                            orderRequirements.Where(o => o.OrderId == request.OrderId).ToList(),
                             extraInterpreterVerificationResult,
                             latestAnswerTimeForCustomer,
                             travelCostsShouldBeApproved
@@ -153,6 +164,7 @@ namespace Tolk.BusinessLogic.Services
                         interpreter,
                         interpreterLocation,
                         Enumerable.Empty<RequestAttachment>().ToList(),
+                        orderRequirements.Where(o => o.OrderId == request.OrderId).ToList(),
                         verificationResult,
                         latestAnswerTimeForCustomer,
                         travelCostsShouldBeApproved
@@ -163,25 +175,30 @@ namespace Tolk.BusinessLogic.Services
             // add the attachments to the group...
             requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer, latestAnswerTimeForCustomer);
 
+            bool requiresApproval = hasTravelCosts && requestGroup.OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved &&
+                    requests.Any(r => r.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OffSiteDesignatedLocation ||
+                    r.InterpreterLocation.Value == (int)Enums.InterpreterLocation.OnSite);
+            Request firstRequest = requests.First(r => r.Order.IsExtraInterpreterForOrderId == null);
+            Request firstExtraInterpreterRequest = requests.First(r => r.Order.IsExtraInterpreterForOrderId != null);
             if (partialAnswer)
             {
                 //Need to split the declined part of the group, and make a separate order- and request group for that, to forward to the next in line. if any...
                 await _orderService.CreatePartialRequestGroup(requestGroup, declinedRequests);
-                if (requestGroup.RequiresApproval(hasTravelCosts))
+                if (requiresApproval)
                 {
-                    _notificationService.PartialRequestGroupAnswerAccepted(requestGroup);
+                    _notificationService.PartialRequestGroupAnswerAccepted(requestGroup, firstRequest);
                 }
                 else
                 {
-                    _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(requestGroup);
+                    _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(requestGroup, firstRequest);
                 }
             }
             else
             {
                 //2. Set the request group and order group in correct state
-                if (requestGroup.RequiresApproval(hasTravelCosts))
+                if (requiresApproval)
                 {
-                    _notificationService.RequestGroupAccepted(requestGroup);
+                    await _notificationService.RequestGroupAccepted(requestGroup, firstRequest, firstExtraInterpreterRequest);
                 }
                 else
                 {
@@ -576,9 +593,9 @@ namespace Tolk.BusinessLogic.Services
             request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, verificationResult, overrideRequireAccept);
         }
 
-        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
+        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, List<OrderRequirement> orderRequirements, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
         {
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, overrideRequireAccept);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(orderRequirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, overrideRequireAccept);
         }
 
         private static IEnumerable<OrderRequirementRequestAnswer> ReplaceIds(List<OrderRequirement> requirements, IEnumerable<OrderRequirementRequestAnswer> requirementAnswers)

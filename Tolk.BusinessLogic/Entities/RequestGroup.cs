@@ -102,6 +102,7 @@ namespace Tolk.BusinessLogic.Entities
         [Obsolete("Funkar inte att ha det så här!!!")]
         public bool HasExtraInterpreter => OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
 
+        [Obsolete("Funkar inte att ha det så här!!!")]
         public bool RequiresApproval(bool hasTravelCosts)
         {
             return hasTravelCosts &&

@@ -126,6 +126,7 @@ namespace Tolk.BusinessLogic.Services
 
             var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date);
 
+            group.RequestGroups = await _tolkDbContext.RequestGroups.GetRequestGroupsForRequestCreationForOrderGroup(group.OrderGroupId).ToListAsync();
             if (expiredRequestGroup != null)
             {
                 requestGroup = group.CreateRequestGroup(rankings, expiry, _clock.SwedenNow);
@@ -436,7 +437,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task ConfirmGroupNoAnswer(OrderGroup orderGroup, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(ConfirmGroupNoAnswer), nameof(OrderService));
-            orderGroup.StatusConfirmations = await  _tolkDbContext.OrderGroupStatusConfirmations.GetStatusConfirmationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.StatusConfirmations = await _tolkDbContext.OrderGroupStatusConfirmations.GetStatusConfirmationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             orderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             orderGroup.Orders.ForEach(r => r.OrderStatusConfirmations = new List<OrderStatusConfirmation>());
 
