@@ -152,7 +152,7 @@ namespace Tolk.Web.Models
 
         public bool? MealBreakIncluded { get; set; }
 
-        [Display(Name = "Inställelsesätt", Description = "Tolkning på plats och på distans i anvisad lokal kan medföra reskostnader för tolken.")]
+        [Display(Name = "Inställelsesätt", Description = "Tolkning på plats och på distans i anvisad lokal per video kan medföra resekostnader för tolken.")]
         public InterpreterLocation? InterpreterLocation { get; set; }
 
         #region methods

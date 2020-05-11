@@ -14,7 +14,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Distans per video")]
         [CustomName("off_site_video")]
         OffSiteVideo = 3,
-        [Description("Distans i anvisad lokal")]
+        [Description("Distans i anvisad lokal per video")]
         [CustomName("off_site_designated_location")]
         OffSiteDesignatedLocation = 4
     }
