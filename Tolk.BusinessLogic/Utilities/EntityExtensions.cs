@@ -763,6 +763,11 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<OutboundEmail> GetEmailById(this IQueryable<OutboundEmail> emails, int id)
             => await emails.Include(e => e.ReplacedByEmail).SingleOrDefaultAsync(e => e.OutboundEmailId == id);
 
+        public static IQueryable<Ranking> GetActiveRankings(this IQueryable<Ranking> rankings, DateTime now)
+        => rankings
+            .Include(r => r.Broker)
+            .Include(r => r.Region)
+            .Where(ra => ra.FirstValidDate <= now && ra.LastValidDate > now);
 
         #endregion
 

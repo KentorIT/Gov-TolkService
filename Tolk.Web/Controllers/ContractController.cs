@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
@@ -33,18 +34,21 @@ namespace Tolk.Web.Controllers
         }
 
         [Authorize(Roles = Roles.AppOrSysAdmin)]
-        public IActionResult List()
+        public async Task<IActionResult> List()
         {
             var brokerFeePrices = _cacheService.BrokerFeePriceList;
-#warning include-fest
+
+            var rankings = await _dbContext.Rankings.GetActiveRankings(_clock.SwedenNow.DateTime).ToListAsync();
+            var brokers = rankings.Select(r => r.Broker).Distinct().OrderBy(b => b.Name).ToList();
+            var regions = rankings.Select(r => r.Region).Distinct().OrderBy(r => r.Name).ToList();
+
             return View(new ContractListModel
             {
-                ItemsPerBroker = _dbContext.Brokers.Include(b => b.Rankings)
-                .ThenInclude(r => r.Region)
-                .Select(b => new ContractBrokerListItemModel
+                ItemsPerBroker = brokers.Select(b => new ContractBrokerListItemModel
                 {
                     Broker = b.Name,
-                    RegionRankings = b.Rankings.Where(ra => ra.FirstValidDate <= _clock.SwedenNow && ra.LastValidDate > _clock.SwedenNow)
+                    RegionRankings = rankings.Where(r => r.BrokerId == b.BrokerId)
+                    .OrderBy(r => r.Region.Name)
                         .Select(ra => new BrokerRankModel
                         {
                             RegionName = ra.Region.Name,
@@ -58,14 +62,10 @@ namespace Tolk.Web.Controllers
                                 .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                         }).ToList()
                 }),
-#warning include-fest
-                ItemsPerRegion = _dbContext.Regions.Include(b => b.Rankings)
-                .ThenInclude(r => r.Broker)
-                .OrderBy(r => r.Name)
-                .Select(r => new ContractRegionListItemModel
+                ItemsPerRegion = regions.Select(r => new ContractRegionListItemModel
                 {
                     Region = r.Name,
-                    Brokers = r.Rankings.Where(ra => ra.FirstValidDate <= _clock.SwedenNow && ra.LastValidDate > _clock.SwedenNow)
+                    Brokers = rankings.Where(ra => ra.RegionId == r.RegionId)
                     .OrderBy(ra => ra.Rank).Select(ra => new BrokerRankModel
                     {
                         BrokerName = ra.Broker.Name,
