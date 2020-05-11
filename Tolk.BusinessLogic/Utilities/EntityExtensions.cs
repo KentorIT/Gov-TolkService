@@ -585,6 +585,178 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<SystemMessage> GetSystemMessageById(this IQueryable<SystemMessage> systemMessages, int id)
             => await systemMessages.Where(sm => sm.SystemMessageId == id).SingleOrDefaultAsync();
 
+        public static IQueryable<Request> GetDeliveredRequestsWithOrders(this IQueryable<Request> requests, DateTime start, DateTime end, DateTime now, int? organisationId, IEnumerable<int> customerUnits, int? brokerid = null)
+          => requests
+            .OrderBy(r => r.Order.OrderNumber)
+            .Where(r =>
+                (r.Status == RequestStatus.Approved || r.Status == RequestStatus.Delivered)
+                && r.Order.EndAt <= now && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
+                && (r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ResponseAccepted)
+                && (organisationId.HasValue ? r.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (r.Order.CustomerUnitId.HasValue && customerUnits.Contains(r.Order.CustomerUnitId.Value)))
+                && (brokerid == null || r.Ranking.BrokerId == brokerid));
+
+        public static IQueryable<OrderInterpreterLocation> GetInterpreterLocationsForDeliveredOrders(this IQueryable<OrderInterpreterLocation> interpreterLocations, DateTime start, DateTime end, DateTime now, int? organisationId, IEnumerable<int> customerUnits)
+           => interpreterLocations.Where(x =>
+               x.Order.EndAt <= now && x.Order.StartAt.Date >= start.Date && x.Order.StartAt.Date <= end.Date
+               && (x.Order.Status == OrderStatus.Delivered || x.Order.Status == OrderStatus.DeliveryAccepted || x.Order.Status == OrderStatus.ResponseAccepted)
+               && (organisationId.HasValue ? x.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+               && (customerUnits == null || (x.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Order.CustomerUnitId.Value))));
+
+        public static IQueryable<OrderInterpreterLocation> GetInterpreterLocationsByOrderIds(this IQueryable<OrderInterpreterLocation> interpreterLocations, List<int> orderIds)
+           => interpreterLocations.Where(x => orderIds.Contains(x.OrderId));
+
+        public static IQueryable<OrderRequirement> GetOrderRequirementsForDeliveredOrders(this IQueryable<OrderRequirement> orderRequirements, DateTime start, DateTime end, DateTime now, int? organisationId, IEnumerable<int> customerUnits)
+           => orderRequirements.Where(x =>
+               x.Order.EndAt <= now && x.Order.StartAt.Date >= start.Date && x.Order.StartAt.Date <= end.Date
+               && (x.Order.Status == OrderStatus.Delivered || x.Order.Status == OrderStatus.DeliveryAccepted || x.Order.Status == OrderStatus.ResponseAccepted)
+               && (organisationId.HasValue ? x.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+               && (customerUnits == null || (x.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Order.CustomerUnitId.Value))));
+
+        public static IQueryable<OrderRequirement> GetOrderRequirementsByOrderIds(this IQueryable<OrderRequirement> orderRequirements, List<int> orderIds)
+           => orderRequirements.Where(x => orderIds.Contains(x.OrderId));
+
+        public static IQueryable<OrderCompetenceRequirement> GetOrderCompetencesForDeliveredOrders(this IQueryable<OrderCompetenceRequirement> orderCompetenceRequirements, DateTime start, DateTime end, DateTime now, int? organisationId, IEnumerable<int> customerUnits)
+           => orderCompetenceRequirements.Where(x =>
+               x.Order.EndAt <= now && x.Order.StartAt.Date >= start.Date && x.Order.StartAt.Date <= end.Date
+               && (x.Order.Status == OrderStatus.Delivered || x.Order.Status == OrderStatus.DeliveryAccepted || x.Order.Status == OrderStatus.ResponseAccepted)
+               && (organisationId.HasValue ? x.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+               && (customerUnits == null || (x.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Order.CustomerUnitId.Value))));
+
+        public static IQueryable<OrderCompetenceRequirement> GetOrderCompetencesByOrderIds(this IQueryable<OrderCompetenceRequirement> orderCompetenceRequirements, List<int> orderIds)
+           => orderCompetenceRequirements.Where(x => orderIds.Contains(x.OrderId));
+
+        public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForDeliveredOrders(this IQueryable<OrderRequirementRequestAnswer> orderRequirementAnswers, DateTime start, DateTime end, DateTime now, int? organisationId, IEnumerable<int> customerUnits, int? brokerid = null)
+           => orderRequirementAnswers.Where(x =>
+                (x.Request.Status == RequestStatus.Approved || x.Request.Status == RequestStatus.Delivered)
+                && x.Request.Order.EndAt <= now && x.Request.Order.StartAt.Date >= start.Date && x.Request.Order.StartAt.Date <= end.Date
+                && (x.Request.Order.Status == OrderStatus.Delivered || x.Request.Order.Status == OrderStatus.DeliveryAccepted || x.Request.Order.Status == OrderStatus.ResponseAccepted)
+                && (organisationId.HasValue ? x.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (x.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Request.Order.CustomerUnitId.Value)))
+                && (brokerid == null || x.Request.Ranking.BrokerId == brokerid));
+
+        public static IQueryable<RequestPriceRow> GetRequestPriceRowsForDeliveredOrders(this IQueryable<RequestPriceRow> pricerows, DateTime start, DateTime end, DateTime now, int? organisationId, IEnumerable<int> customerUnits, int? brokerid = null)
+           => pricerows.Where(x =>
+                (x.Request.Status == RequestStatus.Approved || x.Request.Status == RequestStatus.Delivered)
+                && x.Request.Order.EndAt <= now && x.Request.Order.StartAt.Date >= start.Date && x.Request.Order.StartAt.Date <= end.Date
+                && (x.Request.Order.Status == OrderStatus.Delivered || x.Request.Order.Status == OrderStatus.DeliveryAccepted || x.Request.Order.Status == OrderStatus.ResponseAccepted)
+                && (organisationId.HasValue ? x.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (x.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Request.Order.CustomerUnitId.Value)))
+                && (brokerid == null || x.Request.Ranking.BrokerId == brokerid));
+
+        public static IQueryable<Requisition> GetRequisitionsForDeliveredOrders(this IQueryable<Requisition> requisitions, DateTime start, DateTime end, DateTime now, int? organisationId, IEnumerable<int> customerUnits, int? brokerid = null)
+           => requisitions.Where(x =>
+                (x.Request.Status == RequestStatus.Approved || x.Request.Status == RequestStatus.Delivered)
+                && x.Request.Order.EndAt <= now && x.Request.Order.StartAt.Date >= start.Date && x.Request.Order.StartAt.Date <= end.Date
+                && (x.Request.Order.Status == OrderStatus.Delivered || x.Request.Order.Status == OrderStatus.DeliveryAccepted || x.Request.Order.Status == OrderStatus.ResponseAccepted)
+                && (organisationId.HasValue ? x.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (x.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Request.Order.CustomerUnitId.Value)))
+                && (brokerid == null || x.Request.Ranking.BrokerId == brokerid));
+
+        public static IQueryable<Complaint> GetComplaintsForDeliveredOrders(this IQueryable<Complaint> complaints, DateTime start, DateTime end, DateTime now, int? organisationId, IEnumerable<int> customerUnits, int? brokerid = null)
+           => complaints.Where(x =>
+                (x.Request.Status == RequestStatus.Approved || x.Request.Status == RequestStatus.Delivered)
+                && x.Request.Order.EndAt <= now && x.Request.Order.StartAt.Date >= start.Date && x.Request.Order.StartAt.Date <= end.Date
+                && (x.Request.Order.Status == OrderStatus.Delivered || x.Request.Order.Status == OrderStatus.DeliveryAccepted || x.Request.Order.Status == OrderStatus.ResponseAccepted)
+                && (organisationId.HasValue ? x.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (x.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Request.Order.CustomerUnitId.Value)))
+                && (brokerid == null || x.Request.Ranking.BrokerId == brokerid));
+
+        public static IQueryable<Request> GetRequestsOrdersForReport(this IQueryable<Request> requests, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits)
+            => requests
+                .OrderBy(r => r.Order.OrderNumber)
+                .Where(r => r.Order.CreatedAt.Date >= start.Date && r.Order.CreatedAt.Date <= end.Date
+                 && (organisationId.HasValue ? r.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                 && (customerUnits == null || (r.Order.CustomerUnitId.HasValue && customerUnits.Contains(r.Order.CustomerUnitId.Value))));
+
+        public static IQueryable<OrderInterpreterLocation> GetInterpreterLocationsForOrdersForReport(this IQueryable<OrderInterpreterLocation> interpreterLocations, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits)
+            => interpreterLocations.Where(x =>
+               x.Order.CreatedAt.Date >= start.Date && x.Order.CreatedAt.Date <= end.Date
+               && (organisationId.HasValue ? x.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+               && (customerUnits == null || (x.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Order.CustomerUnitId.Value))));
+
+        public static IQueryable<OrderRequirement> GetOrderRequirementsForOrdersForReport(this IQueryable<OrderRequirement> orderRequirements, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits)
+           => orderRequirements.Where(x =>
+               x.Order.CreatedAt.Date >= start.Date && x.Order.CreatedAt.Date <= end.Date
+               && (organisationId.HasValue ? x.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+               && (customerUnits == null || (x.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Order.CustomerUnitId.Value))));
+
+        public static IQueryable<OrderCompetenceRequirement> GetOrderCompetencesForOrdersForReport(this IQueryable<OrderCompetenceRequirement> orderCompetenceRequirements, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits)
+           => orderCompetenceRequirements.Where(x =>
+               x.Order.CreatedAt.Date >= start.Date && x.Order.CreatedAt.Date <= end.Date
+               && (organisationId.HasValue ? x.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+               && (customerUnits == null || (x.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Order.CustomerUnitId.Value))));
+
+        public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForOrdersForReport(this IQueryable<OrderRequirementRequestAnswer> orderRequirementAnswers, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits)
+           => orderRequirementAnswers.Where(x =>
+                x.Request.Order.CreatedAt.Date >= start.Date && x.Request.Order.CreatedAt.Date <= end.Date
+                && (organisationId.HasValue ? x.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (x.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Request.Order.CustomerUnitId.Value))));
+
+        public static IQueryable<Requisition> GetRequisitionsForOrdersForReport(this IQueryable<Requisition> requisitions, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits)
+           => requisitions.Where(x =>
+                x.Request.Order.CreatedAt.Date >= start.Date && x.Request.Order.CreatedAt.Date <= end.Date
+                && (organisationId.HasValue ? x.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (x.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Request.Order.CustomerUnitId.Value))));
+
+        public static IQueryable<Complaint> GetComplaintsForOrdersForReport(this IQueryable<Complaint> complaints, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits)
+           => complaints.Where(x =>
+                x.Request.Order.CreatedAt.Date >= start.Date && x.Request.Order.CreatedAt.Date <= end.Date
+                && (organisationId.HasValue ? x.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (x.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(x.Request.Order.CustomerUnitId.Value))));
+
+        public static IQueryable<Request> GetRequestOrdersForBrokerReport(this IQueryable<Request> requests, DateTime start, DateTime end, int brokerId)
+            => requests
+                .OrderBy(r => r.Order.OrderNumber).
+                Where(r => r.Ranking.BrokerId == brokerId && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
+                && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced));
+
+        public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForBrokerReport(this IQueryable<OrderRequirementRequestAnswer> orderRequirementAnswers, DateTime start, DateTime end, int brokerId)
+           => orderRequirementAnswers.Where(x =>
+                x.Request.Ranking.BrokerId == brokerId && x.Request.CreatedAt.Date >= start.Date && x.Request.CreatedAt.Date <= end.Date
+                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced));
+
+        public static IQueryable<Requisition> GetRequisitionsForBrokerReport(this IQueryable<Requisition> requisitions, DateTime start, DateTime end, int brokerId)
+           => requisitions.Where(x =>
+                x.Request.Ranking.BrokerId == brokerId && x.Request.CreatedAt.Date >= start.Date && x.Request.CreatedAt.Date <= end.Date
+                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced));
+
+        public static IQueryable<Complaint> GetComplaintsForBrokerReport(this IQueryable<Complaint> complaints, DateTime start, DateTime end, int brokerId)
+           => complaints.Where(x =>
+                x.Request.Ranking.BrokerId == brokerId && x.Request.CreatedAt.Date >= start.Date && x.Request.CreatedAt.Date <= end.Date
+                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced));
+
+        public static IQueryable<Complaint> GetComplaintsForReports(this IQueryable<Complaint> complaints, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits, int? brokerId)
+           => complaints.Where(c =>
+                c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date
+                && (organisationId.HasValue ? c.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (c.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(c.Request.Order.CustomerUnitId.Value)))
+                && (brokerId == null || c.Request.Ranking.BrokerId == brokerId));
+
+        public static IQueryable<Requisition> GetRequisitionsForReports(this IQueryable<Requisition> requisitions, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits, int? brokerId)
+           => requisitions.Where(r =>
+                r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date && r.ReplacedByRequisitionId == null
+                && (organisationId.HasValue ? r.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (r.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(r.Request.Order.CustomerUnitId.Value)))
+                && (brokerId == null || r.Request.Ranking.BrokerId == brokerId));
+
+        public static IQueryable<RequisitionPriceRow> GetRequisitionPriceRowsForRequisitionReport(this IQueryable<RequisitionPriceRow> requisitionPriceRows, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits, int? brokerId)
+           => requisitionPriceRows.Where(r =>
+                r.Requisition.CreatedAt.Date >= start.Date && r.Requisition.CreatedAt.Date <= end.Date && r.Requisition.ReplacedByRequisitionId == null
+                && (organisationId.HasValue ? r.Requisition.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (r.Requisition.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(r.Requisition.Request.Order.CustomerUnitId.Value)))
+                && (brokerId == null || r.Requisition.Request.Ranking.BrokerId == brokerId));
+
+        public static IQueryable<MealBreak> GetMealBreaksForReport(this IQueryable<MealBreak> mealbreaks, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits, int? brokerId)
+           => mealbreaks.Where(r =>
+                r.Requisition.CreatedAt.Date >= start.Date && r.Requisition.CreatedAt.Date <= end.Date && r.Requisition.ReplacedByRequisitionId == null
+                && (organisationId.HasValue ? r.Requisition.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
+                && (customerUnits == null || (r.Requisition.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(r.Requisition.Request.Order.CustomerUnitId.Value)))
+                && (brokerId == null || r.Requisition.Request.Ranking.BrokerId == brokerId));
+
+        public static IQueryable<RequestPriceRow> GetRequestPriceRowsForRequisitionReport(this IQueryable<RequestPriceRow> requestPriceRows, List<int> requestIds)
+           => requestPriceRows.Where(r => requestIds.Contains(r.RequestId));
+
         #endregion
 
 

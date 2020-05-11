@@ -64,27 +64,21 @@ namespace Tolk.Web.Controllers
                         break;
                     case ReportType.DeliveredOrdersCustomer:
                     case ReportType.DeliveredOrdersSystemAdministrator:
-                        model.ReportItems = _statService.GetNoOfDeliveredOrders(start, end, organisationId, customerUnits);
+                    case ReportType.DeliveredOrdersBrokers:
+                        model.ReportItems = _statService.GetNoOfDeliveredOrders(start, end, organisationId, customerUnits, brokerId);
                         break;
                     case ReportType.RequestsForBrokers:
                         model.ReportItems = _statService.GetNoOfRequestsForBroker(start, end, brokerId.Value);
                         break;
-                    case ReportType.DeliveredOrdersBrokers:
-                        model.ReportItems = _statService.GetNoOfDeliveredRequestsForBroker(start, end, brokerId.Value);
-                        break;
                     case ReportType.RequisitionsForCustomer:
                     case ReportType.RequisitionsForSystemAdministrator:
-                        model.ReportItems = _statService.GetNoOfRequisitionsForCustomerAndSysAdmin(start, end, organisationId, customerUnits);
-                        break;
                     case ReportType.RequisitionsForBroker:
-                        model.ReportItems = _statService.GetNoOfRequisitionsForBroker(start, end, brokerId.Value);
+                        model.ReportItems = _statService.GetNoOfRequisitions(start, end, organisationId, customerUnits, brokerId);
                         break;
                     case ReportType.ComplaintsForCustomer:
                     case ReportType.ComplaintsForSystemAdministrator:
-                        model.ReportItems = _statService.GetNoOfComplaintsForCustomerAndSysAdmin(start, end, organisationId, customerUnits);
-                        break;
                     case ReportType.ComplaintsForBroker:
-                        model.ReportItems = _statService.GetNoOfComplaintsForBroker(start, end, brokerId.Value);
+                        model.ReportItems = _statService.GetNoOfComplaints(start, end, organisationId, customerUnits, brokerId);
                         break;
                 }
                 model.StartDate = start.ToSwedishString();
@@ -107,41 +101,41 @@ namespace Tolk.Web.Controllers
             switch (model.SelectedReportType)
             {
                 case ReportType.OrdersForCustomer:
-                    var orders = _statService.GetOrders(start, end, organisationId, customerUnits).ToList();
-                    return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(orders, model.SelectedReportType), orders.First().CustomerOrganisation.Name, model.SelectedReportType);
+                    var orders = _statService.GetOrders(start, end, organisationId, customerUnits);
+                    return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(orders, model.SelectedReportType), orders.OrderRequests.First().CustomerName, model.SelectedReportType);
                 case ReportType.DeliveredOrdersCustomer:
-                    var deliveredOrders = _statService.GetDeliveredOrders(start, end, organisationId, customerUnits).ToList();
-                    return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(deliveredOrders, model.SelectedReportType), deliveredOrders.First().CustomerOrganisation.Name, model.SelectedReportType);
+                    var deliveredOrders = _statService.GetDeliveredOrders(start, end, organisationId, customerUnits);
+                    return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(deliveredOrders, model.SelectedReportType), deliveredOrders.OrderRequests.First().CustomerName, model.SelectedReportType);
                 case ReportType.DeliveredOrdersBrokers:
-                    var deliveredOrdersBrokers = _statService.GetDeliveredRequestsForBroker(start, end, brokerId.Value).ToList();
-                    return CreateExcelFile(StatisticsService.GetRequestExcelFileRows(deliveredOrdersBrokers, model.SelectedReportType), deliveredOrdersBrokers.First().Ranking.Broker.Name, model.SelectedReportType);
+                    var deliveredOrdersBrokers = _statService.GetDeliveredRequestsForBroker(start, end, brokerId.Value);
+                    return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(deliveredOrdersBrokers, model.SelectedReportType), deliveredOrdersBrokers.OrderRequests.First().BrokerName, model.SelectedReportType);
                 case ReportType.RequestsForBrokers:
-                    var requestsForBrokers = _statService.GetRequestsForBroker(start, end, brokerId.Value).ToList();
-                    return CreateExcelFile(StatisticsService.GetRequestExcelFileRows(requestsForBrokers, model.SelectedReportType), requestsForBrokers.First().Ranking.Broker.Name, model.SelectedReportType);
+                    var requestsForBrokers = _statService.GetRequestsForBroker(start, end, brokerId.Value);
+                    return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(requestsForBrokers, model.SelectedReportType), requestsForBrokers.OrderRequests.First().BrokerName, model.SelectedReportType);
                 case ReportType.OrdersForSystemAdministrator:
-                    var ordersForSystemAdministrator = _statService.GetOrders(start, end, organisationId).ToList();
+                    var ordersForSystemAdministrator = _statService.GetOrders(start, end, organisationId);
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(ordersForSystemAdministrator, model.SelectedReportType), string.Empty, model.SelectedReportType);
                 case ReportType.DeliveredOrdersSystemAdministrator:
-                    var deliveredOrdersForSystemAdministrator = _statService.GetDeliveredOrders(start, end, organisationId).ToList();
+                    var deliveredOrdersForSystemAdministrator = _statService.GetDeliveredOrders(start, end, organisationId);
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(deliveredOrdersForSystemAdministrator, model.SelectedReportType), string.Empty, model.SelectedReportType);
                 case ReportType.RequisitionsForSystemAdministrator:
-                    var requisitionsForSystemAdministrator = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId).ToList();
+                    var requisitionsForSystemAdministrator = _statService.GetRequisitions(start, end, organisationId);
                     return CreateExcelFile(StatisticsService.GetRequisitionsExcelFileRows(requisitionsForSystemAdministrator, model.SelectedReportType), string.Empty, model.SelectedReportType);
                 case ReportType.RequisitionsForBroker:
-                    var requisitionsForBroker = _statService.GetRequisitionsForBroker(start, end, brokerId.Value).ToList();
-                    return CreateExcelFile(StatisticsService.GetRequisitionsExcelFileRows(requisitionsForBroker, model.SelectedReportType), requisitionsForBroker.First().Request.Ranking.Broker.Name, model.SelectedReportType);
+                    var requisitionsForBroker = _statService.GetRequisitions(start, end, null, null, brokerId.Value);
+                    return CreateExcelFile(StatisticsService.GetRequisitionsExcelFileRows(requisitionsForBroker, model.SelectedReportType), requisitionsForBroker.Requisitions.First().BrokerName, model.SelectedReportType);
                 case ReportType.RequisitionsForCustomer:
-                    var requisitionsForCustomer = _statService.GetRequisitionsForCustomerAndSysAdmin(start, end, organisationId, customerUnits).ToList();
-                    return CreateExcelFile(StatisticsService.GetRequisitionsExcelFileRows(requisitionsForCustomer, model.SelectedReportType), requisitionsForCustomer.First().Request.Order.CustomerOrganisation.Name, model.SelectedReportType);
+                    var requisitionsForCustomer = _statService.GetRequisitions(start, end, organisationId, customerUnits);
+                    return CreateExcelFile(StatisticsService.GetRequisitionsExcelFileRows(requisitionsForCustomer, model.SelectedReportType), requisitionsForCustomer.Requisitions.First().CustomerName, model.SelectedReportType);
                 case ReportType.ComplaintsForSystemAdministrator:
-                    var complaintsForSystemAdministrator = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId).ToList();
+                    var complaintsForSystemAdministrator = _statService.GetComplaints(start, end, organisationId);
                     return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForSystemAdministrator, model.SelectedReportType), string.Empty, model.SelectedReportType);
                 case ReportType.ComplaintsForBroker:
-                    var complaintsForBroker = _statService.GetComplaintsForBroker(start, end, brokerId.Value).ToList();
-                    return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForBroker, model.SelectedReportType), complaintsForBroker.First().Request.Ranking.Broker.Name, model.SelectedReportType);
+                    var complaintsForBroker = _statService.GetComplaints(start, end, null, null, brokerId.Value);
+                    return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForBroker, model.SelectedReportType), complaintsForBroker.Complaints.First().BrokerName, model.SelectedReportType);
                 case ReportType.ComplaintsForCustomer:
-                    var complaintsForCustomer = _statService.GetComplaintsForCustomerAndSysAdmin(start, end, organisationId, customerUnits).ToList();
-                    return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForCustomer, model.SelectedReportType), complaintsForCustomer.First().Request.Order.CustomerOrganisation.Name, model.SelectedReportType);
+                    var complaintsForCustomer = _statService.GetComplaints(start, end, organisationId, customerUnits);
+                    return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForCustomer, model.SelectedReportType), complaintsForCustomer.Complaints.First().CustomerName, model.SelectedReportType);
             }
             return RedirectToAction(nameof(List));
         }

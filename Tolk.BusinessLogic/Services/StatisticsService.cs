@@ -8,6 +8,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -169,232 +170,102 @@ namespace Tolk.BusinessLogic.Services
 
         #endregion
 
-        #region Broker reports
-
-        public IEnumerable<Request> GetRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
-        {
-#warning include-fest
-            return _dbContext.Requests
-                      .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                      .Include(r => r.AnsweringUser)
-                      .Include(r => r.Interpreter)
-                      .Include(r => r.Requisitions)
-                      .Include(r => r.Complaints)
-                      .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                      .Include(r => r.Order).ThenInclude(o => o.Language)
-                      .Include(r => r.Order).ThenInclude(o => o.Region)
-                      .Include(r => r.Order).ThenInclude(o => o.Requests)
-                      .Include(r => r.Order).ThenInclude(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
-                      .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                      .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-                      .OrderBy(r => r.Order.OrderNumber)
-                      .Where(r => r.Ranking.BrokerId == brokerId && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
-                          && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced));
-        }
+        #region Reports
 
         public int GetNoOfRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
         {
-            return _dbContext.Requests.Where(r => r.Ranking.BrokerId == brokerId
-                      && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
-                      && !(r.Status == RequestStatus.NoDeadlineFromCustomer
-                      || r.Status == RequestStatus.AwaitingDeadlineFromCustomer
-                      || r.Status == RequestStatus.InterpreterReplaced)).Count();
+            return _dbContext.Requests.GetRequestOrdersForBrokerReport(start.Date, end.Date, brokerId).Distinct().Count();
         }
 
-        public IEnumerable<Request> GetDeliveredRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
+        public ReportOrderModel GetDeliveredRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
         {
-#warning include-fest
-            return _dbContext.Requests
-                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(r => r.AnsweringUser)
-                    .Include(r => r.Interpreter)
-                    .Include(r => r.Requisitions)
-                    .Include(r => r.Complaints)
-                    .Include(r => r.PriceRows)
-                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.Order).ThenInclude(o => o.Language)
-                    .Include(r => r.Order).ThenInclude(o => o.Region)
-                    .Include(r => r.Order).ThenInclude(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
-                    .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                    .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-                    .OrderBy(r => r.Order.OrderNumber)
-                    .Where(r => r.Ranking.BrokerId == brokerId
-                        && (r.Status == RequestStatus.Approved || r.Status == RequestStatus.Delivered)
-                        && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
-                        && (r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ResponseAccepted));
+            var requestOrders = _dbContext.Requests.GetDeliveredRequestsWithOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, null, null, brokerId);
+            var orderIds = requestOrders.Select(r => r.OrderId).Distinct().ToList();
+            var requisitions = _dbContext.Requisitions.GetRequisitionsForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, null, null, brokerId);
+            var complaints = _dbContext.Complaints.GetComplaintsForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, null, null, brokerId);
+            var interpreterLocations = _dbContext.OrderInterpreterLocation.GetInterpreterLocationsByOrderIds(orderIds);
+            var orderRequirements = _dbContext.OrderRequirements.GetOrderRequirementsByOrderIds(orderIds);
+            var orderRequirementAnswers = _dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, null, null, brokerId);
+            var competenceRequirements = _dbContext.OrderCompetenceRequirements.GetOrderCompetencesByOrderIds(orderIds);
+            var requestPricerows = _dbContext.RequestPriceRows.GetRequestPriceRowsForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, null, null, brokerId);
+            return ReportOrderModel.GetModelFromOrders(requestOrders, requisitions, complaints, interpreterLocations, orderRequirements, orderRequirementAnswers, competenceRequirements, requestPricerows, true, true);
         }
 
-        public int GetNoOfDeliveredRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
+        public ReportOrderModel GetRequestsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
         {
-            return _dbContext.Requests
-                    .Where(r => r.Ranking.BrokerId == brokerId
-                        && (r.Status == RequestStatus.Approved || r.Status == RequestStatus.Delivered)
-                        && r.Order.EndAt <= _clock.SwedenNow && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
-                        && (r.Order.Status == OrderStatus.Delivered || r.Order.Status == OrderStatus.DeliveryAccepted || r.Order.Status == OrderStatus.ResponseAccepted)).Count();
+            var requestOrders = _dbContext.Requests.GetRequestOrdersForBrokerReport(start.Date, end.Date, brokerId);
+            var orderIds = requestOrders.Select(r => r.OrderId).Distinct().ToList();
+            var requisitions = _dbContext.Requisitions.GetRequisitionsForBrokerReport(start.Date, end.Date, brokerId);
+            var complaints = _dbContext.Complaints.GetComplaintsForBrokerReport(start.Date, end.Date, brokerId);
+            var interpreterLocations = _dbContext.OrderInterpreterLocation.GetInterpreterLocationsByOrderIds(orderIds);
+            var orderRequirements = _dbContext.OrderRequirements.GetOrderRequirementsByOrderIds(orderIds);
+            var orderRequirementAnswers = _dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForBrokerReport(start.Date, end.Date, brokerId);
+            var competenceRequirements = _dbContext.OrderCompetenceRequirements.GetOrderCompetencesByOrderIds(orderIds);
+            return ReportOrderModel.GetModelFromOrders(requestOrders, requisitions, complaints, interpreterLocations, orderRequirements, orderRequirementAnswers, competenceRequirements, null, true, false);
         }
 
-        public IEnumerable<Requisition> GetRequisitionsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
+        public int GetNoOfRequisitions(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits, int? brokerId)
         {
-#warning include-fest
-            return _dbContext.Requisitions
-                    .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
-                    .Include(r => r.Request).ThenInclude(r => r.Interpreter)
-                    .Include(r => r.Request).ThenInclude(r => r.PriceRows)
-                    .Include(r => r.MealBreaks)
-                    .Include(r => r.CreatedByUser)
-                    .Include(r => r.PriceRows)
-                    .OrderBy(r => r.Request.Order.OrderNumber)
-                    .Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
-                        && r.Request.Ranking.BrokerId == brokerId && r.ReplacedByRequisitionId == null);
+            return _dbContext.Requisitions.GetRequisitionsForReports(start.Date, end.Date, organisationId, localAdminCustomerUnits, brokerId).Count();
         }
 
-        public int GetNoOfRequisitionsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
+        public int GetNoOfComplaints(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits, int? brokerId)
         {
-            return _dbContext.Requisitions.Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
-                        && r.Request.Ranking.BrokerId == brokerId && r.ReplacedByRequisitionId == null).Count();
-        }
-
-        public IEnumerable<Complaint> GetComplaintsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
-        {
-#warning include-fest
-            return _dbContext.Complaints
-                    .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
-                    .Include(c => c.Request).ThenInclude(r => r.Interpreter)
-                    .Include(c => c.Request).ThenInclude(r => r.Requisitions)
-                    .Include(c => c.AnsweringUser)
-                    .OrderBy(c => c.Request.Order.OrderNumber)
-                    .Where(c => c.CreatedAt.Date >= start.Date &&
-                    c.CreatedAt.Date <= end.Date && c.Request.Ranking.BrokerId == brokerId);
-        }
-
-        public int GetNoOfComplaintsForBroker(DateTimeOffset start, DateTimeOffset end, int brokerId)
-        {
-            return _dbContext.Complaints.Where(c => c.CreatedAt.Date >= start.Date
-                && c.CreatedAt.Date <= end.Date && c.Request.Ranking.BrokerId == brokerId).Count();
-        }
-
-        #endregion
-
-        #region Customer and SysAdmin reports
-
-        public IEnumerable<Order> GetOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
-        {
-            return _dbContext.Orders
-                    .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
-                    .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
-                    .Include(o => o.Requests).ThenInclude(r => r.Complaints)
-                    .Include(o => o.CustomerOrganisation)
-                    .Include(o => o.CustomerUnit)
-                    .Include(o => o.Language)
-                    .Include(o => o.Region)
-                    .Include(o => o.CreatedByUser)
-                    .Include(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
-                    .Include(o => o.InterpreterLocations)
-                    .Include(o => o.CompetenceRequirements)
-                    .OrderBy(o => o.OrderNumber)
-                    .Where(o => o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date
-                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits == null || (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value))));
+            return _dbContext.Complaints.GetComplaintsForReports(start.Date, end.Date, organisationId, localAdminCustomerUnits, brokerId).Count();
         }
 
         public int GetNoOfOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
-            return _dbContext.Orders.Where(o => o.CreatedAt.Date >= start.Date && o.CreatedAt.Date <= end.Date
-                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits == null || (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value)))).Count();
+            return _dbContext.Requests.GetRequestsOrdersForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits).Select(r => r.OrderId).Distinct().Count();
         }
 
-        public IEnumerable<Order> GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
+        public ReportOrderModel GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
-#warning include-fest
-            return _dbContext.Orders
-                    .Include(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(o => o.Requests).ThenInclude(r => r.Interpreter)
-                    .Include(o => o.Requests).ThenInclude(r => r.Requisitions)
-                    .Include(o => o.Requests).ThenInclude(r => r.Complaints)
-                    .Include(o => o.Requests).ThenInclude(r => r.PriceRows)
-                    .Include(o => o.CustomerOrganisation)
-                    .Include(o => o.CustomerUnit)
-                    .Include(o => o.Language)
-                    .Include(o => o.Region)
-                    .Include(o => o.CreatedByUser)
-                    .Include(o => o.Requirements).ThenInclude(r => r.RequirementAnswers)
-                    .Include(o => o.InterpreterLocations)
-                    .Include(o => o.CompetenceRequirements)
-                    .OrderBy(o => o.OrderNumber)
-                    .Where(o => o.EndAt <= _clock.SwedenNow && o.StartAt.Date >= start.Date && o.StartAt.Date <= end.Date
-                        && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)
-                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits == null || (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value))));
+            var requestOrders = _dbContext.Requests.GetDeliveredRequestsWithOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, organisationId, localAdminCustomerUnits);
+            var requisitions = _dbContext.Requisitions.GetRequisitionsForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, organisationId, localAdminCustomerUnits);
+            var complaints = _dbContext.Complaints.GetComplaintsForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, organisationId, localAdminCustomerUnits);
+            var interpreterLocations = _dbContext.OrderInterpreterLocation.GetInterpreterLocationsForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, organisationId, localAdminCustomerUnits);
+            var orderRequirements = _dbContext.OrderRequirements.GetOrderRequirementsForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, organisationId, localAdminCustomerUnits);
+            var orderRequirementAnswers = _dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, organisationId, localAdminCustomerUnits);
+            var competenceRequirements = _dbContext.OrderCompetenceRequirements.GetOrderCompetencesForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, organisationId, localAdminCustomerUnits);
+            var requestPricerows = _dbContext.RequestPriceRows.GetRequestPriceRowsForDeliveredOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, organisationId, localAdminCustomerUnits);
+            return ReportOrderModel.GetModelFromOrders(requestOrders, requisitions, complaints, interpreterLocations, orderRequirements, orderRequirementAnswers, competenceRequirements, requestPricerows, false, true);
         }
 
-        public int GetNoOfDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
+        public ReportOrderModel GetOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
-            return _dbContext.Orders.Where(o => o.EndAt <= _clock.SwedenNow && o.StartAt.Date >= start.Date && o.StartAt.Date <= end.Date
-                        && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)
-                        && (organisationId.HasValue ? o.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits == null || (o.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(o.CustomerUnitId.Value)))).Count();
+            var requestOrders = _dbContext.Requests.GetRequestsOrdersForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits);
+            var requisitions = _dbContext.Requisitions.GetRequisitionsForOrdersForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits);
+            var complaints = _dbContext.Complaints.GetComplaintsForOrdersForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits);
+            var interpreterLocations = _dbContext.OrderInterpreterLocation.GetInterpreterLocationsForOrdersForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits);
+            var orderRequirements = _dbContext.OrderRequirements.GetOrderRequirementsForOrdersForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits);
+            var orderRequirementAnswers = _dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForOrdersForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits);
+            var competenceRequirements = _dbContext.OrderCompetenceRequirements.GetOrderCompetencesForOrdersForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits);
+            return ReportOrderModel.GetModelFromOrders(requestOrders, requisitions, complaints, interpreterLocations, orderRequirements, orderRequirementAnswers, competenceRequirements, null, false, false);
         }
 
-        public IEnumerable<Requisition> GetRequisitionsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
+        public int GetNoOfDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null, int? brokerId = null)
         {
-#warning include-fest
-            return _dbContext.Requisitions
-                    .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                    .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
-                    .Include(r => r.Request).ThenInclude(r => r.Interpreter)
-                    .Include(r => r.Request).ThenInclude(r => r.PriceRows)
-                    .Include(r => r.MealBreaks)
-                    .Include(r => r.ProcessedUser)
-                    .Include(r => r.CreatedByUser)
-                    .Include(r => r.PriceRows)
-                    .OrderBy(r => r.Request.Order.OrderNumber)
-                    .Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date && r.ReplacedByRequisitionId == null
-                        && (organisationId.HasValue ? r.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits == null || (r.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(r.Request.Order.CustomerUnitId.Value))));
+            return _dbContext.Requests.GetDeliveredRequestsWithOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, organisationId, localAdminCustomerUnits, brokerId).Select(r => r.OrderId).Distinct().Count();
         }
 
-        public int GetNoOfRequisitionsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
+        public ReportRequistionModel GetRequisitions(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null, int? brokerId = null)
         {
-            return _dbContext.Requisitions.Where(r => r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date && r.ReplacedByRequisitionId == null
-                        && (organisationId.HasValue ? r.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits == null || (r.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(r.Request.Order.CustomerUnitId.Value)))).Count();
+            var requisitions = _dbContext.Requisitions.GetRequisitionsForReports(start.Date, end.Date, organisationId, localAdminCustomerUnits, brokerId);
+            var requisitionPricerows = _dbContext.RequisitionPriceRows.GetRequisitionPriceRowsForRequisitionReport(start.Date, end.Date, organisationId, localAdminCustomerUnits, brokerId);
+            var mealbreaks = _dbContext.MealBreaks.GetMealBreaksForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits, brokerId);
+            var requestIds = requisitions.Select(r => r.RequestId).ToList();
+            var requestPricerows = _dbContext.RequestPriceRows.GetRequestPriceRowsForRequisitionReport(requestIds);
+
+            return ReportRequistionModel.GetModelFromRequisitions(requisitions, mealbreaks, requisitionPricerows, requestPricerows, brokerId.HasValue);
         }
 
-        public IEnumerable<Complaint> GetComplaintsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
+        public ReportComplaintModel GetComplaints(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null, int? brokerId = null)
         {
-#warning include-fest
-            return _dbContext.Complaints
-                    .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Language)
-                    .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.Region)
-                    .Include(c => c.Request).ThenInclude(r => r.Interpreter)
-                    .Include(c => c.Request).ThenInclude(r => r.Requisitions)
-                    .Include(c => c.CreatedByUser)
-                    .OrderBy(c => c.Request.Order.OrderNumber)
-                    .Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date
-                        && (organisationId.HasValue ? c.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits == null || (c.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(c.Request.Order.CustomerUnitId.Value))));
+            var complaints = _dbContext.Complaints.GetComplaintsForReports(start.Date, end.Date, organisationId, localAdminCustomerUnits, brokerId);
+            return ReportComplaintModel.GetModelFromComplaints(complaints, brokerId.HasValue);
         }
 
-        public int GetNoOfComplaintsForCustomerAndSysAdmin(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
-        {
-            return _dbContext.Complaints.Where(c => c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date
-                        && (organisationId.HasValue ? c.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
-                        && (localAdminCustomerUnits == null || (c.Request.Order.CustomerUnitId.HasValue && localAdminCustomerUnits.Contains(c.Request.Order.CustomerUnitId.Value)))).Count();
-        }
         #endregion
 
         #region Generate Excel
@@ -458,7 +329,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     CreateColumnsForRequisition(rowsWorksheet, (rows as IEnumerable<ReportRequisitionRow>).Select(r => r), ref columnLetter, reportType);
                 }
-                else if (rows.FirstOrDefault() is ReportRequisitionRow)
+                else if (rows.FirstOrDefault() is ReportComplaintRow)
                 {
                     CreateColumnsForComplaint(rowsWorksheet, (rows as IEnumerable<ReportComplaintRow>).Select(r => r), ref columnLetter, reportType);
                 }
@@ -632,152 +503,118 @@ namespace Tolk.BusinessLogic.Services
             return $"{columnLetter}{index}";
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Neede to get better ef code")]
-        public static IEnumerable<ReportRow> GetOrderExcelFileRows(IEnumerable<Order> listItems, ReportType reportType)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Needed to get better ef code")]
+        public static IEnumerable<ReportRow> GetOrderExcelFileRows(ReportOrderModel reportOrder, ReportType reportType)
         {
-            return listItems
+            var isBroker = (reportType == ReportType.DeliveredOrdersBrokers || reportType == ReportType.RequestsForBrokers);
+            var selectedData = reportOrder?.OrderRequests;
+            if (reportType == ReportType.OrdersForCustomer || reportType == ReportType.OrdersForSystemAdministrator)
+            {
+                var activeRequestIds = reportOrder.OrderRequests.GroupBy(r => r.OrderId).Select(r => r.Max(c => c.RequestId));
+                selectedData = reportOrder.OrderRequests.Where(r => activeRequestIds.Contains(r.RequestId));
+            }
+
+            return selectedData
                     .Select(o => new ReportOrderRow
                     {
                         OrderNumber = o.OrderNumber,
-                        ReportDate = (reportType == ReportType.DeliveredOrdersSystemAdministrator || reportType == ReportType.DeliveredOrdersCustomer) ? o.StartAt.ToString("yyyy-MM-dd HH:mm") : o.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
-                        BrokerName = o.Requests.OrderBy(r => r.RequestId).Last().Ranking.Broker.Name,
-                        Language = o.Language.Name,
-                        Region = o.Region.Name,
+                        ReportDate = o.ReportDate,
+                        BrokerName = o.BrokerName,
+                        Language = o.Language,
+                        Region = o.Region,
                         AssignmentType = o.AssignmentType.GetDescription(),
-                        InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)o.Requests.OrderBy(r => r.RequestId).Last().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        InterpreterId = o.Requests.OrderBy(r => r.RequestId).Last().Interpreter?.OfficialInterpreterId ?? string.Empty,
-                        ReportPersonToDisplay = o.CreatedByUser.FullName,
-                        AssignmentDate = $"{o.StartAt.ToString("yyyy-MM-dd HH:mm")}-{o.EndAt.ToString("HH:mm")}",
-                        Status = o.Status.GetDescription(),
-                        ReferenceNumber = o.CustomerReferenceNumber ?? string.Empty,
-                        Department = o.UnitName ?? string.Empty,
-                        CustomerUnitName = o.CustomerUnit?.Name ?? string.Empty,
-                        HasRequisition = o.Requests.OrderBy(r => r.RequestId).Last().Requisitions.Any(),
-                        HasComplaint = o.Requests.OrderBy(r => r.RequestId).Last().Complaints.Any(),
-                        CustomerName = o.CustomerOrganisation.Name,
-                        Price = o.Requests.OrderBy(r => r.RequestId).Last().PriceRows != null ? o.Requests.OrderBy(r => r.RequestId).Last().PriceRows.Sum(p => p.TotalPrice) : 0,
-                        Dialect = o.Requirements.Where(r => r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.Description ?? string.Empty,
-                        DialectIsRequirement = o.Requirements.Where(r => r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.IsRequired ?? false,
-                        FulfilledDialectRequirement = o.Requirements.Where(r => r.RequirementType == RequirementType.Dialect && r.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && o.Requests.Last().RequestId == ra.RequestId)).FirstOrDefault() != null ? true : false,
-                        OrderedInterpreterLocation1 = o.InterpreterLocations.Where(i => i.Rank == 1).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
-                        OrderedInterpreterLocation2 = o.InterpreterLocations.Where(i => i.Rank == 2).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
-                        OrderedInterpreterLocation3 = o.InterpreterLocations.Where(i => i.Rank == 3).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
-                        InterpreterLocation = o.Requests.OrderBy(r => r.RequestId).Last().InterpreterLocation.HasValue ? ((InterpreterLocation)o.Requests.OrderBy(r => r.RequestId).Last().InterpreterLocation.Value).GetDescription() : string.Empty,
-                        AllowExceedingTravelCost = o.AllowExceedingTravelCost.HasValue ? o.AllowExceedingTravelCost.Value.GetDescription() : string.Empty,
-                        CompetenceLevelDesired1 = (o.LanguageHasAuthorizedInterpreter && !o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any()) ? o.CompetenceRequirements.Where(c => c.Rank == 1).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
-                        CompetenceLevelDesired2 = (o.LanguageHasAuthorizedInterpreter && !o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any()) ? o.CompetenceRequirements.Where(c => c.Rank == 2).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
-                        CompetenceLevelRequired1 = (o.LanguageHasAuthorizedInterpreter && o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any()) ? o.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).First().CompetenceLevel.GetDescription() : string.Empty,
-                        CompetenceLevelRequired2 = (o.LanguageHasAuthorizedInterpreter && o.SpecificCompetenceLevelRequired && o.CompetenceRequirements.Any() && o.CompetenceRequirements.Count > 1) ? o.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).Last().CompetenceLevel.GetDescription() : string.Empty,
-                        OrderRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && r.IsRequired).Count(),
-                        OrderDesiredRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired).Count(),
-                        FulfilledOrderDesiredRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired && r.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && o.Requests.Last().RequestId == ra.RequestId)).Count(),
-                        FulfilledOrderRequirements = o.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && r.IsRequired && r.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && o.Requests.Last().RequestId == ra.RequestId)).Count()
-                    });
+                        InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)o.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                        InterpreterId = o.InterpreterId,
+                        ReportPersonToDisplay = o.ReportPerson,
+                        AssignmentDate = o.AssignmentDate,
+                        Status = isBroker ? o.RequestStatus.GetDescription() : o.OrderStatus.GetDescription(),
+                        ReferenceNumber = o.ReferenceNumber,
+                        Department = o.Department,
+                        CustomerUnitName = o.CustomerUnitName,
+                        HasRequisition = reportOrder.HasRequisitions.Contains(o.RequestId),
+                        HasComplaint = reportOrder.HasComplaints.Contains(o.RequestId),
+                        CustomerName = o.CustomerName,
+                        Price = reportOrder.Prices?.SingleOrDefault(r => r.RequestId == o.RequestId).Price ?? 0,
+                        Dialect = reportOrder.Requirements.Where(r => r.OrderId == o.OrderId && r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.Description ?? string.Empty,
+                        DialectIsRequirement = reportOrder.Requirements.Where(r => r.OrderId == o.OrderId && r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.IsRequired ?? false,
+                        FulfilledDialectRequirement = reportOrder.Requirements.Where(r => r.OrderId == o.OrderId && r.RequirementType == RequirementType.Dialect && reportOrder.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && o.RequestId == ra.RequestId)).FirstOrDefault() != null ? true : false,
+                        OrderedInterpreterLocation1 = reportOrder.InterpreterLocations.Where(i => i.OrderId == o.OrderId && i.Rank == 1).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
+                        OrderedInterpreterLocation2 = reportOrder.InterpreterLocations.Where(i => i.OrderId == o.OrderId && i.Rank == 2).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
+                        OrderedInterpreterLocation3 = reportOrder.InterpreterLocations.Where(i => i.OrderId == o.OrderId && i.Rank == 3).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
+                        InterpreterLocation = o.InterpreterLocation.HasValue ? ((InterpreterLocation)o.InterpreterLocation.Value).GetDescription() : string.Empty,
+                        AllowExceedingTravelCost = o.AllowExceedingTravelCost.HasValue ? isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(o.AllowExceedingTravelCost.Value).GetDescription() : o.AllowExceedingTravelCost.Value.GetDescription() : string.Empty,
+                        CompetenceLevelDesired1 = (o.LanguageHasAuthorizedInterpreter && !o.SpecificCompetenceLevelRequired && reportOrder.Competences.Any(ro => ro.OrderId == o.OrderId)) ? reportOrder.Competences.Where(c => c.OrderId == o.OrderId && c.Rank == 1).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
+                        CompetenceLevelDesired2 = (o.LanguageHasAuthorizedInterpreter && !o.SpecificCompetenceLevelRequired && reportOrder.Competences.Any(ro => ro.OrderId == o.OrderId)) ? reportOrder.Competences.Where(c => c.OrderId == o.OrderId && c.Rank == 2).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
+                        CompetenceLevelRequired1 = (o.LanguageHasAuthorizedInterpreter && o.SpecificCompetenceLevelRequired && reportOrder.Competences.Any(ro => ro.OrderId == o.OrderId)) ? reportOrder.Competences.Where(ro => ro.OrderId == o.OrderId).First().CompetenceLevel.GetDescription() : string.Empty,
+                        CompetenceLevelRequired2 = (o.LanguageHasAuthorizedInterpreter && o.SpecificCompetenceLevelRequired && reportOrder.Competences.Any(ro => ro.OrderId == o.OrderId) && reportOrder.Competences.Where(ro => ro.OrderId == o.OrderId).Count() > 1) ? reportOrder.Competences.Where(ro => ro.OrderId == o.OrderId).Last().CompetenceLevel.GetDescription() : string.Empty,
+                        OrderRequirements = reportOrder.Requirements.Where(r => r.OrderId == o.OrderId && r.RequirementType != RequirementType.Dialect && r.IsRequired).Count(),
+                        OrderDesiredRequirements = reportOrder.Requirements.Where(r => r.OrderId == o.OrderId && r.RequirementType != RequirementType.Dialect && !r.IsRequired).Count(),
+                        FulfilledOrderDesiredRequirements = reportOrder.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired && reportOrder.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && ra.RequestId == o.RequestId)).Count(),
+                        FulfilledOrderRequirements = reportOrder.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && r.IsRequired && reportOrder.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && ra.RequestId == o.RequestId)).Count()
+                    }).ToList();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Neede to get better ef code")]
-        public static IEnumerable<ReportRow> GetRequestExcelFileRows(IEnumerable<Request> listItems, ReportType reportType)
-        {
-            return listItems
-                    .Select(r => new ReportOrderRow
-                    {
-                        OrderNumber = r.Order.OrderNumber,
-                        ReportDate = reportType == ReportType.DeliveredOrdersBrokers ? r.Order.StartAt.ToString("yyyy-MM-dd HH:mm") : r.Order.Requests.OrderBy(r1 => r1.RequestId).First(r1 => r.RankingId == r1.RankingId).CreatedAt.ToString("yyyy-MM-dd HH:mm"),
-                        CustomerName = r.Order.CustomerOrganisation.Name,
-                        Language = r.Order.Language.Name,
-                        Region = r.Order.Region.Name,
-                        AssignmentType = r.Order.AssignmentType.GetDescription(),
-                        InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        InterpreterId = r.Interpreter?.OfficialInterpreterId ?? string.Empty,
-                        ReportPersonToDisplay = r.AnsweringUser?.FullName ?? string.Empty,
-                        AssignmentDate = $"{r.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{r.Order.EndAt.ToString("HH:mm")}",
-                        Status = r.Status.GetDescription(),
-                        ReferenceNumber = r.Order.CustomerReferenceNumber ?? string.Empty,
-                        HasRequisition = r.Requisitions.Any(),
-                        HasComplaint = r.Complaints.Any(),
-                        Price = r.PriceRows != null ? r.PriceRows.Sum(p => p.TotalPrice) : 0,
-                        Dialect = r.Order.Requirements.Where(req => req.RequirementType == RequirementType.Dialect).FirstOrDefault()?.Description ?? string.Empty,
-                        DialectIsRequirement = r.Order.Requirements.Where(req => req.RequirementType == RequirementType.Dialect).FirstOrDefault()?.IsRequired ?? false,
-                        FulfilledDialectRequirement = r.Order.Requirements.Where(req => req.RequirementType == RequirementType.Dialect && req.RequirementAnswers.Any(ra => ra.OrderRequirementId == req.OrderRequirementId && ra.CanSatisfyRequirement && r.RequestId == ra.RequestId)).FirstOrDefault() != null ? true : false,
-                        OrderedInterpreterLocation1 = r.Order.InterpreterLocations.Where(i => i.Rank == 1).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
-                        OrderedInterpreterLocation2 = r.Order.InterpreterLocations.Where(i => i.Rank == 2).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
-                        OrderedInterpreterLocation3 = r.Order.InterpreterLocations.Where(i => i.Rank == 3).FirstOrDefault()?.InterpreterLocation.GetDescription() ?? string.Empty,
-                        InterpreterLocation = r.InterpreterLocation.HasValue ? ((InterpreterLocation)r.InterpreterLocation.Value).GetDescription() : string.Empty,
-                        AllowExceedingTravelCost = r.Order.AllowExceedingTravelCost.HasValue ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(r.Order.AllowExceedingTravelCost.Value).GetDescription() : string.Empty,
-                        CompetenceLevelDesired1 = (r.Order.LanguageHasAuthorizedInterpreter && !r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any()) ? r.Order.CompetenceRequirements.Where(c => c.Rank == 1).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
-                        CompetenceLevelDesired2 = (r.Order.LanguageHasAuthorizedInterpreter && !r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any()) ? r.Order.CompetenceRequirements.Where(c => c.Rank == 2).FirstOrDefault()?.CompetenceLevel.GetDescription() ?? string.Empty : string.Empty,
-                        CompetenceLevelRequired1 = (r.Order.LanguageHasAuthorizedInterpreter && r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any()) ? r.Order.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).First().CompetenceLevel.GetDescription() : string.Empty,
-                        CompetenceLevelRequired2 = (r.Order.LanguageHasAuthorizedInterpreter && r.Order.SpecificCompetenceLevelRequired && r.Order.CompetenceRequirements.Any() && r.Order.CompetenceRequirements.Count > 1) ? r.Order.CompetenceRequirements.OrderBy(c => c.OrderCompetenceRequirementId).Last().CompetenceLevel.GetDescription() : string.Empty,
-                        OrderRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && req.IsRequired).Count(),
-                        OrderDesiredRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && !req.IsRequired).Count(),
-                        FulfilledOrderDesiredRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && !req.IsRequired && req.RequirementAnswers.Any(ra => ra.OrderRequirementId == req.OrderRequirementId && ra.CanSatisfyRequirement && r.RequestId == ra.RequestId)).Count(),
-                        FulfilledOrderRequirements = r.Order.Requirements.Where(req => req.RequirementType != RequirementType.Dialect && req.IsRequired && req.RequirementAnswers.Any(ra => ra.OrderRequirementId == req.OrderRequirementId && ra.CanSatisfyRequirement && r.RequestId == ra.RequestId)).Count()
-                    });
-        }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Neede to get better ef code")]
-        public static IEnumerable<ReportRequisitionRow> GetRequisitionsExcelFileRows(IEnumerable<Requisition> listItems, ReportType reportType)
+        public static IEnumerable<ReportRequisitionRow> GetRequisitionsExcelFileRows(ReportRequistionModel requistionModel, ReportType reportType)
         {
             var isBroker = EnumHelper.Parent<ReportType, ReportGroup>(reportType) == ReportGroup.BrokerReport;
-
-            return listItems
+            NullCheckHelper.ArgumentCheckNull(requistionModel, nameof(GetRequisitionsExcelFileRows), nameof(StatisticsService));
+            return requistionModel.Requisitions
                     .Select(r => new ReportRequisitionRow
                     {
-                        OrderNumber = r.Request.Order.OrderNumber,
-                        ReportDate = r.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
-                        BrokerName = r.Request.Ranking.Broker.Name,
-                        Language = r.Request.Order.Language.Name,
-                        Region = r.Request.Order.Region.Name,
-                        InterpreterId = r.Request.Interpreter?.OfficialInterpreterId ?? string.Empty,
-                        ReportPersonToDisplay = r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ? "Systemet" : reportType == ReportType.RequisitionsForCustomer ? r.ProcessedUser?.FullName : r.CreatedByUser?.FullName,
-                        AssignmentDate = $"{r.Request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{r.Request.Order.EndAt.ToString("HH:mm")}",
-                        Status = r.Status.GetDescription(),
-                        CustomerName = r.Request.Order.CustomerOrganisation.Name,
-                        AssignmentType = r.Request.Order.AssignmentType.GetDescription(),
-                        InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        HasMealbreaks = r.MealBreaks.Any(),
-                        WaisteTime = r.TimeWasteNormalTime ?? 0,
-                        WaisteTimeIWH = r.TimeWasteIWHTime ?? 0,
-                        Outlay = r.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price ?? 0,
-                        CarCompensation = r.CarCompensation ?? 0,
+                        OrderNumber = r.OrderNumber,
+                        ReportDate = r.ReportDate,
+                        BrokerName = r.BrokerName,
+                        Language = r.Language,
+                        Region = r.Region,
+                        InterpreterId = r.InterpreterId,
+                        ReportPersonToDisplay = r.ReportPerson,
+                        AssignmentDate = r.AssignmentDate,
+                        Status = r.RequisitionStatus.GetDescription(),
+                        CustomerName = r.CustomerName,
+                        AssignmentType = r.AssignmentType.GetDescription(),
+                        InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                        HasMealbreaks = requistionModel.HasMealbreaks.Contains(r.RequisitionId),
+                        WaisteTime = r.WaisteTime,
+                        WaisteTimeIWH = r.WaisteTimeIWH,
+                        Price = requistionModel.RequisitionPrices?.SingleOrDefault(pr => pr.RequisitionId == r.RequisitionId).Price ?? 0,
+                        Outlay = requistionModel.RequisitionPrices?.SingleOrDefault(pr => pr.RequisitionId == r.RequisitionId).Outlay ?? 0,
+                        PreliminaryCost = requistionModel.RequestPrices?.SingleOrDefault(pr => pr.RequestId == r.RequestId).Price ?? 0,
+                        CarCompensation = r.CarCompensation,
                         PerDiem = r.PerDiem,
-                        Price = r.PriceRows.Sum(p => p.TotalPrice),
-                        Department = r.Request.Order.UnitName ?? string.Empty,
-                        CustomerUnitName = r.Request.Order.CustomerUnit?.Name ?? string.Empty,
-                        TaxCard = r.InterpretersTaxCard == null ? string.Empty : r.InterpretersTaxCard.Value.GetDescription(),
-                        ReferenceNumber = r.Request.Order.CustomerReferenceNumber ?? string.Empty,
-                        PreliminaryCost = r.Request.PriceRows.Sum(p => p.TotalPrice),
-                        InterpreterLocation = ((InterpreterLocation)r.Request.InterpreterLocation.Value).GetDescription(),
-                        AllowExceedingTravelCost = !r.Request.Order.AllowExceedingTravelCost.HasValue ? string.Empty : isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(r.Request.Order.AllowExceedingTravelCost.Value).GetDescription() : r.Request.Order.AllowExceedingTravelCost.Value.GetDescription()
+                        Department = r.Department,
+                        CustomerUnitName = r.CustomerUnitName,
+                        TaxCard = r.TaxCard.HasValue ? r.TaxCard.Value.GetDescription() : string.Empty,
+                        ReferenceNumber = r.ReferenceNumber,
+                        InterpreterLocation = r.InterpreterLocation.HasValue ? ((InterpreterLocation)r.InterpreterLocation.Value).GetDescription() : string.Empty,
+                        AllowExceedingTravelCost = r.AllowExceedingTravelCost.HasValue ? isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(r.AllowExceedingTravelCost.Value).GetDescription() : r.AllowExceedingTravelCost.Value.GetDescription() : string.Empty
                     });
         }
 
-        public static IEnumerable<ReportComplaintRow> GetComplaintsExcelFileRows(IEnumerable<Complaint> listItems, ReportType reportType)
+        public static IEnumerable<ReportComplaintRow> GetComplaintsExcelFileRows(ReportComplaintModel complaintModel, ReportType reportType)
         {
             var isBroker = EnumHelper.Parent<ReportType, ReportGroup>(reportType) == ReportGroup.BrokerReport;
-
-            return listItems
+            NullCheckHelper.ArgumentCheckNull(complaintModel, nameof(GetComplaintsExcelFileRows), nameof(StatisticsService));
+            return complaintModel.Complaints
                     .Select(c => new ReportComplaintRow
                     {
-                        OrderNumber = c.Request.Order.OrderNumber,
-                        ReportDate = c.CreatedAt.ToSwedishString("yyyy-MM-dd HH:mm"),
-                        BrokerName = c.Request.Ranking.Broker.Name,
-                        Language = c.Request.Order.Language.Name,
-                        Region = c.Request.Order.Region.Name,
-                        InterpreterId = c.Request.Interpreter?.OfficialInterpreterId ?? string.Empty,
-                        ReportPersonToDisplay = reportType == ReportType.ComplaintsForCustomer ? c.CreatedByUser.FullName : c.AnsweringUser?.FullName,
-                        AssignmentDate = $"{c.Request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{c.Request.Order.EndAt.ToSwedishString("HH:mm")}",
-                        Status = c.Status.GetDescription(),
-                        CustomerName = c.Request.Order.CustomerOrganisation.Name,
-                        AssignmentType = c.Request.Order.AssignmentType.GetDescription(),
-                        InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        HasRequisition = c.Request.Requisitions.Any(),
+                        OrderNumber = c.OrderNumber,
+                        ReportDate = c.ReportDate,
+                        BrokerName = c.BrokerName,
+                        Language = c.Language,
+                        Region = c.Region,
+                        Status = c.ComplaintStatus.GetDescription(),
+                        InterpreterId = c.InterpreterId,
+                        AssignmentDate = c.AssignmentDate,
+                        CustomerName = c.CustomerName,
+                        AssignmentType = c.AssignmentType.GetDescription(),
+                        InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)c.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                         ComplaintType = c.ComplaintType.GetDescription(),
-                        CustomerUnitName = c.Request.Order.CustomerUnit?.Name ?? string.Empty,
-                        Department = c.Request.Order.UnitName ?? string.Empty,
-                        ReferenceNumber = c.Request.Order.CustomerReferenceNumber ?? string.Empty,
-                        InterpreterLocation = ((InterpreterLocation)c.Request.InterpreterLocation.Value).GetDescription(),
-                        AllowExceedingTravelCost = !c.Request.Order.AllowExceedingTravelCost.HasValue ? string.Empty : isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(c.Request.Order.AllowExceedingTravelCost.Value).GetDescription() : c.Request.Order.AllowExceedingTravelCost.Value.GetDescription()
+                        CustomerUnitName = c.CustomerUnitName,
+                        ReportPersonToDisplay = c.ReportPerson,
+                        Department = c.Department,
+                        ReferenceNumber = c.ReferenceNumber,
+                        InterpreterLocation = c.InterpreterLocation.HasValue ? ((InterpreterLocation)c.InterpreterLocation.Value).GetDescription() : string.Empty,
+                        AllowExceedingTravelCost = c.AllowExceedingTravelCost.HasValue ? isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(c.AllowExceedingTravelCost.Value).GetDescription() : c.AllowExceedingTravelCost.Value.GetDescription() : string.Empty
                     });
         }
 
