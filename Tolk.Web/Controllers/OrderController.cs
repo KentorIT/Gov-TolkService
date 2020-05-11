@@ -780,7 +780,6 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmNoAnswer(int orderId)
         {
-#warning inte testat detta!
             var order = await _dbContext.Orders.SingleAsync(o => o.OrderId == orderId);
             if (order.Status == OrderStatus.NoBrokerAcceptedOrder && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
@@ -803,7 +802,6 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ConfirmResponseNotAnswered(int orderId)
         {
-#warning inte testat detta!
             var order = await _dbContext.Orders.SingleAsync(o => o.OrderId == orderId);
             order.OrderStatusConfirmations = await _dbContext.OrderStatusConfirmation.GetStatusConfirmationsForOrder(orderId).ToListAsync();
             if (order.Status == OrderStatus.ResponseNotAnsweredByCreator && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
@@ -826,7 +824,6 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Deny(ProcessRequestModel model)
         {
-#warning inte testat!
             var request = await _dbContext.Requests.GetSimpleRequestById(model.RequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request.Order, Policies.Accept)).Succeeded)
@@ -885,20 +882,17 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> UpdateExpiry(int orderId, DateTimeOffset latestAnswerBy)
         {
-#warning include-fest skulle behövas för detta FUNKAR INTE!!!
             var order = await _dbContext.Orders.GetOrderWithContactsById(orderId);
-
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
             {
                 try
                 {
-                    var request = await _dbContext.Requests.GetActiveRequestByOrderId(orderId);
+                    var request = await _dbContext.Requests.GetRequestToUpdateExpiryByOrderId(orderId);
                     if (request == null)
                     {
                         return RedirectToAction("Index", "Home", new { errorMessage = "Denna bokning behöver inte få sista svarstid satt." });
                     }
-
-                    _orderService.SetRequestExpiryManually(request, latestAnswerBy, User.GetUserId(), User.TryGetImpersonatorId());
+                    await _orderService.SetRequestExpiryManually(request, latestAnswerBy, User.GetUserId(), User.TryGetImpersonatorId());
                     await _dbContext.SaveChangesAsync();
                 }
                 catch (InvalidOperationException ex)
@@ -906,7 +900,6 @@ namespace Tolk.Web.Controllers
                     _logger.LogWarning("Order {orderId} user {userId} failed to set last Answer By with error message {errorMessage}.", orderId, User.GetUserId(), ex.Message);
                     return RedirectToAction("Index", "Home", new { errorMessage = "Denna bokning behöver inte få sista svarstid satt." });
                 }
-
                 return RedirectToAction("Index", "Home", new { message = $"Sista svarstid för bokning {order.OrderNumber} är satt" });
             }
             return Forbid();

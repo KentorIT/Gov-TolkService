@@ -40,6 +40,7 @@ namespace Tolk.Web.Models
         public AttachmentListModel RequestAttachmentListModel { get; set; }
 
         [Display(Name = "Sista svarstid")]
+        [ClientRequired(ErrorMessage = "Ange sista svarstid")]
         public DateTimeOffset? LatestAnswerBy { get; set; }
 
         [Display(Name = "Uppdragstyp")]

@@ -522,7 +522,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void SetRequestExpiryManually(Request request, DateTimeOffset expiry, int userId, int? impersonatingUserId)
+        public async Task SetRequestExpiryManually(Request request, DateTimeOffset expiry, int userId, int? impersonatingUserId)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(SetRequestExpiryManually), nameof(OrderService));
             if (request.Status != RequestStatus.AwaitingDeadlineFromCustomer)
@@ -536,7 +536,7 @@ namespace Tolk.BusinessLogic.Services
 
             // Log and notify
             _logger.LogInformation($"Expiry {expiry} manually set on request {request.RequestId}");
-            _notificationService.RequestCreated(request);
+            await _notificationService.RequestCreated(request);
         }
 
         public async Task SetRequestGroupExpiryManually(RequestGroup requestGroup, DateTimeOffset expiry, int userId, int? impersonatingUserId)

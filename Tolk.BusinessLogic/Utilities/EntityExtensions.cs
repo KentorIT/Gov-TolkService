@@ -778,6 +778,12 @@ namespace Tolk.BusinessLogic.Utilities
             .Include(r => r.Region)
             .Where(ra => ra.FirstValidDate <= now && ra.LastValidDate > now);
 
+        public static async Task<Request> GetRequestToUpdateExpiryByOrderId(this IQueryable<Request> requests, int orderId)
+            => await requests.GetRequestsWithBaseIncludes()
+            .Include(r => r.Order).ThenInclude(o => o.Region)
+            .Include(r => r.Order).ThenInclude(o => o.Language)
+            .SingleOrDefaultAsync(r => r.OrderId == orderId && r.Status == RequestStatus.AwaitingDeadlineFromCustomer);
+
         #endregion
 
 
