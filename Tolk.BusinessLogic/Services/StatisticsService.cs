@@ -551,7 +551,7 @@ namespace Tolk.BusinessLogic.Services
                         OrderDesiredRequirements = reportOrder.Requirements.Where(r => r.OrderId == o.OrderId && r.RequirementType != RequirementType.Dialect && !r.IsRequired).Count(),
                         FulfilledOrderDesiredRequirements = reportOrder.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired && reportOrder.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && ra.RequestId == o.RequestId)).Count(),
                         FulfilledOrderRequirements = reportOrder.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && r.IsRequired && reportOrder.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && ra.RequestId == o.RequestId)).Count()
-                    }).ToList();
+                    }).ToList().OrderBy(row => row.OrderNumber);
         }
 
         public static IEnumerable<ReportRequisitionRow> GetRequisitionsExcelFileRows(ReportRequistionModel requistionModel, ReportType reportType)
@@ -587,7 +587,7 @@ namespace Tolk.BusinessLogic.Services
                         ReferenceNumber = r.ReferenceNumber,
                         InterpreterLocation = r.InterpreterLocation.HasValue ? ((InterpreterLocation)r.InterpreterLocation.Value).GetDescription() : string.Empty,
                         AllowExceedingTravelCost = r.AllowExceedingTravelCost.HasValue ? isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(r.AllowExceedingTravelCost.Value).GetDescription() : r.AllowExceedingTravelCost.Value.GetDescription() : string.Empty
-                    });
+                    }).ToList().OrderBy(row => row.OrderNumber);
         }
 
         public static IEnumerable<ReportComplaintRow> GetComplaintsExcelFileRows(ReportComplaintModel complaintModel, ReportType reportType)
@@ -615,7 +615,7 @@ namespace Tolk.BusinessLogic.Services
                         ReferenceNumber = c.ReferenceNumber,
                         InterpreterLocation = c.InterpreterLocation.HasValue ? ((InterpreterLocation)c.InterpreterLocation.Value).GetDescription() : string.Empty,
                         AllowExceedingTravelCost = c.AllowExceedingTravelCost.HasValue ? isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(c.AllowExceedingTravelCost.Value).GetDescription() : c.AllowExceedingTravelCost.Value.GetDescription() : string.Empty
-                    });
+                    }).ToList().OrderBy(row => row.OrderNumber);
         }
 
         #endregion

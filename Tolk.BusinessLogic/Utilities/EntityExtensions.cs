@@ -587,7 +587,6 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<Request> GetDeliveredRequestsWithOrders(this IQueryable<Request> requests, DateTime start, DateTime end, DateTime now, int? organisationId, IEnumerable<int> customerUnits, int? brokerid = null)
           => requests
-            .OrderBy(r => r.Order.OrderNumber)
             .Where(r =>
                 (r.Status == RequestStatus.Approved || r.Status == RequestStatus.Delivered)
                 && r.Order.EndAt <= now && r.Order.StartAt.Date >= start.Date && r.Order.StartAt.Date <= end.Date
@@ -664,7 +663,6 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<Request> GetRequestsOrdersForReport(this IQueryable<Request> requests, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits)
             => requests
-                .OrderBy(r => r.Order.OrderNumber)
                 .Where(r => r.Order.CreatedAt.Date >= start.Date && r.Order.CreatedAt.Date <= end.Date
                  && (organisationId.HasValue ? r.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
                  && (customerUnits == null || (r.Order.CustomerUnitId.HasValue && customerUnits.Contains(r.Order.CustomerUnitId.Value))));
@@ -707,8 +705,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<Request> GetRequestOrdersForBrokerReport(this IQueryable<Request> requests, DateTime start, DateTime end, int brokerId)
             => requests
-                .OrderBy(r => r.Order.OrderNumber).
-                Where(r => r.Ranking.BrokerId == brokerId && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
+                .Where(r => r.Ranking.BrokerId == brokerId && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
                 && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced));
 
         public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForBrokerReport(this IQueryable<OrderRequirementRequestAnswer> orderRequirementAnswers, DateTime start, DateTime end, int brokerId)
