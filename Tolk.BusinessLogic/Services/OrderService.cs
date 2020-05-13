@@ -509,7 +509,6 @@ namespace Tolk.BusinessLogic.Services
             try
             {
                 requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
-                requestGroup.Requests.ForEach(r => r.Requisitions = new List<Requisition>());
                 requestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
                 requestGroup.Cancel(_clock.SwedenNow, userId, impersonatorId, message);
                 _logger.LogInformation("Order group {orderGroupId} cancelled by customer {userId}.", orderGroup.OrderGroupId, userId);
