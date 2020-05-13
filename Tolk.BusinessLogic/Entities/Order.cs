@@ -304,7 +304,7 @@ namespace Tolk.BusinessLogic.Entities
             List<int> ordergroupAttachmentIdsToRemove = Enumerable.Empty<int>().ToList();
 
             IEnumerable<int> orderAttachmentIds = Attachments.Select(a => a.AttachmentId);
-            IEnumerable<int> orderGroupAttachmentIds = OrderGroupId.HasValue ? Group.Attachments.Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == OrderId)).Select(ag => ag.AttachmentId) : Enumerable.Empty<int>();
+            IEnumerable<int> orderGroupAttachmentIds = OrderGroupId.HasValue ? Group.Attachments.Select(ag => ag.AttachmentId) : Enumerable.Empty<int>();
             IEnumerable<int> oldOrderAttachmentIdsToCompare = orderAttachmentIds.Union(orderGroupAttachmentIds);
 
             //all attachments removed

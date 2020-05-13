@@ -1538,23 +1538,16 @@ Sammanställning:
             };
         }
 
-        private static RequestUpdatedModel GetRequestUpdatedModel(Order order, bool attachmentUpdated, bool orderFieldsUpdated, OrderChangeLogEntry lastChange, InterpreterLocation interpreterLocationFromAnswer, string interpreterLocationText)
+        private RequestUpdatedModel GetRequestUpdatedModel(Order order, bool attachmentUpdated, bool orderFieldsUpdated, OrderChangeLogEntry lastChange, InterpreterLocation interpreterLocationFromAnswer, string interpreterLocationText)
         {
             RequestUpdatedModel updatedModel = new RequestUpdatedModel { OrderNumber = order.OrderNumber };
             updatedModel.RequestUpdateType = (orderFieldsUpdated && attachmentUpdated) ? OrderChangeLogType.AttachmentAndOrderInformationFields.GetCustomName() : attachmentUpdated ? OrderChangeLogType.Attachment.GetCustomName() : OrderChangeLogType.OrderInformationFields.GetCustomName();
 
-            var attachments = attachmentUpdated ? order.Attachments.Select(a => new AttachmentInformationModel
+            var attachments = attachmentUpdated ? _dbContext.Attachments.GetAttachmentsForOrderAndGroup(order.OrderId, order.OrderGroupId).Select(a => new AttachmentInformationModel
             {
                 AttachmentId = a.AttachmentId,
-                FileName = a.Attachment.FileName
-            })
-            .Union(order.Group?.Attachments
-            .Where(oa => !oa.Attachment.OrderAttachmentHistoryEntries.Any(h => h.OrderGroupAttachmentRemoved && h.OrderChangeLogEntry.OrderId == order.OrderId))
-            .Select(a => new AttachmentInformationModel
-            {
-                AttachmentId = a.AttachmentId,
-                FileName = a.Attachment.FileName
-            }) ?? Enumerable.Empty<AttachmentInformationModel>()).ToList() : null;
+                FileName = a.FileName
+            }) : null;
 
             if (orderFieldsUpdated)
             {

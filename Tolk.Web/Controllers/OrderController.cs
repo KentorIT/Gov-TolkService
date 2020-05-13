@@ -278,7 +278,7 @@ namespace Tolk.Web.Controllers
                             order.Attachments = await _dbContext.OrderAttachments.GetAttachmentsForOrder(model.OrderId).ToListAsync();
                             if (order.OrderGroupId.HasValue)
                             {
-                                order.Group.Attachments = await _dbContext.OrderGroupAttachments.GetAttachmentsForOrderGroup(order.OrderGroupId.Value).ToListAsync();
+                                order.Group.Attachments = await _dbContext.OrderGroupAttachments.GetAttachmentsForOrderGroup(order.OrderGroupId.Value, order.OrderId).ToListAsync();
                             }
                         }
                         //check if contactperson is changed
@@ -330,11 +330,6 @@ namespace Tolk.Web.Controllers
                         order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
                         //Note: This retrieves the locations to the order object as well...
                         _ = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(model.OrderId).ToListAsync();
-                        order.Attachments = await _dbContext.OrderAttachments.GetAttachmentsForOrder(model.OrderId).ToListAsync();
-                        if (order.OrderGroupId.HasValue)
-                        {
-                            order.Group.Attachments = await _dbContext.OrderGroupAttachments.GetAttachmentsForOrderGroup(order.OrderGroupId.Value).ToListAsync();
-                        }
                         if (orderFieldsUpdated || attachmentChanged)
                         {
                             _notificationService.OrderUpdated(order, attachmentChanged, orderFieldsUpdated);
