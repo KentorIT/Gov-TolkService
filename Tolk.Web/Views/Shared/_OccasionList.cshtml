@@ -37,9 +37,9 @@
                                 </td>
                                 <td>
                                     @occasion.Information
-                                    @if (!string.IsNullOrEmpty(occasion.MealBreakIncludedText))
+                                    @if (!string.IsNullOrEmpty(occasion.MealBreakTextToDisplay))
                                     {
-                                        <span class="small"><br />@(occasion.MealBreakIncludedText)</span>
+                                        <span class="small"><br />@(occasion.MealBreakTextToDisplay)</span>
                                     }
                                 </td>
                                 <td>

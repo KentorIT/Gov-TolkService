@@ -40,7 +40,7 @@
             <span class="important-info">Följande tolktaxa har använts för beräkning: @Model.PriceInformationToDisplay.PriceListTypeDescription. @Model.PriceInformationToDisplay.CompetencePriceDescription</span><br /><br />
             @if (Model.MealBreakIsNotDetucted)
             {
-                <span class="important-info">Beräknat preliminärt pris inkluderar inte avdrag för måltidspaus som ingår i uppdraget</span><br /><br />
+                <span class="important-info">Beräknat preliminärt pris inkluderar inte avdrag för måltidspaus som beräknas ingå i uppdraget</span><br /><br />
             }
             @foreach (var dpi in Model.PriceInformationToDisplay.SeparateSubTotal)
             {

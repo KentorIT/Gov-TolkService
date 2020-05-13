@@ -65,7 +65,6 @@ else
                         <thead>
                             <tr>
                                 <th>Tillfälle</th>
-                                <th>Måltidspaus ingår</th>
                                 <th></th>
                                 <th class="currency">Beräknat pris</th>
                                 <th data-sortable="false"></th>
@@ -77,9 +76,10 @@ else
                             <tr class="table-row">
                                 <td>
                                     @occasion.Information
-                                </td>
-                                <td>
-                                    @(occasion.MealBreakIncluded ? "Ja" : "Nej")
+                                    @if (!string.IsNullOrEmpty(occasion.MealBreakTextToDisplay))
+                                    {
+                                        <br /><span class="small"> @(occasion.MealBreakTextToDisplay)</span>
+                                    }
                                 </td>
                                 <td>
                                     @(occasion.ExtraInterpreter ? "Extra tolk" : "")
@@ -91,11 +91,11 @@ else
                                     <a class="table-price-toggle-price-info" href="#more-info">Visa</a>
                                 </td>
                             </tr>
-                                <tr class="table-price-row">
-                                    <td colspan="4">
-                                        @await Html.PartialAsync("_PriceTable", occasion.PriceInformationModel)
-                                    </td>
-                                </tr>
+                            <tr class="table-price-row">
+                                <td colspan="4">
+                                    @await Html.PartialAsync("_PriceTable", occasion.PriceInformationModel)
+                                </td>
+                            </tr>
                             }
                         </tbody>
                         <tfoot>
@@ -286,7 +286,7 @@ else
                         <div class="no-value-info">Inga filer har bifogats</div>
                     }
                 }
-                </div>
+            </div>
         }
     </div>
     <br />

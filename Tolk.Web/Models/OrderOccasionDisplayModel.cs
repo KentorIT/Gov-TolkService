@@ -42,7 +42,7 @@ namespace Tolk.Web.Models
 
         public PriceInformationModel PriceInformationModel { get; set; }
 
-        public string MealBreakIncludedText { get; set; }
+        public string MealBreakTextToDisplay => ((int)(OccasionEndDateTime - OccasionStartDateTime).TotalMinutes > 300) ? MealBreakIncluded.HasValue ? MealBreakIncluded.Value ? "Måltidspaus beräknas ingå" : "Måltidspaus beräknas inte ingå" : "Ej angivet om måltidspaus ingår" : null;
 
         internal static OrderOccasionDisplayModel GetModelFromOrder(Order order, PriceInformationModel priceInformationModel = null, Request request = null)
         {
@@ -57,7 +57,7 @@ namespace Tolk.Web.Models
                 ControllerName = request == null ? "Order" : "Request",
                 OrderStatus = order.Status,
                 RequestStatus = request?.Status,
-                MealBreakIncludedText = order.MealBreakTextToDisplay
+                MealBreakIncluded = order.MealBreakIncluded
             };
         }
     }

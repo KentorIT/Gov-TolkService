@@ -963,7 +963,7 @@ namespace Tolk.Web.Controllers
                 {
                     list.Add(occasion.OrderOccasionId.Value, order);
                 }
-                order.MealBreakIncluded = occasion.MealBreakIncluded && ((int)(occasion.OccasionEndDateTime - occasion.OccasionStartDateTime).TotalMinutes > 300);
+                order.MealBreakIncluded = occasion.MealBreakIncluded ?? false && ((int)(occasion.OccasionEndDateTime - occasion.OccasionStartDateTime).TotalMinutes > 300);
                 orders.Add(order);
             }
             return orders;
@@ -979,7 +979,7 @@ namespace Tolk.Web.Controllers
                 model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), isGroupOrder: true);
                 occasion.PriceInformationModel = new PriceInformationModel
                 {
-                    MealBreakIsNotDetucted = occasion.MealBreakIncluded,
+                    MealBreakIsNotDetucted = occasion.MealBreakIncluded ?? false,
                     Header = "Beräknat preliminärt pris",
                     PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType),
                     UseDisplayHideInfo = true,
@@ -1022,7 +1022,7 @@ namespace Tolk.Web.Controllers
             foreach (var order in _dbContext.Orders.Where(o => o.OrderGroupId == id).ToList())
             {
                 list.Add(OrderOccasionDisplayModel.GetModelFromOrder(order,
-                    PriceInformationModel.GetPriceinformationToDisplay(_dbContext.OrderPriceRows.GetPriceRowsForOrder(order.OrderId).ToList(), PriceInformationType.Order, order.MealBreakIncluded ?? false))
+                    PriceInformationModel.GetPriceinformationToDisplay(_dbContext.OrderPriceRows.GetPriceRowsForOrder(order.OrderId).ToList(), PriceInformationType.Order, initialCollapse: false, mealBreakIncluded: order.MealBreakIncluded ?? false))
                 );
             }
             return list;

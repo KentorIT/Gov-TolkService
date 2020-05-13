@@ -40,6 +40,10 @@
                                             </td>
                                             <td>
                                                 @occasion.Information
+                                                @if (!string.IsNullOrEmpty(occasion.MealBreakTextToDisplay))
+                                                {
+                                                    <br /><span class="small"> @(occasion.MealBreakTextToDisplay)</span>
+                                                }
                                             </td>
                                             <td>
                                                 @(occasion.ExtraInterpreter ? "Extra tolk" : "")

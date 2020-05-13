@@ -69,7 +69,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Extra tolk", Description = "Om det finns behov av två tolkar till samma tillfälle så kryssa i rutan Extra tolk. Detta innebär att arvode och förmedlingsavgift utgår för båda tolkarna för hela tillfället.")]
         public bool ExtraInterpreter { get; set; }
 
-        [Display(Name = "Måltidspaus ingår", Description = "Om det är ett längre uppdrag så kryssa i rutan om det ingår en måltidspaus.")]
+        [Display(Name = "Måltidspaus beräknas ingå", Description = "Kryssa i rutan om det är ett längre uppdrag över 5 timmar och det beräknas ingå en måltidspaus.")]
         public bool MealBreakIncluded { get; set; }
 
         [Display(Name = "Boka flera tillfällen med samma tolk", Description = "Om rutan kryssas i så går det att lägga till flera tillfällen. Det är tvingande för förmedlingen att tillsätta samma tolk för alla tillfällen. Detta innebär att arvode och förmedlingsavgift utgår för varje tillfälle. Fyll i ett fullständigt tillfälle för att kunna lägga till fler tillfällen.")]
