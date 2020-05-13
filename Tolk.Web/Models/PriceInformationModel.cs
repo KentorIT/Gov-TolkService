@@ -27,6 +27,9 @@ namespace Tolk.Web.Models
         public string Description { get; set; }
 
         public decimal ExpectedTravelCosts { get; set; }
+
+        public decimal TravelCosts { get; set; }
+
         public bool MealBreakIsNotDetucted { get; set; }
 
 #warning Detta är inte ok, tror jag...
@@ -88,6 +91,7 @@ namespace Tolk.Web.Models
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList()),
                 Header = useDisplayHideInfo ? "Pris enligt tidigare rekvisition" : string.Empty,
                 UseDisplayHideInfo = useDisplayHideInfo,
+                TravelCosts = requisition.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.Outlay)?.Price ?? 0,
             };
             pi.PriceInformationToDisplay.MealBreaks = mealBreakInformation;
 

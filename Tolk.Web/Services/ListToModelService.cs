@@ -160,6 +160,8 @@ namespace Tolk.Web.Services
             previousRequisition.PriceRows = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(previousRequisition.RequisitionId).ToListAsync();
             previousRequisition.MealBreaks = await _dbContext.MealBreaks.GetMealBreksForRequisition(previousRequisition.RequisitionId).ToListAsync();
             model.PreviousRequisitionView.ResultPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplayForRequisition(previousRequisition, false);
+            model.PreviousRequisitionView.RequestPriceInformationModel = model.RequestPriceInformationModel;
+
 
             model.RelatedRequisitions = requisitions
                 .OrderBy(r => r.CreatedAt)

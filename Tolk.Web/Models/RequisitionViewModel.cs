@@ -57,11 +57,9 @@ namespace Tolk.Web.Models
 
         public RequisitionViewModel PreviousRequisitionView { get; set; }
 
-        public override decimal ExpectedTravelCosts
-        {
-            get => ResultPriceInformationModel.ExpectedTravelCosts;
-            set => base.ExpectedTravelCosts = value;
-        }
+        public override decimal ExpectedTravelCosts => RequestPriceInformationModel.ExpectedTravelCosts;
+
+        public override decimal TotalTravelCosts => ResultPriceInformationModel.TravelCosts;
 
         public IEnumerable<int> RelatedRequisitions { get; set; }
 

@@ -31,6 +31,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public async Task RequestCreated(Request request) { }
 
         public async Task RequestGroupCreated(RequestGroup requestGroup) { }
+
+        public async Task RequisitionReviewed(Requisition requisition) { }
+
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
         public void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition) { }
@@ -99,8 +102,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void RequisitionCommented(Requisition requisition) { }
 
         public void RequisitionCreated(Requisition requisition) { }
-
-        public void RequisitionReviewed(Requisition requisition) { }
 
         public bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null) { return true; }
     }

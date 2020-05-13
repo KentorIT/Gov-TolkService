@@ -112,7 +112,7 @@ namespace Tolk.BusinessLogic.Services
             requisition.Review(_clock.SwedenNow, userId, impersonatorId);
             await _dbContext.SaveChangesAsync();
             _logger.LogDebug($"Requisition reviewed {requisition.RequisitionId}");
-            _notificationService.RequisitionReviewed(requisition);
+            await _notificationService.RequisitionReviewed(requisition);
         }
         public async Task ConfirmNoReview(Requisition requisition, int userId, int? impersonatorId)
         {

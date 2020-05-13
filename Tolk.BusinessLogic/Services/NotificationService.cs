@@ -803,7 +803,7 @@ Angiven reklamationsbeskrivning:
             );
         }
 
-        public void RequisitionReviewed(Requisition requisition)
+        public async Task RequisitionReviewed(Requisition requisition)
         {
             NullCheckHelper.ArgumentCheckNull(requisition, nameof(RequisitionReviewed), nameof(NotificationService));
             string orderNumber = requisition.Request.Order.OrderNumber;
@@ -811,7 +811,7 @@ Angiven reklamationsbeskrivning:
 
 Sammanställning:
 
-{GetRequisitionPriceInformationForMail(requisition)}";
+{await GetRequisitionPriceInformationForMail(requisition)}";
             var email = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionReviewed, NotificationChannel.Email);
             if (email != null)
             {
@@ -1280,24 +1280,18 @@ Sammanställning:
             _dbContext.SaveChanges();
         }
 
-        private string GetRequisitionPriceInformationForMail(Requisition requisition)
+        private async Task<string> GetRequisitionPriceInformationForMail(Requisition requisition)
         {
-            if (requisition.PriceRows == null)
+            //requisition.PriceRows = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisition.RequisitionId).ToListAsync();
+            DisplayPriceInformation priceInfo = PriceCalculationService.GetPriceInformationToDisplay(await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisition.RequisitionId).OfType<PriceRowBase>().ToListAsync());
+            string invoiceInfo = string.Empty;
+            invoiceInfo += $"Följande tolktaxa har använts för beräkning: {priceInfo.PriceListTypeDescription} {priceInfo.CompetencePriceDescription}\n\n";
+            foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
             {
-                return string.Empty;
+                invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToSwedishString("#,0.00 SEK")}\n\n";
             }
-            else
-            {
-                DisplayPriceInformation priceInfo = PriceCalculationService.GetPriceInformationToDisplay(requisition.PriceRows.OfType<PriceRowBase>().ToList());
-                string invoiceInfo = string.Empty;
-                invoiceInfo += $"Följande tolktaxa har använts för beräkning: {priceInfo.PriceListTypeDescription} {priceInfo.CompetencePriceDescription}\n\n";
-                foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
-                {
-                    invoiceInfo += $"{dpr.Description}:\n{dpr.Price.ToSwedishString("#,0.00 SEK")}\n\n";
-                }
-                invoiceInfo += $"Total summa: {priceInfo.TotalPrice.ToSwedishString("#,0.00 SEK")}";
-                return invoiceInfo;
-            }
+            invoiceInfo += $"Total summa: {priceInfo.TotalPrice.ToSwedishString("#,0.00 SEK")}";
+            return invoiceInfo;
         }
 
         private void NotifyBrokerOnAcceptedAnswer(Request request, string orderNumber)

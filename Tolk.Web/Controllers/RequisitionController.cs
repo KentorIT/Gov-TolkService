@@ -161,10 +161,6 @@ namespace Tolk.Web.Controllers
                     await _listToModelService.AddInformationFromListsToModel(model);
                     model.FileGroupKey = groupKey;
                     model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
-                    //beövs de nullas??
-                    model.Outlay = null;
-                    model.CarCompensation = null;
-                    model.PerDiem = null;
                     return View(model);
                 }
                 catch (InvalidOperationException)
