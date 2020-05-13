@@ -154,7 +154,7 @@ namespace Tolk.Web.Models
         public bool AllowOrderCancellation => UserCanCancelOrder && RequestCanBeCancelled && StartAtIsInFuture;
         public bool AllowReplacementOnCancel => AllowOrderCancellation && TimeIsValidForOrderReplacement && RequestCanBeReplaced;
 
-        public bool AllowDenial => AllowExceedingTravelCost != null && EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved;
+        public bool AllowDenial => UserCanAccept && AllowExceedingTravelCost != null && EnumHelper.Parse<AllowExceedingTravelCost>(AllowExceedingTravelCost.SelectedItem.Value) == BusinessLogic.Enums.AllowExceedingTravelCost.YesShouldBeApproved;
 
         public bool AllowSettingTravelCosts => AllowExceedingTravelCost != null && EnumHelper.Parse<TrueFalse>(AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes;
 
@@ -176,7 +176,7 @@ namespace Tolk.Web.Models
 
         public override bool AllowProcessing
         {
-            get => ActiveRequestIsAnswered && (AllowProcessingOrderBelongsToGroup || AllowProcessingOrderNotBelongsToGroup);
+            get => UserCanAccept && ActiveRequestIsAnswered && (AllowProcessingOrderBelongsToGroup || AllowProcessingOrderNotBelongsToGroup);
             set => base.AllowProcessing = value;
         }
 
