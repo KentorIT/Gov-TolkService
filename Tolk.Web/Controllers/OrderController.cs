@@ -458,7 +458,6 @@ namespace Tolk.Web.Controllers
             var firstOccasion = model.FirstOccasion;
             string warningOrderTimeInfo = string.Empty;
             model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
-#warning Här har jag inte fixat alla delar än...
             updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
             if (model.IsMultipleOrders)
             {
@@ -507,7 +506,6 @@ namespace Tolk.Web.Controllers
             if (order.Attachments?.Count > 0)
             {
                 List<FileModel> attachments = new List<FileModel>();
-#warning Check this, might be possible to improve
                 foreach (int attId in order.Attachments.Select(a => a.AttachmentId))
                 {
                     Attachment a = _dbContext.Attachments.Single(f => f.AttachmentId == attId);
