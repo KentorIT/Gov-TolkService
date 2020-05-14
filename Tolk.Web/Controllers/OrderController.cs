@@ -116,7 +116,6 @@ namespace Tolk.Web.Controllers
                     model.ActiveRequest = new RequestViewModel();
                 }
 #warning Detta görs både här och i RequestController. Det är sjukt cirkulärt...
-                model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
                 model.ActiveRequest.RegionName = model.RegionName;
                 model.ActiveRequest.TimeRange = model.TimeRange;
                 model.ActiveRequest.DisplayMealBreakIncluded = model.DisplayMealBreakIncludedText;
@@ -126,6 +125,7 @@ namespace Tolk.Web.Controllers
                 model.UseAttachments = CachedUseAttachentSetting(order.CustomerOrganisationId);
                 await _listToModelService.AddInformationFromListsToModel(model);
                 model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
+                model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
                 model.ActiveRequest.AttachmentListModel = model.RequestAttachmentListModel;
                 model.EventLog = new EventLogModel
                 {

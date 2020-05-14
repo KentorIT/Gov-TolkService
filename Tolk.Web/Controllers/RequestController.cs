@@ -580,7 +580,6 @@ namespace Tolk.Web.Controllers
             model.ViewedByUser = await _listToModelService.GetOtherViewer(request.RequestId, User.GetUserId());
 
             model.ActiveRequest.AllowInterpreterChange = request.CanChangeInterpreter(_clock.SwedenNow);
-            model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
             model.ActiveRequest.RegionName = model.RegionName;
             model.ActiveRequest.TimeRange = model.TimeRange;
             model.ActiveRequest.DisplayMealBreakIncluded = model.DisplayMealBreakIncludedText;
@@ -589,6 +588,7 @@ namespace Tolk.Web.Controllers
             //LISTS
             model.UseAttachments = true;
             await _listToModelService.AddInformationFromListsToModel(model);
+            model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
             model.ActiveRequest.AttachmentListModel = model.RequestAttachmentListModel;
             model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
             model.EventLog = new EventLogModel
