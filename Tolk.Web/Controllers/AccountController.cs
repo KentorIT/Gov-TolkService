@@ -289,7 +289,7 @@ namespace Tolk.Web.Controllers
                         //I want this to be done in two steps, first validating the user, then if valid user but inactive log out again, with proper message.
                         await _signInManager.SignOutAsync();
                         _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName);
-                        ModelState.AddModelError(nameof(model.UserName), "Användaren är inaktiverad. Kontakta din lokala administratör för mer information.");
+                        ModelState.AddModelError(nameof(model.UserName), "Ditt konto är tillfälligt inaktiverat, vänligen kontakta tolkar.avropa@kammarkollegiet.se för mer information.");
                         return View(model);
                     }
                     user.LastLoginAt = _clock.SwedenNow;
@@ -982,7 +982,7 @@ Om du har begärt att lösenordet ska återställas för '{user.FullName}' klick
 {resetLink}
 
 {(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
-Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
+Du kommer fortfarande få byta lösenord, men du behöver kontakta tolkar.avropa@kammarkollegiet.se för att få mer information om aktivering av konto.")}
 Om du inte har begärt en återställning av ditt lösenord kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
 supporten på {_options.Support.FirstLineEmail}.";
@@ -995,7 +995,7 @@ supporten på {_options.Support.FirstLineEmail}.";
 <div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink.AsUri(), "Återställ lösenord")}</div>
 
 <div>{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
-Du kommer fortfarande få byta lösenord, men du behöver kontakta din lokala administratör för att få användaren aktiverad.")}
+Du kommer fortfarande få byta lösenord, men du behöver kontakta tolkar.avropa@kammarkollegiet.se för att få mer information om aktivering av konto.")}
 Om du inte har begärt en återställning av ditt lösenord kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
 supporten på {_options.Support.FirstLineEmail}.</div>";
