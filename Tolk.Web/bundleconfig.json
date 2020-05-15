@@ -204,5 +204,11 @@
     "inputFiles": [
       "wwwroot/js/OrderRequirements.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/RequestView.min.js",
+    "inputFiles": [
+      "wwwroot/js/RequestView.js"
+    ]
   }
 ]

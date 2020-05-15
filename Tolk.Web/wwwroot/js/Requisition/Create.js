@@ -5,33 +5,6 @@ $('#CarCompensation').change(function () { validateControls(); });
 $('#SessionEndedAt').change(function () { validateControls(); });
 $('#SessionStartedAt').change(function () { validateControls(); });
 
-$(window).on("unload", function () {
-    var requestId = $("#RequestId").val();
-    if (requestId > 0) {
-        var $url = tolkBaseUrl + "Request/DeleteRequestView?requestId=" + requestId;
-        $.ajax({
-            type: "DELETE",
-            url: $url,
-            data: { __RequestVerificationToken: getAntiForgeryToken() },
-            dataType: "json",
-            async: false
-        });
-    }
-});
-
-$(document).ready(function () {
-    var requestId = $("#RequestId").val();
-    if (requestId > 0) {
-        var $url = tolkBaseUrl + "Request/AddRequestView?requestId=" + requestId;
-        $.ajax({
-            type: "POST",
-            url: $url,
-            data: { __RequestVerificationToken: getAntiForgeryToken() },
-            dataType: "json",
-        });
-    }
-});
-
 function validateControls() {
     var wasteTimeOk = checkWasteTime();
     var sessionEndOk = checkSessionEndedAt();

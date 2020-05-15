@@ -435,18 +435,15 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        [ValidateAntiForgeryToken]
-        [HttpDelete]
-        public JsonResult DeleteRequestView(int requestId)
+        public async Task DeleteRequestView(int id)
         {
             var requestViews = _dbContext.RequestViews
-                .Where(r => r.RequestId == requestId && r.ViewedBy == User.GetUserId());
+                .Where(r => r.RequestId == id && r.ViewedBy == User.GetUserId());
             if (requestViews.Any())
             {
                 _dbContext.RequestViews.RemoveRange(requestViews);
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
             }
-            return Json(new { success = true });
         }
 
         [ValidateAntiForgeryToken]

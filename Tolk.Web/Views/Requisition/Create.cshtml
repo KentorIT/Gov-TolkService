@@ -317,10 +317,12 @@
     <environment include="Development">
         <script src="~/js/Files.js" asp-append-version="true"></script>
         <script src="~/js/Requisition/Create.js" asp-append-version="true"></script>
+        <script src="~/js/RequestView.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
         <script src="~/js/Files.min.js" asp-append-version="true"></script>
         <script src="~/js/Requisition/Create.min.js" asp-append-version="true"></script>
+        <script src="~/js/RequestView.min.js" asp-append-version="true"></script>
     </environment>
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
