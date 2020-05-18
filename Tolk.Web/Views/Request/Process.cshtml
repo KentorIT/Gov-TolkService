@@ -131,7 +131,7 @@
                         </div>
                     }
                     <div class="row">
-                        @if (!Model.OrderViewModel.ReplacingOrderId.HasValue)
+                        @if (!(Model.OrderViewModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                         {
 
                             <div class="col-sm-4">
