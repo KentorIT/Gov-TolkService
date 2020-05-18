@@ -238,12 +238,12 @@ namespace Tolk.Web.Controllers
                         await _userService.LogUpdatePasswordAsync(user.Id, User.TryGetImpersonatorId());
                         return RedirectToAction(nameof(ResetPasswordConfirmation));
                     }
-                    AddErrors(result);
+                    AddErrors(result, nameof(model.CurrentPassword));
                 }
                 return View(model);
             }
-
-            return await SendPasswordResetLink(user);
+            await _userService.SendInviteAsync(user);
+            return RedirectToAction(nameof(ConfirmAccountLinkSent));
         }
 
         [HttpGet]
@@ -443,7 +443,7 @@ namespace Tolk.Web.Controllers
             {
                 // Lie a bit to not reveal difference between incorrect user id and
                 // incorrect/missing token, to avoid a user enumeration issue.
-                ModelState.AddModelError(string.Empty, _identityErrorDescriber.InvalidToken().Description);
+                ModelState.AddModelError(nameof(model.ConfirmPassword), _identityErrorDescriber.InvalidToken().Description);
             }
             else
             {
@@ -461,7 +461,7 @@ namespace Tolk.Web.Controllers
                     }
                     return RedirectToAction(nameof(ResetPasswordConfirmation));
                 }
-                AddErrors(result);
+                AddErrors(result, nameof(model.ConfirmPassword));
             }
             return View();
         }
@@ -1022,11 +1022,11 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             return RedirectToAction(nameof(HomeController.Index), "Home", new { Message = "För att slutföra bytet av e-postadress, klicka på den länk som skickats till den angivna e-postadressen." });
         }
 
-        private void AddErrors(IdentityResult result)
+        private void AddErrors(IdentityResult result, string controlKey = "")
         {
             foreach (var error in result.Errors)
             {
-                ModelState.AddModelError(string.Empty, error.Description);
+                ModelState.AddModelError(controlKey, error.Description);
             }
         }
 
