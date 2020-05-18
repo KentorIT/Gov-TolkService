@@ -43,6 +43,7 @@ namespace Tolk.BusinessLogic.Entities
         {
             Interpreter = originalRequest.Interpreter;
             CompetenceLevel = originalRequest.CompetenceLevel;
+            InterpreterCompetenceVerificationResultOnAssign = originalRequest.InterpreterCompetenceVerificationResultOnAssign;
         }
 
         #endregion
