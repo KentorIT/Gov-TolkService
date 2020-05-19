@@ -1,4 +1,6 @@
-﻿Ska kolla unika e-post enligt incheckat script - körs med fördel kvällen innan
+﻿Version 1.6.1 - Kör ett uppdateringsscript för prisrader på automatgenererade rekvistioner - byt pristyp från travel till outlay (incheckat script)
+
+Ska kolla unika e-post enligt incheckat script - körs med fördel kvällen innan
 
 Höj loggningsnivå på EF-loggningen (fundera på om det ska vara påslaget ett tag i början om vi lyft till 3.1) under "Logging":
  "Microsoft.EntityFrameworkCore": "Warning"

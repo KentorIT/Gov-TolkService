@@ -471,7 +471,7 @@ namespace Tolk.BusinessLogic.Services
             var mealbreaks = (createFullCompensationRequisition && (request.Order.MealBreakIncluded ?? false)) ? new List<MealBreak> { new MealBreak { StartAt = request.Order.StartAt.AddHours(2).ToDateTimeOffsetSweden(), EndAt = request.Order.StartAt.AddHours(3).ToDateTimeOffsetSweden() } } : null;
 
             //if mealbreaks and full compensation we must get correct prices with mealbreaks reducted (else they will be added in Request.Cancel)
-            var priceInformation = (createFullCompensationRequisition && mealbreaks != null) ? _priceCalculationService.GetPricesRequisition(
+            var priceInformation = (request.Status == RequestStatus.Approved && createFullCompensationRequisition && mealbreaks != null) ? _priceCalculationService.GetPricesRequisition(
                 request.Order.StartAt,
                 request.Order.EndAt,
                 request.Order.StartAt,
@@ -483,7 +483,7 @@ namespace Tolk.BusinessLogic.Services
                 null,
                 null,
                 request.PriceRows.OfType<PriceRowBase>(),
-                null,
+                request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price,
                 null,
                 request.Order.CreatedAt,
                 mealbreaks

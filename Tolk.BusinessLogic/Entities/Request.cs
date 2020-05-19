@@ -651,7 +651,7 @@ namespace Tolk.BusinessLogic.Entities
                 {
                     StartAt = p.StartAt,
                     EndAt = p.EndAt,
-                    PriceRowType = p.PriceRowType,
+                    PriceRowType = p.PriceRowType == PriceRowType.TravelCost ? PriceRowType.Outlay : p.PriceRowType,
                     PriceListRowId = p.PriceListRowId,
                     Price = p.Price,
                     Quantity = p.Quantity,
