@@ -60,13 +60,13 @@ namespace Tolk.Web.Services
                     {
                         LatestComplaintId = r.Complaints.Max(c => (int?)c.ComplaintId),
                         LatestRequisitionId = r.Requisitions.Max(req => (int?)req.RequisitionId),
-                        HasActiveRequests = r.Requisitions.Any(req => req.Status == RequisitionStatus.Reviewed || req.Status == RequisitionStatus.Created),
+                        HasActiveRequisitions = r.Requisitions.Any(req => req.Status == RequisitionStatus.Reviewed || req.Status == RequisitionStatus.Created),
                         HasComplaints = r.Complaints.Any(),
                     }).SingleAsync();
                 model.HasComplaints = requestChecks.HasComplaints;
                 model.ComplaintId = requestChecks.LatestComplaintId;
                 model.RequisitionId = requestChecks.LatestRequisitionId;
-                model.HasActiveRequests = requestChecks.HasActiveRequests;
+                model.HasActiveRequisitions = requestChecks.HasActiveRequisitions;
                 model.ActiveRequest.RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(model.RequestId.Value));
 #warning om roll skickas med så borde man bara göra nedan för broker 
                 //just for broker 

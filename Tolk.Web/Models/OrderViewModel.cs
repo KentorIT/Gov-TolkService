@@ -149,7 +149,7 @@ namespace Tolk.Web.Models
         public bool HasResponseNotAnsweredByCreatorBrokerConfirmation { get; set; } = true;
         public bool HasCancelledByCreatorWhenApprovedConfirmation { get; set; } = true;
         public bool HasComplaints { get; set; } = true;
-        public bool HasActiveRequests { get; set; } = true;
+        public bool HasActiveRequisitions { get; set; } = true;
 
         public bool AllowOrderCancellation => UserCanCancelOrder && RequestCanBeCancelled && StartAtIsInFuture;
         public bool AllowReplacementOnCancel => AllowOrderCancellation && TimeIsValidForOrderReplacement && RequestCanBeReplaced;
@@ -162,7 +162,7 @@ namespace Tolk.Web.Models
 
         public bool AllowUpdate => OrderUpdateIsEnabled && Status == OrderStatus.ResponseAccepted && StartAtIsInFuture && UserCanEdit;
 
-        public bool AllowRequisitionRegistration => RequestIsApprovedOrDelivered && UserCanCanCreateRequisition && !HasActiveRequests && !StartAtIsInFuture;
+        public bool AllowRequisitionRegistration => RequestIsApprovedOrDelivered && UserCanCanCreateRequisition && !HasActiveRequisitions && !StartAtIsInFuture;
 
         public bool AllowConfirmNoRequisition => UserCanCanCreateRequisition && RequestStatus == BusinessLogic.Enums.RequestStatus.Approved && !RequisitionId.HasValue && !StartAtIsInFuture && !HasNoRequisitionConfirmation;
 
