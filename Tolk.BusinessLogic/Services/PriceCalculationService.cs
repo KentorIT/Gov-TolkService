@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Data;
@@ -15,20 +12,17 @@ namespace Tolk.BusinessLogic.Services
     public class PriceCalculationService
     {
         private readonly TolkDbContext _dbContext;
-        private readonly TolkOptions _options;
         private readonly CacheService _cacheService;
         private readonly DateCalculationService _dateCalculationService;
 
 
         public PriceCalculationService(TolkDbContext dbContext,
             DateCalculationService dateCalculationService,
-            IOptions<TolkOptions> options,
             CacheService cacheService
             )
         {
             _dbContext = dbContext;
             _dateCalculationService = dateCalculationService;
-            _options = options?.Value;
             _cacheService = cacheService;
         }
 

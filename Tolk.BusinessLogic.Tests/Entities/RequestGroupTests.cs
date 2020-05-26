@@ -9,13 +9,11 @@ namespace Tolk.BusinessLogic.Tests.Entities
 {
     public class RequestGroupTests
     {
-        private readonly InterpreterBroker MockInterpreter;
         private readonly OrderGroup[] MockOrderGroups;
 
         public RequestGroupTests()
         {
             MockOrderGroups = MockEntities.MockOrderGroups(MockEntities.MockLanguages, MockEntities.MockRankings, MockEntities.MockCustomerUsers(MockEntities.MockCustomers));
-            MockInterpreter = new InterpreterBroker("first", "last", 15, "a@a.at", "12345", "ID-335");
         }
 
         [Fact]
