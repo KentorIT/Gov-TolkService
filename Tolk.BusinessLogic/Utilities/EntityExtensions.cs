@@ -818,7 +818,8 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.OrderGroup).ThenInclude(og => og.Region)
                 .Include(r => r.OrderGroup).ThenInclude(og => og.Language)
                 .Include(r => r.OrderGroup).ThenInclude(og => og.CustomerUnit)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker);
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Where(r => r.OrderGroupId == id);
 
         public static IQueryable<OrderGroupCompetenceRequirement> GetOrderedCompetenceRequirementsForOrderGroup(this IQueryable<OrderGroupCompetenceRequirement> requirements, int id)
             => requirements.Where(o => o.OrderGroupId == id);
