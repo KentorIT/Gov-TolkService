@@ -22,11 +22,10 @@ namespace Tolk.Web.Services
             _dbContext = dbContext;
         }
 
-#warning man borde skicka med vilken roll man har, för alla delar av rättighetskollarna skall bara göras per roll, det finns ju sys och app-admins också, och de får ju inte göra någonting...
         internal async Task<OrderViewModel> AddInformationFromListsToModel(OrderViewModel model)
         {
             int id = model.OrderId.Value;
-            //LISTS
+            //Lists
             var orderStatusConfirmations = await _dbContext.OrderStatusConfirmation.GetStatusConfirmationsForOrder(id).ToListAsync();
             model.HasNoBrokerAcceptedConfirmation = orderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
             model.HasResponseNotAnsweredByCreatorConfirmation = orderStatusConfirmations.Any(os => os.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator);
@@ -42,7 +41,6 @@ namespace Tolk.Web.Services
             model.OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.OrderPriceRows.GetPriceRowsForOrder(id).ToListAsync(), PriceInformationType.Order, mealBreakIncluded: model.MealbreakIncluded);
 
             model.Dialect = model.OrderRequirements.SingleOrDefault(r => r.RequirementType == RequirementType.Dialect)?.RequirementDescription;
-#warning kanske borde man bara hämta vissa listor beroende på status och om tillfälle varit 
             if (model.RequestId.HasValue)
             {
                 var requestStatusConfirmations = await _dbContext.RequestStatusConfirmation.GetStatusConfirmationsForRequest(model.RequestId.Value).ToListAsync();
@@ -68,7 +66,6 @@ namespace Tolk.Web.Services
                 model.RequisitionId = requestChecks.LatestRequisitionId;
                 model.HasActiveRequisitions = requestChecks.HasActiveRequisitions;
                 model.ActiveRequest.RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(model.RequestId.Value));
-#warning om roll skickas med så borde man bara göra nedan för broker 
                 //just for broker 
                 var orderChanges = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntitesForOrder(id).Where(oc => oc.BrokerId == model.ActiveRequest.BrokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null).ToListAsync();
                 model.ConfirmedOrderChangeLogEntries = orderChanges.Select(oc => oc.OrderChangeLogEntryId).ToList();

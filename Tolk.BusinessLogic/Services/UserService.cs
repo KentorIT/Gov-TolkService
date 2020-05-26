@@ -72,7 +72,6 @@ namespace Tolk.BusinessLogic.Services
         public async Task SetTemporaryEmail(AspNetUser user, string newEmail, int updatedById, int? impersonatingCreatorId = null)
         {
             NullCheckHelper.ArgumentCheckNull(user, nameof(SetTemporaryEmail), nameof(UserService));
-#warning move include
             var emailUser = await _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).SingleAsync(u => u.Id == user.Id);
             var entry = emailUser.TemporaryChangedEmailEntry ?? new TemporaryChangedEmailEntry();
             entry.EmailAddress = newEmail;
@@ -186,7 +185,6 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public async Task LogOnUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatingUpdatedById = null)
         {
-#warning include-fest
             AspNetUser currentUserInformation = _dbContext.Users
                             .Include(u => u.Claims)
                             .Include(u => u.Roles)
@@ -219,7 +217,6 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public async Task LogNotificationSettingsUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
-#warning include-fest
             AspNetUser currentUserInformation = _dbContext.Users
                             .Include(u => u.NotificationSettings)
                             .SingleOrDefault(u => u.Id == userId);
@@ -241,7 +238,6 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         }
         public async Task LogDefaultSettingsUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
-#warning include-fest
             AspNetUser currentUserInformation = _dbContext.Users
                             .Include(u => u.DefaultSettings)
                             .Include(u => u.DefaultSettingOrderRequirements)
@@ -270,7 +266,6 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public async Task LogCustomerUnitUserUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
-#warning include-fest
             AspNetUser currentUserInformation = _dbContext.Users
                 .Include(u => u.CustomerUnits)
                 .SingleOrDefault(u => u.Id == userId);

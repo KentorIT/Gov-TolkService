@@ -101,7 +101,6 @@ namespace Tolk.Web.Controllers
                 model.UserCanAccept = (await _authorizationService.AuthorizeAsync(User, order, Policies.Accept)).Succeeded;
                 model.UserCanPrint = (await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded;
 
-#warning flytta till AddInformationFromListsToModel, och byt namn på både service och metod. till typ "AddAdditionalInformation" och connected information service eller så
                 model.OrderUpdateIsEnabled = _options.EnableOrderUpdate;
                 model.TimeIsValidForOrderReplacement = TimeIsValidForOrderReplacement(order.StartAt);
                 model.StartAtIsInFuture = order.StartAt > _clock.SwedenNow;
@@ -115,7 +114,6 @@ namespace Tolk.Web.Controllers
                 {
                     model.ActiveRequest = new RequestViewModel();
                 }
-#warning Detta görs både här och i RequestController. Det är sjukt cirkulärt...
                 model.ActiveRequest.RegionName = model.RegionName;
                 model.ActiveRequest.TimeRange = model.TimeRange;
                 model.ActiveRequest.DisplayMealBreakIncluded = model.DisplayMealBreakIncludedText;
@@ -140,7 +138,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-#warning Flytta hela kollen till servicen
         private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart)
         {
             var noOfDays = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(_clock.SwedenNow.DateTime, orderStart.DateTime);
@@ -154,7 +151,6 @@ namespace Tolk.Web.Controllers
 
             if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
             {
-#warning requesten behöver bara Order och Ranking.Broker, egentligen
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(replacingOrderId);
                 if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
                 {
@@ -173,13 +169,11 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(ReplaceOrderModel model)
         {
-#warning Gör en egen SaveReplaceOrderModel, som BARA innehåller det den behöver...
             if (ModelState.IsValid)
             {
                 Order order = await _dbContext.Orders.GetFullOrderById(model.ReplacingOrderId);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
                 {
-#warning requesten behöver bara Order, egentligen
                     var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                     if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
                     {
@@ -190,7 +184,6 @@ namespace Tolk.Web.Controllers
                             order.InterpreterLocations = new List<OrderInterpreterLocation>();
                             Order replacementOrder = new Order(order);
                             model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value, CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
-#warning Det är i denna som det finns en massa saker som behöver kollas!!!
                             await _orderService.ReplaceOrder(order, replacementOrder, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
                             await _dbContext.SaveChangesAsync();
                             trn.Commit();
@@ -216,7 +209,6 @@ namespace Tolk.Web.Controllers
                     .GetOrderedCompetenceRequirementsForOrder(id)
                     .Select(r => new { r.CompetenceLevel })
                     .ToListAsync();
-#warning gör en egen metod i _list som fyller de listor som hör till base! Det skulle ta bort massor av dupliceringar, utan att behöva få onödiga listningar...
                 model.OrderRequirements = await OrderRequirementModel.GetFromList(_dbContext.OrderRequirements.GetRequirementsForOrder(id));
                 model.RequestedCompetenceLevelFirst = competenceRequirements.FirstOrDefault()?.CompetenceLevel;
                 model.RequestedCompetenceLevelSecond = competenceRequirements.Count > 1 ? competenceRequirements[1]?.CompetenceLevel : null;
@@ -303,7 +295,6 @@ namespace Tolk.Web.Controllers
                         }
                         if (orderFieldsUpdated || attachmentChanged)
                         {
-#warning flytta till orderService, kanske hela valideringsdelen också...
                             if (order.OrderChangeLogEntries == null)
                             {
                                 order.OrderChangeLogEntries = new List<OrderChangeLogEntry>();
@@ -378,7 +369,6 @@ namespace Tolk.Web.Controllers
             }
             DateTime nextPanicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
 
-#warning include-fest
             var user = await _userManager.Users
                 .Include(u => u.DefaultSettings)
                 .Include(u => u.DefaultSettingOrderRequirements)
@@ -698,7 +688,6 @@ namespace Tolk.Web.Controllers
                     _logger.LogWarning("Wrong status when trying to Approve request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction(nameof(View), new { id = request.OrderId });
                 }
-#warning At the bottom of this there is a check agains the other requests on the order, but they are not(and should not be) included so that check is never false.
                 _orderService.ApproveRequestAnswer(request, User.GetUserId(), User.TryGetImpersonatorId());
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = request.OrderId });
@@ -826,7 +815,6 @@ namespace Tolk.Web.Controllers
                     return RedirectToAction("Index", "Home", new { ErrorMessage = "Det går inte att underkänna denna tillsättning" });
                 }
                 var requestWillTerminate = request.TerminateOnDenial;
-#warning borde vara en try catch här, i alla fall för invalid
                 await _orderService.DenyRequestAnswer(request, User.GetUserId(), User.TryGetImpersonatorId(), model.DenyMessage);
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(View), new { id = request.OrderId, message = requestWillTerminate ? "Tillsättning är nu underkänd och bokningsförfrågan avslutad" : string.Empty });
@@ -864,7 +852,6 @@ namespace Tolk.Web.Controllers
 
         private void ChangeContactPerson(Order order, int? newContactPersonId)
         {
-#warning move to orderService!
             order.OrderChangeLogEntries = new List<OrderChangeLogEntry>();
             order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
                 User.TryGetImpersonatorId(), _dbContext.Users.SingleOrDefault(u => u.Id == newContactPersonId));

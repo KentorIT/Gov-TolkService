@@ -216,7 +216,6 @@ namespace Tolk.Web.Controllers
 
         private async Task<OrderGroup> GetOrderGroup(int id)
         {
-#warning include-fest
             return await _dbContext.OrderGroups
                 .Include(o => o.Language)
                 .Include(o => o.CompetenceRequirements)

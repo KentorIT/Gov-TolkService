@@ -32,7 +32,6 @@ namespace Tolk.Web.Models
 
         public bool MealBreakIsNotDetucted { get; set; }
 
-#warning Detta är inte ok, tror jag...
         internal static PriceInformationModel GetPriceinformationToDisplay(Order order, bool initialCollapse = true, bool alwaysUseOrderPriceRows = true)
         {
             if (order.PriceRows == null)

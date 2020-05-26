@@ -1704,7 +1704,6 @@ Sammanställning:
 
         private Request GetRequest(int id)
         {
-#warning include-fest
             return _dbContext.Requests
                 .Include(r => r.Ranking)
                 .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(o => o.Attachment)

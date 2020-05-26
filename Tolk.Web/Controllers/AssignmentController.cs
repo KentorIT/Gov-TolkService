@@ -36,7 +36,6 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> ListAssignments(IDataTablesRequest request)
         {
-#warning move include
             var model = new AssignmentFilterModel();
             await TryUpdateModelAsync(model);
             var requests = _dbContext.Requests
@@ -75,7 +74,6 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id)
         {
-#warning include-fest
             var request = _dbContext.Requests
                     .Include(r => r.PriceRows)
                     .Include(r => r.Requisitions)

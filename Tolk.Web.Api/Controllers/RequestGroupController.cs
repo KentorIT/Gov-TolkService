@@ -72,7 +72,6 @@ namespace Tolk.Web.Api.Controllers
                 }
 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-#warning include-fest
                 var requestGroup = await _dbContext.RequestGroups
                     .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
@@ -192,7 +191,6 @@ namespace Tolk.Web.Api.Controllers
                 var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-#warning include-fest
                 var requestGroup = await _dbContext.RequestGroups
                     .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
@@ -319,7 +317,6 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
 
-#warning include-fest
                 var requestGroup = await _dbContext.RequestGroups
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
@@ -360,7 +357,6 @@ namespace Tolk.Web.Api.Controllers
             try
             {
                 var brokerId = User.TryGetBrokerId().Value;
-#warning include-fest
                 var orderGroup = _dbContext.OrderGroups
                     .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
                     .SingleOrDefault(o => o.OrderGroupNumber == orderGroupNumber &&
@@ -394,7 +390,6 @@ namespace Tolk.Web.Api.Controllers
 
         private async Task<RequestGroup> GetConfirmedRequestGroup(string orderGroupNumber, int brokerId, IEnumerable<RequestStatus> expectedStatuses)
         {
-#warning include-fest
             var requestGroup = await _dbContext.RequestGroups
                 .Include(rg => rg.Ranking)
                 .Include(rg => rg.StatusConfirmations)

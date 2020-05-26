@@ -117,8 +117,6 @@ namespace Tolk.Web.Controllers
         [HttpGet]
         public async Task<ActionResult> Download(int id)
         {
-#warning include-fest
-#warning behövs vrerkligen alla dessa includes
             var attachment = await _dbContext.Attachments
                 .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
                 .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
@@ -141,7 +139,6 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> Delete(int id, Guid groupKey)
         {
-#warning include-fest
             var attachment = await _dbContext.Attachments
                 .Include(a => a.TemporaryAttachmentGroup)
                 .Include(a => a.Requisitions)
@@ -151,7 +148,7 @@ namespace Tolk.Web.Controllers
                 .Include(a => a.OrderGroups)
                 .SingleOrDefaultAsync(a => a.AttachmentId == id && a.TemporaryAttachmentGroup.TemporaryAttachmentGroupKey == groupKey);
             //Add check for if the user is allowed to remove the attachment
-            // Check if the file is not connected to any requisitions or requests. If it is, just remove the temp-connection.
+            //Check if the file is not connected to any requisitions or requests. If it is, just remove the temp-connection.
             if (attachment != null)
             {
                 if (attachment.Requisitions.Any() || attachment.Requests.Any() || attachment.RequestGroups.Any() || attachment.Orders.Any() || attachment.OrderGroups.Any())

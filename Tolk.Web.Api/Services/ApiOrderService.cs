@@ -44,7 +44,6 @@ namespace Tolk.Web.Api.Services
 
         public async Task<OrderGroup> GetOrderGroupAsync(string orderGroupNumber, int brokerId)
         {
-#warning include-fest
             var orderGroup = await _dbContext.OrderGroups
                 .Include(o => o.RequestGroups).ThenInclude(r => r.Ranking)
                 .SingleOrDefaultAsync(o => o.OrderGroupNumber == orderGroupNumber &&
@@ -64,7 +63,6 @@ namespace Tolk.Web.Api.Services
             {
                 return null;
             }
-#warning Det small här för mig!!!!!
             request.RequirementAnswers = _dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId).ToList();
             request.PriceRows = _dbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToList();
             request.Order.Requirements = _dbContext.OrderRequirements.GetRequirementsForOrder(request.OrderId).ToList();
@@ -167,7 +165,6 @@ namespace Tolk.Web.Api.Services
                 return null;
             }
             OrderGroup orderGroup = requestGroup.OrderGroup;
-#warning move include
             var occasions = _dbContext.Requests
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.Interpreter)

@@ -21,7 +21,6 @@ namespace Tolk.BusinessLogic.Services
             {
                 throw new ArgumentException("Date must be a pure date, without time component", nameof(date));
             }
-#warning include-fest
             return _tolkDbContext.Rankings.Include(r => r.Quarantines)
                 .Where(r => r.RegionId == regionId && r.FirstValidDate <= date && r.LastValidDate >= date);
         }

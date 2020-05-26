@@ -61,7 +61,6 @@ namespace Tolk.Web.Api.Services
             }
             _logger.LogInformation("User retrieved using user/apiKey");
             //Need a lot more security here
-#warning include-fest
             var user = await _dbContext.Users
                 .Include(u => u.Claims)
                 .SingleOrDefaultAsync(u =>

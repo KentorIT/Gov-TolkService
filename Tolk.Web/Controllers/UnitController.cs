@@ -152,7 +152,6 @@ namespace Tolk.Web.Controllers
 
         private CustomerUnit GetUnitToHandle(int id)
         {
-#warning move include
             return _dbContext.CustomerUnits
                .Include(s => s.CreatedByUser)
                .Include(s => s.InactivatedByUser)
@@ -164,13 +163,11 @@ namespace Tolk.Web.Controllers
         {
             var unit = _dbContext.CustomerUnits.SingleOrDefault(cu => cu.CustomerUnitId == id);
 
-#warning include-fest
             var unitUsersId = _dbContext.CustomerUnits
                 .Include(cu => cu.CustomerUnitUsers).ThenInclude(cuu => cuu.User)
                 .Where(cu => cu.CustomerUnitId == id).Single().CustomerUnitUsers
                 .Select(cuu => cuu.User.Id);
 
-#warning include-fest
             var users = _dbContext.Users.Include(u => u.CustomerUnits).Where(u => unitUsersId.Contains(u.Id)).Select(u => new DynamicUserListItemModel
             {
                 Id = u.Id,
@@ -243,7 +240,6 @@ namespace Tolk.Web.Controllers
 
         private IEnumerable<int> GetUnitUsersIds(int customerUnitId)
         {
-#warning include-fest
             return _dbContext.CustomerUnits
                 .Include(cu => cu.CustomerUnitUsers).ThenInclude(cuu => cuu.User)
                 .Where(cu => cu.CustomerUnitId == customerUnitId).Single().CustomerUnitUsers
@@ -252,7 +248,6 @@ namespace Tolk.Web.Controllers
 
         private IEnumerable<DynamicUserListItemModel> GetUnitUsersListItems(IEnumerable<int> UnitUsersIds, int customerUnitId)
         {
-#warning include-fest
             return _dbContext.Users.Include(u => u.CustomerUnits).Where(u => UnitUsersIds.Contains(u.Id)).Select(u => new DynamicUserListItemModel
             {
                 Id = u.Id,

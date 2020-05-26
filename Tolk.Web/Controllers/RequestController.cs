@@ -476,7 +476,6 @@ namespace Tolk.Web.Controllers
 
         private async Task<Request> GetRequestForEventlog(int requestId)
         {
-#warning include-fest
             return await _dbContext.Requests
                 .Include(r => r.Order).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
                 .Include(r => r.Order).ThenInclude(r => r.Requirements)

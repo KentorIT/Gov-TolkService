@@ -433,7 +433,6 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)
         {
-#warning detta KAN ge konstig sql...
             return requests.GetRequestOrders().OrderBy(o => o.StartAt).First().StartAt;
         }
 
@@ -467,7 +466,6 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static PriceInformationModel GetPriceInformationModel(this IEnumerable<PriceRowBase> priceRows, string competenceLevel, decimal brokerFee)
         {
-#warning detta KAN ge konstig sql
             return new PriceInformationModel
             {
                 PriceCalculatedFromCompetenceLevel = competenceLevel,

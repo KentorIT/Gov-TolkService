@@ -445,7 +445,6 @@ namespace Tolk.BusinessLogic.Services
         public async Task SendEmailReminders()
         {
             _logger.LogInformation("Start Sending Reminder Emails");
-#warning move includes
             List<Request> notAcceptedRequests = await _tolkDbContext.Requests
                  .Include(req => req.Order)
                     .ThenInclude(order => order.CreatedByUser)
