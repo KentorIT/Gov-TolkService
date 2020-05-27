@@ -91,7 +91,7 @@ namespace Tolk.Web.Controllers
             {
                 if (!requestGroup.CanApprove)
                 {
-                    _logger.LogWarning("Wrong status when trying to Approve request group. Status: {requestGroup.Status}, RequestGroupId: {requestGroup.RequestGroupId}", requestGroup.Status, requestGroup.RequestGroupId);
+                    _logger.LogError("Wrong status when trying to Approve request group. Status: {requestGroup.Status}, RequestGroupId: {requestGroup.RequestGroupId}", requestGroup.Status, requestGroup.RequestGroupId);
                     return RedirectToAction(nameof(View), new { id = requestGroup.OrderGroupId });
                 }
                 await _orderService.ApproveRequestGroupAnswer(requestGroup, User.GetUserId(), User.TryGetImpersonatorId());
@@ -122,6 +122,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("Cancel failed for ordergroup, OrderGroupId: {model.OrderGroupId}, message {ex.Message}", model.OrderGroupId, ex.Message);
                     return RedirectToAction("Index", "Home", new { ErrorMessage = ex.Message });
                 }
             }
@@ -143,6 +144,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("ConfirmNoAnswer failed for ordergroup, OrderGroupId: {orderGroupId}, message {ex.Message}", orderGroupId, ex.Message);
                     return RedirectToAction("Index", "Home", new { ErrorMessage = ex.Message });
                 }
             }
@@ -164,6 +166,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("ConfirmResponseNotAnswered failed for ordergroup, OrderGroupId: {orderGroupId}, message {ex.Message}", orderGroupId, ex.Message);
                     return RedirectToAction("Index", "Home", new { ErrorMessage = ex.Message });
                 }
             }

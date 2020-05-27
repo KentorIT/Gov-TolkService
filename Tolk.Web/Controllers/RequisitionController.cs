@@ -165,7 +165,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException)
                 {
-                    _logger.LogWarning("Can't create requisition. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
+                    _logger.LogError("Can't create requisition. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction("Index", "Home", new { errorMessage = $"Det gick inte att registrera rekvisition för {request.Order.OrderNumber}, det kan bero på att det redan finns en rekvisition registrerad." });
                 }
             }
@@ -199,8 +199,9 @@ namespace Tolk.Web.Controllers
                             model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
                             model.TimeWasteIWHTime, model.InterpreterTaxCard.Value, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks, model.CarCompensation, model.PerDiem);
                     }
-                    catch (InvalidOperationException)
+                    catch (InvalidOperationException ex)
                     {
+                        _logger.LogError("Failed to create requisition for request {request.RequestId}, message {errorMessage}.", request.RequestId, ex.Message);
                         return RedirectToAction("Index", "Home", new { errorMessage = $"Det gick inte att registrera rekvisition för {request.Order.OrderNumber}, det kan bero på att det redan finns en rekvisition registrerad." });
                     }
                     return RedirectToAction("View", "Request", new { id = requisition.RequestId, tab = "requisition" });
@@ -227,7 +228,7 @@ namespace Tolk.Web.Controllers
                     }
                     catch (InvalidOperationException ex)
                     {
-                        _logger.LogWarning("{Message}, RequisitionId: {requisition.RequisitionId}", ex.Message, requisition.RequisitionId);
+                        _logger.LogError("Failed to review requisition, requisitionId: {requisition.RequisitionId}, message {Message}", requisition.RequisitionId, ex.Message);
                         return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, errormessage = ex.Message });
                     }
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });
@@ -254,7 +255,7 @@ namespace Tolk.Web.Controllers
                     }
                     catch (InvalidOperationException ex)
                     {
-                        _logger.LogWarning("{Message}, RequisitionId: {requisition.RequisitionId}", ex.Message, requisition.RequisitionId);
+                        _logger.LogError("ConfirmNoReview failed for requisition, RequisitionId: {requisition.RequisitionId}, message {Message}", requisition.RequisitionId, ex.Message);
                         return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, errormessage = ex.Message });
                     }
                     return RedirectToAction("Index", "Home", new { Message = "Rekvisitionen är nu arkiverad" });
@@ -281,7 +282,7 @@ namespace Tolk.Web.Controllers
                     }
                     catch (InvalidOperationException ex)
                     {
-                        _logger.LogWarning("{Message}, RequisitionId: {requisition.RequisitionId}", ex.Message, requisition.RequisitionId);
+                        _logger.LogError("Failed to comment requisition, RequisitionId: {requisition.RequisitionId}, message {Message}", requisition.RequisitionId, ex.Message);
                         return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, errormessage = ex.Message });
                     }
                     return RedirectToAction("View", "Order", new { id = requisition.Request.OrderId, tab = "requisition" });

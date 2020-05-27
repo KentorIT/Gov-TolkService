@@ -184,7 +184,7 @@ namespace Tolk.Web.Controllers
                     }
                     catch (InvalidOperationException e)
                     {
-                        _logger.LogInformation(e, e.Message);
+                        _logger.LogError("Process failed for requestgroup, RequestGroupId: {requestGroup.RequestGroupId}, message {e.Message}", requestGroup.RequestGroupId, e.Message);
                         return RedirectToAction("Index", "Home", new { errormessage = e.Message });
                     }
                 }
@@ -234,6 +234,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("ConfirmDenial failed for requestgroup, RequestGroupId: {requestGroupId}, message {ex.Message}", requestGroupId, ex.Message);
                     return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                 }
             }
@@ -254,6 +255,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("ConfirmNoAnswer failed for requestgroup, RequestGroupId: {requestGroupId}, message {ex.Message}", requestGroupId, ex.Message);
                     return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                 }
             }

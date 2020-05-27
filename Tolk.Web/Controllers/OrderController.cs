@@ -333,6 +333,7 @@ namespace Tolk.Web.Controllers
                     }
                     catch (InvalidOperationException ex)
                     {
+                        _logger.LogError("Update failed for order {order.OrderId}, message: {errorMessage}.", order.OrderId, ex.Message);
                         return RedirectToAction(nameof(View), new { id = order.OrderId, errorMessage = ex.Message });
                     }
                 }
@@ -728,7 +729,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
-                    _logger.LogWarning("Order {orderId} failed to cancel for user {userId} with error message {errorMessage}.", order.OrderId, User.GetUserId(), ex.Message);
+                    _logger.LogError("Order {orderId} failed to cancel for user {userId} with error message {errorMessage}.", order.OrderId, User.GetUserId(), ex.Message);
                     return RedirectToAction(nameof(View), new { id = order.OrderId, errorMessage = "Uppdraget kunde inte avbokas" });
                 }
 
@@ -773,6 +774,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("ConfirmNoAnswer failed for order {orderId}, message {errorMessage}.", orderId, ex.Message);
                     return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                 }
             }
@@ -795,6 +797,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("ConfirmResponseNotAnswered failed for order {orderId}, message {errorMessage}.", orderId, ex.Message);
                     return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                 }
             }
@@ -877,7 +880,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
-                    _logger.LogWarning("Order {orderId} user {userId} failed to set last Answer By with error message {errorMessage}.", orderId, User.GetUserId(), ex.Message);
+                    _logger.LogError("Order {orderId} user {userId} failed to set last Answer By with error message {errorMessage}.", orderId, User.GetUserId(), ex.Message);
                     return RedirectToAction("Index", "Home", new { errorMessage = "Denna bokning behöver inte få sista svarstid satt." });
                 }
                 return RedirectToAction("Index", "Home", new { message = $"Sista svarstid för bokning {order.OrderNumber} är satt" });

@@ -226,6 +226,7 @@ namespace Tolk.Web.Controllers
                                 }
                                 catch (InvalidOperationException ex)
                                 {
+                                    _logger.LogError("Change Interpreter for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
                                     return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                                 }
                             }
@@ -264,11 +265,12 @@ namespace Tolk.Web.Controllers
                     }
                     catch (ArgumentException ex)
                     {
-                        _logger.LogError("Accept for request {model.RequestId} failed. Message {ex.Message}", model.RequestId, ex.Message);
+                        _logger.LogError("Accept for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
                         return RedirectToAction("Index", "Home", new { errormessage = "Något gick fel i behandlingen av bokningsförfrågan" });
                     }
                     catch (InvalidOperationException ex)
                     {
+                        _logger.LogError("Accept for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
                         return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                     }
                     return RedirectToAction("Index", "Home", new { message = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Tolk har bytts ut för uppdraget" : "Svar har skickats" });
@@ -298,7 +300,7 @@ namespace Tolk.Web.Controllers
                     }
                     catch (InvalidOperationException ex)
                     {
-                        _logger.LogError("Cancel by broker Request {request.Status}, RequestId: {request.RequestId}. Exception {ex.Message}", request.Status, request.RequestId, ex.Message);
+                        _logger.LogError("Cancel by broker Request {request.Status}, RequestId: {request.RequestId}. Message: {ex.Message}", request.Status, request.RequestId, ex.Message);
                         return RedirectToAction("Index", "Home", new { errormessage = "Det gick inte att avboka uppdraget" });
                     }
                     return RedirectToAction("Index", "Home", new { message = "Avbokning har genomförts" });
@@ -312,10 +314,9 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Decline(RequestDeclineModel model)
         {
-
             var request = await _dbContext.Requests.GetRequestsWithContactsById(model.DeniedRequestId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanDecline)
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
                 try
                 {
@@ -323,6 +324,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("Decline for request {model.DeniedRequestId} failed. Message: {ex.Message}", model.DeniedRequestId, ex.Message);
                     return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                 }
                 _dbContext.SaveChanges();
@@ -346,6 +348,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("ConfirmCancellation for request {requestId} failed. Message: {ex.Message}", requestId, ex.Message);
                     return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                 }
             }
@@ -366,6 +369,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("ConfirmDenial for request {requestId} failed. Message: {ex.Message}", requestId, ex.Message);
                     return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                 }
             }
@@ -386,6 +390,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("ConfirmNoAnswer for request {requestId} failed. Message: {ex.Message}", requestId, ex.Message);
                     return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                 }
             }
@@ -406,6 +411,7 @@ namespace Tolk.Web.Controllers
                 }
                 catch (InvalidOperationException ex)
                 {
+                    _logger.LogError("ConfirmNoRequisition for request {requestId} failed. Message: {ex.Message}", requestId, ex.Message);
                     return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                 }
             }
@@ -427,6 +433,7 @@ namespace Tolk.Web.Controllers
                     }
                     catch (InvalidOperationException ex)
                     {
+                        _logger.LogError("ConfirmOrderChange for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
                         return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                     }
                 }

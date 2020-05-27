@@ -156,7 +156,7 @@ namespace Tolk.Web.Controllers
                     }
                     catch (InvalidOperationException ex)
                     {
-                        _logger.LogWarning("Wrong status or complaint exists when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
+                        _logger.LogError("Wrong status or complaint exists when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
                         return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                     }
                     return RedirectToAction("View", "Order", new { id = request.OrderId, tab = "complaint" });
