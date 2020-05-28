@@ -21,7 +21,7 @@ namespace Tolk.Web.Api.Authorization
                 Kind = OpenApiParameterKind.Header,
                 Type = NJsonSchema.JsonObjectType.String,
                 IsRequired = true,
-                Description = "WRITE STUFF IN SWEDISH HERE",
+                Description = "Tvingande fält",
             });
             return true;
         }
