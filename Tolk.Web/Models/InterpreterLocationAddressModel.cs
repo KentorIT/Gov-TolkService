@@ -15,7 +15,7 @@ namespace Tolk.Web.Models
 
         public int? Rank { get; set; }
 
-        [Display(Name = "Gatuadress")]
+        [Display(Name = "Gatuadress", Description = "Ange tydlig gatuadress så att tolken hittar. Mer information kan anges i fältet för övrig information om uppdraget.")]
         [ClientRequired]
         [SubItem]
         [StringLength(100)]
@@ -27,7 +27,7 @@ namespace Tolk.Web.Models
         [StringLength(100)]
         public string LocationCity { get; set; }
 
-        [Display(Name = "Kontaktinformation för tolktillfället", Description = "Ex. telefonnummer eller namn relevant för tillfället")]
+        [Display(Name = "Kontaktinformation för tolktillfället", Description = "Distans per video: Ange vilket system som ska användas för videomötet. Mer information om anslutning etc. kan anges i fältet för övrig information om uppdraget. Distans per telefon: Ange vilket telefonnummer tolken ska ringa upp på eller om ni istället själva vill ringa upp tolken.")]
         [ClientRequired]
         [StringLength(255)]
         [SubItem]

@@ -27,7 +27,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Inställelsesätt - tredje hand")]
         public InterpreterLocation? RankedInterpreterLocationThird { get; set; }
 
-        [Display(Name = "Gatuadress")]
+        [Display(Name = "Gatuadress", Description = "Ange tydlig gatuadress så att tolken hittar. Mer information kan anges i fältet för övrig information om uppdraget i samband med att bokning görs")]
         [StringLength(100)]
         [SubItem]
         [Placeholder("Er gatuadress...")]
@@ -39,7 +39,7 @@ namespace Tolk.Web.Models
         [Placeholder("Er ort...")]
         public string OnSiteLocationCity { get; set; }
 
-        [Display(Name = "Gatuadress")]
+        [Display(Name = "Gatuadress", Description = "Ange tydlig gatuadress så att tolken hittar. Mer information kan anges i fältet för övrig information om uppdraget i samband med att bokning görs")]
         [StringLength(100)]
         [SubItem]
         [Placeholder("Lokalens gatuadress...")]
@@ -51,13 +51,13 @@ namespace Tolk.Web.Models
         [Placeholder("Lokalens ort...")]
         public string OffSiteDesignatedLocationCity { get; set; }
 
-        [Display(Name = "Telefon")]
+        [Display(Name = "Telefon", Description = "Ange vilket telefonnummer tolken ska ringa upp på eller om ni istället själva vill ringa upp tolken")]
         [StringLength(255)]
         [SubItem]
         [Placeholder("Information om hur man når er...")]
         public string OffSitePhoneContactInformation { get; set; }
 
-        [Display(Name = "Video")]
+        [Display(Name = "Video", Description = "Ange vilket system som ska användas för videomötet. Mer information om anslutning etc. kan anges i fältet för övrig information om uppdraget i samband med att bokning görs")]
         [StringLength(255)]
         [SubItem]
         [Placeholder("Information om hur man når er...")]
