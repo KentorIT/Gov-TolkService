@@ -298,6 +298,11 @@ namespace Tolk.BusinessLogic.Utilities
 
         #region single entities by id
 
+        public async static Task<Attachment> GetNonConnectedAttachmentById(this IQueryable<Attachment> attachments, int id)
+            => await attachments.Include(a => a.TemporaryAttachmentGroup).Where(a => a.AttachmentId == id && 
+                !a.Orders.Any() && !a.Requests.Any() && !a.Requisitions.Any()
+                && !a.OrderGroups.Any() && !a.RequestGroups.Any()).SingleOrDefaultAsync();
+
         public static async Task<RequestGroup> GetRequestGroupById(this IQueryable<RequestGroup> groups, int id)
             => await groups
                 .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
@@ -487,6 +492,31 @@ namespace Tolk.BusinessLogic.Utilities
         => await outboundWebHookCalls.Include(c => c.RecipientUser).SingleOrDefaultAsync(c => c.OutboundWebHookCallId == id);
 
         #endregion
+
+        public async static Task<OrderAttachment> GetOrderAttachmentByAttachmentId(this IQueryable<OrderAttachment> attachments, int id)
+            => await attachments.Include(a => a.Attachment).Include(a => a.Order)
+            .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
+
+        public async static Task<RequestAttachment> GetRequestAttachmentByAttachmentId(this IQueryable<RequestAttachment> attachments, int id)
+         => await attachments.Include(a => a.Attachment).Include(a => a.Request).ThenInclude(r => r.Ranking)
+            .Include(a => a.Request).ThenInclude(r => r.Order)
+            .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
+
+        public async static Task<RequisitionAttachment> GetRequisitionAttachmentByAttachmentId(this IQueryable<RequisitionAttachment> attachments, int id)
+        => await attachments.Include(a => a.Attachment)
+            .Include(a => a.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
+            .Include(a => a.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
+            .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
+
+        public async static Task<OrderGroupAttachment> GetOrderGroupAttachmentByAttachmentId(this IQueryable<OrderGroupAttachment> attachments, int id)
+           => await attachments.Include(a => a.Attachment).Include(a => a.OrderGroup)
+            .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
+
+        public async static Task<RequestGroupAttachment> GetRequestGroupAttachmentByAttachmentId(this IQueryable<RequestGroupAttachment> attachments, int id)
+         => await attachments.Include(a => a.Attachment).Include(a => a.RequestGroup).ThenInclude(r => r.Ranking)
+            .Include(a => a.RequestGroup).ThenInclude(r => r.OrderGroup)
+            .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
+
 
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)
         {

@@ -82,7 +82,6 @@ namespace Tolk.Web.Controllers
                         });
                     }
 
-
                     using (Stream stream = file.OpenReadStream())
                     {
                         byte[] byteArray;
@@ -117,20 +116,64 @@ namespace Tolk.Web.Controllers
         [HttpGet]
         public async Task<ActionResult> Download(int id)
         {
-            var attachment = await _dbContext.Attachments
-                .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
-                .Include(a => a.Requests).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
-                .Include(a => a.Requisitions).ThenInclude(r => r.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
-                .Include(a => a.Requisitions).ThenInclude(r => r.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
-                .Include(a => a.Orders).ThenInclude(o => o.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking)
-                .Include(a => a.OrderGroups).ThenInclude(o => o.OrderGroup).ThenInclude(r => r.Orders)
-                .Include(a => a.OrderGroups).ThenInclude(o => o.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking)
-                .Include(a => a.RequestGroups).ThenInclude(o => o.RequestGroup).ThenInclude(r => r.Ranking)
-                .Include(a => a.RequestGroups).ThenInclude(o => o.RequestGroup).ThenInclude(o => o.OrderGroup).ThenInclude(r => r.Orders)
-                .SingleOrDefaultAsync(a => a.AttachmentId == id);
-            if (attachment != null && (await _authorizationService.AuthorizeAsync(User, attachment, Policies.View)).Succeeded)
+            var orderAttachment = await _dbContext.OrderAttachments.GetOrderAttachmentByAttachmentId(id);
+            Attachment attachment = orderAttachment?.Attachment;
+            if (attachment == null)
             {
-                return File(attachment.Blob, System.Net.Mime.MediaTypeNames.Application.Octet, attachment.FileName);
+                var requestAttachment = await _dbContext.RequestAttachments.GetRequestAttachmentByAttachmentId(id);
+                attachment = requestAttachment?.Attachment;
+                if (attachment == null)
+                {
+                    var orderGroupAttachment = await _dbContext.OrderGroupAttachments.GetOrderGroupAttachmentByAttachmentId(id);
+                    attachment = orderGroupAttachment?.Attachment;
+                    if (attachment == null)
+                    {
+                        var requestGroupAttachment = await _dbContext.RequestGroupAttachments.GetRequestGroupAttachmentByAttachmentId(id);
+                        attachment = requestGroupAttachment?.Attachment;
+                        if (attachment == null)
+                        {
+                            var requisitionAttachment = await _dbContext.RequisitionAttachments.GetRequisitionAttachmentByAttachmentId(id);
+                            attachment = requisitionAttachment?.Attachment;
+                            if (attachment != null && (await _authorizationService.AuthorizeAsync(User, requisitionAttachment, Policies.View)).Succeeded)
+                            {
+                                return File(attachment.Blob, System.Net.Mime.MediaTypeNames.Application.Octet, attachment.FileName);
+                            }
+                        }
+                        else if ((await _authorizationService.AuthorizeAsync(User, requestGroupAttachment, Policies.View)).Succeeded)
+                        {
+                            return File(attachment.Blob, System.Net.Mime.MediaTypeNames.Application.Octet, attachment.FileName);
+                        }
+                    }
+                    else
+                    {
+                        orderGroupAttachment.OrderGroup.RequestGroups = await _dbContext.RequestGroups.GetRequestGroupsForOrderGroup(orderGroupAttachment.OrderGroup.OrderGroupId).ToListAsync();
+                        if ((await _authorizationService.AuthorizeAsync(User, orderGroupAttachment, Policies.View)).Succeeded)
+                        {
+                            return File(attachment.Blob, System.Net.Mime.MediaTypeNames.Application.Octet, attachment.FileName);
+                        }
+                    }
+                }
+                else if ((await _authorizationService.AuthorizeAsync(User, requestAttachment, Policies.View)).Succeeded)
+                {
+                    return File(attachment.Blob, System.Net.Mime.MediaTypeNames.Application.Octet, attachment.FileName);
+                }
+            }
+            else
+            {
+                orderAttachment.Order.Requests = await _dbContext.Requests.GetRequestsForOrder(orderAttachment.Order.OrderId).ToListAsync();
+                if ((await _authorizationService.AuthorizeAsync(User, orderAttachment, Policies.View)).Succeeded)
+                {
+                    return File(attachment.Blob, System.Net.Mime.MediaTypeNames.Application.Octet, attachment.FileName);
+                }
+            }
+            //if attachment still is null it's not connected yet (it's just created in UI)
+            if (attachment == null)
+            {
+                attachment = await _dbContext.Attachments.GetNonConnectedAttachmentById(id);
+                if (attachment != null && (await _authorizationService.AuthorizeAsync(User, attachment, Policies.View)).Succeeded)
+                {
+                    return File(attachment.Blob, System.Net.Mime.MediaTypeNames.Application.Octet, attachment.FileName);
+                }
             }
             return Forbid();
         }
@@ -139,29 +182,16 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<JsonResult> Delete(int id, Guid groupKey)
         {
-            var attachment = await _dbContext.Attachments
-                .Include(a => a.TemporaryAttachmentGroup)
-                .Include(a => a.Requisitions)
-                .Include(a => a.Requests)
-                .Include(a => a.Orders)
-                .Include(a => a.RequestGroups)
-                .Include(a => a.OrderGroups)
-                .SingleOrDefaultAsync(a => a.AttachmentId == id && a.TemporaryAttachmentGroup.TemporaryAttachmentGroupKey == groupKey);
-            //Add check for if the user is allowed to remove the attachment
-            //Check if the file is not connected to any requisitions or requests. If it is, just remove the temp-connection.
-            if (attachment != null)
+            //this delete is just for deleting attachments added in UI before connected to orders, requests and requisitions 
+            var attachment = await _dbContext.Attachments.GetNonConnectedAttachmentById(id);
+            if (attachment != null && attachment.TemporaryAttachmentGroup.TemporaryAttachmentGroupKey == groupKey && (await _authorizationService.AuthorizeAsync(User, attachment, Policies.Delete)).Succeeded)
             {
-                if (attachment.Requisitions.Any() || attachment.Requests.Any() || attachment.RequestGroups.Any() || attachment.Orders.Any() || attachment.OrderGroups.Any())
-                {
-                    _dbContext.TemporaryAttachmentGroups.Remove(attachment.TemporaryAttachmentGroup);
-                }
-                else
-                {
-                    _dbContext.Attachments.Remove(attachment);
-                }
+                _dbContext.TemporaryAttachmentGroups.Remove(attachment.TemporaryAttachmentGroup);
+                _dbContext.Attachments.Remove(attachment);
                 await _dbContext.SaveChangesAsync();
             }
             return Json(new { success = true });
         }
+
     }
 }
