@@ -994,12 +994,12 @@ namespace Tolk.Web.Controllers
 
         private async Task<(AspNetUser, AspNetUser)> GetUsers()
         {
-            AspNetUser user = await _dbContext.Users.GetUser(User.GetUserId());
+            AspNetUser user = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.GetUserId());
             var impersonator = User.TryGetImpersonatorId();
             AspNetUser impersonatingUser = null;
             if (impersonator.HasValue)
             {
-                impersonatingUser = await _dbContext.Users.GetUser(impersonator.Value);
+                impersonatingUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(impersonator.Value);
             }
             return (user, impersonatingUser);
         }

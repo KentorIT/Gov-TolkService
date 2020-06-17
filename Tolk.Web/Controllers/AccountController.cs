@@ -67,13 +67,11 @@ namespace Tolk.Web.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             var customerOrganisationId = User.TryGetCustomerOrganisationId();
-            IEnumerable<CustomerUnit> customerUnits = null;
-            if (customerOrganisationId != null)
+
+            IEnumerable<CustomerUnitUser> customerUnitsUsers = null;
+            if (customerOrganisationId.HasValue)
             {
-                customerUnits = _dbContext.CustomerUnits
-                    .Include(cu => cu.CustomerUnitUsers)
-                    .Where(cu => cu.CustomerOrganisationId == customerOrganisationId
-                    && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == user.Id)).OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name);
+                customerUnitsUsers = await _dbContext.CustomerUnitUsers.GetCustomerUnitsWithCustomerUnitForUser(user.Id).ToListAsync();
             }
 
             var model = new AccountViewModel
@@ -86,11 +84,11 @@ namespace Tolk.Web.Controllers
                 PhoneWork = user.PhoneNumber ?? "-",
                 PhoneCellphone = user.PhoneNumberCellphone ?? "-",
                 AllowDefaultSettings = customerOrganisationId.HasValue,
-                CustomerUnits = customerUnits?.Select(cu => new Models.UnitUserModel
+                CustomerUnits = customerUnitsUsers?.Select(cu => new UnitUserModel
                 {
-                    IsActive = cu.IsActive,
-                    Name = cu.Name,
-                    IsLocalAdmin = cu.CustomerUnitUsers.SingleOrDefault(cuu => cuu.UserId == User.GetUserId()).IsLocalAdmin
+                    IsActive = cu.CustomerUnit.IsActive,
+                    Name = cu.CustomerUnit.Name,
+                    IsLocalAdmin = cu.IsLocalAdmin
                 })
             };
 
@@ -194,7 +192,6 @@ namespace Tolk.Web.Controllers
                     }
                     if (_userService.IsUniqueEmail(model.NewEmailAddress, user.Id))
                     {
-                        var emailUser = await _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).SingleAsync(u => u.Id == User.GetUserId());
                         await _userService.SetTemporaryEmail(user, model.NewEmailAddress, User.GetUserId(), User.TryGetImpersonatorId());
                         return await SendChangedEmailLink(user, model.NewEmailAddress);
                     }
@@ -404,7 +401,7 @@ namespace Tolk.Web.Controllers
             }
             using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
-                var user = _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).Single(u => u.Id == User.GetUserId());
+                var user = await _dbContext.Users.GetUserByIdWithTemporaryEmail(User.GetUserId());
                 var newEmail = user.TemporaryChangedEmailEntry?.EmailAddress;
                 if (!string.IsNullOrEmpty(newEmail))
                 {
@@ -642,9 +639,9 @@ namespace Tolk.Web.Controllers
                     using (var trn = await _dbContext.Database.BeginTransactionAsync())
                     {
                         var domain = model.Email.Split('@')[1];
-                        var organisation = await _dbContext.CustomerOrganisations
-                            .Include(c => c.SubCustomerOrganisations)
-                            .SingleOrDefaultAsync(c => c.EmailDomain == domain && c.ParentCustomerOrganisationId == null);
+
+                        var organisation = await _dbContext.CustomerOrganisations.GetParentOrganisationsByDomain(domain);
+                        organisation.SubCustomerOrganisations = await _dbContext.CustomerOrganisations.GetSubOrganisationsByParent(organisation.CustomerOrganisationId).ToListAsync();
 
                         if (organisation != null)
                         {
@@ -726,14 +723,14 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.Customer)]
         public async Task<ActionResult> ViewDefaultSettings(string message)
         {
-            return View(DefaultSettingsViewModel.GetModel(await UserForDefaultSettings, Region.Regions, message));
+            return View(DefaultSettingsViewModel.GetModel(await GetUserForDefaultSettings(), Region.Regions, message));
         }
 
 
         [Authorize(Policy = Policies.Customer)]
         public async Task<ActionResult> EditDefaultSettings(bool isFirstTimeUser = false)
         {
-            return View(DefaultSettingsModel.GetModel(await UserForDefaultSettings, isFirstTimeUser));
+            return View(DefaultSettingsModel.GetModel(await GetUserForDefaultSettings(), isFirstTimeUser));
         }
 
         [ValidateAntiForgeryToken]
@@ -810,10 +807,10 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-        private Task<AspNetUser> UserForDefaultSettings => _userManager.Users.Include(u => u.DefaultSettings)
-            .Include(u => u.DefaultSettingOrderRequirements)
-            .Include(u => u.CustomerUnits).ThenInclude(c => c.CustomerUnit)
-            .SingleOrDefaultAsync(u => u.Id == User.GetUserId());
+        private async Task<AspNetUser> GetUserForDefaultSettings()
+        {
+            return await _userService.GetUserWithDefaultSettings(User.GetUserId());
+        }
 
         private void UpdateDefaultSetting(AspNetUser user, DefaultSettingsType type, string value)
         {

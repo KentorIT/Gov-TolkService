@@ -128,13 +128,10 @@ namespace Tolk.Web.Controllers
             var user = await GetUserToHandle(id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded)
             {
-                IEnumerable<CustomerUnit> customerUnits = null;
+                IEnumerable<CustomerUnitUser> customerUnitsUsers = null;
                 if (user.CustomerOrganisationId.HasValue)
                 {
-                    customerUnits = _dbContext.CustomerUnits
-                        .Include(cu => cu.CustomerUnitUsers)
-                        .Where(cu => cu.CustomerOrganisationId == user.CustomerOrganisationId
-                        && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == user.Id)).OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name);
+                    customerUnitsUsers = await _dbContext.CustomerUnitUsers.GetCustomerUnitsWithCustomerUnitForUser(user.Id).ToListAsync();
                 }
                 var model = new UserModel
                 {
@@ -159,11 +156,11 @@ namespace Tolk.Web.Controllers
                     IsApplicationAdministrator = user.Roles.Any(r => r.RoleId == ApplicationAdministratorRoleId),
                     IsImpersonator = user.Roles.Any(r => r.RoleId == ImpersonatorRoleId),
                     IsSystemAdministrator = user.Roles.Any(r => r.RoleId == SystemAdministratorRoleId),
-                    UnitUsers = customerUnits?.Select(cu => new UnitUserModel
+                    UnitUsers = customerUnitsUsers?.Select(cu => new UnitUserModel
                     {
-                        IsActive = cu.IsActive,
-                        Name = cu.Name,
-                        IsLocalAdmin = cu.CustomerUnitUsers.SingleOrDefault(cuu => cuu.UserId == user.Id).IsLocalAdmin
+                        IsActive = cu.CustomerUnit.IsActive,
+                        Name = cu.CustomerUnit.Name,
+                        IsLocalAdmin = cu.IsLocalAdmin
                     }).ToList(),
                     UserPageMode = new UserPageMode
                     {
@@ -556,17 +553,16 @@ namespace Tolk.Web.Controllers
         }
 
         [Authorize(Roles = Roles.CentralAdministrator)]
-        public ActionResult EditNotificationSettings()
+        public async Task<ActionResult> EditNotificationSettings()
         {
             var brokerId = User.TryGetBrokerId();
-            if (brokerId != null)
+            if (brokerId.HasValue)
             {
-                var apiUser = _dbContext.Users
-                    .Include(u => u.NotificationSettings)
-                    .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                var apiUser = await _dbContext.Users.GetAPIUserForBroker(brokerId.Value);
                 if (apiUser != null)
                 {
-                    return View(GetAvailableNotifications(apiUser.NotificationSettings.Select(s => s)).ToList());
+                    apiUser.NotificationSettings = await _dbContext.UserNotificationSettings.GetNotificationSettingsForUser(apiUser.Id).ToListAsync();
+                    return View(GetAvailableNotifications(apiUser.NotificationSettings).ToList());
                 }
             }
             return Forbid();
@@ -578,15 +574,14 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> EditNotificationSettings(IEnumerable<NotificationSettingsModel> model)
         {
             var brokerId = User.TryGetBrokerId();
-            if (brokerId != null)
+            if (brokerId.HasValue)
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    var apiUser = _dbContext.Users
-                        .Include(u => u.NotificationSettings)
-                        .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                    var apiUser = await _dbContext.Users.GetAPIUserForBroker(brokerId.Value);
                     if (apiUser != null)
                     {
+                        apiUser.NotificationSettings = await _dbContext.UserNotificationSettings.GetNotificationSettingsForUser(apiUser.Id).ToListAsync();
                         if (ModelState.IsValid)
                         {
                             await _userService.LogNotificationSettingsUpdateAsync(apiUser.Id, User.GetUserId(), User.TryGetImpersonatorId());
@@ -608,15 +603,12 @@ namespace Tolk.Web.Controllers
         }
 
         [Authorize(Roles = Roles.CentralAdministrator)]
-        public ActionResult ChangeApiKey()
+        public async Task<ActionResult> ChangeApiKey()
         {
             var brokerId = User.TryGetBrokerId();
-            if (brokerId != null)
+            if (brokerId.HasValue)
             {
-                var apiUser = _dbContext.Users
-                    .Include(u => u.Claims)
-                    .Include(u => u.NotificationSettings)
-                    .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                var apiUser = await _dbContext.Users.GetAPIUserForBroker(brokerId.Value);
                 if (apiUser != null)
                 {
                     return View();
@@ -634,7 +626,7 @@ namespace Tolk.Web.Controllers
             {
                 //Save all Claims and Notification settings and stuff here...
                 var brokerId = User.TryGetBrokerId();
-                if (brokerId != null)
+                if (brokerId.HasValue)
                 {
                     var user = await _userManager.GetUserAsync(User);
                     if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
@@ -644,7 +636,7 @@ namespace Tolk.Web.Controllers
                     }
                     using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                     {
-                        var apiUser = _dbContext.Users.SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
+                        var apiUser = await _dbContext.Users.GetAPIUserForBroker(brokerId.Value);
                         if (apiUser != null)
                         {
                             var secretClaim = (await _userManager.GetClaimsAsync(apiUser)).SingleOrDefault(c => c.Type == "Secret");
@@ -675,7 +667,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.CentralLocalAdminCustomer)]
         public async Task<ActionResult> DisconnectUser(string combinedId)
         {
-            var unitUser = GetUnitUser(combinedId);
+            var unitUser = await GetUnitUser(combinedId);
             var user = await GetUserToHandle(unitUser.UserId);
             bool removeOneSelfAsLocalAdmin = user.Id == User.GetUserId() && !User.IsInRole(Roles.CentralAdministrator);
             if ((await _authorizationService.AuthorizeAsync(User, unitUser, Policies.Edit)).Succeeded)
@@ -706,7 +698,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.CentralLocalAdminCustomer)]
         public async Task<ActionResult> ChangeLocalAdmin(string combinedId)
         {
-            var unitUser = GetUnitUser(combinedId);
+            var unitUser = await GetUnitUser(combinedId);
             var user = await GetUserToHandle(unitUser.UserId);
             bool removeOneSelfAsLocalAdmin = user.Id == User.GetUserId() && !User.IsInRole(Roles.CentralAdministrator) && unitUser.IsLocalAdmin;
             if ((await _authorizationService.AuthorizeAsync(User, unitUser, Policies.Edit)).Succeeded)
@@ -858,11 +850,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> ViewDefaultSettings(int id, string bi = null, string bc = null, string ba = null)
         {
-            var user = await _userManager.Users
-                .Include(u => u.DefaultSettings)
-                .Include(u => u.DefaultSettingOrderRequirements)
-                .Include(u => u.CustomerUnits).ThenInclude(c => c.CustomerUnit)
-                .SingleOrDefaultAsync(u => u.Id == id);
+            var user = await _userService.GetUserWithDefaultSettings(id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.ViewDefaultSettings)).Succeeded)
             {
                 var model = DefaultSettingsViewModel.GetModel(user, Region.Regions);
@@ -1095,12 +1083,11 @@ namespace Tolk.Web.Controllers
             .SingleOrDefaultAsync(u => u.Id == userId);
         }
 
-        private CustomerUnitUser GetUnitUser(string combinedId)
+        private async Task<CustomerUnitUser> GetUnitUser(string combinedId)
         {
             int userId = combinedId.Split("_")[0].ToSwedishInt();
             int customerUnitId = combinedId.Split("_")[1].ToSwedishInt();
-            return _dbContext.CustomerUnitUsers.Include(cuu => cuu.CustomerUnit)
-                .Where(cu => cu.CustomerUnitId == customerUnitId && cu.UserId == userId).Single();
+            return await _dbContext.CustomerUnitUsers.GetCustomerUnitUserForUserAndCustomerUnit(userId, customerUnitId);
         }
 
         private bool IfLastUserWithLocalAdmin(CustomerUnitUser unitUser)

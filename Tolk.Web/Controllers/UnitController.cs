@@ -107,7 +107,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.CentralLocalAdminCustomer)]
         public async Task<ActionResult> View(int id)
         {
-            var unit = GetUnitToHandle(id);
+            var unit = await GetUnitToHandle(id);
             if (unit != null)
             {
                 if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.View)).Succeeded)
@@ -121,15 +121,13 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.AppOrSysAdmin)]
         public async Task<ActionResult> AdminView(int id)
         {
-            var unit = GetUnitToHandle(id);
+            var unit = await GetUnitToHandle(id);
             if (unit != null)
             {
                 if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.View)).Succeeded)
                 {
                     var model = CustomerUnitModel.GetModelFromCustomerUnit(unit);
-                    //var unitUsersIds = GetUnitUsersIds(id);
-
-                    model.UnitUsers = GetUnitUsersListItems(GetUnitUsersIds(id), id);
+                    model.UnitUsers = await GetUnitUsersListItems(await GetUnitUsersIds(id), id);
                     return View(model);
                 }
             }
@@ -139,7 +137,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.CentralLocalAdminCustomer)]
         public async Task<ActionResult> Edit(int id)
         {
-            var unit = GetUnitToHandle(id);
+            var unit = await GetUnitToHandle(id);
             if (unit != null)
             {
                 if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.Edit)).Succeeded)
@@ -150,35 +148,16 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        private CustomerUnit GetUnitToHandle(int id)
+        private async Task<CustomerUnit> GetUnitToHandle(int id)
         {
-            return _dbContext.CustomerUnits
-               .Include(s => s.CreatedByUser)
-               .Include(s => s.InactivatedByUser)
-               .SingleOrDefault(cu => cu.CustomerUnitId == id);
+            return await _dbContext.CustomerUnits.GetCustomerUnitById(id);
         }
 
         [Authorize(Policies.CentralLocalAdminCustomer)]
         public async Task<ActionResult> Users(int id, string errorMessage = null, string message = null)
         {
-            var unit = _dbContext.CustomerUnits.SingleOrDefault(cu => cu.CustomerUnitId == id);
-
-            var unitUsersId = _dbContext.CustomerUnits
-                .Include(cu => cu.CustomerUnitUsers).ThenInclude(cuu => cuu.User)
-                .Where(cu => cu.CustomerUnitId == id).Single().CustomerUnitUsers
-                .Select(cuu => cuu.User.Id);
-
-            var users = _dbContext.Users.Include(u => u.CustomerUnits).Where(u => unitUsersId.Contains(u.Id)).Select(u => new DynamicUserListItemModel
-            {
-                Id = u.Id,
-                CombinedId = u.Id + "_" + u.CustomerUnits.Where(cu => cu.CustomerUnitId == id).Single().CustomerUnitId,
-                FirstName = u.NameFirst,
-                LastName = u.NameFamily,
-                Email = u.Email,
-                IsActive = u.IsActive,
-                IsLocalAdmin = u.CustomerUnits.Any(cu => cu.CustomerUnitId == id && cu.IsLocalAdmin) ? "Ja" : "Nej"
-            });
-
+            var unit = await _dbContext.CustomerUnits.GetCustomerUnitById(id);
+            var users = await GetUnitUsersListItems(await GetUnitUsersIds(id), id);
 
             if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.Edit)).Succeeded)
             {
@@ -238,25 +217,23 @@ namespace Tolk.Web.Controllers
                 && u.Name.ToSwedishUpper() == name.ToSwedishUpper() && u.CustomerUnitId != customerUnitId);
         }
 
-        private IEnumerable<int> GetUnitUsersIds(int customerUnitId)
+        private async Task<IEnumerable<int>> GetUnitUsersIds(int customerUnitId)
         {
-            return _dbContext.CustomerUnits
-                .Include(cu => cu.CustomerUnitUsers).ThenInclude(cuu => cuu.User)
-                .Where(cu => cu.CustomerUnitId == customerUnitId).Single().CustomerUnitUsers
-                .Select(cuu => cuu.User.Id);
+            return await _dbContext.CustomerUnitUsers.GetUserIdsForCustomerUnitsWithCustomerUnitId(customerUnitId);
         }
 
-        private IEnumerable<DynamicUserListItemModel> GetUnitUsersListItems(IEnumerable<int> UnitUsersIds, int customerUnitId)
+        private async Task<IEnumerable<DynamicUserListItemModel>> GetUnitUsersListItems(IEnumerable<int> unitUsersIds, int customerUnitId)
         {
-            return _dbContext.Users.Include(u => u.CustomerUnits).Where(u => UnitUsersIds.Contains(u.Id)).Select(u => new DynamicUserListItemModel
+            var customerUnitUsers = await _dbContext.CustomerUnitUsers.GetCustomerUnitsWithCustomerUnitForAllUsers(unitUsersIds, customerUnitId).ToArrayAsync();
+            return _dbContext.Users.GetUsersByUserIds(unitUsersIds).Select(u => new DynamicUserListItemModel
             {
                 Id = u.Id,
-                CombinedId = u.Id + "_" + u.CustomerUnits.Where(cu => cu.CustomerUnitId == customerUnitId).Single().CustomerUnitId,
+                CombinedId = u.Id + "_" + customerUnitId,
                 FirstName = u.NameFirst,
                 LastName = u.NameFamily,
                 Email = u.Email,
                 IsActive = u.IsActive,
-                IsLocalAdmin = u.CustomerUnits.Any(cu => cu.CustomerUnitId == customerUnitId && cu.IsLocalAdmin) ? "Ja" : "Nej"
+                IsLocalAdmin = customerUnitUsers.Any(cu => cu.UserId == u.Id && cu.IsLocalAdmin) ? "Ja" : "Nej"
             });
         }
     }

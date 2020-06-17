@@ -296,7 +296,48 @@ namespace Tolk.BusinessLogic.Utilities
 
         #endregion
 
+        #region lists connected to user, customer units
+
+        public static IQueryable<UserNotificationSetting> GetNotificationSettingsForUser(this IQueryable<UserNotificationSetting> notificationSettinga, int userId)
+            => notificationSettinga.Where(ns => ns.UserId == userId);
+
+        public static IQueryable<UserDefaultSetting> GetDefaultSettingsForUser(this IQueryable<UserDefaultSetting> defaultSettings, int userId)
+            => defaultSettings.Where(ds => ds.UserId == userId);
+
+        public static IQueryable<UserDefaultSettingOrderRequirement> GetDefaultSettingOrderRequirementsForUser(this IQueryable<UserDefaultSettingOrderRequirement> defaultSettingOrderRequirements, int userId)
+           => defaultSettingOrderRequirements.Where(ds => ds.UserId == userId);
+
+        public static IQueryable<CustomerUnitUser> GetCustomerUnitsForUser(this IQueryable<CustomerUnitUser> customerUnits, int userId)
+           => customerUnits.Where(cu => cu.UserId == userId);
+
+        public static IQueryable<CustomerUnit> GetCustomerUnitsForCustomerOrganisation(this IQueryable<CustomerUnit> customerUnits, AspNetUser user)
+          => customerUnits.Where(cu => cu.CustomerOrganisationId == user.CustomerOrganisationId && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == user.Id))
+                .OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name);
+
+        public static IQueryable<CustomerUnitUser> GetCustomerUnitsWithCustomerUnitForUser(this IQueryable<CustomerUnitUser> customerUnitUsers, int userId)
+          => customerUnitUsers.Include(cuu => cuu.CustomerUnit)
+                .Where(cuu => cuu.UserId == userId);
+
+        public static IQueryable<CustomerUnitUser> GetCustomerUnitsWithCustomerUnitForAllUsers(this IQueryable<CustomerUnitUser> customerUnitUsers, IEnumerable<int> userIds, int customerUnitId)
+          => customerUnitUsers.Where(cuu => userIds.Contains(cuu.UserId) && cuu.CustomerUnitId == customerUnitId);
+
+        public async static Task<IEnumerable<int>> GetUserIdsForCustomerUnitsWithCustomerUnitId(this IQueryable<CustomerUnitUser> customerUnitUsers, int customerUnitId)
+          => await customerUnitUsers.Include(cuu => cuu.CustomerUnit).Include(cuu => cuu.User)
+                .Where(cuu => cuu.CustomerUnitId == customerUnitId).Select(cuu => cuu.UserId).ToListAsync();
+
+        public static IQueryable<AspNetUser> GetUsersByUserIds(this IQueryable<AspNetUser> users, IEnumerable<int> userIds)
+          =>  users.Where(u => userIds.Contains(u.Id));
+
+        #endregion
+
         #region single entities by id
+
+        public static async Task<AspNetUser> GetUserById(this IQueryable<AspNetUser> users, int id)
+            => await users.SingleOrDefaultAsync(u => u.Id == id);
+
+        public async static Task<CustomerUnit> GetCustomerUnitById(this IQueryable<CustomerUnit> customerUnits, int id)
+            => await customerUnits.Include(c => c.CreatedByUser).Include(c => c.InactivatedByUser)
+                .Where(c => c.CustomerUnitId == id).SingleOrDefaultAsync();
 
         public async static Task<Attachment> GetNonConnectedAttachmentById(this IQueryable<Attachment> attachments, int id)
             => await attachments.Include(a => a.TemporaryAttachmentGroup).Where(a => a.AttachmentId == id && 
@@ -485,8 +526,18 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .SingleOrDefaultAsync(c => c.Request.Order.OrderNumber == orderNumber && c.Request.Ranking.BrokerId == brokerId);
 
-        public static async Task<AspNetUser> GetUser(this IQueryable<AspNetUser> users, int id)
+        public static async Task<AspNetUser> GetAPIUserForBroker(this IQueryable<AspNetUser> users, int brokerId)
+            => await users.SingleOrDefaultAsync(u => u.IsApiUser && u.BrokerId == brokerId);
+
+        public static async Task<CustomerUnitUser> GetCustomerUnitUserForUserAndCustomerUnit(this IQueryable<CustomerUnitUser> customerUnitUsers, int userId, int customerUnitId)
+            => await customerUnitUsers.Include(cuu => cuu.CustomerUnit)
+                    .Where(cu => cu.UserId == userId && cu.CustomerUnitId == customerUnitId).SingleAsync();
+
+        public static async Task<AspNetUser> GetUserWithCustomerOrganisationById(this IQueryable<AspNetUser> users, int id)
             => await users.Include(u => u.CustomerOrganisation).SingleOrDefaultAsync(u => u.Id == id);
+
+        public static async Task<AspNetUser> GetUserByIdWithTemporaryEmail(this IQueryable<AspNetUser> users, int id)
+            => await users.Include(u => u.TemporaryChangedEmailEntry).SingleOrDefaultAsync(u => u.Id == id);
 
         public static async Task<OutboundWebHookCall> GetOutboundWebHookCall(this IQueryable<OutboundWebHookCall> outboundWebHookCalls, int id)
         => await outboundWebHookCalls.Include(c => c.RecipientUser).SingleOrDefaultAsync(c => c.OutboundWebHookCallId == id);
@@ -517,6 +568,8 @@ namespace Tolk.BusinessLogic.Utilities
             .Include(a => a.RequestGroup).ThenInclude(r => r.OrderGroup)
             .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
 
+        public async static Task<CustomerOrganisation> GetParentOrganisationsByDomain(this IQueryable<CustomerOrganisation> customerOrganisations, string domain)
+            => await customerOrganisations.SingleOrDefaultAsync(c => c.EmailDomain == domain && c.ParentCustomerOrganisationId == null);
 
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)
         {
@@ -618,8 +671,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(c => c.AnsweringUser)
                 .Include(c => c.AnswerDisputingUser)
                 .Include(c => c.TerminatingUser);
-
-
+        
         public static IQueryable<CustomerSetting> GetCustomerSettingsForCustomer(this IQueryable<CustomerSetting> customerSettings, int id)
            => customerSettings.Where(c => c.CustomerOrganisationId == id);
 
@@ -643,6 +695,9 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<CustomerOrganisation> GetAllCustomers(this IQueryable<CustomerOrganisation> customerOrganisations)
             => customerOrganisations.Include(c => c.ParentCustomerOrganisation).OrderBy(c => c.Name);
+
+        public static IQueryable<CustomerOrganisation> GetSubOrganisationsByParent(this IQueryable<CustomerOrganisation> customerOrganisations, int parentOrganisationId)
+            => customerOrganisations.Where(c => c.ParentCustomerOrganisationId == parentOrganisationId);
 
         public static IQueryable<FaqDisplayUserRole> GetAllFaqWithFaqDisplayUserRoles(this IQueryable<FaqDisplayUserRole> faqDisplayUserRoles)
             => faqDisplayUserRoles.Include(f => f.Faq);

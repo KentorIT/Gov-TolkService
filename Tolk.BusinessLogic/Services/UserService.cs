@@ -72,7 +72,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task SetTemporaryEmail(AspNetUser user, string newEmail, int updatedById, int? impersonatingCreatorId = null)
         {
             NullCheckHelper.ArgumentCheckNull(user, nameof(SetTemporaryEmail), nameof(UserService));
-            var emailUser = await _dbContext.Users.Include(u => u.TemporaryChangedEmailEntry).SingleAsync(u => u.Id == user.Id);
+            var emailUser = await _dbContext.Users.GetUserByIdWithTemporaryEmail(user.Id);
             var entry = emailUser.TemporaryChangedEmailEntry ?? new TemporaryChangedEmailEntry();
             entry.EmailAddress = newEmail;
             entry.ExpirationDate = _clock.SwedenNow.AddDays(7);
@@ -186,9 +186,9 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         public async Task LogOnUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatingUpdatedById = null)
         {
             AspNetUser currentUserInformation = _dbContext.Users
-                            .Include(u => u.Claims)
-                            .Include(u => u.Roles)
-                            .SingleOrDefault(u => u.Id == userId);
+                .Include(u => u.Claims)
+                .Include(u => u.Roles)
+                .SingleOrDefault(u => u.Id == userId);
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
                 LoggedAt = _clock.SwedenNow,
@@ -217,9 +217,8 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public async Task LogNotificationSettingsUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
-            AspNetUser currentUserInformation = _dbContext.Users
-                            .Include(u => u.NotificationSettings)
-                            .SingleOrDefault(u => u.Id == userId);
+            AspNetUser currentUserInformation = await _dbContext.Users.GetUserById(userId);
+            currentUserInformation.NotificationSettings = await _dbContext.UserNotificationSettings.GetNotificationSettingsForUser(userId).ToListAsync();
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
                 LoggedAt = _clock.SwedenNow,
@@ -238,10 +237,9 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         }
         public async Task LogDefaultSettingsUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
-            AspNetUser currentUserInformation = _dbContext.Users
-                            .Include(u => u.DefaultSettings)
-                            .Include(u => u.DefaultSettingOrderRequirements)
-                            .SingleOrDefault(u => u.Id == userId);
+            AspNetUser currentUserInformation =  await _dbContext.Users.GetUserById(userId);
+            currentUserInformation.DefaultSettings = await _dbContext.UserDefaultSettings.GetDefaultSettingsForUser(userId).ToListAsync();
+            currentUserInformation.DefaultSettingOrderRequirements = await _dbContext.UserDefaultSettingOrderRequirements.GetDefaultSettingOrderRequirementsForUser(userId).ToListAsync();
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
                 LoggedAt = _clock.SwedenNow,
@@ -266,9 +264,8 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public async Task LogCustomerUnitUserUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
-            AspNetUser currentUserInformation = _dbContext.Users
-                .Include(u => u.CustomerUnits)
-                .SingleOrDefault(u => u.Id == userId);
+            AspNetUser currentUserInformation = await _dbContext.Users.GetUserById(userId);
+            currentUserInformation.CustomerUnits = await _dbContext.CustomerUnitUsers.GetCustomerUnitsForUser(userId).ToListAsync();
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
                 LoggedAt = _clock.SwedenNow,
@@ -317,6 +314,15 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         {
             await _dbContext.AddAsync(new UserLoginLogEntry { LoggedInAt = _clock.SwedenNow, UserId = userId });
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<AspNetUser> GetUserWithDefaultSettings(int userId)
+        {
+            var user = await _userManager.Users.GetUserById(userId);
+            user.DefaultSettings = await _dbContext.UserDefaultSettings.GetDefaultSettingsForUser(user.Id).ToListAsync();
+            user.DefaultSettingOrderRequirements = await _dbContext.UserDefaultSettingOrderRequirements.GetDefaultSettingOrderRequirementsForUser(user.Id).ToListAsync();
+            user.CustomerUnits = await _dbContext.CustomerUnitUsers.GetCustomerUnitsWithCustomerUnitForUser(user.Id).ToListAsync();
+            return user;
         }
 
         public string GenerateUserName(string firstName, string lastName, string prefix)
