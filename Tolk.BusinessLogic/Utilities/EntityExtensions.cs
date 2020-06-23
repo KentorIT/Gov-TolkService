@@ -423,6 +423,14 @@ namespace Tolk.BusinessLogic.Utilities
                    .Include(r => r.Ranking).ThenInclude(r => r.Region)
                    .SingleAsync(r => r.RequestId == id);
 
+        public static async Task<Request> GetRequestForWebHook(this IQueryable<Request> requests, int id)
+            => await requests.Include(r => r.Ranking)
+               .Include(r => r.Order).ThenInclude(o => o.Language)
+               .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+               .Include(r => r.Order).ThenInclude(o => o.Region)
+               .Include(r => r.Order).ThenInclude(r => r.CustomerUnit)
+               .SingleAsync(r => r.RequestId == id);
+
         public static async Task<Request> GetRequestsForAcceptById(this IQueryable<Request> requests, int id)
             => await requests.GetRequestsWithBaseIncludes()
                     .Include(r => r.RequestGroup)

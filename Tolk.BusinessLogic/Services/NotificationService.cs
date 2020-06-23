@@ -270,7 +270,7 @@ namespace Tolk.BusinessLogic.Services
                     new RequestReplacementCreatedModel
                     {
                         OriginalRequest = await GetRequestModel(oldRequest),
-                        ReplacementRequest = await GetRequestModel(GetRequest(replacementRequest.RequestId))
+                        ReplacementRequest = await GetRequestModel(await GetRequest(replacementRequest.RequestId))
                     },
                    webhook.ContactInformation,
                    NotificationType.RequestReplacementCreated,
@@ -1702,19 +1702,14 @@ Sammanställning:
             };
         }
 
-        private Request GetRequest(int id)
+        private async Task<Request> GetRequest(int id)
         {
-            return _dbContext.Requests
-                .Include(r => r.Ranking)
-                .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(o => o.Attachment)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.Requirements)
-                .Include(r => r.Order).ThenInclude(o => o.Region)
-                .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                .Single(o => o.RequestId == id);
+            var request = await _dbContext.Requests.GetRequestForWebHook(id);
+            request.Order.Attachments = await _dbContext.OrderAttachments.GetAttachmentsForOrder(request.OrderId).ToListAsync();
+            request.Order.Requirements = await _dbContext.OrderRequirements.GetRequirementsForOrder(request.OrderId).ToListAsync();
+            request.Order.PriceRows = await _dbContext.OrderPriceRows.GetPriceRowsForOrder(request.OrderId).ToListAsync();
+            request.Order.InterpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToListAsync();
+            return request;
         }
     }
 }
