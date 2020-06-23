@@ -460,15 +460,13 @@ namespace Tolk.Web.Services
             {
                 var currentUser = _httpContextAccessor.HttpContext.User;
                 var organisationAdmin = (currentUser.IsInRole(Roles.CentralAdministrator) || currentUser.IsInRole(Roles.CentralOrderHandler));
-                return _dbContext.CustomerUnits
-                        .Include(cu => cu.CustomerUnitUsers)
-                        .Where(cu => cu.CustomerOrganisationId == currentUser.TryGetCustomerOrganisationId()
-                        && (organisationAdmin || cu.CustomerUnitUsers.Any(cuu => cuu.UserId == currentUser.GetUserId())))
-                    .OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name).Select(cu => new SelectListItem
-                    {
-                        Text = $"{cu.Name} {(cu.IsActive ? string.Empty : "(Inaktiv)")}",
-                        Value = cu.CustomerUnitId.ToSwedishString(),
-                    }).ToList();
+                var units = organisationAdmin ? _dbContext.CustomerUnits.GetCustomerUnitsForCustomerOrganisation(currentUser.TryGetCustomerOrganisationId()) :
+                    _dbContext.CustomerUnits.GetCustomerUnitsForUser(currentUser.GetUserId());
+                return units.OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name).Select(cu => new SelectListItem
+                {
+                    Text = $"{cu.Name} {(cu.IsActive ? string.Empty : "(Inaktiv)")}",
+                    Value = cu.CustomerUnitId.ToSwedishString(),
+                }).ToList();
             }
         }
 

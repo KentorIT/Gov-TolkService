@@ -310,13 +310,16 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<CustomerUnitUser> GetCustomerUnitsForUser(this IQueryable<CustomerUnitUser> customerUnits, int userId)
            => customerUnits.Where(cu => cu.UserId == userId);
 
-        public static IQueryable<CustomerUnit> GetCustomerUnitsForCustomerOrganisation(this IQueryable<CustomerUnit> customerUnits, AspNetUser user)
-          => customerUnits.Where(cu => cu.CustomerOrganisationId == user.CustomerOrganisationId && cu.CustomerUnitUsers.Any(cuu => cuu.UserId == user.Id))
+        public static IQueryable<CustomerUnit> GetCustomerUnitsForCustomerOrganisation(this IQueryable<CustomerUnit> customerUnits, int? customerOrganisationId)
+          => customerUnits.Where(cu => cu.CustomerOrganisationId == customerOrganisationId)
                 .OrderByDescending(cu => cu.IsActive).ThenBy(cu => cu.Name);
 
         public static IQueryable<CustomerUnitUser> GetCustomerUnitsWithCustomerUnitForUser(this IQueryable<CustomerUnitUser> customerUnitUsers, int userId)
           => customerUnitUsers.Include(cuu => cuu.CustomerUnit)
                 .Where(cuu => cuu.UserId == userId);
+
+        public static IQueryable<CustomerUnit> GetCustomerUnitsForUser(this IQueryable<CustomerUnit> customerUnits, int userId)
+          => customerUnits.Where(cu => cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId));
 
         public static IQueryable<CustomerUnitUser> GetCustomerUnitsWithCustomerUnitForAllUsers(this IQueryable<CustomerUnitUser> customerUnitUsers, IEnumerable<int> userIds, int customerUnitId)
           => customerUnitUsers.Where(cuu => userIds.Contains(cuu.UserId) && cuu.CustomerUnitId == customerUnitId);
