@@ -329,11 +329,14 @@ namespace Tolk.BusinessLogic.Utilities
                 .Where(cuu => cuu.CustomerUnitId == customerUnitId).Select(cuu => cuu.UserId).ToListAsync();
 
         public static IQueryable<AspNetUser> GetUsersByUserIds(this IQueryable<AspNetUser> users, IEnumerable<int> userIds)
-          =>  users.Where(u => userIds.Contains(u.Id));
+          => users.Where(u => userIds.Contains(u.Id));
 
         #endregion
 
         #region single entities by id
+
+        public static async Task<InterpreterBroker> GetInterpreterBrokerById(this IQueryable<InterpreterBroker> interpreterBrokers, int id)
+            => await interpreterBrokers.Include(ib => ib.Interpreter).SingleAsync(i => i.InterpreterBrokerId == id);
 
         public static async Task<AspNetUser> GetUserById(this IQueryable<AspNetUser> users, int id)
             => await users.SingleOrDefaultAsync(u => u.Id == id);
@@ -343,7 +346,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Where(c => c.CustomerUnitId == id).SingleOrDefaultAsync();
 
         public async static Task<Attachment> GetNonConnectedAttachmentById(this IQueryable<Attachment> attachments, int id)
-            => await attachments.Include(a => a.TemporaryAttachmentGroup).Where(a => a.AttachmentId == id && 
+            => await attachments.Include(a => a.TemporaryAttachmentGroup).Where(a => a.AttachmentId == id &&
                 !a.Orders.Any() && !a.Requests.Any() && !a.Requisitions.Any()
                 && !a.OrderGroups.Any() && !a.RequestGroups.Any()).SingleOrDefaultAsync();
 
@@ -682,7 +685,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(c => c.AnsweringUser)
                 .Include(c => c.AnswerDisputingUser)
                 .Include(c => c.TerminatingUser);
-        
+
         public static IQueryable<CustomerSetting> GetCustomerSettingsForCustomer(this IQueryable<CustomerSetting> customerSettings, int id)
            => customerSettings.Where(c => c.CustomerOrganisationId == id);
 
@@ -926,6 +929,12 @@ namespace Tolk.BusinessLogic.Utilities
             .Include(r => r.Ranking)
             .Include(r => r.OrderGroup).ThenInclude(og => og.CustomerOrganisation)
             .SingleOrDefaultAsync(r => r.OrderGroupId == id && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
+
+        public static IQueryable<Ranking> GetActiveRankingsForRegion(this IQueryable<Ranking> rankings, int regionId, DateTime date)
+            => rankings.Where(r => r.RegionId == regionId && r.FirstValidDate <= date && r.LastValidDate >= date);
+
+        public static IQueryable<Quarantine> GetQuarantinesForRankings(this IQueryable<Quarantine> quarantines, IEnumerable<int> rankingIds)
+            => quarantines.Where(q => rankingIds.Contains(q.RankingId));
 
     }
 

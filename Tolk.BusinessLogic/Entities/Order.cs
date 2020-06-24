@@ -214,7 +214,7 @@ namespace Tolk.BusinessLogic.Entities
 
         #region methods
 
-        public Request CreateRequest(IQueryable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        public Request CreateRequest(IEnumerable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             Ranking ranking = GetNextRanking(rankings, newRequestCreationTime);
             if (ranking == null)
@@ -333,7 +333,7 @@ namespace Tolk.BusinessLogic.Entities
             return orderAttachmentHistoryEntries;
         }
 
-        private Ranking GetNextRanking(IQueryable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
+        private Ranking GetNextRanking(IEnumerable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
         {
             var brokersWithRequest = Requests.Select(r => r.Ranking.BrokerId);
 

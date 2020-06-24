@@ -110,10 +110,8 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        public RequestGroup CreateRequestGroup(IQueryable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        public RequestGroup CreateRequestGroup(IEnumerable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
-            var brokersWithRequestGroups = RequestGroups.Select(r => r.Ranking.BrokerId);
-
             var ranking = GetNextRanking(rankings, newRequestCreationTime);
             if (ranking == null)
             {
@@ -135,7 +133,7 @@ namespace Tolk.BusinessLogic.Entities
             return requestGroup;
         }
 
-        private Ranking GetNextRanking(IQueryable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
+        private Ranking GetNextRanking(IEnumerable<Ranking> rankings, DateTimeOffset newRequestCreationTime)
         {
             var brokersWithRequestGroups = RequestGroups.Select(r => r.Ranking.BrokerId);
             var ranking = rankings.Where(r => !brokersWithRequestGroups.Contains(r.BrokerId)).OrderBy(r => r.Rank).FirstOrDefault();
@@ -164,7 +162,7 @@ namespace Tolk.BusinessLogic.Entities
         public RequestGroup CreatePartialRequestGroup(IEnumerable<Request> declinedRequests, IEnumerable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             var brokersWithRequestGroups = RequestGroups.Select(r => r.Ranking.BrokerId);
-
+            
             var ranking = rankings.Where(r => !brokersWithRequestGroups.Contains(r.BrokerId)).OrderBy(r => r.Rank).FirstOrDefault();
             var orders = declinedRequests.GetRequestOrders();
 
