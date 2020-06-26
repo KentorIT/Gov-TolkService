@@ -393,7 +393,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(DenyRequestGroupAnswer), nameof(OrderService));
             requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
-            requestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            requestGroup.OrderGroup.RequestGroups = await _tolkDbContext.RequestGroups.GetRequestGroupsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             requestGroup.Deny(_clock.SwedenNow, userId, impersonatorId, message);
             await CreateRequestGroup(requestGroup.OrderGroup, requestGroup);
             _notificationService.RequestGroupAnswerDenied(requestGroup);
