@@ -42,19 +42,15 @@ namespace Tolk.Web.Api.Services
             return order;
         }
 
-        public async Task<OrderGroup> GetOrderGroupAsync(string orderGroupNumber, int brokerId)
+        public async Task<RequestGroup> CheckOrderGroupAndGetRequestGroup(string orderGroupNumber, int brokerId)
         {
-            var orderGroup = await _dbContext.OrderGroups
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Ranking)
-                .SingleOrDefaultAsync(o => o.OrderGroupNumber == orderGroupNumber &&
-                //Must have a request connected to the order for the broker, any status...
-                o.RequestGroups.Any(r => r.Ranking.BrokerId == brokerId));
-            if (orderGroup == null)
+            var reqGroup = await _dbContext.RequestGroups.GetRequestGroupForApiWithBrokerAndOrderNumber(orderGroupNumber, brokerId);
+            if (reqGroup == null)
             {
                 _logger.LogWarning($"Broker with broker id {brokerId}, tried to get order group {orderGroupNumber}, but it could not be returned. This could happen if the order group number is wrong, or that the broker has no request connected.");
                 throw new InvalidApiCallException(ErrorCodes.OrderGroupNotFound);
             }
-            return orderGroup;
+            return reqGroup;
         }
 
         public RequestDetailsResponse GetResponseFromRequest(Request request, bool getAttachments = true)
@@ -165,16 +161,8 @@ namespace Tolk.Web.Api.Services
                 return null;
             }
             OrderGroup orderGroup = requestGroup.OrderGroup;
-            var occasions = _dbContext.Requests
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                .Include(r => r.Interpreter)
-                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.Region)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Where(r => r.RequestGroupId == requestGroup.RequestGroupId && r.ReplacedByRequest == null)
-                .ToList().Select(r => GetResponseFromRequest(r, false));
+            var occasions = _dbContext.Requests.GetRequestsWithIncludesForRequestGroup(requestGroup.RequestGroupId)
+                .Select(r => GetResponseFromRequest(r, false));
             return new RequestGroupDetailsResponse
             {
                 Status = requestGroup.Status.GetCustomName(),

@@ -615,6 +615,16 @@ namespace Tolk.BusinessLogic.Services
             return requests?.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
         }
 
+        public async Task<RequestGroup> AddConfirmationListsToRequestGroup(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AddConfirmationListsToRequestGroup), nameof(RequestService));
+            requestGroup.StatusConfirmations = await _tolkDbContext.RequestGroupStatusConfirmations.GetStatusConfirmationsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            var requestStatusConfirmations = await _tolkDbContext.RequestStatusConfirmation.GetRequestStatusConfirmationsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            requestGroup.Requests.ForEach(r => r.RequestStatusConfirmations = requestStatusConfirmations.Where(rsc => rsc.RequestId == r.RequestId).ToList());
+            return requestGroup;
+        }
+
         private async Task<bool> NoNeedForUserAccept(Request request, decimal? expectedTravelCosts)
         {
             if (!expectedTravelCosts.HasValue || expectedTravelCosts == 0 || request.Order.AllowExceedingTravelCost != AllowExceedingTravelCost.YesShouldBeApproved)

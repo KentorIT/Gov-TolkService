@@ -385,12 +385,9 @@ namespace Tolk.Web.Controllers
 
         private async Task<RequestGroup> GetConfirmedRequestGroup(int requestGroupId)
         {
-            return await _dbContext.RequestGroups
-                .Include(rg => rg.Ranking)
-                .Include(rg => rg.OrderGroup)
-                .Include(rg => rg.StatusConfirmations)
-                .Include(rg => rg.Requests).ThenInclude(r => r.RequestStatusConfirmations)
-                .SingleAsync(rg => rg.RequestGroupId == requestGroupId);
+            var requestGroup = await _dbContext.RequestGroups.GetRequestGroupById(requestGroupId);
+            await _requestService.AddConfirmationListsToRequestGroup(requestGroup);
+            return requestGroup;
         }
         private PriceInformationModel GetPriceinformationOrderToDisplay(Request request, List<CompetenceAndSpecialistLevel> requestedCompetenceLevels)
         {

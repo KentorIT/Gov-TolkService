@@ -158,13 +158,11 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
-                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
+                var requestGroup = await _apiOrderService.CheckOrderGroupAndGetRequestGroup(model.OrderGroupNumber, brokerId);
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                var requestGroup = await _dbContext.RequestGroups
-                    .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber && brokerId == r.Ranking.BrokerId && r.Status == RequestStatus.Created);
-                if (requestGroup == null)
+                if (requestGroup.Status != RequestStatus.Created)
                 {
-                    return ReturnError(ErrorCodes.RequestNotFound);
+                    return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
                 }
                 await _requestService.AcknowledgeGroup(requestGroup, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null));
                 await _dbContext.SaveChangesAsync();
@@ -188,10 +186,14 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
-                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
+                var requestGroup = await _apiOrderService.CheckOrderGroupAndGetRequestGroup(model.OrderGroupNumber, brokerId);
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                var requestGroup = await _dbContext.RequestGroups
+                if (!(requestGroup.Status == RequestStatus.Created || requestGroup.Status == RequestStatus.Received))
+                {
+                    return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
+                }
+                requestGroup = await _dbContext.RequestGroups
                     .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
                     .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requests)
@@ -208,7 +210,6 @@ namespace Tolk.Web.Api.Controllers
                 }
                 await _requestService.DeclineGroup(requestGroup, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message);
                 await _dbContext.SaveChangesAsync();
-                //End of service
                 return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
@@ -228,10 +229,16 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
-                var order = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
+                var requestGroup = await _apiOrderService.CheckOrderGroupAndGetRequestGroup(model.OrderGroupNumber, brokerId);
+                if (requestGroup.Status != RequestStatus.DeniedByCreator)
+                {
+                    _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm denial {model.OrderGroupNumber}, but requestgroup not in correct status.");
+                    throw new InvalidApiCallException(ErrorCodes.RequestGroupNotInCorrectState);
+                }
                 //Get User, if any...
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                RequestGroup requestGroup = await GetConfirmedRequestGroup(model.OrderGroupNumber, brokerId, new[] { RequestStatus.DeniedByCreator });
+
+                await _requestService.AddConfirmationListsToRequestGroup(requestGroup);
                 await _requestService.ConfirmGroupDenial(
                     requestGroup,
                     _timeService.SwedenNow,
@@ -257,10 +264,15 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
-                var orderGroup = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
+                var requestGroup = await _apiOrderService.CheckOrderGroupAndGetRequestGroup(model.OrderGroupNumber, brokerId);
                 //Get User, if any...
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                RequestGroup requestGroup = await GetConfirmedRequestGroup(model.OrderGroupNumber, brokerId, new[] { RequestStatus.ResponseNotAnsweredByCreator });
+                if (requestGroup.Status != RequestStatus.ResponseNotAnsweredByCreator)
+                {
+                    _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm no answer {model.OrderGroupNumber}, but requestgroup not in correct status.");
+                    throw new InvalidApiCallException(ErrorCodes.RequestGroupNotInCorrectState);
+                }
+                await _requestService.AddConfirmationListsToRequestGroup(requestGroup);
                 await _requestService.ConfirmGroupNoAnswer(
                     requestGroup,
                     _timeService.SwedenNow,
@@ -286,10 +298,15 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
-                var orderGroup = await _apiOrderService.GetOrderGroupAsync(model.OrderGroupNumber, brokerId);
+                var requestGroup = await _apiOrderService.CheckOrderGroupAndGetRequestGroup(model.OrderGroupNumber, brokerId);
                 //Get User, if any...
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                RequestGroup requestGroup = await GetConfirmedRequestGroup(model.OrderGroupNumber, brokerId, new[] { RequestStatus.CancelledByCreator });
+                if (requestGroup.Status != RequestStatus.CancelledByCreator)
+                {
+                    _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm cancellation {model.OrderGroupNumber}, but requestgroup not in correct status.");
+                    throw new InvalidApiCallException(ErrorCodes.RequestGroupNotInCorrectState);
+                }
+                await _requestService.AddConfirmationListsToRequestGroup(requestGroup);
                 await _requestService.ConfirmGroupCancellation(
                     requestGroup,
                     _timeService.SwedenNow,
@@ -335,7 +352,6 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.OrderGroupNotFound);
                 }
-                //End of service
                 return Ok(_apiOrderService.GetResponseFromRequestGroup(requestGroup));
             }
             catch (InvalidApiCallException ex)
@@ -387,22 +403,6 @@ namespace Tolk.Web.Api.Controllers
         #endregion
 
         #region private methods
-
-        private async Task<RequestGroup> GetConfirmedRequestGroup(string orderGroupNumber, int brokerId, IEnumerable<RequestStatus> expectedStatuses)
-        {
-            var requestGroup = await _dbContext.RequestGroups
-                .Include(rg => rg.Ranking)
-                .Include(rg => rg.StatusConfirmations)
-                .Include(rg => rg.Requests).ThenInclude(r => r.RequestStatusConfirmations)
-                .SingleOrDefaultAsync(rg => rg.OrderGroup.OrderGroupNumber == orderGroupNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    rg.Ranking.BrokerId == brokerId && expectedStatuses.Contains(rg.Status));
-            if (requestGroup == null)
-            {
-                throw new InvalidApiCallException(ErrorCodes.RequestGroupNotFound);
-            }
-            return requestGroup;
-        }
 
         //Break out to error generator service...
         private IActionResult ReturnError(string errorCode, string specifiedErrorMessage = null)
