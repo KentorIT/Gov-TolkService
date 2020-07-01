@@ -163,7 +163,8 @@ namespace Tolk.Web.Services
         {
             _logger.LogInformation($"Starting {nameof(RunDailyJobs)}");
             await provider.GetRequiredService<OrderService>().CleanTempAttachments();
-            await provider.GetRequiredService<RequestService>().SendEmailReminders();
+            await provider.GetRequiredService<RequestService>().SendEmailRemindersNonApprovedRequests();
+            await provider.GetRequiredService<RequestService>().SendEmailRemindersNonApprovedRequestGroups();
             await provider.GetRequiredService<VerificationService>().HandleTellusVerifications(true);
             await provider.GetRequiredService<OrderService>().HandleExpiredComplaints();
             _logger.LogInformation($"Completed {nameof(RunDailyJobs)}");

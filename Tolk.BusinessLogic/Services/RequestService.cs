@@ -442,29 +442,26 @@ namespace Tolk.BusinessLogic.Services
             await _tolkDbContext.SaveChangesAsync();
         }
 
-        public async Task SendEmailReminders()
+        public async Task SendEmailRemindersNonApprovedRequests()
         {
-            _logger.LogInformation("Start Sending Reminder Emails");
-            List<Request> notAcceptedRequests = await _tolkDbContext.Requests
-                 .Include(req => req.Order)
-                    .ThenInclude(order => order.CreatedByUser)
-                 .Include(req => req.Order)
-                    .ThenInclude(order => order.ContactPersonUser)
-                .Include(req => req.Ranking)
-                    .ThenInclude(rank => rank.Broker)
-                .Include(req => req.Order)
-                    .ThenInclude(order => order.CustomerUnit)
-                .Include(req => req.Interpreter)
-                .Where(req => req.Order.StartAt > _clock.SwedenNow &&
-                    (req.Status == RequestStatus.Accepted || req.Status == RequestStatus.AcceptedNewInterpreterAppointed))
-                .ToListAsync();
-
-            foreach (Request request in notAcceptedRequests)
+            _logger.LogInformation("Start sending reminder emails for non answered responded rquests");
+            var notApprovedRequests = await _tolkDbContext.Requests.NonAnsweredRespondedRequestsToBeReminded(_clock.SwedenNow).ToListAsync();
+            foreach (Request request in notApprovedRequests)
             {
                 _notificationService.RemindUnhandledRequest(request);
             }
+            _logger.LogInformation($"{notApprovedRequests.Count} email reminders sent for non answered responded rquests");
+        }
 
-            _logger.LogInformation($"{notAcceptedRequests.Count} email reminders sent");
+        public async Task SendEmailRemindersNonApprovedRequestGroups()
+        {
+            _logger.LogInformation("Start sending reminder emails for non answered responded rquestgroups");
+            var notApprovedRequestGroups = await _tolkDbContext.RequestGroups.NonAnsweredRespondedRequestGroupsToBeReminded(_clock.SwedenNow).ToListAsync();
+            foreach (RequestGroup requestGroup in notApprovedRequestGroups)
+            {
+                _notificationService.RemindUnhandledRequestGroup(requestGroup);
+            }
+            _logger.LogInformation($"{notApprovedRequestGroups.Count} email reminders sent for non answered responded rquestgroups");
         }
 
         /// <summary>

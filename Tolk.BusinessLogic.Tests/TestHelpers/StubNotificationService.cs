@@ -54,6 +54,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RemindUnhandledRequest(Request request) { }
 
+        public void RemindUnhandledRequestGroup(RequestGroup requestGrpoup) { }
+
         public void RequestAccepted(Request request) { }
 
         public void RequestAnswerApproved(Request request) { }
