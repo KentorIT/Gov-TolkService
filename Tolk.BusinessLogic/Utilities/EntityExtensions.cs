@@ -91,6 +91,24 @@ namespace Tolk.BusinessLogic.Utilities
                     rg.OrderGroup.Orders.Any(o => o.StartAt <= now) && (rg.Status == RequestStatus.Accepted || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed));
         }
 
+        /// <summary>
+        /// Requests that are responded but not answered by customer and customer should get reminder email
+        /// Also include accepted requests that belong to approved requestgroup (interpreter changed)
+        /// </summary>
+        public static IQueryable<Request> NonAnsweredRespondedRequestsToBeReminded(this IQueryable<Request> requests, DateTimeOffset now)
+        {
+            return requests.GetRequestsWithBaseIncludes().Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status == RequestStatus.Approved))
+                  && r.Order.StartAt > now && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed));
+        }
+
+        /// <summary>
+        /// Requestgroups that are responded but not answered by customer and first order is starting 
+        /// </summary>
+        public static IQueryable<RequestGroup> NonAnsweredRespondedRequestGroupsToBeReminded(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now)
+        {
+            return requestGroups.GetRequestGroupsWithBaseIncludes().Where(rg => rg.OrderGroup.Orders.Any(o => o.StartAt > now) && (rg.Status == RequestStatus.Accepted || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed));
+        }
+
         public static IQueryable<Request> CompletedRequests(this IQueryable<Request> requests, DateTimeOffset now)
         {
             return requests.Where(r => (r.Order.EndAt <= now && r.Order.Status == OrderStatus.ResponseAccepted) &&
@@ -683,6 +701,13 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Order.CreatedByUser)
                 .Include(r => r.Order.ContactPersonUser);
+
+        private static IQueryable<RequestGroup> GetRequestGroupsWithBaseIncludes(this IQueryable<RequestGroup> requestGroups)
+            => requestGroups
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
+                .Include(r => r.OrderGroup.CreatedByUser);
 
         private static IQueryable<Request> GetRequestsWithBaseIncludesForApi(this IQueryable<Request> requests)
                 => requests

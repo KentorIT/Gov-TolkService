@@ -1123,6 +1123,18 @@ Sammanställning:
                 HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId));
         }
 
+        public void RemindUnhandledRequestGroup(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RemindUnhandledRequestGroup), nameof(NotificationService));
+            string orderNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            string body = $"Svar på sammanhållen bokningsförfrågan {orderNumber} från förmedling {requestGroup.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har accepterats."
+            + GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer);
+
+            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup), $"Sammanhållen bokningsförfrågan {orderNumber} väntar på hantering",
+                body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId));
+        }
+
         public void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(PartialRequestGroupAnswerAccepted), nameof(NotificationService));
