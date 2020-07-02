@@ -40,6 +40,7 @@ namespace Tolk.Web.Controllers
         private readonly CacheService _cacheService;
         private readonly ListToModelService _listToModelService;
         private readonly EventLogService _eventLogService;
+        private readonly UserService _userService;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -54,7 +55,8 @@ namespace Tolk.Web.Controllers
             IMapper mapper,
             CacheService cacheService,
             ListToModelService listToModelService,
-            EventLogService eventLogService
+            EventLogService eventLogService,
+            UserService userService
             )
         {
             _dbContext = dbContext;
@@ -70,6 +72,7 @@ namespace Tolk.Web.Controllers
             _cacheService = cacheService;
             _listToModelService = listToModelService;
             _eventLogService = eventLogService;
+            _userService = userService;
         }
 
         public IActionResult List()
@@ -260,7 +263,6 @@ namespace Tolk.Web.Controllers
                         var attachmentChanged = false;
                         var contactpersonChanged = false;
                         AspNetUser oldContactPerson = order.ContactPersonUser;
-
                         IEnumerable<int> oldOrderAttachmentIdsToCompare = await _dbContext.Attachments.GetAttachmentsForOrderAndGroup(model.OrderId, order.OrderGroupId).Select(a => a.AttachmentId).ToListAsync();
                         IEnumerable<int> updatedAttachments = (model.Files?.Any() ?? false) ? model.Files.Select(a => a.Id) : Enumerable.Empty<int>();
                         //check if attachments are changed
@@ -277,7 +279,7 @@ namespace Tolk.Web.Controllers
                         if (order.ContactPersonId != model.ContactPersonId)
                         {
                             contactpersonChanged = true;
-                            ChangeContactPerson(order, model.ContactPersonId);
+                            _orderService.ChangeContactPerson(order, model.ContactPersonId, User.GetUserId(), User.TryGetImpersonatorId());
                         }
                         //
                         //Note: This retrieves the locations to the order object as well...
@@ -370,11 +372,7 @@ namespace Tolk.Web.Controllers
             }
             DateTime nextPanicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
 
-            var user = await _userManager.Users
-                .Include(u => u.DefaultSettings)
-                .Include(u => u.DefaultSettingOrderRequirements)
-                .Include(u => u.CustomerUnits).ThenInclude(c => c.CustomerUnit)
-                .SingleOrDefaultAsync(u => u.Id == User.GetUserId());
+            var user = await _userService.GetUserWithDefaultSettings(User.GetUserId());
 
             var model = new OrderModel()
             {
@@ -838,7 +836,7 @@ namespace Tolk.Web.Controllers
                 {
                     return RedirectToAction(nameof(View), new { id = order.OrderId });
                 }
-                ChangeContactPerson(order, model.ContactPersonId);
+                _orderService.ChangeContactPerson(order, model.ContactPersonId, User.GetUserId(), User.TryGetImpersonatorId());
                 await _dbContext.SaveChangesAsync();
                 _notificationService.OrderContactPersonChanged(order, oldContactPerson);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
@@ -853,12 +851,7 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        private void ChangeContactPerson(Order order, int? newContactPersonId)
-        {
-            order.OrderChangeLogEntries = new List<OrderChangeLogEntry>();
-            order.ChangeContactPerson(_clock.SwedenNow, User.GetUserId(),
-                User.TryGetImpersonatorId(), _dbContext.Users.SingleOrDefault(u => u.Id == newContactPersonId));
-        }
+   
 
         [ValidateAntiForgeryToken]
         [HttpPost]

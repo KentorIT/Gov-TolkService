@@ -109,6 +109,14 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
+        public void ChangeContactPerson(Order order, int? newContactPersonId, int userId, int? impersonatorId)
+        {
+            NullCheckHelper.ArgumentCheckNull(order, nameof(ChangeContactPerson), nameof(OrderService));
+            order.OrderChangeLogEntries = new List<OrderChangeLogEntry>();
+            order.ChangeContactPerson(_clock.SwedenNow, userId,
+                impersonatorId, _tolkDbContext.Users.SingleOrDefault(u => u.Id == newContactPersonId));
+        }
+
         public async Task CreateRequestGroup(OrderGroup group, RequestGroup expiredRequestGroup = null, DateTimeOffset? latestAnswerBy = null)
         {
             NullCheckHelper.ArgumentCheckNull(group, nameof(CreateRequestGroup), nameof(OrderService));
