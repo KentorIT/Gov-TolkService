@@ -981,6 +981,21 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<Quarantine> GetQuarantinesForRankings(this IQueryable<Quarantine> quarantines, IEnumerable<int> rankingIds)
             => quarantines.Where(q => rankingIds.Contains(q.RankingId));
 
+        public static async Task<Request> GetRequestForInterpretertById(this IQueryable<Request> requests, int id)
+            => await requests.GetRequestsWithBaseIncludes()
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
+                .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder)
+                .SingleAsync(r => r.RequestId == id);
+
+        public static IQueryable<Request> GetRequestsForInterpreter(this IQueryable<Request> requests, int interpreterId)
+            => requests.Include(r => r.Order).ThenInclude(o => o.Region)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Where(r => r.Interpreter.InterpreterId == interpreterId && 
+                    (r.Status == RequestStatus.Approved || r.Status == RequestStatus.CancelledByBroker
+                    || r.Status == RequestStatus.CancelledByCreator || r.Status == RequestStatus.CancelledByCreatorWhenApproved));
+
     }
 
 }

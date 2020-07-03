@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
@@ -38,30 +39,21 @@ namespace Tolk.Web.Controllers
         {
             var model = new AssignmentFilterModel();
             await TryUpdateModelAsync(model);
-            var requests = _dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.Region)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-            .Where(r => r.Interpreter.InterpreterId == User.GetInterpreterId() &&
-                (r.Status == RequestStatus.Approved ||
-                r.Status == RequestStatus.CancelledByBroker ||
-                r.Status == RequestStatus.CancelledByCreator ||
-                r.Status == RequestStatus.CancelledByCreatorWhenApproved));
-            // The list of Requests should differ, if the user is an interpreter, or is a broker-user.
+            var requests = _dbContext.Requests.GetRequestsForInterpreter(User.GetInterpreterId());
 
             return AjaxDataTableHelper.GetData(request, requests.Count(), model.Apply(requests, _clock), x => x.Select(r =>
-           new RequestListItemModel
-           {
-               RequestId = r.RequestId,
-               LanguageName = r.Order.OtherLanguage ?? r.Order.Language.Name,
-               OrderNumber = r.Order.OrderNumber,
-               CustomerName = r.Order.CustomerOrganisation.Name,
-               RegionName = r.Order.Region.Name,
-               ExpiresAt = r.ExpiresAt,
-               StartAt = r.Order.StartAt,
-               EndAt = r.Order.EndAt,
-               Status = r.Status
-           }));
+            new RequestListItemModel
+            {
+                RequestId = r.RequestId,
+                LanguageName = r.Order.OtherLanguage ?? r.Order.Language.Name,
+                OrderNumber = r.Order.OrderNumber,
+                CustomerName = r.Order.CustomerOrganisation.Name,
+                RegionName = r.Order.Region.Name,
+                ExpiresAt = r.ExpiresAt,
+                StartAt = r.Order.StartAt,
+                EndAt = r.Order.EndAt,
+                Status = r.Status
+            }));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
@@ -74,19 +66,13 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> View(int id)
         {
-            var request = _dbContext.Requests
-                    .Include(r => r.PriceRows)
-                    .Include(r => r.Requisitions)
-                    .Include(r => r.Interpreter)
-                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.Order).ThenInclude(o => o.Language)
-                    .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
-                    .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                    .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder)
-                    .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(oa => oa.Attachment)
-                    .Include(r => r.Attachments).ThenInclude(ra => ra.Attachment)
-                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Where(r => r.RequestId == id).Single();
+            var request = await _dbContext.Requests.GetRequestForInterpretertById(id);
+            request.Requisitions = await _dbContext.Requisitions.GetRequisitionsForRequest(request.RequestId).ToListAsync();
+            request.Order.InterpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToListAsync();
+            request.PriceRows = await _dbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToListAsync();
+            var model = AssignmentModel.GetModelFromRequest(request, _clock.SwedenNow);
+            model.RequestAttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForRequest(request.RequestId, request.RequestGroupId), "Bifogade filer från förmedling");
+            model.OrderAttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForOrderAndGroup(request.OrderId, request.Order.OrderGroupId), "Bifogade filer från myndighet");
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
                 return View(AssignmentModel.GetModelFromRequest(request, _clock.SwedenNow));

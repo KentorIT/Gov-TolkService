@@ -83,33 +83,7 @@ namespace Tolk.Web.Models
                 AllowRequisitionRegistration = (request.Order.StartAt < timeNow && !requisitionId.HasValue && (request.Status == RequestStatus.Approved || request.Status == RequestStatus.Delivered)),
                 ReplacedByOrderNumber = request.Order.ReplacedByOrder?.OrderNumber,
                 ReplacedByOrderStatus = request.Order.ReplacedByOrder?.Status,
-                ReplacingOrderNumber = request.Order.ReplacingOrder?.OrderNumber,
-                RequestAttachmentListModel = new AttachmentListModel
-                {
-                    AllowDelete = false,
-                    AllowDownload = true,
-                    AllowUpload = false,
-                    Title = "Bifogade filer från förmedling",
-                    DisplayFiles = request.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }).ToList()
-                },
-                OrderAttachmentListModel = new AttachmentListModel
-                {
-                    AllowDelete = false,
-                    AllowDownload = true,
-                    AllowUpload = false,
-                    Title = "Bifogade filer från myndighet",
-                    DisplayFiles = request.Order.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }).ToList()
-                }
+                ReplacingOrderNumber = request.Order.ReplacingOrder?.OrderNumber
             };
         }
         #endregion
