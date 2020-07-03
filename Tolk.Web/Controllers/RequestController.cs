@@ -145,7 +145,7 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> Change(int id)
         {
-            var request = await _dbContext.Requests.GetRequestsForAcceptById(id);
+            var request = await _dbContext.Requests.GetRequestForAcceptById(id);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanChangeInterpreter(_clock.SwedenNow))
             {
                 RequestModel model = await GetModel(request);
@@ -166,7 +166,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var request = await _dbContext.Requests.GetRequestsForAcceptById(model.RequestId);
+                var request = await _dbContext.Requests.GetRequestForAcceptById(model.RequestId);
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
@@ -286,7 +286,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var request = await _dbContext.Requests.GetRequestsWithContactsById(model.RequestId);
+                var request = await _dbContext.Requests.GetRequestWithContactsById(model.RequestId);
                 if (request == null)
                 {
                     return RedirectToAction("Index", "Home", new { ErrorMessage = "Tillfället kunde inte avbokas" });
@@ -314,7 +314,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Decline(RequestDeclineModel model)
         {
-            var request = await _dbContext.Requests.GetRequestsWithContactsById(model.DeniedRequestId);
+            var request = await _dbContext.Requests.GetRequestWithContactsById(model.DeniedRequestId);
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {

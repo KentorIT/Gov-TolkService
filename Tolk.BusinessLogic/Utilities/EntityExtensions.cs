@@ -127,12 +127,16 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(c => c.ConfirmedByUser);
 
         public static IQueryable<OrderChangeLogEntry> GetOrderChangeLogEntitesForOrderEventLog(this IQueryable<OrderChangeLogEntry> rows, int id)
-            => rows.GetOrderChangeLogEntitesForOrder(id)
-                    .Include(ch => ch.UpdatedByUser)
+            => rows.GetOrderChangeLogEntitesWithUserIncludes(id)
                     .Include(ch => ch.Broker)
                     .Include(ch => ch.OrderContactPersonHistory).ThenInclude(h => h.PreviousContactPersonUser)
-                    .Include(ch => ch.OrderChangeConfirmation).ThenInclude(c => c.ConfirmedByUser)
                     .OrderBy(ch => ch.LoggedAt);
+
+        public static IQueryable<OrderChangeLogEntry> GetOrderChangeLogEntitesWithUserIncludes(this IQueryable<OrderChangeLogEntry> rows, int id)
+            => rows.GetOrderChangeLogEntitesForOrder(id)
+                .Include(ch => ch.UpdatedByUser)
+                .Include(ch => ch.OrderChangeConfirmation).ThenInclude(c => c.ConfirmedByUser)
+                .OrderBy(ch => ch.LoggedAt);
 
         public static IQueryable<OrderInterpreterLocation> GetOrderedInterpreterLocationsForOrder(this IQueryable<OrderInterpreterLocation> locations, int id)
              => locations.Where(r => r.OrderId == id).OrderBy(r => r.Rank);
@@ -467,7 +471,7 @@ namespace Tolk.BusinessLogic.Utilities
                .Include(r => r.Order).ThenInclude(r => r.CustomerUnit)
                .SingleAsync(r => r.RequestId == id);
 
-        public static async Task<Request> GetRequestsForAcceptById(this IQueryable<Request> requests, int id)
+        public static async Task<Request> GetRequestForAcceptById(this IQueryable<Request> requests, int id)
             => await requests.GetRequestsWithBaseIncludes()
                     .Include(r => r.RequestGroup)
                     .Include(r => r.Order).ThenInclude(o => o.Language)
@@ -476,10 +480,10 @@ namespace Tolk.BusinessLogic.Utilities
                     .Include(r => r.Order).ThenInclude(o => o.IsExtraInterpreterForOrder)
                     .SingleAsync(r => r.RequestId == id);
 
-        public static async Task<Request> GetRequestsWithContactsById(this IQueryable<Request> requests, int id)
+        public static async Task<Request> GetRequestWithContactsById(this IQueryable<Request> requests, int id)
              => await requests.GetRequestsWithBaseIncludes().SingleAsync(r => r.RequestId == id);
 
-        public static async Task<Request> GetRequestsForChangeInterpreterWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId)
+        public static async Task<Request> GetRequestForChangeInterpreterWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId)
            => await requests.GetRequestsWithBaseIncludes()
                    .Include(r => r.RequestGroup)
                    .Include(r => r.Order).ThenInclude(o => o.Language)

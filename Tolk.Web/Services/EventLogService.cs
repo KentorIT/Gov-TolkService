@@ -170,7 +170,7 @@ namespace Tolk.Web.Services
             //Order change history just in detailed view (for broker, customer has its' own)
             if (brokerId.HasValue)
             {
-                var orderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntitesForOrder(orderId)
+                var orderChangeLogEntries = await _dbContext.OrderChangeLogEntries.GetOrderChangeLogEntitesWithUserIncludes(orderId)
                     .Where(oc => (oc.OrderChangeLogType != OrderChangeLogType.ContactPerson) && oc.BrokerId == brokerId).OrderBy(ch => ch.LoggedAt).ToListAsync();
                 foreach (OrderChangeLogEntry oc in orderChangeLogEntries)
                 {

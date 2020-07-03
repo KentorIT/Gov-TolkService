@@ -283,7 +283,7 @@ namespace Tolk.Web.Api.Controllers
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
 
-                var request = await _dbContext.Requests.GetRequestsForChangeInterpreterWithBrokerAndOrderNumber(model.OrderNumber, User.TryGetBrokerId().Value);
+                var request = await _dbContext.Requests.GetRequestForChangeInterpreterWithBrokerAndOrderNumber(model.OrderNumber, User.TryGetBrokerId().Value);
 
                 if (request == null)
                 {
