@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -67,7 +66,7 @@ namespace Tolk.Web.Api.Services
             request.Order.PriceRows = _dbContext.OrderPriceRows.GetPriceRowsForOrder(request.OrderId).ToList();
 
             var attachments = getAttachments ? GetAttachments(request) : Enumerable.Empty<AttachmentInformationModel>();
-            
+
             return new RequestDetailsResponse
             {
                 Status = request.Status.GetCustomName(),
@@ -89,7 +88,7 @@ namespace Tolk.Web.Api.Services
                     UnitName = request.Order.CustomerUnit?.Name,
                     DepartmentName = request.Order.UnitName,
                     UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter))
-        },
+                },
                 Region = request.Order.Region.Name,
                 ExpiresAt = request.ExpiresAt,
                 Language = new LanguageModel
