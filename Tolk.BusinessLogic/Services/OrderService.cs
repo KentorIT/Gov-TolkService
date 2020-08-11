@@ -266,20 +266,7 @@ namespace Tolk.BusinessLogic.Services
 
             if (request != null)
             {
-                var newRequest = _tolkDbContext.Requests
-                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
-                    .Include(r => r.Order).ThenInclude(o => o.Region)
-                    .Include(r => r.Order).ThenInclude(o => o.Language)
-                    .Include(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                    .Include(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-                    .Include(r => r.Order).ThenInclude(o => o.Requirements)
-                    .Include(r => r.Order).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                    .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
-                    .Include(r => r.Order).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                    .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
-                    .Include(r => r.Ranking.Broker)
-                    .Single(r => r.RequestId == request.RequestId);
+                var newRequest = await _tolkDbContext.Requests.GetRequestForNewRequestById (request.RequestId);
                 if (expiry.HasValue)
                 {
                     _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
@@ -661,21 +648,22 @@ namespace Tolk.BusinessLogic.Services
 
         private async Task<RequestGroup> GetNewRequestGroup(int requestGroupId)
         {
-            return await _tolkDbContext.RequestGroups
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerUnit)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Region)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.InterpreterLocations)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.Requirements)
-                .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceCalculationCharge)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.IsExtraInterpreterForOrder)
-                .Include(r => r.Ranking.Broker)
-                .SingleAsync(r => r.RequestGroupId == requestGroupId);
+            var requestGroup = await _tolkDbContext.RequestGroups.GetRequestGroupForCreateById(requestGroupId);
+            requestGroup.OrderGroup.Attachments = await _tolkDbContext.OrderGroupAttachments.GetAttachmentsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            requestGroup.OrderGroup.Requirements = await _tolkDbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            requestGroup.OrderGroup.CompetenceRequirements = await _tolkDbContext.OrderGroupCompetenceRequirements.GetOrderedCompetenceRequirementsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            await AddListsToOrdersForGroup(requestGroup.OrderGroup);
+            return requestGroup;
+        }
+
+        private async Task<OrderGroup> AddListsToOrdersForGroup(OrderGroup orderGroup)
+        {
+            orderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(orderGroup.OrderGroupId, true).ToListAsync();
+            var locations = await _tolkDbContext.OrderInterpreterLocation.GetInterpreterLocationsForOrdersInGroup(orderGroup.OrderGroupId).ToListAsync();
+            var pricerows = await _tolkDbContext.OrderPriceRows.GetPriceRowsForOrderInOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.Orders.ForEach(o => o.InterpreterLocations = locations.Where(l => l.OrderId == o.OrderId).ToList());
+            orderGroup.Orders.ForEach(o => o.PriceRows = pricerows.Where(p => p.OrderId == o.OrderId).ToList());
+            return orderGroup;
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
@@ -695,9 +683,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 try
                 {
-                    var startedRequest = await _tolkDbContext.Requests
-                    .Include(r => r.Interpreter)
-                    .SingleOrDefaultAsync(r => r.RequestId == requestId);
+                    var startedRequest = await _tolkDbContext.Requests.GetRequestWithInterpreterById(requestId);
                     var officialInterpreterId = startedRequest.Interpreter.OfficialInterpreterId;
                     if (startedRequest == null)
                     {
@@ -737,10 +723,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 try
                 {
-                    var completedRequest = await _tolkDbContext.Requests.CompletedRequests(_clock.SwedenNow)
-                    .Include(r => r.Order)
-                    .Include(r => r.Ranking)
-                    .SingleOrDefaultAsync(r => r.RequestId == requestId);
+                    var completedRequest = await _tolkDbContext.Requests.GetCompletedRequestById(_clock.SwedenNow, requestId);
                     if (completedRequest == null)
                     {
                         _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.", requestId);
@@ -763,10 +746,8 @@ namespace Tolk.BusinessLogic.Services
 
         private async Task TerminateOrderGroup(OrderGroup orderGroup)
         {
-            var terminatedOrderGroup = await _tolkDbContext.OrderGroups
-              .Include(o => o.CreatedByUser)
-              .Include(o => o.Orders).ThenInclude(o => o.CustomerUnit)
-              .SingleAsync(o => o.OrderGroupId == orderGroup.OrderGroupId);
+            var terminatedOrderGroup = await _tolkDbContext.OrderGroups.GetOrderGroupWithContactsById(orderGroup.OrderGroupId);
+            terminatedOrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersWithUnitForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             _notificationService.OrderGroupTerminated(terminatedOrderGroup);
             _logger.LogInformation("Could not create another request group for order group {orderGroupId}, no more available brokers or too close in time.",
                orderGroup.OrderGroupId);
@@ -777,11 +758,7 @@ namespace Tolk.BusinessLogic.Services
             //The order will be terminated, send an email to tell the order creator
             if (notify)
             {
-                var terminatedOrder = await _tolkDbContext.Orders
-                   .Include(o => o.CreatedByUser)
-                   .Include(o => o.ContactPersonUser)
-                   .Include(o => o.CustomerUnit)
-                   .SingleAsync(o => o.OrderId == order.OrderId);
+                var terminatedOrder = await _tolkDbContext.Orders.GetOrderWithContactsById(order.OrderId);
                 _notificationService.OrderTerminated(terminatedOrder);
                 _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time, or it should be terminated due to rules",
                     order.OrderId);
@@ -821,12 +798,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     try
                     {
-                        var expiredRequest = await _tolkDbContext.Requests.ExpiredRequests(_clock.SwedenNow)
-                            .Include(r => r.Ranking)
-                            .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                            .Include(r => r.Order).ThenInclude(o => o.Requests).ThenInclude(r => r.Ranking).ThenInclude(r => r.Quarantines)
-                            .SingleOrDefaultAsync(r => r.RequestId == requestId);
-
+                        var expiredRequest = await _tolkDbContext.Requests.GetExpiredRequest(_clock.SwedenNow, requestId);
                         if (expiredRequest == null)
                         {
                             _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
@@ -894,15 +866,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     try
                     {
-                        var expiredRequestGroup = await _tolkDbContext.RequestGroups.ExpiredRequestGroups(_clock.SwedenNow)
-                            .Include(r => r.Ranking)
-                            .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.CustomerOrganisation)
-                            .Include(g => g.OrderGroup).ThenInclude(r => r.Orders).ThenInclude(o => o.Requests)
-                            .Include(g => g.OrderGroup).ThenInclude(o => o.CustomerUnit)
-                            .Include(g => g.OrderGroup).ThenInclude(r => r.RequestGroups).ThenInclude(r => r.Ranking)
-                            .Include(g => g.Requests).ThenInclude(r => r.Ranking)
-                            .SingleOrDefaultAsync(rg => rg.RequestGroupId == requestGroupId);
-
+                        var expiredRequestGroup = await _tolkDbContext.RequestGroups.GetExpiredRequestGroup(_clock.SwedenNow, requestGroupId);
                         if (expiredRequestGroup == null)
                         {
                             _logger.LogInformation("Request group {requestGroupId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
@@ -910,9 +874,10 @@ namespace Tolk.BusinessLogic.Services
                         }
                         else
                         {
+                            expiredRequestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(expiredRequestGroup.RequestGroupId).ToListAsync();
+                            expiredRequestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(expiredRequestGroup.OrderGroupId).ToListAsync();
                             _logger.LogInformation("Processing expired request group {requestGroupId} for Order group {orderGroupId}.",
                                 expiredRequestGroup.RequestGroupId, expiredRequestGroup.OrderGroupId);
-
                             if (expiredRequestGroup.OrderGroup.ClosestStartAt <= _clock.SwedenNow)
                             {
                                 expiredRequestGroup.SetStatus(RequestStatus.NoDeadlineFromCustomer);
@@ -965,10 +930,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     try
                     {
-                        var request = await _tolkDbContext.Requests.NonAnsweredRespondedRequests(_clock.SwedenNow)
-                        .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                        .Include(r => r.Ranking)
-                        .SingleOrDefaultAsync(r => r.RequestId == requestId);
+                        var request = await _tolkDbContext.Requests.GetNonAnsweredRespondedRequest(_clock.SwedenNow, requestId);
                         if (request == null)
                         {
                             _logger.LogInformation("Non answered responded request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
@@ -1011,12 +973,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     try
                     {
-                        var requestGroup = await _tolkDbContext.RequestGroups.NonAnsweredRespondedRequestGroups(_clock.SwedenNow)
-                        .Include(rg => rg.Requests)
-                        .Include(rg => rg.Ranking)
-                        .Include(rg => rg.OrderGroup).ThenInclude(og => og.CustomerOrganisation)
-                        .Include(rg => rg.OrderGroup).ThenInclude(og => og.Orders)
-                        .SingleOrDefaultAsync(rg => rg.RequestGroupId == requestGroupId);
+                        var requestGroup = await _tolkDbContext.RequestGroups.GetNonAnsweredRespondedRequestGroup(_clock.SwedenNow, requestGroupId);
                         if (requestGroup == null)
                         {
                             _logger.LogInformation("Non answered responded request group {requestGroupId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
@@ -1024,8 +981,9 @@ namespace Tolk.BusinessLogic.Services
                         }
                         else
                         {
-                            _logger.LogInformation("Set new status for non answered responded request group {requestGroupId}.",
-                                requestGroupId);
+                            requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+                            requestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+                            _logger.LogInformation("Set new status for non answered responded request group {requestGroupId}.", requestGroupId);
                             requestGroup.SetStatus(RequestStatus.ResponseNotAnsweredByCreator);
                             requestGroup.OrderGroup.SetStatus(OrderStatus.ResponseNotAnsweredByCreator);
                             _notificationService.RequestGroupExpiredDueToNoAnswerFromCustomer(requestGroup);
