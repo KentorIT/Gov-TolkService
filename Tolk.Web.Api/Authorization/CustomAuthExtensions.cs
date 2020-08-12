@@ -7,7 +7,7 @@ namespace Tolk.Web.Api.Authorization
     {
         public static AuthenticationBuilder AddCustomAuth(this AuthenticationBuilder builder, Action<CustomAuthOptions> configureOptions)
         {
-            return builder?.AddScheme<CustomAuthOptions, CustomAuthHandler>("Custom Scheme", "Custom Auth", configureOptions);
+            return builder?.AddScheme<CustomAuthOptions, CustomAuthHandler>(CustomAuthHandler.SchemeName, "Custom Auth", configureOptions);
         }
     }
 }

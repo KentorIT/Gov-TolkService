@@ -117,6 +117,16 @@ namespace Tolk.BusinessLogic.Services
                 impersonatorId, _tolkDbContext.Users.SingleOrDefault(u => u.Id == newContactPersonId));
         }
 
+        public async Task Create(Order order, DateTimeOffset? latestAnswerBy)
+        {
+            await _tolkDbContext.AddAsync(order);
+            await _tolkDbContext.SaveChangesAsync(); // Save changes to get id for event log
+
+            await CreateRequest(order, latestAnswerBy: latestAnswerBy);
+
+
+        }
+
         public async Task CreateRequestGroup(OrderGroup group, RequestGroup expiredRequestGroup = null, DateTimeOffset? latestAnswerBy = null)
         {
             NullCheckHelper.ArgumentCheckNull(group, nameof(CreateRequestGroup), nameof(OrderService));

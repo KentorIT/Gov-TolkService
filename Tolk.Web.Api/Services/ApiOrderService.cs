@@ -19,13 +19,23 @@ namespace Tolk.Web.Api.Services
     public class ApiOrderService
     {
         private readonly TolkDbContext _dbContext;
+        private readonly ApiUserService _apiUserService;
+        private readonly ISwedishClock _timeService;
         private readonly ILogger _logger;
         private readonly CacheService _cacheService;
 
-        public ApiOrderService(TolkDbContext dbContext, ILogger<ApiOrderService> logger, CacheService cacheService)
+        public ApiOrderService(
+            TolkDbContext dbContext,
+            ApiUserService apiUserService,
+            ISwedishClock timeService,
+            ILogger<ApiOrderService> logger,
+            CacheService cacheService
+        )
         {
-            _logger = logger;
             _dbContext = dbContext;
+            _apiUserService = apiUserService;
+            _timeService = timeService;
+            _logger = logger;
             _cacheService = cacheService;
         }
 
@@ -221,6 +231,20 @@ namespace Tolk.Web.Api.Services
                 }),
                 Occasions = occasions
             };
+        }
+
+        public async Task<Order> GetOrderFromModel(CreateOrderModel model, int apiUserId, int customerId)
+        {
+            if (model == null)
+            {
+                return null;
+            }
+            AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(apiUserId);
+            var user = await _apiUserService.GetCustomerUser(model.CallingUser, customerId);
+
+            var order = new Order(user ?? apiUser, user != null ? apiUser : null, apiUser.CustomerOrganisation, _timeService.SwedenNow);
+#warning set all properties
+            return order;
         }
 
         private IEnumerable<AttachmentInformationModel> GetAttachments(Request request)

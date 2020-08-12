@@ -83,6 +83,14 @@ namespace Tolk.Web.Api.Services
                 null;
         }
 
+        public async Task<AspNetUser> GetCustomerUser(string caller, int? customerId)
+        {
+            return !string.IsNullOrWhiteSpace(caller) ?
+                await _dbContext.Users.SingleOrDefaultAsync(u => (u.NormalizedEmail == caller.ToSwedishUpper() || u.NormalizedUserName == caller.ToSwedishUpper()) &&
+                    u.CustomerOrganisationId == customerId && u.IsActive && !u.IsApiUser) :
+                null;
+        }
+
         internal InterpreterBroker GetInterpreter(InterpreterDetailsModel interpreterModel, int brokerId, bool updateInformation = true)
         {
             if (interpreterModel == null)

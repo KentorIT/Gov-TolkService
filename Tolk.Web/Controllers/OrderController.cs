@@ -422,11 +422,7 @@ namespace Tolk.Web.Controllers
                         Order order = await CreateNewOrder();
                         var firstOccasion = model.FirstOccasion;
                         model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
-                        await _dbContext.AddAsync(order);
-                        await _dbContext.SaveChangesAsync(); // Save changes to get id for event log
-
-                        await _orderService.CreateRequest(order, latestAnswerBy: model.LatestAnswerBy);
-
+                        await _orderService.Create(order, latestAnswerBy: model.LatestAnswerBy);
                         await _dbContext.SaveChangesAsync();
                         trn.Commit();
                         return RedirectToAction(nameof(Sent), new { id = order.OrderId });
@@ -850,8 +846,6 @@ namespace Tolk.Web.Controllers
             }
             return Forbid();
         }
-
-   
 
         [ValidateAntiForgeryToken]
         [HttpPost]

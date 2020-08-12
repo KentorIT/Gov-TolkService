@@ -46,13 +46,14 @@ namespace Tolk.Web.Api
             services.AddScoped<InterpreterService>();
             services.AddScoped<EmailService>();
             services.AddScoped<ApiOrderService>();
+            services.AddScoped<OrderService>();
             services.AddScoped<CacheService>();
 
             services.AddAuthentication(options =>
             {
                 // the scheme name has to match the value we're going to use in AuthenticationBuilder.AddScheme(...)
-                options.DefaultAuthenticateScheme = "Custom Scheme";
-                options.DefaultChallengeScheme = "Custom Scheme";
+                options.DefaultAuthenticateScheme = CustomAuthHandler.SchemeName;
+                options.DefaultChallengeScheme = CustomAuthHandler.SchemeName;
             })
             .AddCustomAuth(o => { });
             services.AddDbContext<TolkDbContext>(options =>
@@ -60,6 +61,7 @@ namespace Tolk.Web.Api
             services.AddAuthorization(opt =>
             {
                 opt.AddPolicy(Policies.Broker, builder => builder.RequireClaim(TolkClaimTypes.BrokerId));
+                opt.AddPolicy(Policies.Customer, builder => builder.RequireClaim(TolkClaimTypes.CustomerOrganisationId));
             });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);

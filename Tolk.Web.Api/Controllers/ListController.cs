@@ -179,7 +179,7 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<ListItemResponse>> ErrorCodes()
         {
-            return Ok(TolkApiOptions.ErrorResponses.Select(d => d));
+            return Ok(TolkApiOptions.BrokerApiErrorResponses.Union(TolkApiOptions.CommonErrorResponses).Select(d => d));
         }
 
         private ActionResult<IEnumerable<ListItemResponse>> DescriptionsAsJson<T>()

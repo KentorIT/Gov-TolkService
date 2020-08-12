@@ -155,7 +155,7 @@ namespace Tolk.Web.Api.Controllers
         private IActionResult ReturnError(string errorCode, string action, string specifiedErrorMessage = null)
         {
             _logger.LogInformation($"{action} failed with this error: {errorCode} {(!string.IsNullOrEmpty(specifiedErrorMessage) ? $"Specific error message: {specifiedErrorMessage}" : string.Empty)}");
-            var message = TolkApiOptions.ErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
+            var message = TolkApiOptions.BrokerApiErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
             if (!string.IsNullOrEmpty(specifiedErrorMessage))
             {
                 message.ErrorMessage = specifiedErrorMessage;
