@@ -248,7 +248,7 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefaultAsync(u => u.Id == model.Id);
+                var user = await GetUserToHandle(model.Id.Value);
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
                 {
                     await _userService.LogOnUpdateAsync(model.Id.Value, User.GetUserId(), User.TryGetImpersonatorId());
@@ -518,52 +518,43 @@ namespace Tolk.Web.Controllers
         }
 
         [Authorize(Roles = Roles.CentralAdministrator)]
-        public ActionResult ViewOrganisationSettings(string message)
+        public async Task<ActionResult> ViewOrganisationSettings(string message)
         {
-            var brokerId = User.TryGetBrokerId();
-            if (brokerId != null)
+            AspNetUser apiUser = await GetApiUser();
+
+            if (apiUser != null)
             {
-                var apiUser = _dbContext.Users
-                    .Include(u => u.Claims)
-                    .Include(u => u.NotificationSettings)
-                    .Include(u => u.Broker)
-                    .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
-                if (apiUser != null)
+                var claims = await _dbContext.UserClaims.GetClaimsForUser(apiUser.Id);
+                var notificationSettings = _dbContext.UserNotificationSettings.GetNotificationSettingsForUser(apiUser.Id);
+                return View(new OrganisationSettingsModel
                 {
-                    return View(new OrganisationSettingsModel
+                    Message = message,
+                    UserName = apiUser.UserName,
+                    Email = apiUser.Email,
+                    CertificateSerialNumber = claims.SingleOrDefault(c => c.ClaimType == "CertificateSerialNumber")?.ClaimValue,
+                    UseApiKeyAuthentication = claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
+                    UseCertificateAuthentication = claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
+                    CallbackApiKey = claims.Any(c => c.ClaimType == "CallbackApiKey") ? EncryptHelper.Decrypt(claims.Single(c => c.ClaimType == "CallbackApiKey").ClaimValue, _options.PublicOrigin, apiUser.UserName) : null,
+                    OrganisationNumber = apiUser.Broker?.OrganizationNumber,
+                    NotificationSettings = notificationSettings.Select(s => new NotificationSettingsDetailsModel
                     {
-                        Message = message,
-                        UserName = apiUser.UserName,
-                        Email = apiUser.Email,
-                        CertificateSerialNumber = apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CertificateSerialNumber")?.ClaimValue,
-                        UseApiKeyAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
-                        UseCertificateAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
-                        CallbackApiKey = apiUser.Claims.Any(c => c.ClaimType == "CallbackApiKey") ? EncryptHelper.Decrypt(apiUser.Claims.Single(c => c.ClaimType == "CallbackApiKey").ClaimValue, _options.PublicOrigin, apiUser.UserName) : null,
-                        OrganisationNumber = apiUser.Broker.OrganizationNumber,
-                        NotificationSettings = apiUser.NotificationSettings.Select(s => new NotificationSettingsDetailsModel
-                        {
-                            Type = s.NotificationType,
-                            Channel = s.NotificationChannel,
-                            ContactInformation = s.ConnectionInformation
-                        })
-                    });
-                }
+                        Type = s.NotificationType,
+                        Channel = s.NotificationChannel,
+                        ContactInformation = s.ConnectionInformation
+                    })
+                });
             }
+
             return Forbid();
         }
 
         [Authorize(Roles = Roles.CentralAdministrator)]
         public async Task<ActionResult> EditNotificationSettings()
         {
-            var brokerId = User.TryGetBrokerId();
-            if (brokerId.HasValue)
+            AspNetUser apiUser = await GetApiUser();
+            if (apiUser != null)
             {
-                var apiUser = await _dbContext.Users.GetAPIUserForBroker(brokerId.Value);
-                if (apiUser != null)
-                {
-                    apiUser.NotificationSettings = await _dbContext.UserNotificationSettings.GetNotificationSettingsForUser(apiUser.Id).ToListAsync();
-                    return View(GetAvailableNotifications(apiUser.NotificationSettings).ToList());
-                }
+                return View(GetAvailableNotifications(_dbContext.UserNotificationSettings.GetNotificationSettingsForUser(apiUser.Id)).ToList());
             }
             return Forbid();
         }
@@ -573,30 +564,26 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.CentralAdministrator)]
         public async Task<ActionResult> EditNotificationSettings(IEnumerable<NotificationSettingsModel> model)
         {
-            var brokerId = User.TryGetBrokerId();
-            if (brokerId.HasValue)
+            AspNetUser apiUser = await GetApiUser();
+            if (apiUser != null)
             {
                 using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                 {
-                    var apiUser = await _dbContext.Users.GetAPIUserForBroker(brokerId.Value);
-                    if (apiUser != null)
+                    apiUser.NotificationSettings = await _dbContext.UserNotificationSettings.GetNotificationSettingsForUser(apiUser.Id).ToListAsync();
+                    if (ModelState.IsValid)
                     {
-                        apiUser.NotificationSettings = await _dbContext.UserNotificationSettings.GetNotificationSettingsForUser(apiUser.Id).ToListAsync();
-                        if (ModelState.IsValid)
+                        await _userService.LogNotificationSettingsUpdateAsync(apiUser.Id, User.GetUserId(), User.TryGetImpersonatorId());
+                        foreach (var setting in model)
                         {
-                            await _userService.LogNotificationSettingsUpdateAsync(apiUser.Id, User.GetUserId(), User.TryGetImpersonatorId());
-                            foreach (var setting in model)
-                            {
-                                UpdateNotificationSetting(apiUser, setting.UseEmail, setting.Type, NotificationChannel.Email, setting.SpecificEmail);
-                                UpdateNotificationSetting(apiUser, setting.UseWebHook, setting.Type, NotificationChannel.Webhook, setting.WebHookReceipentAddress);
-                            }
-                            await _dbContext.SaveChangesAsync();
-                            transaction.Complete();
-                            await _cacheService.Flush(CacheKeys.BrokerSettings);
-                            return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
+                            UpdateNotificationSetting(apiUser, setting.UseEmail, setting.Type, NotificationChannel.Email, setting.SpecificEmail);
+                            UpdateNotificationSetting(apiUser, setting.UseWebHook, setting.Type, NotificationChannel.Webhook, setting.WebHookReceipentAddress);
                         }
-                        return View(model);
+                        await _dbContext.SaveChangesAsync();
+                        transaction.Complete();
+                        await _cacheService.Flush(CacheKeys.BrokerSettings);
+                        return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
                     }
+                    return View(model);
                 }
             }
             return Forbid();
@@ -605,14 +592,9 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.CentralAdministrator)]
         public async Task<ActionResult> ChangeApiKey()
         {
-            var brokerId = User.TryGetBrokerId();
-            if (brokerId.HasValue)
+            if (await GetApiUser() != null)
             {
-                var apiUser = await _dbContext.Users.GetAPIUserForBroker(brokerId.Value);
-                if (apiUser != null)
-                {
-                    return View();
-                }
+                return View();
             }
             return Forbid();
         }
@@ -625,8 +607,8 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 //Save all Claims and Notification settings and stuff here...
-                var brokerId = User.TryGetBrokerId();
-                if (brokerId.HasValue)
+                AspNetUser apiUser = await GetApiUser();
+                if (apiUser != null)
                 {
                     var user = await _userManager.GetUserAsync(User);
                     if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
@@ -636,26 +618,22 @@ namespace Tolk.Web.Controllers
                     }
                     using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                     {
-                        var apiUser = await _dbContext.Users.GetAPIUserForBroker(brokerId.Value);
-                        if (apiUser != null)
+                        var secretClaim = (await _userManager.GetClaimsAsync(apiUser)).SingleOrDefault(c => c.Type == "Secret");
+                        if (secretClaim != null)
                         {
-                            var secretClaim = (await _userManager.GetClaimsAsync(apiUser)).SingleOrDefault(c => c.Type == "Secret");
-                            if (secretClaim != null)
-                            {
-                                await _userManager.RemoveClaimAsync(apiUser, secretClaim);
-                            }
-                            var saltClaim = (await _userManager.GetClaimsAsync(apiUser)).SingleOrDefault(c => c.Type == "Salt");
-                            if (saltClaim != null)
-                            {
-                                await _userManager.RemoveClaimAsync(apiUser, saltClaim);
-                            }
-
-                            var salt = HashHelper.CreateSalt(32);
-                            await _userManager.AddClaimAsync(apiUser, new Claim("Secret", HashHelper.GenerateHash(model.ApiKey, salt)));
-                            await _userManager.AddClaimAsync(apiUser, new Claim("Salt", salt));
-                            transaction.Complete();
-                            return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
+                            await _userManager.RemoveClaimAsync(apiUser, secretClaim);
                         }
+                        var saltClaim = (await _userManager.GetClaimsAsync(apiUser)).SingleOrDefault(c => c.Type == "Salt");
+                        if (saltClaim != null)
+                        {
+                            await _userManager.RemoveClaimAsync(apiUser, saltClaim);
+                        }
+
+                        var salt = HashHelper.CreateSalt(32);
+                        await _userManager.AddClaimAsync(apiUser, new Claim("Secret", HashHelper.GenerateHash(model.ApiKey, salt)));
+                        await _userManager.AddClaimAsync(apiUser, new Claim("Salt", salt));
+                        transaction.Complete();
+                        return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
                     }
                 }
             }
@@ -745,29 +723,22 @@ namespace Tolk.Web.Controllers
         }
 
         [Authorize(Roles = Roles.CentralAdministrator)]
-        public ActionResult EditOrganisationSettings()
+        public async Task<ActionResult> EditOrganisationSettings()
         {
-            var brokerId = User.TryGetBrokerId();
-            if (brokerId != null)
+            AspNetUser apiUser = await GetApiUser();
+            if (apiUser != null)
             {
-                var apiUser = _dbContext.Users
-                    .Include(u => u.Claims)
-                    .Include(u => u.NotificationSettings)
-                    .Include(u => u.Broker)
-                    .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
-                if (apiUser != null)
+                var claims = await _dbContext.UserClaims.GetClaimsForUser(apiUser.Id);
+                return View(new OrganisationSettingsModel
                 {
-                    return View(new OrganisationSettingsModel
-                    {
-                        UserName = apiUser.UserName,
-                        Email = apiUser.Email,
-                        CertificateSerialNumber = apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CertificateSerialNumber")?.ClaimValue,
-                        UseApiKeyAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
-                        UseCertificateAuthentication = apiUser.Claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
-                        CallbackApiKey = apiUser.Claims.Any(c => c.ClaimType == "CallbackApiKey") ? EncryptHelper.Decrypt(apiUser.Claims.SingleOrDefault(c => c.ClaimType == "CallbackApiKey").ClaimValue, _options.PublicOrigin, apiUser.UserName) : null,
-                        OrganisationNumber = apiUser.Broker.OrganizationNumber
-                    });
-                }
+                    UserName = apiUser.UserName,
+                    Email = apiUser.Email,
+                    CertificateSerialNumber = claims.SingleOrDefault(c => c.ClaimType == "CertificateSerialNumber")?.ClaimValue,
+                    UseApiKeyAuthentication = claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
+                    UseCertificateAuthentication = claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
+                    CallbackApiKey = claims.Any(c => c.ClaimType == "CallbackApiKey") ? EncryptHelper.Decrypt(claims.SingleOrDefault(c => c.ClaimType == "CallbackApiKey").ClaimValue, _options.PublicOrigin, apiUser.UserName) : null,
+                    OrganisationNumber = apiUser.Broker?.OrganizationNumber
+                });
             }
             return Forbid();
         }
@@ -780,67 +751,64 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 //Save all Claims and Notification settings and stuff here...
-                var brokerId = User.TryGetBrokerId();
-                if (brokerId != null)
+                AspNetUser apiUser = await GetApiUser();
+                if (apiUser != null)
                 {
                     using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
                     {
-                        var apiUser = _dbContext.Users
-                            .SingleOrDefault(u => u.IsApiUser && u.BrokerId == brokerId);
-                        if (apiUser != null)
+                        await _userService.LogOnUpdateAsync(apiUser.Id, User.GetUserId(), User.TryGetImpersonatorId());
+                        if (apiUser.BrokerId.HasValue)
                         {
-                            await _userService.LogOnUpdateAsync(apiUser.Id, User.GetUserId(), User.TryGetImpersonatorId());
-                            var broker = _dbContext.Brokers.Single(b => b.BrokerId == brokerId);
                             if (apiUser.NormalizedEmail != model.Email.ToSwedishUpper())
                             {
                                 apiUser.Email = model.Email;
                                 apiUser.NormalizedEmail = model.Email.ToSwedishUpper();
-                                broker.EmailAddress = model.Email;
+                                apiUser.Broker.EmailAddress = model.Email;
                             }
-                            broker.OrganizationNumber = model.OrganisationNumber;
-                            var brokerUser = await _userManager.FindByNameAsync(apiUser.UserName);
-                            //Clear all Claims, and resave them...
-                            var claims = await _userManager.GetClaimsAsync(apiUser);
-                            var claim = claims.SingleOrDefault(c => c.Type == nameof(model.UseApiKeyAuthentication));
-                            if (claim != null)
-                            {
-                                await _userManager.RemoveClaimAsync(brokerUser, claim);
-                            }
-                            if (model.UseApiKeyAuthentication)
-                            {
-                                await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.UseApiKeyAuthentication), DateTime.Now.ToShortDateString()));
-                            }
-                            claim = claims.SingleOrDefault(c => c.Type == nameof(model.UseCertificateAuthentication));
-                            if (claim != null)
-                            {
-                                await _userManager.RemoveClaimAsync(brokerUser, claim);
-                            }
-                            if (model.UseCertificateAuthentication)
-                            {
-                                await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.UseCertificateAuthentication), DateTime.Now.ToShortDateString()));
-                            }
-                            claim = claims.SingleOrDefault(c => c.Type == nameof(model.CertificateSerialNumber));
-                            if (claim != null)
-                            {
-                                await _userManager.RemoveClaimAsync(brokerUser, claim);
-                            }
-                            if (!string.IsNullOrWhiteSpace(model.CertificateSerialNumber))
-                            {
-                                await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.CertificateSerialNumber), model.CertificateSerialNumber));
-                            }
-                            claim = claims.SingleOrDefault(c => c.Type == nameof(model.CallbackApiKey));
-                            if (claim != null)
-                            {
-                                await _userManager.RemoveClaimAsync(brokerUser, claim);
-                            }
-                            if (!string.IsNullOrWhiteSpace(model.CallbackApiKey))
-                            {
-                                await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.CallbackApiKey), EncryptHelper.Encrypt(model.CallbackApiKey, _options.PublicOrigin, apiUser.UserName)));
-                            }
-                            await _dbContext.SaveChangesAsync();
-                            transaction.Complete();
-                            return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
+                            apiUser.Broker.OrganizationNumber = model.OrganisationNumber;
                         }
+                        var brokerUser = await _userManager.FindByNameAsync(apiUser.UserName);
+                        //Clear all Claims, and resave them...
+                        var claims = await _userManager.GetClaimsAsync(apiUser);
+                        var claim = claims.SingleOrDefault(c => c.Type == nameof(model.UseApiKeyAuthentication));
+                        if (claim != null)
+                        {
+                            await _userManager.RemoveClaimAsync(brokerUser, claim);
+                        }
+                        if (model.UseApiKeyAuthentication)
+                        {
+                            await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.UseApiKeyAuthentication), DateTime.Now.ToShortDateString()));
+                        }
+                        claim = claims.SingleOrDefault(c => c.Type == nameof(model.UseCertificateAuthentication));
+                        if (claim != null)
+                        {
+                            await _userManager.RemoveClaimAsync(brokerUser, claim);
+                        }
+                        if (model.UseCertificateAuthentication)
+                        {
+                            await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.UseCertificateAuthentication), DateTime.Now.ToShortDateString()));
+                        }
+                        claim = claims.SingleOrDefault(c => c.Type == nameof(model.CertificateSerialNumber));
+                        if (claim != null)
+                        {
+                            await _userManager.RemoveClaimAsync(brokerUser, claim);
+                        }
+                        if (!string.IsNullOrWhiteSpace(model.CertificateSerialNumber))
+                        {
+                            await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.CertificateSerialNumber), model.CertificateSerialNumber));
+                        }
+                        claim = claims.SingleOrDefault(c => c.Type == nameof(model.CallbackApiKey));
+                        if (claim != null)
+                        {
+                            await _userManager.RemoveClaimAsync(brokerUser, claim);
+                        }
+                        if (!string.IsNullOrWhiteSpace(model.CallbackApiKey))
+                        {
+                            await _userManager.AddClaimAsync(brokerUser, new Claim(nameof(model.CallbackApiKey), EncryptHelper.Encrypt(model.CallbackApiKey, _options.PublicOrigin, apiUser.UserName)));
+                        }
+                        await _dbContext.SaveChangesAsync();
+                        transaction.Complete();
+                        return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
                     }
                 }
             }
@@ -869,7 +837,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> ChangeEmail(int id, string bc, string ba, string bi)
         {
-            var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == id);
+            var user = await GetUserToHandle(id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
             {
                 var model = new UserModel
@@ -897,7 +865,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> ChangeEmail(UserModel model)
         {
-            var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
+            var user = await GetUserToHandle(model.Id.Value);
             if (ModelState.IsValid)
             {
                 model.SendNewInvite = !user.EmailConfirmed;
@@ -946,7 +914,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> SendNewInvite(int id, string bc, string ba, string bi)
         {
-            var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == id);
+            var user = await GetUserToHandle(id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded && !user.EmailConfirmed)
             {
                 var model = new UserModel
@@ -972,7 +940,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> SendNewInvite(UserModel model)
         {
-            var user = _userManager.Users.Include(u => u.Roles).Include(u => u.CustomerUnits).SingleOrDefault(u => u.Id == model.Id);
+            var user = await GetUserToHandle(model.Id.Value);
             if (ModelState.IsValid)
             {
                 if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded && !user.EmailConfirmed)
@@ -986,10 +954,27 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
+        private async Task<AspNetUser> GetApiUser()
+        {
+            var brokerId = User.TryGetBrokerId();
+            var customerId = User.TryGetCustomerOrganisationId();
+            if (brokerId != null)
+            {
+                return await _dbContext.Users.GetAPIUserForBroker(brokerId.Value);
+            }
+            else if (customerId != null)
+            {
+                return await _dbContext.Users.GetAPIUserForCustomer(customerId.Value);
+            }
+
+            return null;
+        }
+
         private bool UseRolesForAdminUser(AspNetUser user)
         {
             return !user.CustomerOrganisationId.HasValue && !user.BrokerId.HasValue && !user.InterpreterId.HasValue && IsSysOrAppAdmin;
         }
+
         private bool IsSysOrAppAdmin => User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator);
 
         private string BackController => HttpContext.Request.Headers["Referer"].ToString().ContainsSwedish("Customer") ? "Customer" : HttpContext.Request.Headers["Referer"].ToString().ContainsSwedish("Unit") ? "Unit" : "User";
@@ -1075,12 +1060,14 @@ namespace Tolk.Web.Controllers
 
         private async Task<AspNetUser> GetUserToHandle(int userId)
         {
-            return await _userManager.Users
-            .Include(u => u.CustomerUnits).ThenInclude(cu => cu.CustomerUnit)
-            .Include(u => u.Roles)
-            .Include(u => u.CustomerOrganisation)
-            .Include(u => u.Broker)
-            .SingleOrDefaultAsync(u => u.Id == userId);
+            var user = await _userManager.Users
+                .Include(u => u.CustomerOrganisation)
+                .Include(u => u.Broker)
+                .SingleOrDefaultAsync(u => u.Id == userId);
+            user.CustomerUnits = await _dbContext.CustomerUnitUsers.GetCustomerUnitsForUser(userId).ToListAsync();
+            user.Roles = await _dbContext.UserRoles.GetRolesForUser(userId).ToListAsync();
+
+            return user;
         }
 
         private async Task<CustomerUnitUser> GetUnitUser(string combinedId)

@@ -14,6 +14,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Authorization;
 using Tolk.Web.Api.Helpers;
 using Tolk.BusinessLogic.Services;
+using NSwag.Annotations;
 
 namespace Tolk.Web.Api.Controllers
 {
@@ -36,6 +37,14 @@ namespace Tolk.Web.Api.Controllers
         public ActionResult<IEnumerable<ListItemResponse>> AssignmentTypes()
         {
             return DescriptionsAsJson<AssignmentType>();
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [OpenApiIgnore] //Not applicable for broker api
+        public ActionResult<IEnumerable<ListItemResponse>> AllowExceedingTravelCostTypes()
+        {
+            return DescriptionsAsJson<AllowExceedingTravelCost>();
         }
 
         [HttpGet]
@@ -180,6 +189,13 @@ namespace Tolk.Web.Api.Controllers
         public ActionResult<IEnumerable<ListItemResponse>> ErrorCodes()
         {
             return Ok(TolkApiOptions.BrokerApiErrorResponses.Union(TolkApiOptions.CommonErrorResponses).Select(d => d));
+        }
+
+        [HttpGet]
+        [OpenApiIgnore]
+        public ActionResult<IEnumerable<ListItemResponse>> CustomerErrorCodes()
+        {
+            return Ok(TolkApiOptions.CustomerApiErrorResponses.Union(TolkApiOptions.CommonErrorResponses).Select(d => d));
         }
 
         private ActionResult<IEnumerable<ListItemResponse>> DescriptionsAsJson<T>()

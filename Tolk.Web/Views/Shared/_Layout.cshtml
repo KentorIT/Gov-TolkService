@@ -98,6 +98,10 @@
                                         @if (User.IsInRole(Roles.CentralAdministrator))
                                         {
                                             <li><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                            @if (Options.Value.EnableCustomerApi)
+                                            {
+                                                <li><a class="submenu" asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Apiinställningar</a></li>
+                                            }
                                         }
                                         <li><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>
@@ -209,6 +213,10 @@
                                         @if (User.IsInRole(Roles.CentralAdministrator))
                                         {
                                             <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="List">Användare</a></li>
+                                            @if (Options.Value.EnableCustomerApi)
+                                            {
+                                                <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Apiinställningar</a></li>
+                                            }
                                         }
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Statistics" asp-action="List">Statistik och rapporter</a></li>

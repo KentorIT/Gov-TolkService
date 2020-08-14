@@ -119,12 +119,28 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task Create(Order order, DateTimeOffset? latestAnswerBy)
         {
+            //Validations to make
+            //min 1 max 2 competence levels if required
+            //min 0 max 2 competence levels if NOT required
+            // all competence levels must have a unique rank
+            //min 1 max 3 locations
+            // all locations must have a unique rank
+            //Must there be an lastestanswerby set?
+            //is latestAnswerBy valid, i.e. before start at? 
+
+            //Updates to the order if specific rules apply: (Move from OrderModel)
+            //Ignore LastAnswerBy, if regular rules apply.
+            //Ignore competence levels if language does not have this. If so, set the competence level to OtherInterpreter
+            //if no competence level is provided and the language HAS authorization, set AuthorizedInterpreter
+            // the two above is used for price calculation...
+            //Ignore meal breaks if the occasion is shorter than x minutes.
+            //Ignore Allow exceeding cost if the locations are all off site.
+            //NOTE: This method should probably return a list of "corrections" that was made to the order, according to the above rules.
+            // This can then be returned to the api call that created the order...
             await _tolkDbContext.AddAsync(order);
             await _tolkDbContext.SaveChangesAsync(); // Save changes to get id for event log
 
             await CreateRequest(order, latestAnswerBy: latestAnswerBy);
-
-
         }
 
         public async Task CreateRequestGroup(OrderGroup group, RequestGroup expiredRequestGroup = null, DateTimeOffset? latestAnswerBy = null)

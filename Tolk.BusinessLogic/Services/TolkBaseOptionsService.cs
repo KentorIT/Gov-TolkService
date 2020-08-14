@@ -35,5 +35,7 @@ namespace Tolk.BusinessLogic.Services
         public bool RoundPriceDecimals => _options.RoundPriceDecimals;
 
         public bool EnableSetLatestAnswerTimeForCustomer => _options.EnableSetLatestAnswerTimeForCustomer;
+
+        public bool EnableCustomerApi => _options.EnableCustomerApi;
     }
 }

@@ -8,7 +8,6 @@ namespace Tolk.Web.Api.Helpers
 {
     public class TolkApiOptions : TolkBaseOptions
     {
-        public bool EnableCustomerApi { get; set; } = false;
         public Uri TolkWebBaseUrl { get; set; }
         public static List<ErrorResponse> BrokerApiErrorResponses =>
                 new List<ErrorResponse>
@@ -31,8 +30,10 @@ namespace Tolk.Web.Api.Helpers
         public static List<ErrorResponse> CustomerApiErrorResponses =>
                 new List<ErrorResponse>
                 {
+                    new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.CallingUserMissing, ErrorMessage = "You must provide a calling user for this call." },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.OrderNotFound, ErrorMessage = "The provided order number could not be found, connected to your organisation." },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.OrderGroupNotFound, ErrorMessage = "The provided order group number could not be found, connected to your organisation." },
+                    new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.OrderNotValid, ErrorMessage = "The provided order cannot be created." },
                };
 
         public static List<ErrorResponse> CommonErrorResponses =>

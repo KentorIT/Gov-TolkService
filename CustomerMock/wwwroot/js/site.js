@@ -5,7 +5,10 @@ $(function () {
             url: "/Order/Create",
             type: 'GET',
             success: function (data) {
-                alert(data.message);
+                var msg = data.message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                var li = document.createElement("li");
+                li.textContent = msg;
+                $(".message-list").append(li);
             }
         });
     });

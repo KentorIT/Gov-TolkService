@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NSwag.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,66 +27,73 @@ namespace Tolk.Web.Api.Controllers
     public class OrderController : ControllerBase
     {
         private readonly TolkDbContext _dbContext;
-        private readonly RequestService _requestService;
-        private readonly ApiUserService _apiUserService;
-        private readonly ISwedishClock _timeService;
         private readonly OrderService _orderService;
         private readonly ApiOrderService _apiOrderService;
+        private readonly ITolkBaseOptions _tolkBaseOptions;
         private readonly ILogger _logger;
 
         public OrderController(
             TolkDbContext tolkDbContext,
-            RequestService requestService,
-            ApiUserService apiUserService,
-            ISwedishClock timeService,
             OrderService orderService,
             ApiOrderService apiOrderService,
+            ITolkBaseOptions tolkBaseOptions,
             ILogger<OrderController> logger)
         {
             _dbContext = tolkDbContext;
-            _apiUserService = apiUserService;
-            _timeService = timeService;
-            _requestService = requestService;
             _orderService = orderService;
             _apiOrderService = apiOrderService;
+            _tolkBaseOptions = tolkBaseOptions;
             _logger = logger;
         }
 
         #region Updating Methods
 
         [HttpPost]
+        [OpenApiIgnore] //Not applicable for broker api, hence hiding it from swagger
         public async Task<IActionResult> Create([FromBody] CreateOrderModel model)
         {
+            var method = $"{nameof(OrderController)}.{nameof(Create)}";
+            _logger.LogDebug($"{method} was called");
             if (model == null)
             {
-                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing, method);
             }
-#warning Add a lot more validations
-            //Start and end date checks?
-            //More?
-            //Must there be an lastestanswerby set?
-            //Move as many as possible to service, to get the checks in both cases...
+            if (!_tolkBaseOptions.EnableCustomerApi)
+            {
+                _logger.LogWarning($"{model.CallingUser} called {method}, but CustomerApi is not enabled!");
+                return BadRequest(new ValidationProblemDetails { Title = "CustomerApi is not enabled!" });
+            }
+            if (string.IsNullOrEmpty(model.CallingUser))
+            {
+                return ReturnError(ErrorCodes.CallingUserMissing, method);
+            }
+            _logger.LogInformation($"{model.CallingUser} is creating a new order");
+            if (ModelState.IsValid)
+            {
                 try
                 {
                     var order = await _apiOrderService.GetOrderFromModel(model, User.UserId(), User.TryGetCustomerId().Value);
                     await _orderService.Create(order, model.LatestAnswerBy);
                     await _dbContext.SaveChangesAsync();
-                    return Ok(new CreateOrderResponse { 
+                    _logger.LogInformation($"{order.OrderNumber} was created");
+                    return Ok(new CreateOrderResponse {
                         OrderNumber = order.OrderNumber,
-#warning Return the calculated price model too...
-                        //PriceInformation = _apiOrderService.get
+                        PriceInformation = order.PriceRows.GetPriceInformationModel(
+                            order.PriceCalculatedFromCompetenceLevel.GetCustomName(),
+                            (await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId)).Ranking.BrokerFee),
+
                     });
                 }
                 catch (InvalidOperationException ex)
                 {
-#warning Add new error codes
-                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, ex.Message);
+                    return ReturnError(ErrorCodes.OrderNotValid, method, ex.Message);
                 }
                 catch (ArgumentNullException ex)
                 {
-#warning Add a lot more validations
-                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, ex.Message);
-                }
+                    return ReturnError(ErrorCodes.OrderNotValid, method, ex.Message);
+                } 
+            }
+            return ReturnError(ErrorCodes.OrderNotValid, method);
         }
 
         #endregion
@@ -97,9 +105,9 @@ namespace Tolk.Web.Api.Controllers
         #region private methods
 
         //Break out to error generator service...
-        private IActionResult ReturnError(string errorCode, string specifiedErrorMessage = null)
+        private IActionResult ReturnError(string errorCode, string failingMethod, string specifiedErrorMessage = null)
         {
-            //TODO: Add to log, information...
+            _logger.LogInformation($"{errorCode} was returned from {failingMethod}");
             var message = TolkApiOptions.BrokerApiErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
             if (!string.IsNullOrEmpty(specifiedErrorMessage))
             {

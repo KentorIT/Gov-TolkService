@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -308,7 +309,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Where(r => r.RequestGroupId == id && r.ReplacedByRequest == null);
 
         public static IQueryable<Order> GetOrdersForOrderGroup(this IQueryable<Order> orders, int id, bool includeIsExtraInterpreterForOrder = false)
-            =>  includeIsExtraInterpreterForOrder ?  orders.Where(r => r.OrderGroupId == id) :
+            => includeIsExtraInterpreterForOrder ? orders.Where(r => r.OrderGroupId == id) :
             orders.Include(o => o.IsExtraInterpreterForOrder).Where(r => r.OrderGroupId == id);
 
         public static IQueryable<Order> GetOrdersWithUnitForOrderGroup(this IQueryable<Order> orders, int id)
@@ -372,7 +373,9 @@ namespace Tolk.BusinessLogic.Utilities
            => defaultSettingOrderRequirements.Where(ds => ds.UserId == userId);
 
         public static IQueryable<CustomerUnitUser> GetCustomerUnitsForUser(this IQueryable<CustomerUnitUser> customerUnits, int userId)
-           => customerUnits.Where(cu => cu.UserId == userId);
+           => customerUnits
+            .Include(u => u.CustomerUnit)
+            .Where(cu => cu.UserId == userId);
 
         public static IQueryable<CustomerUnit> GetCustomerUnitsForCustomerOrganisation(this IQueryable<CustomerUnit> customerUnits, int? customerOrganisationId)
           => customerUnits.Where(cu => cu.CustomerOrganisationId == customerOrganisationId)
@@ -394,6 +397,12 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<AspNetUser> GetUsersByUserIds(this IQueryable<AspNetUser> users, IEnumerable<int> userIds)
           => users.Where(u => userIds.Contains(u.Id));
+
+        public async static Task<IEnumerable<IdentityUserClaim<int>>> GetClaimsForUser(this IQueryable<IdentityUserClaim<int>> claims, int userId)
+          => await claims.Where(u => u.UserId == userId).ToListAsync();
+
+        public static IQueryable<IdentityUserRole<int>> GetRolesForUser(this IQueryable<IdentityUserRole<int>> roles, int userId)
+          => roles.Where(u => u.UserId == userId);
 
         #endregion
 
@@ -608,7 +617,12 @@ namespace Tolk.BusinessLogic.Utilities
                 .SingleOrDefaultAsync(c => c.Request.Order.OrderNumber == orderNumber && c.Request.Ranking.BrokerId == brokerId);
 
         public static async Task<AspNetUser> GetAPIUserForBroker(this IQueryable<AspNetUser> users, int brokerId)
-            => await users.SingleOrDefaultAsync(u => u.IsApiUser && u.BrokerId == brokerId);
+            => await users
+                .Include(u => u.Broker)
+                .SingleOrDefaultAsync(u => u.IsApiUser && u.BrokerId == brokerId);
+
+        public static async Task<AspNetUser> GetAPIUserForCustomer(this IQueryable<AspNetUser> users, int customerId)
+            => await users.SingleOrDefaultAsync(u => u.IsApiUser && u.CustomerOrganisationId == customerId);
 
         public static async Task<CustomerUnitUser> GetCustomerUnitUserForUserAndCustomerUnit(this IQueryable<CustomerUnitUser> customerUnitUsers, int userId, int customerUnitId)
             => await customerUnitUsers.Include(cuu => cuu.CustomerUnit)
@@ -1028,7 +1042,7 @@ namespace Tolk.BusinessLogic.Utilities
             => requests.Include(r => r.Order).ThenInclude(o => o.Region)
                 .Include(r => r.Order).ThenInclude(o => o.Language)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Where(r => r.Interpreter.InterpreterId == interpreterId && 
+                .Where(r => r.Interpreter.InterpreterId == interpreterId &&
                     (r.Status == RequestStatus.Approved || r.Status == RequestStatus.CancelledByBroker
                     || r.Status == RequestStatus.CancelledByCreator || r.Status == RequestStatus.CancelledByCreatorWhenApproved));
 

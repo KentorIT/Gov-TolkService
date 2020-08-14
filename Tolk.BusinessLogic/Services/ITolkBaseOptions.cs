@@ -15,5 +15,7 @@ namespace Tolk.BusinessLogic.Services
         bool AllowDeclineExtraInterpreterOnRequestGroups { get; }
         bool RoundPriceDecimals { get; }
         bool EnableSetLatestAnswerTimeForCustomer { get; }
+        bool EnableCustomerApi { get; }
+
     }
 }

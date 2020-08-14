@@ -242,9 +242,38 @@ namespace Tolk.Web.Api.Services
             AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(apiUserId);
             var user = await _apiUserService.GetCustomerUser(model.CallingUser, customerId);
 
-            var order = new Order(user ?? apiUser, user != null ? apiUser : null, apiUser.CustomerOrganisation, _timeService.SwedenNow);
-#warning set all properties
-            return order;
+            return new Order(user ?? apiUser, user != null ? apiUser : null, apiUser.CustomerOrganisation, _timeService.SwedenNow)
+            {
+                StartAt = model.StartAt,
+                EndAt = model.EndAt,
+                AssignmentType = EnumHelper.GetEnumByCustomName<AssignmentType>(model.AssignmentType).Value,
+                MealBreakIncluded = model.MealBreakIncluded,
+                LanguageId = !string.IsNullOrEmpty(model.Language) ?
+                    _dbContext.Languages.SingleOrDefault(l => l.ISO_639_Code == model.Language)?.LanguageId :
+                    null,
+                OtherLanguage = string.IsNullOrEmpty(model.Language) ? model.OtherLanguage : null,
+                RegionId = _dbContext.Regions.Single(r => r.RegionId == model.Region.ToSwedishInt()).RegionId,
+                AllowExceedingTravelCost = EnumHelper.GetEnumByCustomName<AllowExceedingTravelCost>(model.AllowExceedingTravelCost).Value,
+                Description = model.Description,
+                InterpreterLocations = model.Locations.Select(l => new OrderInterpreterLocation
+                {
+                    City = l.City,
+                    Street = l.Street,
+                    OffSiteContactInformation = l.OffsiteContactInformation,
+                    Rank = l.Rank,
+                    InterpreterLocation = EnumHelper.GetEnumByCustomName<InterpreterLocation>(l.Key).Value
+                }).ToList(),
+                SpecificCompetenceLevelRequired = model.CompetenceLevelsAreRequired,
+                InvoiceReference = model.InvoiceReference,
+                CustomerReferenceNumber = model.CustomerReferenceNumber
+                //Unit
+                //Department
+                //Attachments
+                //Requirements
+                //Dialect
+                //OtherLanguage
+                //Competencelevels
+            };
         }
 
         private IEnumerable<AttachmentInformationModel> GetAttachments(Request request)

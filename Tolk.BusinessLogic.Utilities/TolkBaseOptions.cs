@@ -12,5 +12,6 @@
         public bool AllowDeclineExtraInterpreterOnRequestGroups { get; set; } = false;
         public bool RoundPriceDecimals { get; set; } = true;
         public bool EnableSetLatestAnswerTimeForCustomer { get; set; } = false;
+        public bool EnableCustomerApi { get; set; } = false;
     }
 }
