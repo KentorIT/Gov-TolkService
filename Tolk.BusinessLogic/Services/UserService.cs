@@ -185,10 +185,10 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public async Task LogOnUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatingUpdatedById = null)
         {
-            AspNetUser currentUserInformation = _dbContext.Users
-                .Include(u => u.Claims)
-                .Include(u => u.Roles)
-                .SingleOrDefault(u => u.Id == userId);
+            AspNetUser currentUserInformation = await _dbContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
+            var roles = _dbContext.UserRoles.GetRolesForUser(userId);
+            var claims = await _dbContext.UserClaims.GetClaimsForUser(userId);
+            var customerUnits = _dbContext.CustomerUnitUsers.GetCustomerUnitsForUser(userId);
             await _dbContext.AddAsync(new UserAuditLogEntry
             {
                 LoggedAt = _clock.SwedenNow,
@@ -197,20 +197,20 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 UpdatedByImpersonatorId = impersonatingUpdatedById,
                 UserChangeType = UserChangeType.Updated,
                 UserHistory = new AspNetUserHistoryEntry(currentUserInformation),
-                RolesHistory = currentUserInformation.Roles.Select(r => new AspNetUserRoleHistoryEntry
+                RolesHistory = await roles.Select(r => new AspNetUserRoleHistoryEntry
                 {
                     RoleId = r.RoleId,
-                }).ToList(),
-                ClaimsHistory = currentUserInformation.Claims.Select(c => new AspNetUserClaimHistoryEntry
+                }).ToListAsync(),
+                ClaimsHistory = claims.Select(c => new AspNetUserClaimHistoryEntry
                 {
                     ClaimType = c.ClaimType,
                     ClaimValue = c.ClaimValue,
                 }).ToList(),
-                CustomerUnitUsersHistory = currentUserInformation.CustomerUnits?.Select(c => new CustomerUnitUserHistoryEntry
+                CustomerUnitUsersHistory = await customerUnits.Select(c => new CustomerUnitUserHistoryEntry
                 {
                     CustomerUnitId = c.CustomerUnitId,
                     IsLocalAdmin = c.IsLocalAdmin,
-                }).ToList(),
+                }).ToListAsync(),
             });
             await _dbContext.SaveChangesAsync();
         }
