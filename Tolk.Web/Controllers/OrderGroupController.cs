@@ -12,6 +12,7 @@ using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
+using Tolk.Web.Services;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Controllers
@@ -22,7 +23,9 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly IAuthorizationService _authorizationService;
         private readonly OrderService _orderService;
+        private readonly RequestService _requestService;
         private readonly CacheService _cacheService;
+        private readonly ListToModelService _listToModelService;
         private readonly ISwedishClock _clock;
         private readonly ILogger _logger;
 
@@ -32,7 +35,9 @@ namespace Tolk.Web.Controllers
             OrderService orderService,
             ISwedishClock clock,
             ILogger<OrderController> logger,
-            CacheService cacheService
+            CacheService cacheService,
+            ListToModelService listToModelService,
+            RequestService requestService
             )
         {
             _dbContext = dbContext;
@@ -41,20 +46,26 @@ namespace Tolk.Web.Controllers
             _clock = clock;
             _logger = logger;
             _cacheService = cacheService;
+            _listToModelService = listToModelService;
+            _requestService = requestService;
         }
 
         public async Task<IActionResult> View(int id)
         {
-            //, string message = null, string errorMessage = null Add these for message-handling later
-            //Get order model from db
-            OrderGroup orderGroup = await GetOrderGroup(id);
+            OrderGroup orderGroup = await _dbContext.OrderGroups.GetFullOrderGroupById(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.View)).Succeeded)
             {
                 var allowEdit = (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Edit)).Succeeded;
-                var activeRequestGroup = orderGroup.RequestGroups.OrderBy(r => r.RequestGroupId).Last();
 
+                var activeRequestGroup = await _dbContext.RequestGroups.GetLastRequestGroupForOrderGroup(id);
+                await _orderService.AddOrdersWithListsForGroup(orderGroup);
+                await _requestService.AddListsForRequestGroup(activeRequestGroup);
+                activeRequestGroup.Requests.ForEach(r => r.Order = orderGroup.Orders.Where(o => o.OrderId == r.OrderId).SingleOrDefault());
+                
                 var model = OrderGroupModel.GetModelFromOrderGroup(orderGroup, activeRequestGroup);
+                await _listToModelService.AddInformationFromListsToModel(model);
+
                 model.CustomerInformationModel = new CustomerInformationModel
                 {
                     IsCustomer = true,
@@ -67,7 +78,10 @@ namespace Tolk.Web.Controllers
                     InvoiceReference = model.InvoiceReference,
                     UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == orderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter))
                 };
+
                 model.ActiveRequestGroup = RequestGroupViewModel.GetModelFromRequestGroup(activeRequestGroup);
+
+                await _listToModelService.AddInformationFromListsToModel(model.ActiveRequestGroup);
                 model.AllowProcessing = activeRequestGroup.Status == RequestStatus.Accepted && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Accept)).Succeeded;
                 model.AllowCancellation = orderGroup.AllowCancellation && (await _authorizationService.AuthorizeAsync(User, orderGroup, Policies.Cancel)).Succeeded;
                 model.AllowNoAnswerConfirmation = orderGroup.AllowNoAnswerConfirmation && allowEdit;
@@ -216,35 +230,6 @@ namespace Tolk.Web.Controllers
         }
 
         private bool CachedUseAttachentSetting(int customerOrganisationId) => _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && !c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.HideAttachmentField));
-
-        private async Task<OrderGroup> GetOrderGroup(int id)
-        {
-            return await _dbContext.OrderGroups
-                .Include(o => o.Language)
-                .Include(o => o.CompetenceRequirements)
-                .Include(o => o.Requirements)
-                .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(o => o.Region)
-                .Include(o => o.CustomerOrganisation)
-                .Include(o => o.CreatedByUser)
-                .Include(o => o.CustomerUnit)
-                .Include(o => o.StatusConfirmations)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(ra => ra.Broker)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.StatusConfirmations)
-                .Include(o => o.RequestGroups).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.AnsweringUser)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.AnsweringUser)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.ProcessingUser)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.CancelledByUser)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.Order)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.Interpreter)
-                .Include(o => o.RequestGroups).ThenInclude(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
-                .Include(o => o.Orders).ThenInclude(o => o.PriceRows).ThenInclude(p => p.PriceListRow)
-                .Include(o => o.Orders).ThenInclude(o => o.InterpreterLocations)
-                .Include(o => o.Orders).ThenInclude(o => o.Requirements)
-                .SingleAsync(o => o.OrderGroupId == id);
-        }
 
     }
 }

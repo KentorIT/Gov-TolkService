@@ -292,7 +292,7 @@ namespace Tolk.BusinessLogic.Services
 
             if (request != null)
             {
-                var newRequest = await _tolkDbContext.Requests.GetRequestForNewRequestById (request.RequestId);
+                var newRequest = await _tolkDbContext.Requests.GetRequestForNewRequestById(request.RequestId);
                 if (expiry.HasValue)
                 {
                     _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
@@ -454,7 +454,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task ConfirmGroupNoAnswer(OrderGroup orderGroup, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(ConfirmGroupNoAnswer), nameof(OrderService));
-            orderGroup.StatusConfirmations = await  _tolkDbContext.OrderGroupStatusConfirmations.GetStatusConfirmationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.StatusConfirmations = await _tolkDbContext.OrderGroupStatusConfirmations.GetStatusConfirmationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             orderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             orderGroup.Orders.ForEach(r => r.OrderStatusConfirmations = new List<OrderStatusConfirmation>());
 
@@ -678,17 +678,52 @@ namespace Tolk.BusinessLogic.Services
             requestGroup.OrderGroup.Attachments = await _tolkDbContext.OrderGroupAttachments.GetAttachmentsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             requestGroup.OrderGroup.Requirements = await _tolkDbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             requestGroup.OrderGroup.CompetenceRequirements = await _tolkDbContext.OrderGroupCompetenceRequirements.GetOrderedCompetenceRequirementsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
-            await AddListsToOrdersForGroup(requestGroup.OrderGroup);
+            requestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId, true).ToListAsync();
+            await AddOrderBaseListsForGroup(requestGroup.OrderGroup, false, false);
             return requestGroup;
         }
 
-        private async Task<OrderGroup> AddListsToOrdersForGroup(OrderGroup orderGroup)
+        private async Task<OrderGroup> AddOrderBaseListsForGroup(OrderGroup orderGroup, bool includeOrderRequirements, bool includeCompetenceRequirements)
         {
-            orderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(orderGroup.OrderGroupId, true).ToListAsync();
+            var pricerows = await _tolkDbContext.OrderPriceRows.GetPriceRowsForOrdersInOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             var locations = await _tolkDbContext.OrderInterpreterLocation.GetInterpreterLocationsForOrdersInGroup(orderGroup.OrderGroupId).ToListAsync();
-            var pricerows = await _tolkDbContext.OrderPriceRows.GetPriceRowsForOrderInOrderGroup(orderGroup.OrderGroupId).ToListAsync();
-            orderGroup.Orders.ForEach(o => o.InterpreterLocations = locations.Where(l => l.OrderId == o.OrderId).ToList());
             orderGroup.Orders.ForEach(o => o.PriceRows = pricerows.Where(p => p.OrderId == o.OrderId).ToList());
+            orderGroup.Orders.ForEach(o => o.InterpreterLocations = locations.Where(l => l.OrderId == o.OrderId).ToList());
+            if (includeOrderRequirements)
+            {
+                var requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrdersInOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+                orderGroup.Orders.ForEach(o => o.Requirements = requirements.Where(r => r.OrderId == o.OrderId).ToList());
+            }
+            if (includeCompetenceRequirements)
+            {
+                var competenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderCompetencesForOrdersInOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+                orderGroup.Orders.ForEach(o => o.CompetenceRequirements = competenceRequirements.Where(r => r.OrderId == o.OrderId).ToList());
+            }
+            return orderGroup;
+        }
+
+        public async Task<OrderGroup> AddOrdersWithListsForGroup(OrderGroup orderGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(AddOrdersWithListsForGroup), nameof(OrderService));
+            orderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(orderGroup.OrderGroupId, true).ToListAsync();
+            await AddOrderBaseListsForGroup(orderGroup, true, false);
+            await AddConfirmationListsToOrdersAndGroup(orderGroup);
+            return orderGroup;
+        }
+
+        public async Task<OrderGroup> AddOrdersWithListsForGroupToProcess(OrderGroup orderGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(orderGroup, nameof(AddOrdersWithListsForGroupToProcess), nameof(OrderService));
+            orderGroup.Orders = await _tolkDbContext.Orders.GetOrdersWithIncludesForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            await AddOrderBaseListsForGroup(orderGroup, true, true);
+            return orderGroup;
+        }
+
+        private async Task<OrderGroup> AddConfirmationListsToOrdersAndGroup(OrderGroup orderGroup)
+        {
+            orderGroup.StatusConfirmations = await _tolkDbContext.OrderGroupStatusConfirmations.GetStatusConfirmationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            var orderStatusConfirmations = await _tolkDbContext.OrderStatusConfirmation.GetOrderStatusConfirmationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.Orders.ForEach(o => o.OrderStatusConfirmations = orderStatusConfirmations.Where(osc => osc.OrderId == o.OrderId).ToList());
             return orderGroup;
         }
 

@@ -123,6 +123,108 @@ namespace Tolk.Web.Services
             return model;
         }
 
+        internal async Task<OrderGroupModel> AddInformationFromListsToModel(OrderGroupModel model)
+        {
+            int orderGroupId = model.OrderGroupId.Value;
+            await AddInformationFromListsToModel(model, orderGroupId);
+            model.PreviousRequestGroups = _dbContext.RequestGroups.GetPreviousRequestGroupsForOrderGroup(orderGroupId)
+                .Select(r => new BrokerListModel
+                {
+                    Status = r.Status,
+                    BrokerName = r.Ranking.Broker.Name,
+                    DenyMessage = r.DenyMessage,
+                }).ToList();
+            return model;
+        }
+
+        internal async Task<OrderBaseModel> AddInformationFromListsToModel(OrderBaseModel model, int orderGroupId)
+        {
+            model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForOrderGroup(orderGroupId), "Bifogade filer");
+
+            OrderCompetenceRequirement competenceFirst = null;
+            OrderCompetenceRequirement competenceSecond = null;
+            var competenceRequirements = _dbContext.OrderGroupCompetenceRequirements.GetOrderedCompetenceRequirementsForOrderGroup(orderGroupId).Select(r => new OrderCompetenceRequirement
+            {
+                CompetenceLevel = r.CompetenceLevel,
+                Rank = r.Rank,
+            }).ToList();
+
+            competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
+            competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
+            competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
+            model.RequestedCompetenceLevelFirst = competenceFirst?.CompetenceLevel;
+            model.RequestedCompetenceLevelSecond = competenceSecond?.CompetenceLevel;
+
+            model.OrderRequirements = _dbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(orderGroupId).Select(r => new OrderRequirementModel
+            {
+                OrderRequirementId = r.OrderGroupRequirementId,
+                RequirementDescription = r.Description,
+                RequirementIsRequired = r.IsRequired,
+                RequirementType = r.RequirementType
+            }).ToList();
+            return model;
+        }
+
+        internal async Task<RequestGroupViewModel> AddInformationFromListsToModel(RequestGroupViewModel model)
+        {
+            model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForRequestGroup(model.RequestGroupId), "Bifogade filer");
+            return model;
+        }
+
+        internal async Task<RequestGroupProcessModel> AddInformationFromListsToModel(RequestGroupProcessModel model, int userId)
+        {
+            int requestGroupId = model.RequestGroupId;
+
+            var orderGroup = await _dbContext.OrderGroups.GetOrderGroupById(model.OrderGroupId);
+            orderGroup.Requirements = await _dbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.CompetenceRequirements = await _dbContext.OrderGroupCompetenceRequirements.GetOrderedCompetenceRequirementsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            model.RequestedCompetenceLevelFirst = orderGroup.CompetenceRequirements.SingleOrDefault(l => l.Rank == 1 || l.Rank == null)?.CompetenceLevel;
+            model.RequestedCompetenceLevelSecond = orderGroup.CompetenceRequirements.SingleOrDefault(l => l.Rank == 2)?.CompetenceLevel;
+            model.InterpreterAnswerModel = new InterpreterAnswerModel
+            {
+                RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                {
+                    OrderRequirementId = r.OrderGroupRequirementId,
+                    IsRequired = true,
+                    Description = r.Description,
+                    RequirementType = r.RequirementType,
+                }).ToList(),
+                DesiredRequirementAnswers = orderGroup.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                {
+                    OrderRequirementId = r.OrderGroupRequirementId,
+                    IsRequired = false,
+                    Description = r.Description,
+                    RequirementType = r.RequirementType,
+                }).ToList(),
+            };
+            model.ExtraInterpreterAnswerModel = model.HasExtraInterpreter ? new InterpreterAnswerModel
+            {
+                RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                {
+                    OrderRequirementId = r.OrderGroupRequirementId,
+                    IsRequired = true,
+                    Description = r.Description,
+                    RequirementType = r.RequirementType,
+                }).ToList(),
+                DesiredRequirementAnswers = orderGroup.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                {
+                    OrderRequirementId = r.OrderGroupRequirementId,
+                    IsRequired = false,
+                    Description = r.Description,
+                    RequirementType = r.RequirementType,
+                }).ToList(),
+            } : null;
+
+            model.Dialect = orderGroup.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? orderGroup.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty;
+
+            var views = await _dbContext.RequestGroupViews.GetActiveViewsForRequestGroup(requestGroupId).ToListAsync();
+            model.ViewedByUser = views.Any(rv => rv.ViewedBy != userId) ?
+                views.First(rv => rv.ViewedBy != userId).ViewedByUser.FullName + " håller också på med denna förfrågan"
+                : string.Empty;
+            model.AttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForOrderGroup(orderGroup.OrderGroupId), "Bifogade filer");
+            return model;
+        }
+
         private static void SetMealbreakTimes(MealBreak mb)
         {
             mb.StartAtTemp = mb.StartAt.DateTime;
@@ -141,8 +243,8 @@ namespace Tolk.Web.Services
             model.CanReplaceRequisition = requisitions.All(r => r.Status == RequisitionStatus.Commented) && requisitions.OrderBy(r => r.CreatedAt).Last().RequisitionId == viewedRequisition.RequisitionId;
             viewedRequisition.PriceRows = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(viewedRequisition.RequisitionId).ToListAsync();
             viewedRequisition.MealBreaks = await _dbContext.MealBreaks.GetMealBreksForRequisition(viewedRequisition.RequisitionId).ToListAsync();
-            model.ResultPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplayForRequisition (viewedRequisition, false);
-            model.RequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(model.RequestId).ToListAsync(), PriceInformationType.Request, mealBreakIncluded: model.MealBreakIncluded ?? false, description : "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt");
+            model.ResultPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplayForRequisition(viewedRequisition, false);
+            model.RequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(model.RequestId).ToListAsync(), PriceInformationType.Request, mealBreakIncluded: model.MealBreakIncluded ?? false, description: "Om rekvisitionen innehåller ersättning för bilersättning och traktamente kan förmedlingen komma att debitera påslag för sociala avgifter för de tolkar som inte är registrerade för F-skatt");
             if (requisitions.Count < 2)
             {
                 return null;
@@ -182,7 +284,6 @@ namespace Tolk.Web.Services
         private async Task<OrderBaseModel> GetOrderBaseLists(OrderBaseModel model, IEnumerable<OrderInterpreterLocation> interpreterLocations, int orderId)
         {
             //Locations
-
             model.RankedInterpreterLocationFirst = interpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation;
             model.RankedInterpreterLocationSecond = interpreterLocations.SingleOrDefault(l => l.Rank == 2)?.InterpreterLocation;
             model.RankedInterpreterLocationThird = interpreterLocations.SingleOrDefault(l => l.Rank == 3)?.InterpreterLocation;

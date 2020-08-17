@@ -69,17 +69,6 @@ namespace Tolk.Web.Models
         internal static OrderGroupModel GetModelFromOrderGroup(OrderGroup orderGroup, RequestGroup activeRequestGroup, bool displayForBroker = false)
         {
             bool useRankedInterpreterLocation = orderGroup.FirstOrder.InterpreterLocations.Count > 1;
-            OrderCompetenceRequirement competenceFirst = null;
-            OrderCompetenceRequirement competenceSecond = null;
-            var competenceRequirements = orderGroup.CompetenceRequirements.Select(r => new OrderCompetenceRequirement
-            {
-                CompetenceLevel = r.CompetenceLevel,
-                Rank = r.Rank,
-            }).ToList();
-            competenceRequirements = competenceRequirements.OrderBy(r => r.Rank).ToList();
-            competenceFirst = competenceRequirements.Count > 0 ? competenceRequirements[0] : null;
-            competenceSecond = competenceRequirements.Count > 1 ? competenceRequirements[1] : null;
-
             var model = new OrderGroupModel
             {
                 AllowExceedingTravelCost = displayForBroker ? new RadioButtonGroup
@@ -93,17 +82,13 @@ namespace Tolk.Web.Models
                     SelectListService.AllowExceedingTravelCost.Single(e => e.Value == orderGroup.FirstOrder.AllowExceedingTravelCost.ToString())
                     },
                 IsCreatorInterpreterUser = orderGroup.CreatorIsInterpreterUser,
-
                 Description = orderGroup.FirstOrder.Description,
-
                 CompetenceLevelDesireType = new RadioButtonGroup
                 {
                     SelectedItem = orderGroup.SpecificCompetenceLevelRequired
                     ? SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Requirement)
                     : SelectListService.DesireTypes.Single(item => EnumHelper.Parse<DesireType>(item.Value) == DesireType.Request)
                 },
-                RequestedCompetenceLevelFirst = competenceFirst?.CompetenceLevel,
-                RequestedCompetenceLevelSecond = competenceSecond?.CompetenceLevel,
                 Status = orderGroup.Status,
 
                 RankedInterpreterLocationFirst = orderGroup.FirstOrder.InterpreterLocations.Single(l => l.Rank == 1)?.InterpreterLocation,
@@ -112,27 +97,6 @@ namespace Tolk.Web.Models
                 RankedInterpreterLocationFirstAddressModel = GetInterpreterLocation(orderGroup.FirstOrder.InterpreterLocations.Single(l => l.Rank == 1)),
                 RankedInterpreterLocationSecondAddressModel = GetInterpreterLocation(orderGroup.FirstOrder.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)),
                 RankedInterpreterLocationThirdAddressModel = GetInterpreterLocation(orderGroup.FirstOrder.InterpreterLocations.SingleOrDefault(l => l.Rank == 3)),
-                OrderRequirements = orderGroup.Requirements.Select(r => new OrderRequirementModel
-                {
-                    OrderRequirementId = r.OrderGroupRequirementId,
-                    RequirementDescription = r.Description,
-                    RequirementIsRequired = r.IsRequired,
-                    RequirementType = r.RequirementType
-                }).ToList(),
-                AttachmentListModel = new AttachmentListModel
-                {
-                    AllowDelete = false,
-                    AllowDownload = true,
-                    AllowUpload = false,
-                    Title = "Bifogade filer från myndighet",
-                    DisplayFiles = orderGroup.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }).ToList()
-                },
-
                 OrderGroupId = orderGroup.OrderGroupId,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
 
@@ -163,18 +127,6 @@ namespace Tolk.Web.Models
                 ExpectedTravelCosts = activeRequestGroup?.FirstRequestForFirstInterpreter.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0,
                 ExtraInterpreterExpectedTravelCostInfo = activeRequestGroup.HasExtraInterpreter ? activeRequestGroup?.FirstRequestForExtraInterpreter.ExpectedTravelCostInfo : null,
                 ExtraInterpreterExpectedTravelCosts = activeRequestGroup.HasExtraInterpreter ? activeRequestGroup?.FirstRequestForExtraInterpreter.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0 : 0,
-                PreviousRequestGroups = orderGroup.RequestGroups.Where(r =>
-                      r.Status == RequestStatus.DeclinedByBroker ||
-                      r.Status == RequestStatus.DeniedByTimeLimit ||
-                      r.Status == RequestStatus.DeniedByCreator ||
-                      r.Status == RequestStatus.LostDueToQuarantine
-                ).Select(r => new BrokerListModel
-                {
-                    Status = r.Status,
-                    BrokerName = r.Ranking.Broker.Name,
-                    DenyMessage = r.DenyMessage,
-                }).ToList(),
-
             };
             return model;
         }

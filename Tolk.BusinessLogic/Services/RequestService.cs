@@ -100,24 +100,30 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(AcceptGroup), nameof(RequestService));
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(AcceptGroup));
-            if (requestGroup.HasExtraInterpreter)
+
+            var declinedRequests = new List<Request>();
+            await _orderService.AddOrdersWithListsForGroupToProcess(requestGroup.OrderGroup);
+            bool isSingleOccasion = requestGroup.OrderGroup.IsSingleOccasion;
+            bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
+            if (hasExtraInterpreter)
             {
                 NullCheckHelper.ArgumentCheckNull(extraInterpreter, nameof(AcceptGroup), nameof(RequestService));
             }
-            var declinedRequests = new List<Request>();
-
-            bool isSingleOccasion = requestGroup.OrderGroup.IsSingleOccasion;
-            bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
             ValidateInterpreters(interpreter, extraInterpreter, hasExtraInterpreter);
 
             bool hasTravelCosts = (interpreter.ExpectedTravelCosts ?? 0) > 0 || (extraInterpreter?.ExpectedTravelCosts ?? 0) > 0;
             var travelCostsShouldBeApproved = hasTravelCosts && requestGroup.OrderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved;
             bool partialAnswer = false;
+
             //1. Get the verification results for the interpreter(s)
             var verificationResult = await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, interpreter.Interpreter, interpreter.CompetenceLevel);
             var extraInterpreterVerificationResult = hasExtraInterpreter && extraInterpreter.Accepted ?
                 await VerifyInterpreter(requestGroup.OrderGroup.FirstOrder.OrderId, extraInterpreter.Interpreter, extraInterpreter.CompetenceLevel) :
                 null;
+            requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            await AddPriceRowsToRequestsInGroup(requestGroup);
+            await AddRequirementAnswersToRequestsInGroup(requestGroup);
+            requestGroup.Requests.ForEach(r => r.Order = requestGroup.OrderGroup.Orders.Where(o => o.OrderId == r.OrderId).SingleOrDefault());
             foreach (var request in requestGroup.Requests)
             {
                 bool isExtraInterpreterOccasion = request.Order.IsExtraInterpreterForOrderId.HasValue;
@@ -273,6 +279,9 @@ namespace Tolk.BusinessLogic.Services
             string message)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(DeclineGroup), nameof(RequestService));
+            requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            requestGroup.OrderGroup.Orders = await _tolkDbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            requestGroup.OrderGroup.RequestGroups = await _tolkDbContext.RequestGroups.GetRequestGroupsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             requestGroup.Decline(declinedAt, userId, impersonatorId, message);
             await _orderService.CreateRequestGroup(requestGroup.OrderGroup, requestGroup);
             _notificationService.RequestGroupDeclinedByBroker(requestGroup);
@@ -612,13 +621,36 @@ namespace Tolk.BusinessLogic.Services
             return requests?.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
         }
 
-        public async Task<RequestGroup> AddConfirmationListsToRequestGroup(RequestGroup requestGroup)
+        public async Task<RequestGroup> AddRequestsWithConfirmationListsToRequestGroup(RequestGroup requestGroup)
         {
-            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AddConfirmationListsToRequestGroup), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AddRequestsWithConfirmationListsToRequestGroup), nameof(RequestService));
             requestGroup.StatusConfirmations = await _tolkDbContext.RequestGroupStatusConfirmations.GetStatusConfirmationsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
             requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
             var requestStatusConfirmations = await _tolkDbContext.RequestStatusConfirmation.GetRequestStatusConfirmationsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
             requestGroup.Requests.ForEach(r => r.RequestStatusConfirmations = requestStatusConfirmations.Where(rsc => rsc.RequestId == r.RequestId).ToList());
+            return requestGroup;
+        }
+
+        private async Task<RequestGroup> AddPriceRowsToRequestsInGroup(RequestGroup requestGroup)
+        {
+            var priceRows = await _tolkDbContext.RequestPriceRows.GetRequestPriceRowsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            requestGroup.Requests.ForEach(r => r.PriceRows = priceRows.Where(p => p.RequestId == r.RequestId).ToList());
+            return requestGroup;
+        }
+
+        private async Task<RequestGroup> AddRequirementAnswersToRequestsInGroup(RequestGroup requestGroup)
+        {
+            var requirementAnswers = await _tolkDbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequestsInGroup(requestGroup.RequestGroupId).ToListAsync();
+            requestGroup.Requests.ForEach(r => r.RequirementAnswers = requirementAnswers.Where(ra => ra.RequestId == r.RequestId).ToList());
+            return requestGroup;
+        }
+
+        public async Task<RequestGroup> AddListsForRequestGroup(RequestGroup requestGroup)
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AddListsForRequestGroup), nameof(RequestService));
+            await AddRequestsWithConfirmationListsToRequestGroup(requestGroup);
+            await AddPriceRowsToRequestsInGroup(requestGroup);
+            await AddRequirementAnswersToRequestsInGroup(requestGroup);
             return requestGroup;
         }
 

@@ -130,20 +130,6 @@ namespace Tolk.Web.Models
                     OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
                     ReferenceNumber = order.CustomerReferenceNumber
                 },
-
-                AttachmentListModel = new AttachmentListModel
-                {
-                    AllowDelete = false,
-                    AllowDownload = true,
-                    AllowUpload = false,
-                    Title = "Bifogade filer från förmedling",
-                    DisplayFiles = requestGroup.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }).ToList()
-                },
                 OccasionList = new OccasionListModel
                 {
                     Occasions = requestGroup.Requests.Where(r => r.Status != RequestStatus.InterpreterReplaced)
@@ -196,7 +182,7 @@ namespace Tolk.Web.Models
                 HasExtraInterpreter = requestGroup.HasExtraInterpreter,
                 Description = order.Description,
                 LanguageName = orderGroup.LanguageName,
-                Dialect = orderGroup.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? orderGroup.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
+                Dialect = order.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? order.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
                 LanguageHasAuthorizedInterpreter = orderGroup.LanguageHasAuthorizedInterpreter,
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
                 DisplayExpectedTravelCostInfo = GetDisplayExpectedTravelCostInfo(request.Order, request.InterpreterLocation ?? 0),
@@ -219,7 +205,6 @@ namespace Tolk.Web.Models
                 ExtraInterpreterStatus = requestExtraInterpreter?.Status,
                 OrderStatus = orderGroup.Status,
             };
-
         }
 
         private static bool GetDisplayExpectedTravelCostInfo(Order o, int locationAnswer)

@@ -1643,7 +1643,7 @@ Sammanställning:
             var competenceRequirements = await _dbContext.OrderGroupCompetenceRequirements.GetOrderedCompetenceRequirementsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             var requirements = await _dbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             var attachments = await _dbContext.Attachments.GetAttachmentsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
-            var priceRows = await _dbContext.OrderPriceRows.GetPriceRowsForOrderInOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+            var priceRows = await _dbContext.OrderPriceRows.GetPriceRowsForOrdersInOrderGroup(requestGroup.OrderGroupId).ToListAsync();
             return new RequestGroupModel
             {
                 CreatedAt = requestGroup.CreatedAt,

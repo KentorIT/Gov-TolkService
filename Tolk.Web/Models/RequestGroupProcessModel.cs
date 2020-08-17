@@ -66,17 +66,13 @@ namespace Tolk.Web.Models
 
         #region methods
 
-        internal static RequestGroupProcessModel GetModelFromRequestGroup(RequestGroup requestGroup, Guid fileGroupKey, long combinedMaxSizeAttachments, int userId, bool allowDeclineExtraInterpreter)
+        internal static RequestGroupProcessModel GetModelFromRequestGroup(RequestGroup requestGroup, Guid fileGroupKey, long combinedMaxSizeAttachments, bool allowDeclineExtraInterpreter)
         {
             OrderGroup orderGroup = requestGroup.OrderGroup;
             Order order = requestGroup.Requests.First().Order;
-            var viewedByUser = requestGroup.Views.Any(rv => rv.ViewedBy != userId) ?
-                requestGroup.Views.First(rv => rv.ViewedBy != userId).ViewedByUser.FullName + " håller också på med denna förfrågan"
-                : string.Empty;
             return new RequestGroupProcessModel
             {
                 AllowDeclineExtraInterpreter = allowDeclineExtraInterpreter,
-                ViewedByUser = viewedByUser,
                 OrderGroupId = requestGroup.OrderGroupId,
                 RequestGroupId = requestGroup.RequestGroupId,
                 BrokerId = requestGroup.Ranking.BrokerId,
@@ -85,52 +81,6 @@ namespace Tolk.Web.Models
                 CombinedMaxSizeAttachments = combinedMaxSizeAttachments,
                 CreatedAt = requestGroup.CreatedAt,
                 ExpiresAt = requestGroup.ExpiresAt.Value,
-                AttachmentListModel = new AttachmentListModel
-                {
-                    AllowDelete = false,
-                    AllowDownload = true,
-                    AllowUpload = false,
-                    DisplayFiles = orderGroup.Attachments.Select(a => new FileModel
-                    {
-                        Id = a.Attachment.AttachmentId,
-                        FileName = a.Attachment.FileName,
-                        Size = a.Attachment.Blob.Length
-                    }).ToList()
-                },
-                InterpreterAnswerModel = new InterpreterAnswerModel
-                {
-                    RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
-                    {
-                        OrderRequirementId = r.OrderGroupRequirementId,
-                        IsRequired = true,
-                        Description = r.Description,
-                        RequirementType = r.RequirementType,
-                    }).ToList(),
-                    DesiredRequirementAnswers = orderGroup.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
-                    {
-                        OrderRequirementId = r.OrderGroupRequirementId,
-                        IsRequired = false,
-                        Description = r.Description,
-                        RequirementType = r.RequirementType,
-                    }).ToList(),
-                },
-                ExtraInterpreterAnswerModel = requestGroup.HasExtraInterpreter ? new InterpreterAnswerModel
-                {
-                    RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
-                    {
-                        OrderRequirementId = r.OrderGroupRequirementId,
-                        IsRequired = true,
-                        Description = r.Description,
-                        RequirementType = r.RequirementType,
-                    }).ToList(),
-                    DesiredRequirementAnswers = orderGroup.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
-                    {
-                        OrderRequirementId = r.OrderGroupRequirementId,
-                        IsRequired = false,
-                        Description = r.Description,
-                        RequirementType = r.RequirementType,
-                    }).ToList(),
-                } : null,
                 OccasionList = new OccasionListModel
                 {
                     Occasions = requestGroup.Requests.Where(r => r.Status != RequestStatus.InterpreterReplaced)
@@ -154,7 +104,6 @@ namespace Tolk.Web.Models
                 },
                 Description = order.Description,
                 LanguageName = orderGroup.LanguageName,
-                Dialect = orderGroup.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? orderGroup.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty,
                 LanguageHasAuthorizedInterpreter = orderGroup.LanguageHasAuthorizedInterpreter,
                 RankedInterpreterLocationFirstAddressModel = OrderModel.GetInterpreterLocation(order.InterpreterLocations.Single(l => l.Rank == 1)),
                 RankedInterpreterLocationSecondAddressModel = OrderModel.GetInterpreterLocation(order.InterpreterLocations.SingleOrDefault(l => l.Rank == 2)),
@@ -162,8 +111,6 @@ namespace Tolk.Web.Models
                 RegionName = orderGroup.Region.Name,
                 SpecificCompetenceLevelRequired = orderGroup.SpecificCompetenceLevelRequired,
                 Status = requestGroup.Status,
-                RequestedCompetenceLevelFirst = orderGroup.CompetenceRequirements.SingleOrDefault(l => l.Rank == 1 || l.Rank == null)?.CompetenceLevel,
-                RequestedCompetenceLevelSecond = orderGroup.CompetenceRequirements.SingleOrDefault(l => l.Rank == 2)?.CompetenceLevel,
             };
         }
 

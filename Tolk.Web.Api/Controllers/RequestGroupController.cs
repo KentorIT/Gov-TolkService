@@ -193,21 +193,7 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
                 }
-                requestGroup = await _dbContext.RequestGroups
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.RequestGroups).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.Requests)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
-                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber &&
-                        //Must have a request connected to the order for the broker, any status...
-                        r.Ranking.BrokerId == brokerId &&
-                        //Possibly other statuses
-                        (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
-                if (requestGroup == null)
-                {
-                    return ReturnError(ErrorCodes.RequestGroupNotFound);
-                }
+                requestGroup = await _dbContext.RequestGroups.GetRequestGroupToProcessById(requestGroup.RequestGroupId);
                 await _requestService.DeclineGroup(requestGroup, _timeService.SwedenNow, user?.Id ?? apiUserId, (user != null ? (int?)apiUserId : null), model.Message);
                 await _dbContext.SaveChangesAsync();
                 return Ok(new ResponseBase());
@@ -238,7 +224,7 @@ namespace Tolk.Web.Api.Controllers
                 //Get User, if any...
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
 
-                await _requestService.AddConfirmationListsToRequestGroup(requestGroup);
+                await _requestService.AddRequestsWithConfirmationListsToRequestGroup(requestGroup);
                 await _requestService.ConfirmGroupDenial(
                     requestGroup,
                     _timeService.SwedenNow,
@@ -272,7 +258,7 @@ namespace Tolk.Web.Api.Controllers
                     _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm no answer {model.OrderGroupNumber}, but requestgroup not in correct status.");
                     throw new InvalidApiCallException(ErrorCodes.RequestGroupNotInCorrectState);
                 }
-                await _requestService.AddConfirmationListsToRequestGroup(requestGroup);
+                await _requestService.AddRequestsWithConfirmationListsToRequestGroup(requestGroup);
                 await _requestService.ConfirmGroupNoAnswer(
                     requestGroup,
                     _timeService.SwedenNow,
@@ -306,7 +292,7 @@ namespace Tolk.Web.Api.Controllers
                     _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm cancellation {model.OrderGroupNumber}, but requestgroup not in correct status.");
                     throw new InvalidApiCallException(ErrorCodes.RequestGroupNotInCorrectState);
                 }
-                await _requestService.AddConfirmationListsToRequestGroup(requestGroup);
+                await _requestService.AddRequestsWithConfirmationListsToRequestGroup(requestGroup);
                 await _requestService.ConfirmGroupCancellation(
                     requestGroup,
                     _timeService.SwedenNow,
@@ -366,29 +352,25 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult File(string orderGroupNumber, int attachmentId, string callingUser)
+        public async Task<IActionResult> File(string orderGroupNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order group {orderGroupNumber}");
 
             try
             {
                 var brokerId = User.TryGetBrokerId().Value;
-                var orderGroup = _dbContext.OrderGroups
-                    .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
-                    .SingleOrDefault(o => o.OrderGroupNumber == orderGroupNumber &&
-                        //Must have a request connected to the order for the broker, any status...
-                        o.RequestGroups.Any(r => r.Ranking.BrokerId == brokerId));
-                if (orderGroup == null)
+                var requestGroup = await _dbContext.RequestGroups.GetRequestGroupForApiWithBrokerAndOrderNumber(orderGroupNumber, brokerId);
+                if (requestGroup == null)
                 {
                     return ReturnError(ErrorCodes.OrderGroupNotFound);
                 }
 
-                var attachment = orderGroup.Attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault()?.Attachment;
+                var attachments = await _dbContext.Attachments.GetAttachmentsForOrderGroup(requestGroup.OrderGroupId).ToListAsync();
+                var attachment = attachments.Where(a => a.AttachmentId == attachmentId).SingleOrDefault();
                 if (attachment == null)
                 {
                     return ReturnError(ErrorCodes.AttachmentNotFound);
                 }
-
                 return Ok(new FileResponse
                 {
                     FileBase64 = Convert.ToBase64String(attachment.Blob)
