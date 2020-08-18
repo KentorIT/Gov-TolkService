@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NSwag.Annotations;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
@@ -51,6 +53,11 @@ namespace Tolk.Web.Api.Controllers
         #region Updating Methods
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(AnswerResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att svara på ett inkommet avrop")]
+        [OpenApiTag("Request", AddToDocument = true, Description = "Grupp av metoder för att hantera inkomna avrop")]
         public async Task<IActionResult> Answer([FromBody] RequestAnswerModel model)
         {
             if (model == null)
@@ -150,6 +157,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att bekräfta mottagandet av ett avrop")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> Acknowledge([FromBody] RequestAcknowledgeModel model)
         {
             if (model == null)
@@ -187,6 +199,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att avstå tillsättning av ett avrop")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> Decline([FromBody] RequestDeclineModel model)
         {
             if (model == null)
@@ -225,6 +242,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att avboka ett bokat tillfälle")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> Cancel([FromBody] RequestCancelModel model)
         {
             if (model == null)
@@ -268,6 +290,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ChangeInterpreterResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att byta tolk på ett bokat tillfälle")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> ChangeInterpreter([FromBody] RequestAnswerModel model)
         {
             if (model == null)
@@ -352,6 +379,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för godta ett ersättningsuppdrag")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> AcceptReplacement([FromBody] RequestAcceptReplacementModel model)
         {
             if (model == null)
@@ -413,6 +445,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att kvittera en nekad tillsättning")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> ConfirmDenial([FromBody] ConfirmDenialModel model)
         {
             if (model == null)
@@ -443,6 +480,11 @@ namespace Tolk.Web.Api.Controllers
 
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att kvittera information om uteblivet svar på tillsättning")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> ConfirmNoAnswer([FromBody] ConfirmNoAnswerModel model)
         {
             if (model == null)
@@ -472,6 +514,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att kvittera information om uppdatering av information om ett bokat uppdrag")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> ConfirmUpdate([FromBody] ConfirmUpdateModel model)
         {
             if (model == null)
@@ -497,6 +544,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att kvittera information om avbokat uppdrag")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> ConfirmCancellation([FromBody] ConfirmCancellationModel model)
         {
             if (model == null)
@@ -526,6 +578,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att markera att ett visst uppdrag inte kommer få rekvisition registrerad")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> ConfirmNoRequisition([FromBody] ConfirmNoRequisitionModel model)
         {
             if (model == null)
@@ -559,6 +616,11 @@ namespace Tolk.Web.Api.Controllers
         #region getting methods
 
         [HttpGet]
+        [ProducesResponseType(200, Type = typeof(RequestDetailsResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Returnerar en fil i base64 format, kopplad till ett specifikt uppdrag")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> File(string orderNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order {orderNumber}");
@@ -592,6 +654,11 @@ namespace Tolk.Web.Api.Controllers
 
         [HttpGet]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
+        [ProducesResponseType(200, Type = typeof(RequestDetailsResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Returnerar all information om ett visst uppdrag")]
+        [OpenApiTag("Request")]
         public async Task<IActionResult> View(string orderNumber, string callingUser)
         {
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active request for the order {orderNumber}");

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using NSwag.Annotations;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -37,6 +38,11 @@ namespace Tolk.Web.Api.Controllers
 
         [HttpPost]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
+        [ProducesResponseType(200, Type = typeof(CreateInterpreterResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att lägga till en ny tolk kopplat till den anropande förmedlingen")]
+        [OpenApiTag("Interpreter", AddToDocument = true, Description = "Grupp av metoder för att hantera förmedlingens tolkar")]
         public async Task<IActionResult> Create([FromBody] InterpreterDetailsModel interpreter)
         {
             if (interpreter == null)
@@ -69,6 +75,11 @@ namespace Tolk.Web.Api.Controllers
 
         [HttpPost]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
+        [ProducesResponseType(200, Type = typeof(UpdateInterpreterResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att uppdatera uppgifter för en registrerad tolk kopplad till den anropande förmedlingen")]
+        [OpenApiTag("Interpreter")]
         public async Task<IActionResult> Update([FromBody] InterpreterDetailsModel interpreter)
         {
             if (interpreter == null)
@@ -105,6 +116,10 @@ namespace Tolk.Web.Api.Controllers
 
         [HttpGet]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
+        [ProducesResponseType(200, Type = typeof(ViewInterpreterResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [Description("Returnerar all information om en registrerad tolk kopplad till den anropande förmedlingen")]
+        [OpenApiTag("Interpreter")]
         public async Task<IActionResult> View(int? interpreterId, string officialInterpreterId, string callingUser)
         {
             if (!interpreterId.HasValue && string.IsNullOrWhiteSpace(officialInterpreterId))

@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NSwag.Annotations;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
@@ -49,6 +51,11 @@ namespace Tolk.Web.Api.Controllers
         #region Updating Methods
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att skapa en rekvisition på ett utfört uppdrag")]
+        [OpenApiTag("Requisition", AddToDocument = true, Description = "Grupp av metoder för att hantera rekvisitioner")]
         public async Task<IActionResult> Create([FromBody] RequisitionModel model)
         {
             if (model == null)
@@ -103,6 +110,11 @@ namespace Tolk.Web.Api.Controllers
         #region getting methods
 
         [HttpGet]
+        [ProducesResponseType(200, Type = typeof(RequisitionDetailsResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Returnerar all information om en rekvisition på ett utfört uppdrag")]
+        [OpenApiTag("Requisition")]
         public async Task<IActionResult> View(RequisitionGetDetailsModel model)
         {
             if (model == null)
@@ -146,6 +158,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(200, Type = typeof(FileResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Returnerar en fil i base64 format, kopplad till rekvisitionen kopplad till ett specifikt uppdrag")]
+        [OpenApiTag("Requisition")]
         public async Task<IActionResult> File(string orderNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} connected to requisition on order {orderNumber}");

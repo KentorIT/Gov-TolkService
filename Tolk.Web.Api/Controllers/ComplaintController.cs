@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NSwag.Annotations;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -50,8 +51,9 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         [ProducesResponseType(200, Type = typeof(ResponseBase))]
         [ProducesResponseType(403, Type = typeof(ErrorResponse))]
-        [ProducesResponseType(400, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
         [Description("Anropas för att acceptera en inkommen reklamation")]
+        [OpenApiTag("Complaint", AddToDocument = true, Description = "Grupp av metoder för att hantera reklamationer")]
         public async Task<IActionResult> Accept([FromBody] ComplaintAcceptModel model)
         {
             if (model == null)
@@ -81,8 +83,9 @@ namespace Tolk.Web.Api.Controllers
         [HttpPost]
         [ProducesResponseType(200, Type = typeof(ResponseBase))]
         [ProducesResponseType(403, Type = typeof(ErrorResponse))]
-        [ProducesResponseType(400, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
         [Description("Anropas för att bestrida en inkommen reklamation")]
+        [OpenApiTag("Complaint")]
         public async Task<IActionResult> Dispute([FromBody] ComplaintDisputeModel model)
         {
             if (model == null)
@@ -115,8 +118,9 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(ComplaintDetailsResponse))]
         [ProducesResponseType(403, Type = typeof(ErrorResponse))]
-        [ProducesResponseType(400, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
         [Description("Returnerar detaljerad information om aktiv reklamation kopplad till beställningen (orderNumber)")]
+        [OpenApiTag("Complaint")]
         public async Task<IActionResult> View(string orderNumber, string callingUser)
         {
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active complaint for the order {orderNumber}");

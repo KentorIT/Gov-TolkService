@@ -33,6 +33,9 @@ namespace Tolk.Web.Api.Controllers
 
         [HttpGet]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "MVC method, cannot be static")]
+        [ProducesResponseType(200, Type = typeof(string))]
+        [Description("Returnerar en specifik sträng (Pong)")]
+        [OpenApiTag("Home", AddToDocument = true, Description = "Enkla basanrop för verifiering")]
         public ActionResult<string> Ping()
         {
             return "Pong";
@@ -58,6 +61,9 @@ namespace Tolk.Web.Api.Controllers
 
         [HttpGet]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "MVC method, cannot be static")]
+        [ProducesResponseType(200, Type = typeof(string))]
+        [Description("Returnerar en sträng med nuvarande version på systemet")]
+        [OpenApiTag("Home")]
         public ActionResult<string> Version()
         {
             return Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>().Version;

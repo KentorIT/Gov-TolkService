@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NSwag;
 using NSwag.Annotations;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
@@ -49,7 +52,12 @@ namespace Tolk.Web.Api.Controllers
         #region Updating Methods
 
         [HttpPost]
-        [OpenApiIgnore] //Not applicable for broker api, hence hiding it from swagger
+        [ProducesResponseType(200, Type = typeof(CreateOrderResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [OpenApiTag("Order", AddToDocument = true, Description = "Grupp av metoder för att hantera avrop som myndighet")]
+        [Description("Anropas för att skapa ett avrop")]
+        [OpenApiIgnore]//Not applicable for broker api, hence hiding it from swagger
         public async Task<IActionResult> Create([FromBody] CreateOrderModel model)
         {
             var method = $"{nameof(OrderController)}.{nameof(Create)}";
