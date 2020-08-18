@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -72,7 +73,7 @@ namespace Tolk.BusinessLogic.Services
             using (TolkDbContext context = _options.GetContext())
             {
                 var call = await context.OutboundWebHookCalls
-               .Include(c => c.RecipientUser).ThenInclude(u => u.Claims)
+               .Include(c => c.RecipientUser)
                .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId && e.DeliveredAt == null && e.FailedTries < NumberOfTries);
 
                 bool success = false;
@@ -85,11 +86,13 @@ namespace Tolk.BusinessLogic.Services
                     }
                     else
                     {
+                        //Use short cache, so that each call to the same api user does not have to retrieve claims
+                        IEnumerable<IdentityUserClaim<int>> claims = (call.RecipientUser != null) ? await context.UserClaims.GetClaimsForUser(call.RecipientUser.Id) : null;
                         using (var requestMessage = new HttpRequestMessage(HttpMethod.Post, call.RecipientUrl))
                         {
                             requestMessage.Headers.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
                             requestMessage.Headers.Add("X-Kammarkollegiet-InterpreterService-Delivery", call.OutboundWebHookCallId.ToSwedishString());
-                            string encryptedCallbackKey = call.RecipientUser?.Claims.SingleOrDefault(c => c.ClaimType == "CallbackApiKey")?.ClaimValue;
+                            string encryptedCallbackKey = claims?.SingleOrDefault(c => c.ClaimType == "CallbackApiKey")?.ClaimValue;
                             if (!string.IsNullOrWhiteSpace(encryptedCallbackKey))
                             {
                                 requestMessage.Headers.Add("X-Kammarkollegiet-InterpreterService-ApiKey", EncryptHelper.Decrypt(encryptedCallbackKey, _options.PublicOrigin, call.RecipientUser.UserName));
