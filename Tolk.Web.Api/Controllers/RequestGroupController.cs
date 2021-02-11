@@ -63,43 +63,21 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
-                if (!await _dbContext.OrderGroups
-                    .AnyAsync(o => o.OrderGroupNumber == model.OrderGroupNumber &&
-                    //Must have a request connected to the order for the broker, any status...
-                    o.RequestGroups.Any(r => r.Ranking.BrokerId == brokerId)))
-                {
-                    return ReturnError(ErrorCodes.OrderGroupNotFound);
-                }
-
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                var requestGroup = await _dbContext.RequestGroups
-                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                    .Include(r => r.Requests).ThenInclude(r => r.RequirementAnswers)
-                    .Include(r => r.Requests).ThenInclude(r => r.PriceRows)
-                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requests)
-                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.InterpreterLocations)
-                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.CompetenceRequirements)
-                    .Include(r => r.Requests).ThenInclude(r => r.Order).ThenInclude(o => o.Requirements)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Requirements)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.InterpreterLocations)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Language)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.ContactPersonUser)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders)
-                    .SingleOrDefaultAsync(r =>
-                        r.OrderGroup.OrderGroupNumber == model.OrderGroupNumber &&
-                        brokerId == r.Ranking.BrokerId &&
-                        (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
+ 
+                var requestGroup = await _dbContext.RequestGroups.GetFullRequestGroupForApiWithBrokerAndOrderNumber(model.OrderGroupNumber, brokerId);
                 if (requestGroup == null)
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotFound);
                 }
+                if (!(requestGroup.Status == RequestStatus.Created || requestGroup.Status == RequestStatus.Received))
+                {
+                    return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
+                }
                 var mainInterpreterAnswer = _apiUserService.GetInterpreterModel(model.InterpreterAnswer, brokerId);
 
                 InterpreterAnswerDto extraInterpreterAnswer = null;
+                requestGroup.OrderGroup.Orders = await _dbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroup.OrderGroupId).ToListAsync();
                 if (requestGroup.HasExtraInterpreter)
                 {
                     extraInterpreterAnswer = _apiUserService.GetInterpreterModel(model.ExtraInterpreterAnswer, brokerId, false);
@@ -115,7 +93,7 @@ namespace Tolk.Web.Api.Controllers
                         requestGroup,
                         now,
                         user?.Id ?? apiUserId,
-                        (user != null ? (int?)apiUserId : null),
+                        user != null ? (int?)apiUserId : null,
                         EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.InterpreterLocation).Value,
                         mainInterpreterAnswer,
                         extraInterpreterAnswer,
@@ -320,25 +298,12 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
 
-                var requestGroup = await _dbContext.RequestGroups
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Requirements)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.InterpreterLocations)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.CompetenceRequirements)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Language)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Attachments).ThenInclude(a => a.Attachment)
-                    .Include(r => r.OrderGroup).ThenInclude(o => o.Orders).ThenInclude(o => o.ContactPersonUser)
-                    .Include(o => o.Attachments).ThenInclude(a => a.Attachment)
-                    .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderGroupNumber &&
-                        //Must have a request connected to the order for the broker, any status...
-                        r.Ranking.BrokerId == brokerId);
+                var requestGroup = await _dbContext.RequestGroups.GetFullRequestGroupForApiWithBrokerAndOrderNumber(orderGroupNumber, brokerId);
                 if (requestGroup == null)
                 {
                     return ReturnError(ErrorCodes.OrderGroupNotFound);
                 }
-                return Ok(_apiOrderService.GetResponseFromRequestGroup(requestGroup));
+                return Ok(await _apiOrderService.GetResponseFromRequestGroup(requestGroup));
             }
             catch (InvalidApiCallException ex)
             {
@@ -390,7 +355,7 @@ namespace Tolk.Web.Api.Controllers
         private IActionResult ReturnError(string errorCode, string specifiedErrorMessage = null)
         {
             //TODO: Add to log, information...
-            var message = TolkApiOptions.BrokerApiErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
+            var message = TolkApiOptions.BrokerApiErrorResponses.Union(TolkApiOptions.CommonErrorResponses).Single(e => e.ErrorCode == errorCode).Copy();
             if (!string.IsNullOrEmpty(specifiedErrorMessage))
             {
                 message.ErrorMessage = specifiedErrorMessage;

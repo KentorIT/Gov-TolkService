@@ -268,6 +268,10 @@ namespace BrokerMock.Controllers
                 {
                     await DeclineGroup(payload.OrderGroupNumber, "Vill inte, kan inte bör inte...");
                 }
+                else if (extraInstructions.Contains("VIEW"))
+                {
+                    await ViewGroup(payload.OrderGroupNumber);
+                }
                 else
                 {
                     var declineExtraInterpreter = extraInstructions.Contains("DECLINEEXTRAINTERPRETER");
@@ -1066,6 +1070,22 @@ namespace BrokerMock.Controllers
 
                 return true;
             }
+        }
+
+        private async Task<bool> ViewGroup(string orderGroupNumber)
+        {
+            using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"OrderGroupNumber={orderGroupNumber}&callingUser=regular-user@formedling1.se")))
+            {
+                if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View]:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
+                }
+                else
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
+                }
+            }
+            return true;
         }
 
         private async Task<bool> GetFile(string orderNumber, int attachmentId)

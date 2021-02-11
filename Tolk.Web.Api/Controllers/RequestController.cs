@@ -669,7 +669,7 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.OrderNotFound);
                 }
-                return Ok(_apiOrderService.GetResponseFromRequest(request));
+                return Ok(await _apiOrderService.GetResponseFromRequest(request));
             }
             catch (InvalidApiCallException ex)
             {

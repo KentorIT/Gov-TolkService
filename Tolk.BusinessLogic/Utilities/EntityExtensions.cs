@@ -353,6 +353,9 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<OrderGroupRequirement> GetRequirementsForOrderGroup(this IQueryable<OrderGroupRequirement> requirements, int id)
             => requirements.Where(o => o.OrderGroupId == id);
 
+        public static IQueryable<OrderGroupInterpreterLocation> GetInterpreterLocationsForOrderGroup(this IQueryable<OrderGroupInterpreterLocation> interpreterLocations, int id)
+            => interpreterLocations.Where(o => o.OrderGroupId == id);
+
         public static IQueryable<Attachment> GetAttachmentsForOrderGroup(this IQueryable<Attachment> attachments, int id)
             => attachments.Where(a => a.OrderGroups.Any(g => g.OrderGroupId == id));
 
@@ -601,6 +604,12 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<RequestGroup> GetRequestGroupForApiWithBrokerAndOrderNumber(this IQueryable<RequestGroup> requestGroups, string orderNumber, int brokerId)
            => await requestGroups.Include(r => r.OrderGroup)
               .Include(r => r.Ranking).SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderNumber && r.Ranking.BrokerId == brokerId);
+
+        public static async Task<RequestGroup> GetFullRequestGroupForApiWithBrokerAndOrderNumber(this IQueryable<RequestGroup> requestGroups, string orderNumber, int brokerId)
+            => await requestGroups.GetRequestGroupsWithBaseIncludes()
+            .Include(r => r.OrderGroup.Language)
+            .Include(r => r.OrderGroup.Region)
+            .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderNumber && r.Ranking.BrokerId == brokerId);
 
         public static async Task<Request> GetConfirmedRequestForApiWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId, IEnumerable<RequestStatus> statuses)
             => await requests.GetRequestsWithBaseIncludesForApi()

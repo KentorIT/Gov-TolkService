@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +14,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
 using Tolk.BusinessLogic.Services;
+
 
 namespace Tolk.Web.Api.Services
 {
@@ -62,18 +64,18 @@ namespace Tolk.Web.Api.Services
             return reqGroup;
         }
 
-        public RequestDetailsResponse GetResponseFromRequest(Request request, bool getAttachments = true)
+        public async Task<RequestDetailsResponse> GetResponseFromRequest(Request request, bool getAttachments = true)
         {
             if (request == null)
             {
                 return null;
             }
-            request.RequirementAnswers = _dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId).ToList();
-            request.PriceRows = _dbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToList();
-            request.Order.Requirements = _dbContext.OrderRequirements.GetRequirementsForOrder(request.OrderId).ToList();
-            request.Order.InterpreterLocations = _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToList();
-            request.Order.CompetenceRequirements = _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.OrderId).ToList();
-            request.Order.PriceRows = _dbContext.OrderPriceRows.GetPriceRowsForOrder(request.OrderId).ToList();
+            request.RequirementAnswers = await _dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId).ToListAsync();
+            request.PriceRows = await _dbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToListAsync();
+            request.Order.Requirements = await _dbContext.OrderRequirements.GetRequirementsForOrder(request.OrderId).ToListAsync();
+            request.Order.InterpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToListAsync();
+            request.Order.CompetenceRequirements = await _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.OrderId).ToListAsync();
+            request.Order.PriceRows = await _dbContext.OrderPriceRows.GetPriceRowsForOrder(request.OrderId).ToListAsync();
 
             var attachments = getAttachments ? GetAttachments(request) : Enumerable.Empty<AttachmentInformationModel>();
 
@@ -163,22 +165,31 @@ namespace Tolk.Web.Api.Services
             };
         }
 
-        public RequestGroupDetailsResponse GetResponseFromRequestGroup(RequestGroup requestGroup)
+        public async Task<RequestGroupDetailsResponse> GetResponseFromRequestGroup(RequestGroup requestGroup)
         {
             if (requestGroup == null)
             {
                 return null;
             }
             OrderGroup orderGroup = requestGroup.OrderGroup;
-            var occasions = _dbContext.Requests.GetRequestsWithIncludesForRequestGroup(requestGroup.RequestGroupId)
-                .Select(r => GetResponseFromRequest(r, false));
+            IList<RequestDetailsResponse> occasions = new List<RequestDetailsResponse>();
+            var reqs = _dbContext.Requests.GetRequestsWithIncludesForRequestGroup(requestGroup.RequestGroupId);
+            foreach (Request r in reqs)
+            {
+                occasions.Add(await GetResponseFromRequest(r, false));
+            }
+            orderGroup.CompetenceRequirements = await _dbContext.OrderGroupCompetenceRequirements.GetOrderedCompetenceRequirementsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.Requirements = await _dbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.InterpreterLocations = await _dbContext.OrderGroupInterpreterLocations.GetInterpreterLocationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            var orderGroupAttachments = await _dbContext.Attachments.GetAttachmentsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            var requestGroupAttachments = await _dbContext.Attachments.GetAttachmentsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
             return new RequestGroupDetailsResponse
             {
                 Status = requestGroup.Status.GetCustomName(),
                 StatusMessage = requestGroup.DenyMessage ?? requestGroup.CancelMessage,
                 CreatedAt = requestGroup.CreatedAt,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
-                Description = orderGroup.Orders.First().Description,
+                Description = string.Empty,
                 CustomerInformation = new CustomerInformationModel
                 {
                     Name = orderGroup.CustomerOrganisation.Name,
@@ -213,14 +224,14 @@ namespace Tolk.Web.Api.Services
                 AllowMoreThanTwoHoursTravelTime = orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved || orderGroup.AllowExceedingTravelCost == AllowExceedingTravelCost.YesShouldNotBeApproved,
                 CreatorIsInterpreterUser = orderGroup.CreatorIsInterpreterUser,
                 AssignmentType = orderGroup.AssignmentType.GetCustomName(),
-                Attachments = orderGroup.Attachments.Select(a => new AttachmentInformationModel
+                Attachments = orderGroupAttachments.Select(a => new AttachmentInformationModel
                 {
                     AttachmentId = a.AttachmentId,
-                    FileName = a.Attachment.FileName
-                }).Union(requestGroup.Attachments.Select(a => new AttachmentInformationModel
+                    FileName = a.FileName
+                }).Union(requestGroupAttachments.Select(a => new AttachmentInformationModel
                 {
-                    AttachmentId = a.Attachment.AttachmentId,
-                    FileName = a.Attachment.FileName,
+                    AttachmentId = a.AttachmentId,
+                    FileName = a.FileName,
                 })),
                 Requirements = orderGroup.Requirements.Select(r => new RequirementModel
                 {
