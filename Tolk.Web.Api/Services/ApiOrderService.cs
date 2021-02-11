@@ -189,7 +189,7 @@ namespace Tolk.Web.Api.Services
                 StatusMessage = requestGroup.DenyMessage ?? requestGroup.CancelMessage,
                 CreatedAt = requestGroup.CreatedAt,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
-                Description = string.Empty,
+                Description = orderGroup.Orders.First().Description,
                 CustomerInformation = new CustomerInformationModel
                 {
                     Name = orderGroup.CustomerOrganisation.Name,
