@@ -6,11 +6,29 @@
     <h1 class="display-4">Customer mock</h1>
     <div class="row">
         <div class="col-md-6">
+            Meddelande:<br />
+            <input type="text" class="order-description" />
+        </div>
+        <div class="col-md-6">
             <button class="create-order">Beställ tolk</button>
         </div>
         <div class="col-md-6">
-            <h2>Svar</h2>
-            <ul class="message-list"></ul>
+            <h2>Svar från api</h2>
+            <ul class="api-response-list"></ul>
+        </div>
+        <div class="col-md-6">
+            <h2>Inkommande webhook-anrop </h2>
+            <button class="clear-list" data-list="incoming-webhook-list">Rensa</button>
+            <ul class="incoming-webhook-list"></ul>
+        </div>
+        <div class="col-md-6">
+            <h2>Utgående api-anrop </h2>
+            <button class="clear-list" data-list="api-call-list">Rensa</button>
+            <ul class="api-call-list"></ul>
         </div>
     </div>
 </div>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/lib/aspnet-signalr/signalr.js"></script>
+<script src="~/js/Home/Index.js"></script>
+

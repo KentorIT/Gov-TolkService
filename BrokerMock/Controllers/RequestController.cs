@@ -127,6 +127,11 @@ namespace BrokerMock.Controllers
                             latestAnswerAt = payload.StartAt.AddMinutes(-60);
                             expectedTravelCosts = 300;
                         }
+                        if (extraInstructions.Contains("ADDTRAVELCOSTS"))
+                        {
+                            expectedTravelCosts = 200;
+                        }
+
                         if (extraInstructions.Contains("BADLOCATION"))
                         {
                             var badLocation = _cache.Get<List<ListItemResponse>>("LocationTypes").First(l => !payload.Locations.Any(pl => pl.Key == l.Key)).Key;

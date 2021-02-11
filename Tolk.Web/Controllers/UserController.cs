@@ -580,7 +580,7 @@ namespace Tolk.Web.Controllers
                         }
                         await _dbContext.SaveChangesAsync();
                         transaction.Complete();
-                        await _cacheService.Flush(CacheKeys.BrokerSettings);
+                        await _cacheService.Flush(CacheKeys.OrganisationSettings);
                         return RedirectToAction(nameof(ViewOrganisationSettings), "User", new { message = "Ändringarna sparades" });
                     }
                     return View(model);
@@ -1106,13 +1106,13 @@ namespace Tolk.Web.Controllers
 
         private static IEnumerable<NotificationSettingsModel> GetAvailableNotifications(IEnumerable<UserNotificationSetting> settings)
         {
-            foreach (var val in Enum.GetValues(typeof(NotificationType)).OfType<NotificationType>())
+            foreach (var val in EnumHelper.GetAllFullDescriptions<NotificationType>())
             {
-                var emailSettings = settings.SingleOrDefault(s => s.NotificationType == val && s.NotificationChannel == NotificationChannel.Email);
-                var webhookSettings = settings.SingleOrDefault(s => s.NotificationType == val && s.NotificationChannel == NotificationChannel.Webhook);
+                var emailSettings = settings.SingleOrDefault(s => s.NotificationType == val.Value && s.NotificationChannel == NotificationChannel.Email);
+                var webhookSettings = settings.SingleOrDefault(s => s.NotificationType == val.Value && s.NotificationChannel == NotificationChannel.Webhook);
                 yield return new NotificationSettingsModel
                 {
-                    Type = val,
+                    Type = val.Value,
                     UseEmail = emailSettings != null,
                     SpecificEmail = emailSettings?.ConnectionInformation,
                     UseWebHook = webhookSettings != null,

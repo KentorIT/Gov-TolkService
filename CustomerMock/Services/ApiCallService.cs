@@ -1,5 +1,7 @@
 ﻿using CustomerMock.Helpers;
+using CustomerMock.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -18,12 +20,14 @@ namespace CustomerMock.Services
 {
     public class ApiCallService
     {
+        private readonly IHubContext<WebHooksHub> _hubContext;
         private readonly CustomerMockOptions _options;
         private readonly IMemoryCache _cache;
         private readonly static HttpClient client = new HttpClient();
 
-        public ApiCallService(IOptions<CustomerMockOptions> options, IMemoryCache cache)
+        public ApiCallService(IHubContext<WebHooksHub> hubContext, IOptions<CustomerMockOptions> options, IMemoryCache cache)
         {
+            _hubContext = hubContext;
             _options = options?.Value;
             _cache = cache;
             client.DefaultRequestHeaders.Accept.Clear();
@@ -108,9 +112,11 @@ namespace CustomerMock.Services
             response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/ErrorCodes/"));
             var errors = JsonConvert.DeserializeObject<List<ErrorResponse>>(await response.Content.ReadAsStringAsync());
             _cache.Set("ErrorCodes", errors);
+            await _hubContext.Clients.All.SendAsync("OutgoingCall", "All lists retrieved!");
+
         }
 
-        public async Task<string> CreateOrder()
+        public async Task<string> CreateOrder(string description)
         {
             if (_cache.Get<List<ListItemResponse>>("AssignmentTypes") == null)
             {
@@ -130,10 +136,13 @@ namespace CustomerMock.Services
                 InvoiceReference = "asd",
                 AssignmentType = _cache.Get<List<ListItemResponse>>("AssignmentTypes").First().Key,
                 Locations = new[] { new LocationModel{ Key = "on_site", Street ="Storgatan 1", City = "Hubberville", Rank = 1 } },
+                Description = description
                 //CompetenceLevels,
                 //Requirements = new[] { new RequirementRequestModel { IsRequired } }
                 //Attachments = new[] { new AttachmentModel { FileName = "xo.docx", FileBase64 = "" } }
             };
+            await _hubContext.Clients.All.SendAsync("OutgoingCall", "Order skapad!");
+
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
             var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Order/Create"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)

@@ -27,7 +27,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task FlushAll()
         {
             await _cache.RemoveAsync(CacheKeys.BrokerFees);
-            await _cache.RemoveAsync(CacheKeys.BrokerSettings);
+            await _cache.RemoveAsync(CacheKeys.OrganisationSettings);
             await _cache.RemoveAsync(CacheKeys.Holidays);
             await _cache.RemoveAsync(CacheKeys.CustomerSettings);
         }
@@ -68,28 +68,40 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public IEnumerable<BrokerNotificationSettings> BrokerNotificationSettings
+        public IEnumerable<OrganisationNotificationSettings> OrganisationNotificationSettings
         {
             get
             {
-                var brokerNotificationSettings = _cache.Get(CacheKeys.BrokerSettings).FromByteArray<IEnumerable<BrokerNotificationSettings>>();
+                var organisationNotificationSettings = _cache.Get(CacheKeys.OrganisationSettings).FromByteArray<IEnumerable<OrganisationNotificationSettings>>();
 
-                if (brokerNotificationSettings == null)
+                if (organisationNotificationSettings == null)
                 {
-                    brokerNotificationSettings = _dbContext.Users
-                        .Where(u => u.BrokerId != null && u.IsApiUser)
+                    organisationNotificationSettings = _dbContext.Users
+                        .Where(u => (u.BrokerId != null) && u.IsApiUser)
                         .SelectMany(u => u.NotificationSettings)
-                        .Select(n => new BrokerNotificationSettings
+                        .Select(n => new OrganisationNotificationSettings
                         {
-                            BrokerId = n.User.BrokerId.Value,
+                            ReceivingOrganisationId = n.User.BrokerId.Value,
+                            NotificationConsumerType = NotificationConsumerType.Broker,
                             ContactInformation = n.ConnectionInformation ?? (n.NotificationChannel == NotificationChannel.Email ? n.User.Email : null),
                             NotificationChannel = n.NotificationChannel,
                             NotificationType = n.NotificationType,
                             RecipientUserId = n.UserId
-                        }).ToList().AsReadOnly();
-                    _cache.Set(CacheKeys.BrokerSettings, brokerNotificationSettings.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
+                        }).ToList().Union(_dbContext.Users
+                        .Where(u => ( u.CustomerOrganisationId != null) && u.IsApiUser)
+                        .SelectMany(u => u.NotificationSettings)
+                        .Select(n => new OrganisationNotificationSettings
+                        {
+                            ReceivingOrganisationId = n.User.CustomerOrganisationId.Value,
+                            ContactInformation = n.ConnectionInformation ?? (n.NotificationChannel == NotificationChannel.Email ? n.User.Email : null),
+                            NotificationConsumerType = NotificationConsumerType.Customer,
+                            NotificationChannel = n.NotificationChannel,
+                            NotificationType = n.NotificationType,
+                            RecipientUserId = n.UserId
+                        })).ToList().AsReadOnly();
+                    _cache.Set(CacheKeys.OrganisationSettings, organisationNotificationSettings.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
                 }
-                return brokerNotificationSettings;
+                return organisationNotificationSettings;
             }
         }
 

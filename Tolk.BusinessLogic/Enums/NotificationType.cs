@@ -104,5 +104,17 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tid för tolkuppdrag passerad")]
         [CustomName("request_assignment_time_passed")]
         RequestAssignmentTimePassed = 25,
+
+        [Description("Beställning fullständigt besvarad")]
+        [CustomName("order_accepted", false)]
+        OrderAccepted = 26,
+
+        [Description("Beställning besvarad, inväntar godkännande av beställare")]
+        [CustomName("order_answered", false)]
+        OrderAnswered = 27,
+
+        [Description("Beställning besvarad, inväntar godkännande av beställare")]
+        [CustomName("order_declined", false)]
+        OrderDeclined = 28,
     }
 }

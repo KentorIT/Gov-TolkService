@@ -56,7 +56,7 @@ namespace Tolk.BusinessLogic.Services
                     true);
             }
             //broker
-            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Email);
             if (email != null)
             {
                 if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
@@ -79,7 +79,7 @@ namespace Tolk.BusinessLogic.Services
                         true);
                 }
             }
-            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -100,7 +100,7 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(OrderGroupCancelledByCustomer), nameof(NotificationService));
             string orderNumber = requestGroup.OrderGroup.OrderGroupNumber;
             //notify broker
-            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCancelledByCustomer, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCancelledByCustomer, NotificationChannel.Email);
             if (email != null)
             {
                 var occasionText = requestGroup.OrderGroup.IsSingleOccasion ? "Tillfället skulle ha startat " : "Första tillfället skulle ha startat ";
@@ -112,7 +112,7 @@ namespace Tolk.BusinessLogic.Services
                     HtmlHelper.ToHtmlBreak(body) + GoToRequestGroupButton(requestGroup.RequestGroupId),
                     true);
             }
-            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCancelledByCustomer, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCancelledByCustomer, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -169,7 +169,7 @@ namespace Tolk.BusinessLogic.Services
                 order.InterpreterLocations.Where(i => i.InterpreterLocation == interpreterLocation).Single().OffSiteContactInformation :
                 order.InterpreterLocations.Where(i => i.InterpreterLocation == interpreterLocation).Single().Street;
 
-            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Email);
             if (email != null)
             {
                 var attachmentText = attachmentChanged ? "Bifogade filer har ändrats.\n\n" : string.Empty;
@@ -180,7 +180,7 @@ namespace Tolk.BusinessLogic.Services
                     HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
                     true);
             }
-            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestInformationUpdated, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -236,7 +236,7 @@ namespace Tolk.BusinessLogic.Services
             Request oldRequest = await _dbContext.Requests.GetRequestById(replacedRequestId);
 
             Request replacementRequest = await _dbContext.Requests.GetRequestById(newRequestId);
-            var email = GetBrokerNotificationSettings(replacementRequest.Ranking.BrokerId, NotificationType.RequestReplacementCreated, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(replacementRequest.Ranking.BrokerId, NotificationType.RequestReplacementCreated, NotificationChannel.Email);
             if (email != null)
             {
                 var bodyPlain = $"\tOrginal Start: {oldRequest.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
@@ -263,7 +263,7 @@ namespace Tolk.BusinessLogic.Services
                      bodyHtml,
                      true);
             }
-            var webhook = GetBrokerNotificationSettings(replacementRequest.Ranking.BrokerId, NotificationType.RequestReplacementCreated, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(replacementRequest.Ranking.BrokerId, NotificationType.RequestReplacementCreated, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -314,7 +314,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCreated), nameof(NotificationService));
             var order = request.Order;
-            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
             if (email != null)
             {
                 string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inkommit via {Constants.SystemName}. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
@@ -343,7 +343,7 @@ namespace Tolk.BusinessLogic.Services
                     true
                 );
             }
-            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -359,7 +359,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupCreated), nameof(NotificationService));
             var orderGroup = requestGroup.OrderGroup;
-            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Email);
             if (email != null)
             {
                 string bodyPlain = $"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} organisationsnummer {orderGroup.CustomerOrganisation.OrganisationNumber} har inkommit via {Constants.SystemName}. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
@@ -387,7 +387,7 @@ namespace Tolk.BusinessLogic.Services
                     true
                 );
             }
-            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -458,6 +458,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                 body + GoToOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true),
                 HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true));
 
+            NotifyCustomerOnAcceptedAnswer(request, orderNumber);
             NotifyBrokerOnAcceptedAnswer(request, orderNumber);
         }
 
@@ -486,6 +487,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         public void RequestAnswerApproved(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnswerApproved), nameof(NotificationService));
+            NotifyCustomerOnAcceptedAnswer(request, request.Order.OrderNumber);
             NotifyBrokerOnAcceptedAnswer(request, request.Order.OrderNumber);
         }
 
@@ -493,7 +495,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnswerDenied), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
-            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerDenied, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerDenied, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation,
@@ -503,7 +505,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                     true
                 );
             }
-            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerDenied, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerDenied, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -523,7 +525,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAnswerDenied), nameof(NotificationService));
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerDenied, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerDenied, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation,
@@ -533,7 +535,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                     true
                 );
             }
-            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerDenied, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerDenied, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -553,7 +555,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestExpiredDueToInactivity), nameof(NotificationService));
             var orderNumber = request.Order.OrderNumber;
-            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToInactivity, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToInactivity, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation,
@@ -562,7 +564,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                     $"Ni har inte besvarat bokningsförfrågan {orderNumber} från {request.Order.CustomerOrganisation.Name} organisationsnummer {request.Order.CustomerOrganisation.OrganisationNumber}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GoToRequestButton(request.RequestId)}",
                     true);
             }
-            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToInactivity, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToInactivity, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -581,7 +583,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestExpiredDueToNoAnswerFromCustomer), nameof(NotificationService));
             var orderNumber = request.Order.OrderNumber;
-            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToNoAnswerFromCustomer, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToNoAnswerFromCustomer, NotificationChannel.Email);
             if (email != null)
             {
                 var mailText = GetRequestExpiredDueToNoAnswerFromCustomerText(request.Order, request.LatestAnswerTimeForCustomer.HasValue);
@@ -591,7 +593,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                     mailText + GoToRequestButton(request.RequestId),
                     true);
             }
-            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToNoAnswerFromCustomer, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToNoAnswerFromCustomer, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -614,7 +616,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupExpiredDueToInactivity), nameof(NotificationService));
             var orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToInactivity, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToInactivity, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation,
@@ -623,7 +625,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                     $"Ni har inte besvarat den sammanhållna bokningsförfrågan {orderGroupNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} organisationsnummer {requestGroup.OrderGroup.CustomerOrganisation.OrganisationNumber}.<br />Tidsfristen enligt ramavtal har nu gått ut. {GoToRequestGroupButton(requestGroup.RequestGroupId)}",
                     true);
             }
-            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToInactivity, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToInactivity, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -642,7 +644,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupExpiredDueToNoAnswerFromCustomer), nameof(NotificationService));
             var orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToNoAnswerFromCustomer, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToNoAnswerFromCustomer, NotificationChannel.Email);
             if (email != null)
             {
                 var emailText = GetRequestGroupExpiredDueToNoAnswerFromCustomerText(requestGroup.OrderGroup, requestGroup.LatestAnswerTimeForCustomer.HasValue);
@@ -653,7 +655,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                     emailText + GoToRequestGroupButton(requestGroup.RequestGroupId),
                     true);
             }
-            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToNoAnswerFromCustomer, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToNoAnswerFromCustomer, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -676,7 +678,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         {
             NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintCreated), nameof(NotificationService));
             string orderNumber = complaint.Request.Order.OrderNumber;
-            var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintCreated, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintCreated, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation, $"En reklamation har registrerats för tolkuppdrag med boknings-ID {orderNumber}",
@@ -694,7 +696,7 @@ Angiven reklamationsbeskrivning:
                 true
             );
             }
-            var webhook = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintCreated, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintCreated, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -736,7 +738,7 @@ Angiven reklamationsbeskrivning:
         {
             NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintDisputePendingTrial), nameof(NotificationService));
             string orderNumber = complaint.Request.Order.OrderNumber;
-            var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputePendingTrial, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputePendingTrial, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation, $"Ert bestridande av reklamation avslogs för tolkuppdrag {orderNumber}",
@@ -745,7 +747,7 @@ Angiven reklamationsbeskrivning:
                     true
                 );
             }
-            var webhook = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputePendingTrial, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputePendingTrial, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -766,7 +768,7 @@ Angiven reklamationsbeskrivning:
         {
             NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintTerminatedAsDisputeAccepted), nameof(NotificationService));
             string orderNumber = complaint.Request.Order.OrderNumber;
-            var email = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputedAccepted, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputedAccepted, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation, $"Ert bestridande av reklamation har godtagits för tolkuppdrag {orderNumber}",
@@ -775,7 +777,7 @@ Angiven reklamationsbeskrivning:
                     true
                 );
             }
-            var webhook = GetBrokerNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputedAccepted, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(complaint.Request.Ranking.BrokerId, NotificationType.ComplaintDisputedAccepted, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -812,7 +814,7 @@ Angiven reklamationsbeskrivning:
 Sammanställning:
 
 {await GetRequisitionPriceInformationForMail(requisition)}";
-            var email = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionReviewed, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionReviewed, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation,
@@ -822,7 +824,7 @@ Sammanställning:
                     true
                 );
             }
-            var webhook = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionReviewed, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionReviewed, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(new RequisitionReviewedModel
@@ -840,7 +842,7 @@ Sammanställning:
             NullCheckHelper.ArgumentCheckNull(requisition, nameof(RequisitionCommented), nameof(NotificationService));
             string orderNumber = requisition.Request.Order.OrderNumber;
             var body = $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har kommenterats av myndighet. Följande kommentar har angivits:\n{requisition.CustomerComment}";
-            var email = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionCommented, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionCommented, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation,
@@ -850,7 +852,7 @@ Sammanställning:
                     true
                 );
             }
-            var webhook = GetBrokerNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionCommented, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionCommented, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(new RequisitionCommentedModel
@@ -870,12 +872,12 @@ Sammanställning:
             var body = $"Myndigheten {customer.Name} med organisationsnummer {customer.OrganisationNumber} har lagts till i systemet. \n Vid användning av tjänstens API kan myndigheten identifieras med denna identifierare: {customer.OrganisationPrefix}";
             foreach (int brokerId in _dbContext.Brokers.Select(b => b.BrokerId).ToList())
             {
-                var email = GetBrokerNotificationSettings(brokerId, NotificationType.CustomerAdded, NotificationChannel.Email);
+                var email = GetOrganisationNotificationSettings(brokerId, NotificationType.CustomerAdded, NotificationChannel.Email);
                 if (email != null)
                 {
                     CreateEmail(email.ContactInformation, $"En ny myndighet har lagts upp i systemet.", body);
                 }
-                var webhook = GetBrokerNotificationSettings(brokerId, NotificationType.CustomerAdded, NotificationChannel.Webhook);
+                var webhook = GetOrganisationNotificationSettings(brokerId, NotificationType.CustomerAdded, NotificationChannel.Webhook);
                 if (webhook != null)
                 {
                     CreateWebHookCall(new CustomerCreatedModel
@@ -909,6 +911,17 @@ Sammanställning:
             CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
                 body + GoToOrderPlain(request.Order.OrderId),
                 HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId));
+            var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderAnswered, NotificationChannel.Webhook, NotificationConsumerType.Customer);
+            if (webhook != null)
+            {
+                CreateWebHookCall(new OrderAnsweredModel
+                {
+                    OrderNumber = orderNumber
+                },
+                webhook.ContactInformation,
+                webhook.NotificationType,
+                webhook.RecipientUserId);
+            }
         }
 
         private string OrderReferenceNumberInfo(Request request)
@@ -955,6 +968,18 @@ Sammanställning:
             CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har tackat nej till bokningsförfrågan {orderNumber}",
                 body + GoToOrderPlain(request.Order.OrderId),
                 HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId));
+            var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderDeclined, NotificationChannel.Webhook, NotificationConsumerType.Customer);
+            if (webhook != null)
+            {
+                CreateWebHookCall(new OrderDeclinedModel
+                {
+                    OrderNumber = orderNumber,
+                    Message = request.DenyMessage
+                },
+                webhook.ContactInformation,
+                webhook.NotificationType,
+                webhook.RecipientUserId);
+            }
         }
 
         public void RequestGroupDeclinedByBroker(RequestGroup requestGroup)
@@ -972,7 +997,7 @@ Sammanställning:
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCompleted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             var body = $"Tiden för tolkuppdrag med boknings-ID {orderNumber} har passerat. Det är nu möjligt att registrera en rekvisition för uppdraget eller arkivera bokningen som avslutad utan att göra en rekvisition. För att komma till bokningen följ länken nedan:";
-            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAssignmentTimePassed, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAssignmentTimePassed, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(
@@ -982,7 +1007,7 @@ Sammanställning:
                     body + GoToRequestButton(request.RequestId),
                     true);
             }
-            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAssignmentTimePassed, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAssignmentTimePassed, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -1023,6 +1048,7 @@ Sammanställning:
                     CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
                         bodyAppr + GoToOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true),
                         HtmlHelper.ToHtmlBreak(bodyAppr) + GoToOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true));
+                    NotifyCustomerOnAcceptedAnswer(request, orderNumber);
                     NotifyBrokerOnAcceptedAnswer(request, orderNumber);
                     break;
                 default:
@@ -1064,7 +1090,7 @@ Sammanställning:
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestChangedInterpreterAccepted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             //Broker
-            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestReplacedInterpreterAccepted, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestReplacedInterpreterAccepted, NotificationChannel.Email);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation, $"Byte av tolk godkänt för boknings-ID {orderNumber}",
@@ -1073,7 +1099,7 @@ Sammanställning:
                 true
             );
             }
-            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestReplacedInterpreterAccepted, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestReplacedInterpreterAccepted, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -1191,7 +1217,9 @@ Sammanställning:
         public async Task NotifyOnFailure(int callId)
         {
             OutboundWebHookCall call = await _dbContext.OutboundWebHookCalls.GetOutboundWebHookCall(callId);
-            var email = GetBrokerNotificationSettings(call.RecipientUser.BrokerId.Value, NotificationType.ErrorNotification, NotificationChannel.Email);
+            var recipientId = call.RecipientUser.BrokerId ?? call.RecipientUser.CustomerOrganisationId ?? call.RecipientUserId;
+            var consumerType = call.RecipientUser.CustomerOrganisationId.HasValue ? NotificationConsumerType.Customer : NotificationConsumerType.Broker;
+            var email = GetOrganisationNotificationSettings(recipientId, NotificationType.ErrorNotification, NotificationChannel.Email, consumerType);
             if (email != null)
             {
                 CreateEmail(email.ContactInformation, $"Ett webhook-anrop från {Constants.SystemName} har misslyckats fem gånger",
@@ -1202,7 +1230,7 @@ Sammanställning:
                 true
             );
             }
-            var webhook = GetBrokerNotificationSettings(call.RecipientUser.BrokerId.Value, NotificationType.ErrorNotification, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(recipientId, NotificationType.ErrorNotification, NotificationChannel.Webhook, consumerType);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -1222,7 +1250,7 @@ Sammanställning:
                 CreateEmail(
                     _tolkBaseOptions.Support.SecondLineEmail,
                     "Ett webhook-anrop har misslyckats fem gånger",
-                    $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()}) till brokerId:{call.RecipientUser.BrokerId.Value}"
+                    $@"Webhook misslyckades av typ: {call.NotificationType.GetDescription()}({call.NotificationType.GetCustomName()}) till {(consumerType == NotificationConsumerType.Customer ? "CustomerOrganisationId" : "BrokerId")}:{recipientId}"                     
                 );
             }
         }
@@ -1237,7 +1265,7 @@ Sammanställning:
                 return false;
             }
 
-            var webhook = GetBrokerNotificationSettings((int)brokerId, failedCall.NotificationType, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings((int)brokerId, failedCall.NotificationType, NotificationChannel.Webhook);
 
             if (webhook == null)
             {
@@ -1308,7 +1336,7 @@ Sammanställning:
 
         private void NotifyBrokerOnAcceptedAnswer(Request request, string orderNumber)
         {
-            var email = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Email);
             if (email != null)
             {
                 var body = $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på bokningsförfrågan {orderNumber}.";
@@ -1317,7 +1345,7 @@ Sammanställning:
                         body + GoToRequestButton(request.RequestId),
                         true);
             }
-            var webhook = GetBrokerNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -1331,10 +1359,24 @@ Sammanställning:
                 );
             }
         }
+        private void NotifyCustomerOnAcceptedAnswer(Request request, string orderNumber)
+        {
+            var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderAccepted, NotificationChannel.Webhook, NotificationConsumerType.Customer);
+            if (webhook != null)
+            {
+                CreateWebHookCall(new OrderAcceptedModel
+                {
+                    OrderNumber = orderNumber
+                },
+                webhook.ContactInformation,
+                webhook.NotificationType,
+                webhook.RecipientUserId);
+            }
+        }
 
         private void NotifyBrokerOnAcceptedAnswer(RequestGroup requestGroup, string orderGroupNumber)
         {
-            var email = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerApproved, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerApproved, NotificationChannel.Email);
             if (email != null)
             {
                 var body = $"{requestGroup.OrderGroup.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på den sammanhållna bokningsförfrågan {orderGroupNumber}.";
@@ -1343,7 +1385,7 @@ Sammanställning:
                         body + GoToRequestGroupButton(requestGroup.RequestGroupId),
                         true);
             }
-            var webhook = GetBrokerNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerApproved, NotificationChannel.Webhook);
+            var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerApproved, NotificationChannel.Webhook);
             if (webhook != null)
             {
                 CreateWebHookCall(
@@ -1373,16 +1415,16 @@ Sammanställning:
             yield return unit != null ? unit.Email : orderGroup.CreatedByUser.Email;
         }
 
-        private BrokerNotificationSettings GetBrokerNotificationSettings(int brokerId, NotificationType type, NotificationChannel channel)
+        private OrganisationNotificationSettings GetOrganisationNotificationSettings(int consumerId, NotificationType type, NotificationChannel channel, NotificationConsumerType consumerType = NotificationConsumerType.Broker)
         {
-            if (!_cacheService.BrokerNotificationSettings.Any(b => b.BrokerId == brokerId) && channel == NotificationChannel.Email)
+            if (!_cacheService.OrganisationNotificationSettings.Any(b => b.ReceivingOrganisationId == consumerId && b.NotificationConsumerType == consumerType) && channel == NotificationChannel.Email)
             {
-                return new BrokerNotificationSettings
+                return new OrganisationNotificationSettings
                 {
-                    ContactInformation = _dbContext.Brokers.Single(b => b.BrokerId == brokerId).EmailAddress,
+                    ContactInformation = _dbContext.Brokers.Single(b => b.BrokerId == consumerId).EmailAddress,
                 };
             }
-            return _cacheService.BrokerNotificationSettings.SingleOrDefault(b => b.BrokerId == brokerId && b.NotificationType == type && b.NotificationChannel == channel);
+            return _cacheService.OrganisationNotificationSettings.SingleOrDefault(b => b.ReceivingOrganisationId == consumerId && b.NotificationConsumerType == consumerType && b.NotificationType == type && b.NotificationChannel == channel);
         }
 
         private void CreateWebHookCall(WebHookPayloadBaseModel payload, string recipientUrl, NotificationType type, int userId)
