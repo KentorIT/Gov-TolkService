@@ -32,6 +32,7 @@ namespace Tolk.Web.Api.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly OrderService _orderService;
         private readonly ApiOrderService _apiOrderService;
+        private readonly ApiUserService _apiUserService;
         private readonly ITolkBaseOptions _tolkBaseOptions;
         private readonly ILogger _logger;
 
@@ -39,6 +40,7 @@ namespace Tolk.Web.Api.Controllers
             TolkDbContext tolkDbContext,
             OrderService orderService,
             ApiOrderService apiOrderService,
+            ApiUserService apiUserService,
             ITolkBaseOptions tolkBaseOptions,
             ILogger<OrderController> logger)
         {
@@ -47,6 +49,7 @@ namespace Tolk.Web.Api.Controllers
             _apiOrderService = apiOrderService;
             _tolkBaseOptions = tolkBaseOptions;
             _logger = logger;
+            _apiUserService = apiUserService;
         }
 
         #region Updating Methods
@@ -84,7 +87,8 @@ namespace Tolk.Web.Api.Controllers
                     await _orderService.Create(order, model.LatestAnswerBy);
                     await _dbContext.SaveChangesAsync();
                     _logger.LogInformation($"{order.OrderNumber} was created");
-                    return Ok(new CreateOrderResponse {
+                    return Ok(new CreateOrderResponse
+                    {
                         OrderNumber = order.OrderNumber,
                         PriceInformation = order.PriceRows.GetPriceInformationModel(
                             order.PriceCalculatedFromCompetenceLevel.GetCustomName(),
@@ -99,7 +103,119 @@ namespace Tolk.Web.Api.Controllers
                 catch (ArgumentNullException ex)
                 {
                     return ReturnError(ErrorCodes.OrderNotValid, method, ex.Message);
-                } 
+                }
+            }
+            return ReturnError(ErrorCodes.OrderNotValid, method);
+        }
+
+        [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [OpenApiTag("Order")]
+        [Description("Anropas för att godkänna ett svar med restid")]
+        [OpenApiIgnore]//Not applicable for broker api, hence hiding it from swagger
+        public async Task<IActionResult> ApproveAnswer([FromBody] ApproveAnswerModel model)
+        {
+            var method = $"{nameof(OrderController)}.{nameof(ApproveAnswer)}";
+            _logger.LogDebug($"{method} was called");
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing, method);
+            }
+            if (!_tolkBaseOptions.EnableCustomerApi)
+            {
+                _logger.LogWarning($"{model.CallingUser} called {method}, but CustomerApi is not enabled!");
+                return BadRequest(new ValidationProblemDetails { Title = "CustomerApi is not enabled!" });
+            }
+            if (string.IsNullOrEmpty(model.CallingUser))
+            {
+                return ReturnError(ErrorCodes.CallingUserMissing, method);
+            }
+            _logger.LogInformation($"{model.CallingUser} is approving request answer on {model.OrderNumber} from {model.BrokerIdentifier} ");
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());
+                    var request = await _apiOrderService.GetRequestFromOrderAndBrokerIdentifier(model.OrderNumber, model.BrokerIdentifier);
+                    if (request == null && request.Order.CustomerOrganisationId != apiUser.CustomerOrganisationId )
+                    {
+                        return ReturnError(ErrorCodes.OrderNotFound, method);
+                    }
+                    if (!request.CanApprove)
+                    {
+                        return ReturnError(ErrorCodes.RequestNotInCorrectState, method);
+                    }
+                    var user = await _apiUserService.GetCustomerUser(model.CallingUser, apiUser.CustomerOrganisationId);
+                    if (user == null)
+                    {
+                        return ReturnError(ErrorCodes.CallingUserMissing, method);
+                    }
+
+                    _orderService.ApproveRequestAnswer(request, user.Id, apiUser.Id);
+                    await _dbContext.SaveChangesAsync();
+                    _logger.LogInformation($"{request.RequestId} was approved");
+                    return Ok(new ResponseBase());
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return ReturnError(ErrorCodes.OrderNotValid, method, ex.Message);
+                }
+                catch (ArgumentNullException ex)
+                {
+                    return ReturnError(ErrorCodes.OrderNotValid, method, ex.Message);
+                }
+            }
+            return ReturnError(ErrorCodes.OrderNotValid, method);
+        }
+        [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [OpenApiTag("Order")]
+        [Description("Anropas för att avslå ett svar med restid")]
+        [OpenApiIgnore]//Not applicable for broker api, hence hiding it from swagger
+        public async Task<IActionResult> DenyAnswer([FromBody] DenyAnswerModel model)
+        {
+            var method = $"{nameof(OrderController)}.{nameof(DenyAnswer)}";
+            _logger.LogDebug($"{method} was called");
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing, method);
+            }
+            if (!_tolkBaseOptions.EnableCustomerApi)
+            {
+                _logger.LogWarning($"{model.CallingUser} called {method}, but CustomerApi is not enabled!");
+                return BadRequest(new ValidationProblemDetails { Title = "CustomerApi is not enabled!" });
+            }
+            if (string.IsNullOrEmpty(model.CallingUser))
+            {
+                return ReturnError(ErrorCodes.CallingUserMissing, method);
+            }
+            _logger.LogInformation($"{model.CallingUser} is denying request answer on {model.OrderNumber} from {model.BrokerIdentifier} ");
+            if (ModelState.IsValid)
+            {
+                AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());
+                var request = await _apiOrderService.GetRequestFromOrderAndBrokerIdentifier(model.OrderNumber, model.BrokerIdentifier);
+                if (request == null && request.Order.CustomerOrganisationId != apiUser.CustomerOrganisationId)
+                {
+                    return ReturnError(ErrorCodes.OrderNotFound, method);
+                }
+                if (!request.CanApprove)
+                {
+                    return ReturnError(ErrorCodes.RequestNotInCorrectState, method);
+                }
+                var user = await _apiUserService.GetCustomerUser(model.CallingUser, apiUser.CustomerOrganisationId);
+                if (user == null)
+                {
+                    return ReturnError(ErrorCodes.CallingUserMissing, method);
+                }
+
+                await _orderService.DenyRequestAnswer(request, user.Id, apiUser.Id, model.Message);
+                await _dbContext.SaveChangesAsync();
+                _logger.LogInformation($"{request.RequestId} was denied");
+                return Ok(new ResponseBase());
             }
             return ReturnError(ErrorCodes.OrderNotValid, method);
         }

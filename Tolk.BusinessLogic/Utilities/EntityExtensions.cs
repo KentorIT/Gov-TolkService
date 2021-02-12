@@ -606,6 +606,9 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<Order> GetOrderWithBrokerAndOrderNumber(this IQueryable<Order> orders, string orderNumber, int brokerId)
            => await orders
                 .SingleOrDefaultAsync(o => o.OrderNumber == orderNumber && o.Requests.Any(r => r.Ranking.BrokerId == brokerId));
+        public static async Task<Broker> GetBrokerByIdentifier(this IQueryable<Broker> brokers, string identifier)
+           => await brokers
+                .SingleOrDefaultAsync(b => b.OrganizationNumber == identifier);
 
         public static async Task<Request> GetActiveRequestForApiWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId)
              => await requests.GetRequestsWithBaseIncludesAndRegionAndLanguage()

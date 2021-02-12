@@ -287,6 +287,14 @@ namespace Tolk.Web.Api.Services
             };
         }
 
+        public async Task<Request> GetRequestFromOrderAndBrokerIdentifier(string orderNumber, string brokerIdentifier)
+        {
+            var brokerId = (await _dbContext.Brokers.GetBrokerByIdentifier(brokerIdentifier))?.BrokerId;
+            return brokerId.HasValue ?
+                await _dbContext.Requests.GetActiveRequestForApiWithBrokerAndOrderNumber(orderNumber, brokerId.Value) :
+                null;
+        }
+
         private IEnumerable<AttachmentInformationModel> GetAttachments(Request request)
         {
             var attachments = _dbContext.Attachments.GetAttachmentsForOrderAndGroup(request.OrderId, request.Order.OrderGroupId).ToList();
