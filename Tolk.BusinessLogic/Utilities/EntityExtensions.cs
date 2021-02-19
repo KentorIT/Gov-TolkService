@@ -28,6 +28,18 @@ namespace Tolk.BusinessLogic.Utilities
                 filteredOrderGroups.Where(o => (o.CreatedBy == userId && o.CustomerUnitId == null) || o.ContactPersonId == userId || customerUnits.Contains(o.CustomerUnitId ?? -1));
         }
 
+        public static IQueryable<CustomerStartListRow> CustomerStartListRows(this IQueryable<CustomerStartListRow> entities, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool includeContact = false, bool includeOrderGroupOrders = false)
+        {
+            return entities.Where(o => o.CustomerOrganisationId == customerOrganisationId && (includeOrderGroupOrders || o.OrderGroupId == null)
+                && ((o.CreatedBy == userId && o.CustomerUnitId == null) || (includeContact && o.ContactPersonId == userId) ||
+                    customerUnits.Contains(o.CustomerUnitId ?? -1)));
+        }
+
+        public static IQueryable<BrokerStartListRow> BrokerStartListRows(this IQueryable<BrokerStartListRow> entities, int brokerId)
+        {
+            return entities.Where(r => r.BrokerId == brokerId);
+        }
+
         public static IQueryable<Order> CustomerOrders(this IQueryable<Order> orders, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false, bool includeContact = false, bool includeOrderGroupOrders = false)
         {
             var filteredOrders = orders.Where(o => o.CustomerOrganisationId == customerOrganisationId && (includeOrderGroupOrders || o.OrderGroupId == null));

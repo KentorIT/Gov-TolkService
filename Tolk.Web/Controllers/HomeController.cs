@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -144,10 +143,8 @@ namespace Tolk.Web.Controllers
             try
             {
                 //Accepted orders to approve, orders awaiting deadline
-                actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits)
-                    .Include(o => o.Language)
-                    .Include(o => o.Requests)
-                    .Where(o => o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.AwaitingDeadlineFromCustomer).ToList()
+                actionList.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits)
+                    .Where(o => o.RowType == StartListRowType.Order && (o.OrderStatus == OrderStatus.RequestResponded || o.OrderStatus == OrderStatus.AwaitingDeadlineFromCustomer)).ToList()
                     .Select(o => new StartListItemModel
                     {
                         Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
@@ -155,12 +152,12 @@ namespace Tolk.Web.Controllers
                         DefaulListController = "Order",
                         DefaultItemId = o.OrderId,
                         InfoDate = GetInfoDateForCustomer(o)?.DateTime,
-                        CompetenceLevel = (CompetenceAndSpecialistLevel?)o.Requests.OrderByDescending(r => r.RequestId).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                        CompetenceLevel = (CompetenceAndSpecialistLevel?)o.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                         ButtonItemId = o.OrderId,
-                        Language = o.OtherLanguage ?? o.Language.Name,
+                        Language = o.LanguageName,
                         OrderNumber = o.OrderNumber,
-                        Status = GetStartListStatusForCustomer(o.Status, o.ReplacingOrderId ?? 0),
-                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.Value.DateTime : null,
+                        Status = GetStartListStatusForCustomer(o.OrderStatus, o.ReplacingOrderId ?? 0),
+                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && o.LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)o.LatestAnswerTimeForCustomer.Value.DateTime : null,
                         ButtonAction = "View",
                         ButtonController = "Order"
                     }));
@@ -172,11 +169,8 @@ namespace Tolk.Web.Controllers
             //Orders to approve where interpreter is changed
             try
             {
-                actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
-                    .Include(o => o.Language)
-                    .Include(o => o.Requests)
-                    .Include(o => o.Group)
-                    .Where(o => o.Status == OrderStatus.RequestRespondedNewInterpreter).ToList()
+                actionList.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
+                    .Where(o => o.RowType == StartListRowType.Order && o.OrderStatus == OrderStatus.RequestRespondedNewInterpreter).ToList()
                     .Select(o => new StartListItemModel
                     {
                         Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
@@ -184,15 +178,15 @@ namespace Tolk.Web.Controllers
                         DefaulListController = "Order",
                         DefaultItemId = o.OrderId,
                         InfoDate = GetInfoDateForCustomer(o)?.DateTime,
-                        CompetenceLevel = (CompetenceAndSpecialistLevel?)o.Requests.OrderByDescending(r => r.RequestId).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                        CompetenceLevel = (CompetenceAndSpecialistLevel?)o.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                         ButtonItemId = o.OrderId,
-                        Language = o.OtherLanguage ?? o.Language.Name,
+                        Language = o.LanguageName,
                         OrderNumber = o.OrderNumber,
-                        Status = GetStartListStatusForCustomer(o.Status, o.ReplacingOrderId ?? 0),
-                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer.Value.DateTime : null,
+                        Status = GetStartListStatusForCustomer(o.OrderStatus, o.ReplacingOrderId ?? 0),
+                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && o.LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)o.LatestAnswerTimeForCustomer.Value.DateTime : null,
                         ButtonAction = "View",
                         ButtonController = "Order",
-                        OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
+                        OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.OrderGroupNumber}" : string.Empty
                     }));
             }
             catch (Exception ex)
@@ -204,50 +198,42 @@ namespace Tolk.Web.Controllers
             {
                 if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)))
                 {
-                    actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
-                    .Include(og => og.Language)
-                    .Include(og => og.Orders)
-                    .Include(og => og.RequestGroups).ThenInclude(rg => rg.Requests)
-                    .Where(og => og.Status == OrderStatus.RequestResponded).ToList()
+                    actionList.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
+                    .Where(og => og.RowType == StartListRowType.OrderGroup && og.OrderGroupStatus == OrderStatus.RequestResponded).ToList()
                     .Select(og => new StartListItemModel
                     {
-                        Orderdate = og.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
+                        Orderdate = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
                         DefaulListAction = "View",
                         DefaulListController = "OrderGroup",
-                        DefaultItemId = og.OrderGroupId,
+                        DefaultItemId = (int)og.OrderGroupId,
                         InfoDate = GetInfoDateForCustomer(og)?.DateTime,
-                        CompetenceLevel = (CompetenceAndSpecialistLevel?)og.RequestGroups.Where(req => req.Status == RequestStatus.Accepted).First()
-                            .Requests.Where(req => req.Status == RequestStatus.Accepted).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        ExtraCompetenceLevel = !og.HasExtraInterpreter ? CompetenceAndSpecialistLevel.NoInterpreter :
-                            (CompetenceAndSpecialistLevel?)og.RequestGroups.First(req => req.Status == RequestStatus.Accepted).FirstRequestForExtraInterpreter.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        ButtonItemId = og.OrderGroupId,
-                        Language = og.OtherLanguage ?? og.Language.Name,
+                        CompetenceLevel = (CompetenceAndSpecialistLevel?)og.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                        ExtraCompetenceLevel = (CompetenceAndSpecialistLevel?)og.ExtraCompetencelevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                        ButtonItemId = (int)og.OrderGroupId,
+                        Language = og.LanguageName,
                         OrderNumber = og.OrderGroupNumber,
-                        Status = GetStartListStatusForCustomer(og.Status, 0, true),
-                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && og.RequestGroups.Where(req => req.Status == RequestStatus.Accepted).First().LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)og.RequestGroups.Where(req => req.Status == RequestStatus.Accepted).First().LatestAnswerTimeForCustomer.Value.DateTime : null,
+                        Status = GetStartListStatusForCustomer((OrderStatus)og.OrderGroupStatus, 0, true),
+                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && og.LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)og.LatestAnswerTimeForCustomer.Value.DateTime : null,
                         ButtonAction = "View",
                         ButtonController = "OrderGroup",
                         IsSingleOccasion = og.IsSingleOccasion,
                         HasExtraInterpreter = og.HasExtraInterpreter,
                     }));
                     //Order groups awaiting deadline from customer (customer should set last answer date)
-                    actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
-                    .Include(og => og.Language)
-                    .Include(og => og.Orders)
-                    .Include(og => og.RequestGroups)
-                    .Where(og => og.Status == OrderStatus.AwaitingDeadlineFromCustomer).ToList()
+                    actionList.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
+                    .Where(og => og.RowType == StartListRowType.OrderGroup && og.OrderGroupStatus == OrderStatus.AwaitingDeadlineFromCustomer).ToList()
                     .Select(og => new StartListItemModel
                     {
-                        Orderdate = og.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
+                        Orderdate = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
                         DefaulListAction = "View",
                         DefaulListController = "OrderGroup",
-                        DefaultItemId = og.OrderGroupId,
+                        DefaultItemId = (int)og.OrderGroupId,
                         InfoDate = GetInfoDateForCustomer(og)?.DateTime,
                         CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
-                        ButtonItemId = og.OrderGroupId,
-                        Language = og.OtherLanguage ?? og.Language.Name,
+                        ButtonItemId = (int)og.OrderGroupId,
+                        Language = og.LanguageName,
                         OrderNumber = og.OrderGroupNumber,
-                        Status = GetStartListStatusForCustomer(og.Status, 0, true),
+                        Status = GetStartListStatusForCustomer((OrderStatus)og.OrderGroupStatus, 0, true),
                         ButtonAction = "View",
                         ButtonController = "OrderGroup",
                         IsSingleOccasion = og.IsSingleOccasion,
@@ -263,24 +249,20 @@ namespace Tolk.Web.Controllers
             {
                 if (_options.AllowDeclineExtraInterpreterOnRequestGroups)
                 {
-                    actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
-                        .Include(og => og.Language)
-                        .Include(og => og.Orders)
-                        .Include(og => og.RequestGroups).ThenInclude(rg => rg.Requests)
-                        .Where(og => og.Status == OrderStatus.RequestAwaitingPartialAccept).ToList()
+                    actionList.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
+                        .Where(og => og.RowType == StartListRowType.OrderGroup && og.OrderGroupStatus == OrderStatus.RequestAwaitingPartialAccept).ToList()
                         .Select(og => new StartListItemModel
                         {
-                            Orderdate = og.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
+                            Orderdate = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
                             DefaulListAction = "View",
                             DefaulListController = "OrderGroup",
-                            DefaultItemId = og.OrderGroupId,
+                            DefaultItemId = (int)og.OrderGroupId,
                             InfoDate = GetInfoDateForCustomer(og)?.DateTime,
-                            CompetenceLevel = (CompetenceAndSpecialistLevel?)og.RequestGroups.Where(req => req.Status == RequestStatus.PartiallyAccepted).First()
-                                .Requests.Where(req => req.Status == RequestStatus.Accepted).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                            ButtonItemId = og.OrderGroupId,
-                            Language = og.OtherLanguage ?? og.Language.Name,
+                            CompetenceLevel = (CompetenceAndSpecialistLevel?)og.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,//this might not be correct
+                            ButtonItemId = (int)og.OrderGroupId,
+                            Language = og.LanguageName,
                             OrderNumber = og.OrderGroupNumber,
-                            Status = GetStartListStatusForCustomer(og.Status, 0, true),
+                            Status = GetStartListStatusForCustomer((OrderStatus)og.OrderGroupStatus, 0, true),
                             ButtonAction = "View",
                             ButtonController = "OrderGroup",
                             IsSingleOccasion = og.IsSingleOccasion,
@@ -295,31 +277,24 @@ namespace Tolk.Web.Controllers
             //Orders not answered by creator, no broker accepted order (must include groups since change of interpreter can handle LatestAnswerTimeForCustomer)
             try
             {
-                actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
-                        .Include(o => o.Language)
-                        .Include(o => o.Requests)
-                        .Include(o => o.Group)
-                        .Include(o => o.OrderStatusConfirmations)
-                        .Where(o => ((!o.OrderGroupId.HasValue || o.Group.Status != OrderStatus.NoBrokerAcceptedOrder) && o.Status == OrderStatus.NoBrokerAcceptedOrder && !o.OrderStatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder)) ||
-                            (_options.EnableSetLatestAnswerTimeForCustomer &&
-                            (!o.OrderGroupId.HasValue || o.Group.Status != OrderStatus.ResponseNotAnsweredByCreator) &&
-                             o.Status == OrderStatus.ResponseNotAnsweredByCreator &&
-                            !o.OrderStatusConfirmations.Any(s => s.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator))).ToList()
+                actionList.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
+                        .Where(o => o.RowType == StartListRowType.Order && (((!o.OrderGroupId.HasValue || o.OrderGroupStatus != OrderStatus.NoBrokerAcceptedOrder) && o.OrderStatus == OrderStatus.NoBrokerAcceptedOrder) ||
+                            (_options.EnableSetLatestAnswerTimeForCustomer && (!o.OrderGroupId.HasValue || o.OrderGroupStatus != OrderStatus.ResponseNotAnsweredByCreator) && o.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator))).ToList()
                         .Select(o => new StartListItemModel
                         {
                             Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
                             DefaulListAction = "View",
                             DefaulListController = "Order",
                             DefaultItemId = o.OrderId,
-                            InfoDate = (o.Status == OrderStatus.ResponseNotAnsweredByCreator) ? o.Requests.OrderByDescending(r => r.RequestId).First().LatestAnswerTimeForCustomer?.DateTime ?? o.StartAt.DateTime : GetInfoDateForCustomer(o)?.DateTime,
-                            CompetenceLevel = o.Status == OrderStatus.ResponseNotAnsweredByCreator ? (CompetenceAndSpecialistLevel?)o.Requests.OrderByDescending(r => r.RequestId).First().CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter,
+                            InfoDate = (o.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator) ? o.LatestAnswerTimeForCustomer?.DateTime ?? o.StartAt.DateTime : GetInfoDateForCustomer(o)?.DateTime,
+                            CompetenceLevel = o.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator ? (CompetenceAndSpecialistLevel?)o.CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter,
                             ButtonItemId = o.OrderId,
-                            Language = o.OtherLanguage ?? o.Language.Name,
+                            Language = o.LanguageName,
                             OrderNumber = o.OrderNumber,
-                            Status = o.Status == OrderStatus.ResponseNotAnsweredByCreator ? StartListItemStatus.RespondedRequestNotAnswered : o.ReplacingOrderId != null ? StartListItemStatus.ReplacementOrderNotAnswered : StartListItemStatus.OrderNotAnswered,
+                            Status = o.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator ? StartListItemStatus.RespondedRequestNotAnswered : o.ReplacingOrderId != null ? StartListItemStatus.ReplacementOrderNotAnswered : StartListItemStatus.OrderNotAnswered,
                             ButtonAction = "View",
                             ButtonController = "Order",
-                            OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
+                            OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.OrderGroupNumber}" : string.Empty
                         }));
             }
             catch (Exception ex)
@@ -331,26 +306,21 @@ namespace Tolk.Web.Controllers
             {
                 if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)))
                 {
-                    actionList.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
-                        .Include(og => og.Language)
-                        .Include(og => og.RequestGroups).ThenInclude(rg => rg.Requests)
-                        .Include(og => og.StatusConfirmations)
-                        .Include(og => og.Orders)
-                        .Where(og => (og.Status == OrderStatus.NoBrokerAcceptedOrder && !og.StatusConfirmations.Any(s => s.OrderStatus == OrderStatus.NoBrokerAcceptedOrder))
-                            || (_options.EnableSetLatestAnswerTimeForCustomer && og.Status == OrderStatus.ResponseNotAnsweredByCreator && !og.StatusConfirmations.Any(s => s.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator))).ToList()
+                    actionList.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
+                        .Where(og => og.RowType == StartListRowType.OrderGroup && ((og.OrderGroupStatus == OrderStatus.NoBrokerAcceptedOrder)
+                            || (_options.EnableSetLatestAnswerTimeForCustomer && og.OrderGroupStatus == OrderStatus.ResponseNotAnsweredByCreator))).ToList()
                         .Select(og => new StartListItemModel
                         {
-                            Orderdate = og.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
+                            Orderdate = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
                             DefaulListAction = "View",
                             DefaulListController = "OrderGroup",
-                            DefaultItemId = og.OrderGroupId,
-                            InfoDate = og.Status == OrderStatus.ResponseNotAnsweredByCreator ? og.RequestGroups.OrderBy(req => req.RequestGroupId).Last().LatestAnswerTimeForCustomer?.DateTime ?? og.Orders.OrderBy(v => v.StartAt).First().StartAt.DateTime : GetInfoDateForCustomer(og)?.DateTime,
-                            CompetenceLevel = og.Status == OrderStatus.ResponseNotAnsweredByCreator ? (CompetenceAndSpecialistLevel?)og.RequestGroups.OrderBy(req => req.RequestGroupId).Last()
-                                .Requests.OrderBy(req => req.RequestId).Last().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter,
-                            ButtonItemId = og.OrderGroupId,
-                            Language = og.OtherLanguage ?? og.Language.Name,
+                            DefaultItemId = (int)og.OrderGroupId,
+                            InfoDate = og.OrderGroupStatus == OrderStatus.ResponseNotAnsweredByCreator ? og.LatestAnswerTimeForCustomer?.DateTime ?? og.StartAt.DateTime : GetInfoDateForCustomer(og)?.DateTime,
+                            CompetenceLevel = og.OrderGroupStatus == OrderStatus.ResponseNotAnsweredByCreator ? (CompetenceAndSpecialistLevel?)og.CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter,
+                            ButtonItemId = (int)og.OrderGroupId,
+                            Language = og.LanguageName,
                             OrderNumber = og.OrderGroupNumber,
-                            Status = og.Status == OrderStatus.ResponseNotAnsweredByCreator ? StartListItemStatus.RespondedRequestGroupNotAnswered : StartListItemStatus.OrderGroupNotAnswered,
+                            Status = og.OrderGroupStatus == OrderStatus.ResponseNotAnsweredByCreator ? StartListItemStatus.RespondedRequestGroupNotAnswered : StartListItemStatus.OrderGroupNotAnswered,
                             ButtonAction = "View",
                             ButtonController = "OrderGroup",
                             IsSingleOccasion = og.IsSingleOccasion,
@@ -365,12 +335,8 @@ namespace Tolk.Web.Controllers
             //Cancelled by broker
             try
             {
-                actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
-                .Include(o => o.Language)
-                .Include(o => o.Requests).ThenInclude(r => r.RequestStatusConfirmations)
-                .Include(o => o.Group)
-                .Where(o => o.Status == OrderStatus.CancelledByBroker && o.Requests.Any(r => r.Status == RequestStatus.CancelledByBroker &&
-                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByBroker))).ToList()
+                actionList.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
+                .Where(o => o.RowType == StartListRowType.Order && o.OrderStatus == OrderStatus.CancelledByBroker).ToList()
                 .Select(o => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
@@ -378,14 +344,14 @@ namespace Tolk.Web.Controllers
                     DefaulListController = "Order",
                     DefaultItemId = o.OrderId,
                     InfoDate = GetInfoDateForCustomer(o)?.DateTime,
-                    CompetenceLevel = (CompetenceAndSpecialistLevel?)o.Requests.Single(r => r.Status == RequestStatus.CancelledByBroker).CompetenceLevel,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)o.CompetenceLevel,
                     ButtonItemId = o.OrderId,
-                    Language = o.OtherLanguage ?? o.Language.Name,
+                    Language = o.LanguageName,
                     OrderNumber = o.OrderNumber,
                     Status = StartListItemStatus.OrderCancelled,
                     ButtonAction = "View",
                     ButtonController = "Order",
-                    OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
+                    OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.OrderGroupNumber}" : string.Empty
                 }));
             }
             catch (Exception ex)
@@ -395,28 +361,25 @@ namespace Tolk.Web.Controllers
             //Requisitions to process
             try
             {
-                actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeContact: true, includeOrderGroupOrders: true)
-                    .Where(o => o.Status == OrderStatus.Delivered)
-                    .SelectMany(o => o.Requests)
-                    .SelectMany(r => r.Requisitions)
-                    .Where(r => r.Status == RequisitionStatus.Created && !r.RequisitionStatusConfirmations.Any(rs => rs.RequisitionStatus == RequisitionStatus.Created))
+                actionList.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeContact: true, includeOrderGroupOrders: true)
+                    .Where(r => r.RowType == StartListRowType.Requisition)
                     .Select(r => new StartListItemModel
                     {
-                        Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt },
+                        Orderdate = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
                         DefaulListAction = "View",
                         DefaulListController = "Order",
-                        DefaultItemId = r.Request.Order.OrderId,
+                        DefaultItemId = r.OrderId,
                         DefaultItemTab = "requisition",
-                        InfoDate = r.CreatedAt.DateTime,
-                        CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        ButtonItemId = r.Request.OrderId,
-                        Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
-                        OrderNumber = r.Request.Order.OrderNumber,
+                        InfoDate = r.EntityDate.DateTime,
+                        CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                        ButtonItemId = r.OrderId,
+                        Language = r.LanguageName,
+                        OrderNumber = r.OrderNumber,
                         Status = StartListItemStatus.RequisitonArrived,
                         ButtonAction = "View",
                         ButtonController = "Order",
                         ButtonItemTab = "requisition",
-                        OrderGroupNumber = r.Request.Order.OrderGroupId.HasValue ? $"Del av {r.Request.Order.Group.OrderGroupNumber}" : string.Empty
+                        OrderGroupNumber = r.OrderGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                     }));
             }
             catch (Exception ex)
@@ -426,33 +389,32 @@ namespace Tolk.Web.Controllers
             //Disputed complaints
             try
             {
-                actionList.AddRange(_dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, includeContact: true, includeOrderGroupOrders: true)
-                    .SelectMany(o => o.Requests)
-                    .SelectMany(r => r.Complaints)
-                    .Where(c => c.Status == ComplaintStatus.Disputed)
+                actionList.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeContact: true, includeOrderGroupOrders: true)
+                    .Where(c => c.RowType == StartListRowType.Complaint)
                     .Select(c => new StartListItemModel
                     {
-                        Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt, EndDateTime = c.Request.Order.EndAt },
+                        Orderdate = new TimeRange { StartDateTime = c.StartAt, EndDateTime = c.EndAt },
                         DefaulListAction = "View",
                         DefaulListController = "Order",
-                        DefaultItemId = c.Request.Order.OrderId,
+                        DefaultItemId = c.OrderId,
                         DefaultItemTab = "complaint",
-                        InfoDate = c.AnsweredAt.HasValue ? c.AnsweredAt.Value.DateTime : c.CreatedAt.DateTime,
-                        CompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        ButtonItemId = c.Request.OrderId,
-                        Language = c.Request.Order.OtherLanguage ?? c.Request.Order.Language.Name,
-                        OrderNumber = c.Request.Order.OrderNumber,
+                        InfoDate = c.AnsweredAt.HasValue ? c.AnsweredAt.Value.DateTime : c.EntityDate.DateTime,
+                        CompetenceLevel = (CompetenceAndSpecialistLevel?)c.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                        ButtonItemId = c.OrderId,
+                        Language = c.LanguageName,
+                        OrderNumber = c.OrderNumber,
                         Status = StartListItemStatus.ComplaintEvent,
                         ButtonAction = "View",
                         ButtonController = "Order",
                         ButtonItemTab = "complaint",
-                        OrderGroupNumber = c.Request.Order.OrderGroupId.HasValue ? $"Del av {c.Request.Order.Group.OrderGroupNumber}" : string.Empty
+                        OrderGroupNumber = c.OrderGroupId.HasValue ? $"Del av {c.OrderGroupNumber}" : string.Empty
                     }));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Unexpected error occured for Disputed complaints in method {nameof(GetCustomerStartLists)}");
             }
+
             var count = actionList.Any() ? actionList.Count : 0;
 
             yield return new StartList
@@ -467,8 +429,8 @@ namespace Tolk.Web.Controllers
             //Sent orders
             try
             {
-                sentOrders = _dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, false, false)
-                    .Where(o => (o.Status == OrderStatus.Requested)
+                sentOrders = _dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, false, false)
+                    .Where(o => o.RowType == StartListRowType.Order && o.OrderStatus == OrderStatus.Requested
                     && o.EndAt > _clock.SwedenNow)
                     .Select(o => new StartListItemModel
                     {
@@ -476,10 +438,10 @@ namespace Tolk.Web.Controllers
                         DefaulListAction = "View",
                         DefaulListController = "Order",
                         DefaultItemId = o.OrderId,
-                        InfoDate = o.CreatedAt.DateTime,
+                        InfoDate = o.EntityDate.DateTime,
                         InfoDateDescription = "Skickad: ",
                         CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
-                        Language = o.OtherLanguage ?? o.Language.Name,
+                        Language = o.LanguageName,
                         OrderNumber = o.OrderNumber,
                         Status = o.ReplacingOrderId.HasValue ? StartListItemStatus.ReplacementOrderCreated : StartListItemStatus.OrderCreated
                     }).ToList();
@@ -493,28 +455,18 @@ namespace Tolk.Web.Controllers
             {
                 if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)))
                 {
-                    sentOrders.AddRange(_dbContext.OrderGroups.CustomerOrderGroups(customerOrganisationId, userId, customerUnits)
-                    .Include(og => og.Orders).ThenInclude(o => o.Language)
-                    .Where(og => og.Status == OrderStatus.Requested && og.Orders.Any(o => o.EndAt > _clock.SwedenNow))
-                    .ToList()
+                    sentOrders.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
+                    .Where(og => og.RowType == StartListRowType.OrderGroup && og.OrderGroupStatus == OrderStatus.Requested && og.EndAt > _clock.SwedenNow).ToList()
                     .Select(og => new StartListItemModel
                     {
-                        Orderdate = og.Orders.Where(o => o.Status == OrderStatus.Requested)
-                            .OrderBy(o => o.StartAt).Select(o =>
-                                new TimeRange
-                                {
-                                    StartDateTime = o.StartAt,
-                                    EndDateTime = o.EndAt
-                                }).First(),
+                        Orderdate = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
                         DefaulListAction = "View",
                         DefaulListController = "OrderGroup",
-                        DefaultItemId = og.OrderGroupId,
-                        InfoDate = og.CreatedAt.DateTime,
+                        DefaultItemId = (int)og.OrderGroupId,
+                        InfoDate = og.EntityDate.DateTime,
                         InfoDateDescription = "Skickad: ",
                         CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
-                        Language = og.Orders.Where(o => o.Status == OrderStatus.Requested)
-                            .OrderBy(v => v.StartAt)
-                            .Select(o => o.OtherLanguage ?? o.Language.Name).FirstOrDefault(),
+                        Language = og.LanguageName,
                         OrderNumber = og.OrderGroupNumber,
                         Status = StartListItemStatus.OrderGroupCreated,
                         IsSingleOccasion = og.IsSingleOccasion,
@@ -526,6 +478,7 @@ namespace Tolk.Web.Controllers
             {
                 _logger.LogError(ex, $"Unexpected error occured for Sent ordergroups in method {nameof(GetCustomerStartLists)}");
             }
+
             count = sentOrders.Any() ? sentOrders.Count : 0;
             yield return new StartList
             {
@@ -533,25 +486,25 @@ namespace Tolk.Web.Controllers
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningsförfrågningar som är skickade",
                 StartListObjects = sentOrders
             };
+
             //Approved orders
             List<StartListItemModel> approvedOrders = new List<StartListItemModel>();
             try
             {
-                approvedOrders = _dbContext.Orders.CustomerOrders(customerOrganisationId, userId, customerUnits, false, false, true)
-                    .Where(o => o.Status == OrderStatus.ResponseAccepted && o.EndAt > _clock.SwedenNow)
+                approvedOrders = _dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, false, true)
+                    .Where(o => o.RowType == StartListRowType.Order && o.OrderStatus == OrderStatus.ResponseAccepted && o.EndAt > _clock.SwedenNow)
                 .Select(o => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
                     DefaulListAction = "View",
                     DefaulListController = "Order",
                     DefaultItemId = o.OrderId,
-                    InfoDate = o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate.Value.DateTime,
-                    CompetenceLevel = o.Requests.Any() ? (CompetenceAndSpecialistLevel)o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CompetenceLevel :
-                        CompetenceAndSpecialistLevel.NoInterpreter,
-                    Language = o.OtherLanguage ?? o.Language.Name,
+                    InfoDate = o.AnsweredAt.Value.DateTime,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel)o.CompetenceLevel,
+                    Language = o.LanguageName,
                     OrderNumber = o.OrderNumber,
                     Status = StartListItemStatus.OrderApproved,
-                    OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.Group.OrderGroupNumber}" : string.Empty
+                    OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.OrderGroupNumber}" : string.Empty
                 }).ToList();
             }
             catch (Exception ex)
@@ -566,7 +519,6 @@ namespace Tolk.Web.Controllers
                 EmptyMessage = count > 0 ? string.Empty : "För tillfället finns det inga aktiva bokningar som är tillsatta",
                 StartListObjects = approvedOrders
             };
-            // Awaiting requisition (removed 2019-05-28, requisitions are not in use yet)
         }
 
         private static StartListItemStatus GetStartListStatusForCustomer(OrderStatus status, int replacingOrderId, bool isGroup = false)
@@ -580,27 +532,25 @@ namespace Tolk.Web.Controllers
                 : isGroup ? StartListItemStatus.OrderGroupAwaitingApproval : StartListItemStatus.OrderAcceptedForApproval;
         }
 
-        private static DateTimeOffset? GetInfoDateForCustomer(Order o)
+        private static DateTimeOffset? GetInfoDateForCustomer(CustomerStartListRow c)
         {
-            return o.Status == OrderStatus.CancelledByBroker ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CancelledAt
-                //if status is NoBrokerAcceptedOrder check if last request is answered (denied/declined) else take expiresAt (no answer)
-                : o.Status == OrderStatus.NoBrokerAcceptedOrder ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate ?? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().ExpiresAt
-                : o.Status == OrderStatus.AwaitingDeadlineFromCustomer ? o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().CreatedAt
-                : o.Requests.OrderByDescending(r => r.RequestId).FirstOrDefault().AnswerDate;
+            return c.OrderStatus == OrderStatus.CancelledByBroker ? c.CancelledAt
+                //if status is NoBrokerAcceptedOrder take answerDate (denied/declined) else take expiresAt (no answer)
+                : c.OrderStatus == OrderStatus.NoBrokerAcceptedOrder ? c.AnsweredAt ?? c.RequestExpiresAt
+                : c.OrderStatus == OrderStatus.AwaitingDeadlineFromCustomer ? c.LastRequestCreatedUpdatedAt
+                : c.AnsweredAt;
         }
 
-        private static DateTimeOffset? GetInfoDateForCustomer(OrderGroup og)
+        private static DateTimeOffset? GetInfoDateForCustomerForGroup(CustomerStartListRow og)
         {
-            switch (og.Status)
+            switch (og.OrderGroupStatus)
             {
-                case OrderStatus.RequestAwaitingPartialAccept:
-                    return og.RequestGroups.Where(rg => rg.Status == RequestStatus.PartiallyAccepted).FirstOrDefault().AnswerDate;
                 case OrderStatus.NoBrokerAcceptedOrder:
-                    return og.RequestGroups.OrderByDescending(r => r.RequestGroupId).FirstOrDefault().AnswerDate ?? og.RequestGroups.OrderByDescending(r => r.RequestGroupId).FirstOrDefault().ExpiresAt;
+                    return og.AnsweredAt ?? og.RequestExpiresAt;
                 case OrderStatus.AwaitingDeadlineFromCustomer:
-                    return og.RequestGroups.OrderByDescending(r => r.RequestGroupId).FirstOrDefault().CreatedAt;
+                    return og.LastRequestCreatedUpdatedAt;
                 default:
-                    return og.RequestGroups.OrderByDescending(r => r.RequestGroupId).FirstOrDefault().AnswerDate;
+                    return og.AnsweredAt;
             }
         }
 
@@ -609,37 +559,28 @@ namespace Tolk.Web.Controllers
             var brokerId = User.GetBrokerId();
             var userId = User.GetUserId();
             var actionList = new List<StartListItemModel>();
-            //TODO: SHOULD PROBABLY ONLY GET THE USERS THAT ARE ACCTUALLY VIEWING...
-            var allOtherUsersInBroker = _dbContext.Users.Where(u => u.Id != userId && u.BrokerId == brokerId && u.IsActive && !u.IsApiUser)
-                .Select(u => new
-                {
-                    Name = u.NameFirst + " " + u.NameFamily,
-                    u.Id
-                }).ToList();
             //Requests with status received, created
             try
             {
-                actionList.AddRange(_dbContext.Requests
-                .Where(r => r.RequestGroupId == null &&
-                    (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received) &&
-                    r.Ranking.BrokerId == brokerId)
+                actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                .Where(r => r.RequestGroupId == null && r.RowType == StartListRowType.Request && (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received))
                 .Select(r => new StartListItemModel
                 {
-                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
+                    Orderdate = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
                     DefaulListAction = "Process",
                     DefaulListController = "Request",
-                    DefaultItemId = r.RequestId,
-                    InfoDate = r.RequestUpdateLatestAnswerTime != null ? r.RequestUpdateLatestAnswerTime.UpdatedAt.DateTime : GetInfoDateForBroker(r).Value,
+                    DefaultItemId = (int)r.RequestId,
+                    InfoDate = r.LastRequestCreatedUpdatedAt.HasValue ? (DateTime?)r.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                    CustomerName = r.Order.CustomerOrganisation.Name,
-                    ButtonItemId = r.RequestId,
-                    Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                    OrderNumber = r.Order.OrderNumber,
-                    Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0, false),
+                    CustomerName = r.CustomerName,
+                    ButtonItemId = (int)r.RequestId,
+                    Language = r.LanguageName,
+                    OrderNumber = r.OrderNumber,
+                    Status = GetStartListStatusForBroker((RequestStatus)r.RequestStatus, r.ReplacingOrderId ?? 0, false),
                     ButtonAction = "Process",
                     ButtonController = "Request",
-                    LatestDate = r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null,
-                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy
+                    LatestDate = r.RequestExpiresAt.HasValue ? (DateTime?)r.RequestExpiresAt.Value.DateTime : null,
+                    ViewedByUser = GetViewedByUserName(r, userId)
                 }).ToList());
             }
             catch (Exception ex)
@@ -649,27 +590,26 @@ namespace Tolk.Web.Controllers
             //Denied requests 
             try
             {
-                actionList.AddRange(_dbContext.Requests
-                .Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status != RequestStatus.DeniedByCreator)) &&
-                    r.Status == RequestStatus.DeniedByCreator && r.Ranking.BrokerId == brokerId &&
-                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator))
+                actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                .Where(r => r.RowType == StartListRowType.Request && (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroupStatus != RequestStatus.DeniedByCreator)) &&
+                    r.RequestStatus == RequestStatus.DeniedByCreator)
                 .Select(r => new StartListItemModel
                 {
-                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
+                    Orderdate = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
                     DefaulListAction = "View",
                     DefaulListController = "Request",
-                    DefaultItemId = r.RequestId,
+                    DefaultItemId = (int)r.RequestId,
                     InfoDate = GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                    CustomerName = r.Order.CustomerOrganisation.Name,
-                    ButtonItemId = r.RequestId,
-                    Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                    OrderNumber = r.Order.OrderNumber,
-                    Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0, false),
+                    CustomerName = r.CustomerName,
+                    ButtonItemId = (int)r.RequestId,
+                    Language = r.LanguageName,
+                    OrderNumber = r.OrderNumber,
+                    Status = GetStartListStatusForBroker((RequestStatus)r.RequestStatus, r.ReplacingOrderId ?? 0, false),
                     ButtonAction = "View",
                     ButtonController = "Request",
-                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
+                    ViewedByUser = GetViewedByUserName(r, userId),
+                    OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                 }).ToList());
             }
             catch (Exception ex)
@@ -679,29 +619,26 @@ namespace Tolk.Web.Controllers
             //Requests with status CancelledByCreatorWhenApproved
             try
             {
-                actionList.AddRange(_dbContext.Requests
-                .Where(r => r.Status == RequestStatus.CancelledByCreatorWhenApproved &&
-                    r.Ranking.BrokerId == brokerId &&
-                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved)
-                )
+                actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved)
                 .Select(r => new StartListItemModel
                 {
-                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
-                    DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    Orderdate = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    DefaulListAction = r.RequestIsToBeProcessedByBroker ? "Process" : "View",
                     DefaulListController = "Request",
-                    DefaultItemId = r.RequestId,
+                    DefaultItemId = (int)r.RequestId,
                     InfoDate = GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                    CustomerName = r.Order.CustomerOrganisation.Name,
-                    ButtonItemId = r.RequestId,
-                    Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                    OrderNumber = r.Order.OrderNumber,
-                    Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0, false),
-                    ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    CustomerName = r.CustomerName,
+                    ButtonItemId = (int)r.RequestId,
+                    Language = r.LanguageName,
+                    OrderNumber = r.OrderNumber,
+                    Status = GetStartListStatusForBroker((RequestStatus)r.RequestStatus, r.ReplacingOrderId ?? 0, false),
+                    ButtonAction = r.RequestIsToBeProcessedByBroker ? "Process" : "View",
                     ButtonController = "Request",
-                    LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
-                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
+                    LatestDate = (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received) ? (r.RequestExpiresAt.HasValue ? (DateTime?)r.RequestExpiresAt.Value.DateTime : null) : null,
+                    ViewedByUser = GetViewedByUserName(r, userId),
+                    OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                 }).ToList());
 
             }
@@ -712,30 +649,26 @@ namespace Tolk.Web.Controllers
             //Non answered responded requests 
             try
             {
-                actionList.AddRange(_dbContext.Requests
-                .Include(r => r.Order)
-                .Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status != RequestStatus.ResponseNotAnsweredByCreator)) && r.Status == RequestStatus.ResponseNotAnsweredByCreator &&
-                    r.Ranking.BrokerId == brokerId &&
-                    !r.RequestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator)
-                )
+                actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                .Where(r => r.RowType == StartListRowType.Request && (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroupStatus != RequestStatus.ResponseNotAnsweredByCreator)) && r.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator)
                 .Select(r => new StartListItemModel
                 {
-                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
-                    DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    Orderdate = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    DefaulListAction = r.RequestIsToBeProcessedByBroker ? "Process" : "View",
                     DefaulListController = "Request",
-                    DefaultItemId = r.RequestId,
-                    InfoDate = r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : r.Order.StartAt.DateTime,
+                    DefaultItemId = (int)r.RequestId,
+                    InfoDate = r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : r.StartAt.DateTime,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                    CustomerName = r.Order.CustomerOrganisation.Name,
-                    ButtonItemId = r.RequestId,
-                    Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                    OrderNumber = r.Order.OrderNumber,
-                    Status = GetStartListStatusForBroker(r.Status, r.Order.ReplacingOrderId ?? 0, false),
-                    ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    CustomerName = r.CustomerName,
+                    ButtonItemId = (int)r.RequestId,
+                    Language = r.LanguageName,
+                    OrderNumber = r.OrderNumber,
+                    Status = GetStartListStatusForBroker((RequestStatus)r.RequestStatus, r.ReplacingOrderId ?? 0, false),
+                    ButtonAction = r.RequestIsToBeProcessedByBroker ? "Process" : "View",
                     ButtonController = "Request",
-                    LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
-                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
+                    LatestDate = r.RequestIsToBeProcessedByBroker ? (r.RequestExpiresAt.HasValue ? (DateTime?)r.RequestExpiresAt.Value.DateTime : null) : null,
+                    ViewedByUser = GetViewedByUserName(r, userId),
+                    OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                 }).ToList());
             }
             catch (Exception ex)
@@ -745,33 +678,25 @@ namespace Tolk.Web.Controllers
             //Non confirmed order changes
             try
             {
-                actionList.AddRange(_dbContext.Requests
-                .Include(r => r.Order).ThenInclude(o => o.OrderChangeLogEntries)
-                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                .Include(r => r.Order).ThenInclude(o => o.Language)
-                .Include(r => r.Order).ThenInclude(o => o.Group)
-                .Include(r => r.RequestViews)
-                .Where(r => (r.Status == RequestStatus.Approved || r.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
-                    r.Ranking.BrokerId == brokerId && r.Order.EndAt > _clock.SwedenNow &&
-                    r.Order.OrderChangeLogEntries.Any(oc => oc.BrokerId == brokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null)).ToList()
+                actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                .Where(r => r.RowType == StartListRowType.Request && r.EndAt > _clock.SwedenNow && (r.RequestStatus == RequestStatus.Approved || r.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && r.OrderChangedAt.HasValue)
                 .Select(r => new StartListItemModel
                 {
-                    Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
-                    DefaulListAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    Orderdate = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    DefaulListAction = "View",
                     DefaulListController = "Request",
-                    DefaultItemId = r.RequestId,
-                    InfoDate = r.Order.OrderChangeLogEntries.Where(oc => oc.BrokerId == brokerId && oc.OrderChangeLogType != OrderChangeLogType.ContactPerson && oc.OrderChangeConfirmation == null)
-                        .OrderBy(oc => oc.OrderChangeLogEntryId).Last().LoggedAt.DateTime,
+                    DefaultItemId = (int)r.RequestId,
+                    InfoDate = r.OrderChangedAt.Value.DateTime,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                    CustomerName = r.Order.CustomerOrganisation.Name,
-                    ButtonItemId = r.RequestId,
-                    Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                    OrderNumber = r.Order.OrderNumber,
+                    CustomerName = r.CustomerName,
+                    ButtonItemId = (int)r.RequestId,
+                    Language = r.LanguageName,
+                    OrderNumber = r.OrderNumber,
                     Status = StartListItemStatus.OrderChanged,
-                    ButtonAction = r.IsToBeProcessedByBroker ? "Process" : "View",
+                    ButtonAction = "View",
                     ButtonController = "Request",
-                    ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault()?.ViewedBy,
-                    OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
+                    ViewedByUser = GetViewedByUserName(r, userId),
+                    OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                 }).ToList());
             }
             catch (Exception ex)
@@ -781,34 +706,29 @@ namespace Tolk.Web.Controllers
             //Requestgroups status received, created, denied, not answered by customer
             try
             {
-                actionList.AddRange(_dbContext.RequestGroups
-                .Where(r => (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.DeniedByCreator || r.Status == RequestStatus.ResponseNotAnsweredByCreator) &&
-                    r.Ranking.BrokerId == brokerId &&
-                    !r.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator || rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator))
-                .Select(r => new StartListItemModel
+                actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                .Where(rg => rg.RowType == StartListRowType.RequestGroup && (rg.RequestGroupStatus == RequestStatus.Created || rg.RequestGroupStatus == RequestStatus.Received || rg.RequestGroupStatus == RequestStatus.DeniedByCreator || rg.RequestGroupStatus == RequestStatus.ResponseNotAnsweredByCreator))
+                .Select(rg => new StartListItemModel
                 {
-                    Orderdate = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
+                    Orderdate = new TimeRange { StartDateTime = rg.StartAt, EndDateTime = rg.EndAt },
                     DefaulListAction = "View",
                     DefaulListController = "RequestGroup",
-                    DefaultItemId = r.RequestGroupId,
-                    InfoDate = r.Status == RequestStatus.ResponseNotAnsweredByCreator ? (r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime :
-                        r.OrderGroup.Orders.OrderBy(v => v.StartAt).First().StartAt.DateTime) : (r.Status != RequestStatus.DeniedByCreator && r.RequestGroupUpdateLatestAnswerTime != null) ? r.RequestGroupUpdateLatestAnswerTime.UpdatedAt.DateTime : GetInfoDateForBroker(r).Value,
-                    CompetenceLevel = r.Status == RequestStatus.DeniedByCreator ?
-                        (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.DeniedByCreator && !req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter,
-                    ExtraCompetenceLevel = !r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue) ? CompetenceAndSpecialistLevel.NoInterpreter :
-                    r.Status == RequestStatus.DeniedByCreator ?
-                        (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.DeniedByCreator && req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter : CompetenceAndSpecialistLevel.NoInterpreter,
-                    CustomerName = r.OrderGroup.Orders.OrderBy(v => v.StartAt).FirstOrDefault().CustomerOrganisation.Name,
-                    ButtonItemId = r.RequestGroupId,
-                    Language = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => o.OtherLanguage ?? o.Language.Name).FirstOrDefault(),
-                    OrderNumber = r.OrderGroup.OrderGroupNumber,
-                    Status = GetStartListStatusForBroker(r.Status, 0, true),
+                    DefaultItemId = (int)rg.RequestGroupId,
+                    InfoDate = rg.RequestGroupStatus == RequestStatus.ResponseNotAnsweredByCreator ? (rg.LatestAnswerTimeForCustomer.HasValue ? rg.LatestAnswerTimeForCustomer.Value.DateTime :
+                        rg.StartAt.DateTime) : (rg.RequestGroupStatus != RequestStatus.DeniedByCreator && rg.LastRequestCreatedUpdatedAt.HasValue) ? rg.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(rg).Value,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)rg.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    ExtraCompetenceLevel = (CompetenceAndSpecialistLevel?)rg.ExtraCompetencelevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    CustomerName = rg.CustomerName,
+                    ButtonItemId = (int)rg.RequestGroupId,
+                    Language = rg.LanguageName,
+                    OrderNumber = rg.OrderGroupNumber,
+                    Status = GetStartListStatusForBroker((RequestStatus)rg.RequestGroupStatus, 0, true),
                     ButtonAction = "View",
                     ButtonController = "RequestGroup",
-                    LatestDate = r.IsToBeProcessedByBroker ? (r.ExpiresAt.HasValue ? (DateTime?)r.ExpiresAt.Value.DateTime : null) : null,
-                    ViewedBy = r.Views.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    IsSingleOccasion = r.OrderGroup.Orders.Count <= 2 && r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue),
-                    HasExtraInterpreter = r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue)
+                    LatestDate = rg.RequestGroupIsToBeProcessedByBroker ? (rg.RequestExpiresAt.HasValue ? (DateTime?)rg.RequestExpiresAt.Value.DateTime : null) : null,
+                    ViewedByUser = GetViewedByUserName(rg, userId),
+                    IsSingleOccasion = rg.IsSingleOccasion,
+                    HasExtraInterpreter = rg.HasExtraInterpreter
                 }).ToList());
             }
             catch (Exception ex)
@@ -818,26 +738,27 @@ namespace Tolk.Web.Controllers
             //Complaints
             try
             {
-                actionList.AddRange(_dbContext.Complaints.Where(c => c.Status == ComplaintStatus.Created && c.Request.Ranking.BrokerId == brokerId)
+                actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                    .Where(c => c.ComplaintStatus == ComplaintStatus.Created)
                 .Select(c => new StartListItemModel
                 {
-                    Orderdate = new TimeRange { StartDateTime = c.Request.Order.StartAt, EndDateTime = c.Request.Order.EndAt },
+                    Orderdate = new TimeRange { StartDateTime = c.StartAt, EndDateTime = c.EndAt },
                     DefaulListAction = "View",
                     DefaulListController = "Request",
-                    DefaultItemId = c.Request.RequestId,
+                    DefaultItemId = (int)c.RequestId,
                     DefaultItemTab = "complaint",
-                    InfoDate = c.CreatedAt.DateTime,
-                    CompetenceLevel = (CompetenceAndSpecialistLevel?)c.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                    CustomerName = c.Request.Order.CustomerOrganisation.Name,
-                    ButtonItemId = c.RequestId,
-                    Language = c.Request.Order.OtherLanguage ?? c.Request.Order.Language.Name,
-                    OrderNumber = c.Request.Order.OrderNumber,
+                    InfoDate = c.EntityDate.DateTime,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)c.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    CustomerName = c.CustomerName,
+                    ButtonItemId = (int)c.RequestId,
+                    Language = c.LanguageName,
+                    OrderNumber = c.OrderNumber,
                     Status = StartListItemStatus.ComplaintEvent,
                     ButtonAction = "View",
                     ButtonController = "Request",
                     ButtonItemTab = "complaint",
-                    ViewedBy = c.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    OrderGroupNumber = c.Request.Order.OrderGroupId.HasValue ? $"Del av {c.Request.Order.Group.OrderGroupNumber}" : string.Empty
+                    ViewedByUser = GetViewedByUserName(c, userId),
+                    OrderGroupNumber = c.RequestGroupId.HasValue ? $"Del av {c.OrderGroupNumber}" : string.Empty
                 }).ToList());
             }
             catch (Exception ex)
@@ -847,26 +768,26 @@ namespace Tolk.Web.Controllers
             //Requests to be reported
             try
             {
-                actionList.AddRange(_dbContext.Requests
-                .Where(r => r.Status == RequestStatus.Approved && r.Order.StartAt < _clock.SwedenNow && !r.Requisitions.Any() && r.Ranking.BrokerId == brokerId)
+                actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.Approved && r.StartAt < _clock.SwedenNow)
                  .Select(r => new StartListItemModel
                  {
-                     Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
+                     Orderdate = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
                      DefaulListAction = "View",
                      DefaulListController = "Request",
-                     DefaultItemId = r.RequestId,
-                     InfoDate = r.Order.EndAt.DateTime,
+                     DefaultItemId = (int)r.RequestId,
+                     InfoDate = r.EndAt.DateTime,
                      InfoDateDescription = "Utfört: ",
                      CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                     CustomerName = r.Order.CustomerOrganisation.Name,
-                     ButtonItemId = r.RequestId,
-                     Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                     OrderNumber = r.Order.OrderNumber,
+                     CustomerName = r.CustomerName,
+                     ButtonItemId = (int)r.RequestId,
+                     Language = r.LanguageName,
+                     OrderNumber = r.OrderNumber,
                      Status = StartListItemStatus.RequisitionToBeCreated,
                      ButtonAction = "View",
                      ButtonController = "Request",
-                     ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                     OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
+                     ViewedByUser = GetViewedByUserName(r, userId),
+                     OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                  }).ToList());
             }
             catch (Exception ex)
@@ -876,27 +797,27 @@ namespace Tolk.Web.Controllers
             //Commented requisitions
             try
             {
-                actionList.AddRange(_dbContext.Requisitions
-                .Where(r => r.Request.Ranking.BrokerId == brokerId && !r.ReplacedByRequisitionId.HasValue && r.Status == RequisitionStatus.Commented)
+                actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                .Where(r => r.RowType == StartListRowType.Requisition && r.RequisitionStatus == RequisitionStatus.Commented)
                 .Select(r => new StartListItemModel
                 {
-                    Orderdate = new TimeRange { StartDateTime = r.Request.Order.StartAt, EndDateTime = r.Request.Order.EndAt },
+                    Orderdate = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
                     DefaulListAction = "View",
                     DefaulListController = "Request",
-                    DefaultItemId = r.RequestId,
+                    DefaultItemId = (int)r.RequestId,
                     DefaultItemTab = "requisition",
-                    InfoDate = r.ProcessedAt.Value.DateTime,
-                    CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Request.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                    CustomerName = r.Request.Order.CustomerOrganisation.Name,
-                    ButtonItemId = r.RequestId,
-                    Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
-                    OrderNumber = r.Request.Order.OrderNumber,
+                    InfoDate = r.AnsweredAt.Value.DateTime,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    CustomerName = r.CustomerName,
+                    ButtonItemId = (int)r.RequestId,
+                    Language = r.LanguageName,
+                    OrderNumber = r.OrderNumber,
                     Status = StartListItemStatus.RequisitionCommented,
                     ButtonAction = "View",
                     ButtonController = "Request",
                     ButtonItemTab = "requisition",
-                    ViewedBy = r.Request.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    OrderGroupNumber = r.Request.Order.OrderGroupId.HasValue ? $"Del av {r.Request.Order.Group.OrderGroupNumber}" : string.Empty
+                    ViewedByUser = GetViewedByUserName(r, userId),
+                    OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                 }).ToList());
             }
             catch (Exception ex)
@@ -904,7 +825,6 @@ namespace Tolk.Web.Controllers
                 _logger.LogError(ex, $"Unexpected error occured for Commented requisitions in method {nameof(GetBrokerStartLists)}");
             }
             var count = actionList.Any() ? actionList.Count : 0;
-            actionList.ForEach(l => l.ViewedByUser = l.ViewedBy.HasValue && l.ViewedBy != userId ? allOtherUsersInBroker.Single(a => a.Id == l.ViewedBy).Name + " håller på med detta ärende" : string.Empty);
             yield return new StartList
             {
                 Header = count > 0 ? $"Kräver handling av förmedling ({count} st)" : "Kräver handling av förmedling",
@@ -917,24 +837,24 @@ namespace Tolk.Web.Controllers
             List<StartListItemModel> acceptedRequests = new List<StartListItemModel>();
             try
             {
-                acceptedRequests = _dbContext.Requests
-                    .Where(r => ((r.RequestGroupId == null & r.Status == RequestStatus.Accepted) || r.Status == RequestStatus.AcceptedNewInterpreterAppointed) &&
-                        r.Order.StartAt > _clock.SwedenNow && r.Ranking.BrokerId == brokerId)
+                acceptedRequests = _dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                    .Where(r => r.RowType == StartListRowType.Request && ((r.RequestGroupId == null & r.RequestStatus == RequestStatus.Accepted) || r.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) &&
+                        r.StartAt > _clock.SwedenNow)
                     .Select(r => new StartListItemModel
                     {
-                        Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
+                        Orderdate = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
                         DefaulListAction = "View",
                         DefaulListController = "Request",
-                        DefaultItemId = r.RequestId,
-                        InfoDate = r.AnswerDate.Value.DateTime,
+                        DefaultItemId = (int)r.RequestId,
+                        InfoDate = r.AnsweredAt.Value.DateTime,
                         InfoDateDescription = "Tillsatt: ",
                         CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        CustomerName = r.Order.CustomerOrganisation.Name,
-                        Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                        OrderNumber = r.Order.OrderNumber,
-                        Status = r.Status == RequestStatus.AcceptedNewInterpreterAppointed ? StartListItemStatus.NewInterpreterForApproval : StartListItemStatus.OrderAcceptedForApproval,
-                        ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                        OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
+                        CustomerName = r.CustomerName,
+                        Language = r.LanguageName,
+                        OrderNumber = r.OrderNumber,
+                        Status = r.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed ? StartListItemStatus.NewInterpreterForApproval : StartListItemStatus.OrderAcceptedForApproval,
+                        ViewedByUser = GetViewedByUserName(r, userId),
+                        OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                     }).ToList();
             }
             catch (Exception ex)
@@ -943,27 +863,25 @@ namespace Tolk.Web.Controllers
             }
             try
             {
-                acceptedRequests.AddRange(_dbContext.RequestGroups
-                .Where(r => r.Status == RequestStatus.Accepted && !r.OrderGroup.Orders.Any(o => o.StartAt < _clock.SwedenNow) && r.Ranking.BrokerId == brokerId)
-                .Select(r => new StartListItemModel
+                acceptedRequests.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                .Where(rg => rg.RowType == StartListRowType.RequestGroup && rg.RequestGroupStatus == RequestStatus.Accepted && !(rg.StartAt < _clock.SwedenNow))
+                .Select(rg => new StartListItemModel
                 {
-                    Orderdate = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt }).FirstOrDefault(),
+                    Orderdate = new TimeRange { StartDateTime = rg.StartAt, EndDateTime = rg.EndAt },
                     DefaulListAction = "View",
                     DefaulListController = "RequestGroup",
-                    DefaultItemId = r.RequestGroupId,
-                    InfoDate = r.AnswerDate.Value.DateTime,
+                    DefaultItemId = (int)rg.RequestGroupId,
+                    InfoDate = rg.AnsweredAt.Value.DateTime,
                     InfoDateDescription = "Tillsatt: ",
-                    CompetenceLevel = (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.Accepted && !req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel,
-                    ExtraCompetenceLevel = r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue) ?
-                        (CompetenceAndSpecialistLevel?)r.Requests.Where(req => req.Status == RequestStatus.Accepted && req.Order.IsExtraInterpreterForOrderId.HasValue).First().CompetenceLevel :
-                        CompetenceAndSpecialistLevel.NoInterpreter,
-                    CustomerName = r.OrderGroup.Orders.OrderBy(v => v.StartAt).FirstOrDefault().CustomerOrganisation.Name,
-                    Language = r.OrderGroup.Orders.OrderBy(v => v.StartAt).Select(o => o.OtherLanguage ?? o.Language.Name).FirstOrDefault(),
-                    OrderNumber = r.OrderGroup.OrderGroupNumber,
+                    CompetenceLevel = (CompetenceAndSpecialistLevel?)rg.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    ExtraCompetenceLevel = (CompetenceAndSpecialistLevel?)rg.ExtraCompetencelevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
+                    CustomerName = rg.CustomerName,
+                    Language = rg.LanguageName,
+                    OrderNumber = rg.OrderGroupNumber,
                     Status = StartListItemStatus.OrderGroupAwaitingApproval,
-                    ViewedBy = r.Views.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                    IsSingleOccasion = r.OrderGroup.Orders.Count <= 2 && r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue),
-                    HasExtraInterpreter = r.OrderGroup.Orders.Any(o => o.IsExtraInterpreterForOrderId.HasValue)
+                    ViewedByUser = GetViewedByUserName(rg, userId),
+                    IsSingleOccasion = rg.IsSingleOccasion,
+                    HasExtraInterpreter = rg.HasExtraInterpreter
                 }).ToList());
             }
             catch (Exception ex)
@@ -971,7 +889,6 @@ namespace Tolk.Web.Controllers
                 _logger.LogError(ex, $"Unexpected error occured for Accepted requestgroups is changed in method {nameof(GetBrokerStartLists)}");
             }
             count = acceptedRequests.Any() ? acceptedRequests.Count : 0;
-            acceptedRequests.ForEach(l => l.ViewedByUser = l.ViewedBy.HasValue && l.ViewedBy != userId ? allOtherUsersInBroker.Single(a => a.Id == l.ViewedBy).Name + " håller på med detta ärende" : string.Empty);
 
             yield return new StartList
             {
@@ -985,23 +902,23 @@ namespace Tolk.Web.Controllers
             List<StartListItemModel> approvedRequestAnswers = new List<StartListItemModel>();
             try
             {
-                approvedRequestAnswers = _dbContext.Requests
-                    .Where(r => r.Status == RequestStatus.Approved && r.Order.StartAt > _clock.SwedenNow && r.Ranking.BrokerId == brokerId)
+                approvedRequestAnswers = _dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
+                    .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.Approved && r.StartAt > _clock.SwedenNow)
                     .Select(r => new StartListItemModel
                     {
-                        Orderdate = new TimeRange { StartDateTime = r.Order.StartAt, EndDateTime = r.Order.EndAt },
+                        Orderdate = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
                         DefaulListAction = "View",
                         DefaulListController = "Request",
-                        DefaultItemId = r.RequestId,
-                        InfoDate = (r.Status == RequestStatus.Approved && r.AnswerProcessedAt.HasValue) ? r.AnswerProcessedAt.Value.DateTime : r.AnswerDate.Value.DateTime,
+                        DefaultItemId = (int)r.RequestId,
+                        InfoDate = (r.RequestStatus == RequestStatus.Approved && r.AnswerProcessedAt.HasValue) ? r.AnswerProcessedAt.Value.DateTime : r.AnsweredAt.Value.DateTime,
                         InfoDateDescription = "Godkänd: ",
                         CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        CustomerName = r.Order.CustomerOrganisation.Name,
-                        Language = r.Order.OtherLanguage ?? r.Order.Language.Name,
-                        OrderNumber = r.Order.OrderNumber,
+                        CustomerName = r.CustomerName,
+                        Language = r.LanguageName,
+                        OrderNumber = r.OrderNumber,
                         Status = StartListItemStatus.OrderApproved,
-                        ViewedBy = r.RequestViews.OrderBy(v => v.ViewedAt).FirstOrDefault().ViewedBy,
-                        OrderGroupNumber = r.Order.OrderGroupId.HasValue ? $"Del av {r.Order.Group.OrderGroupNumber}" : string.Empty
+                        ViewedByUser = GetViewedByUserName(r, userId),
+                        OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                     }).ToList();
             }
             catch (Exception ex)
@@ -1009,7 +926,6 @@ namespace Tolk.Web.Controllers
                 _logger.LogError(ex, $"Unexpected error occured for Approved requests in method {nameof(GetBrokerStartLists)}");
             }
             count = approvedRequestAnswers.Any() ? approvedRequestAnswers.Count : 0;
-            approvedRequestAnswers.ForEach(l => l.ViewedByUser = l.ViewedBy.HasValue && l.ViewedBy != userId ? allOtherUsersInBroker.Single(a => a.Id == l.ViewedBy).Name + " håller på med detta ärende" : string.Empty);
 
             yield return new StartList
             {
@@ -1020,14 +936,14 @@ namespace Tolk.Web.Controllers
             };
         }
 
-        private static DateTime? GetInfoDateForBroker(Request r)
+        private static string GetViewedByUserName(BrokerStartListRow b, int userId)
         {
-            return (r.Status == RequestStatus.CancelledByCreator || r.Status == RequestStatus.CancelledByCreatorWhenApproved) ? r.CancelledAt?.DateTime : r.Status == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.CreatedAt.DateTime;
+            return b.ViewedByUserId.HasValue && b.ViewedByUserId != userId ? $"{b.ViewedBy} håller på med detta ärende" : string.Empty;
         }
 
-        private static DateTime? GetInfoDateForBroker(RequestGroup r)
+        private static DateTime? GetInfoDateForBroker(BrokerStartListRow r)
         {
-            return r.Status == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.CreatedAt.DateTime;
+            return (r.RequestStatus == RequestStatus.CancelledByCreator || r.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved) ? r.CancelledAt?.DateTime : r.RequestStatus == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.EntityDate.DateTime;
         }
 
         private static StartListItemStatus GetStartListStatusForBroker(RequestStatus requestStatus, int replacingOrderId, bool isGroup = false)

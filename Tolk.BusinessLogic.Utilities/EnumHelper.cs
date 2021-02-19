@@ -96,14 +96,7 @@ namespace Tolk.BusinessLogic.Utilities
             var attributes = type.GetMember(value.ToString()).Single().GetCustomAttributes(false);
 
             var property = attributes.OfType<ParentAttribute>().SingleOrDefault();
-            if (property != null)
-            {
-                return (TEnumParent)property.Parent;
-            }
-            else
-            {
-                return default(TEnumParent);
-            }
+            return property != null ? (TEnumParent)property.Parent : default;
         }
 
         /// <summary>

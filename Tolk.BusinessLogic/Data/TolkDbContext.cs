@@ -645,6 +645,9 @@ namespace Tolk.BusinessLogic.Data
 
         public DbQuery<RequestListRow> RequestListRows { get; set; }
 
+        public DbQuery<CustomerStartListRow> CustomerStartListRows { get; set; }
+        public DbQuery<BrokerStartListRow> BrokerStartListRows { get; set; }
+
         private static bool isUserStoreInitialized = false;
 
         public bool IsUserStoreInitialized
