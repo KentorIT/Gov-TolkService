@@ -25,11 +25,13 @@ namespace Tolk.Web.Api.Controllers
     {
         private readonly TolkDbContext _dbContext;
         private readonly CacheService _cacheService;
+        private readonly ISwedishClock _timeService;
 
-        public ListController(TolkDbContext tolkDbContext, CacheService cacheService)
+        public ListController(TolkDbContext tolkDbContext, CacheService cacheService, ISwedishClock timeService)
         {
             _dbContext = tolkDbContext;
             _cacheService = cacheService;
+            _timeService = timeService;
         }
 
         [HttpGet]
@@ -266,10 +268,35 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ErrorResponse>))]
+        [Description("Returnerar ett subset på de felkoder som kan returneras av systemet, som man kan få som myndighet")]
+        [OpenApiTag("List")]
         [OpenApiIgnore]
-        public ActionResult<IEnumerable<ListItemResponse>> CustomerErrorCodes()
+        public ActionResult<IEnumerable<ErrorResponse>> CustomerErrorCodes()
         {
             return Ok(TolkApiOptions.CustomerApiErrorResponses.Union(TolkApiOptions.CommonErrorResponses).Select(d => d));
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ErrorResponse>))]
+        [Description("Returnerar en lista på de tolkförmedlingar som har avtal att förmedla tolkar, och i vilken region de verkar.")]
+        [OpenApiTag("List")]
+        [OpenApiIgnore]
+        public async Task<ActionResult<IEnumerable<ListItemResponse>>> Brokers()
+        {
+            var rankings = await _dbContext.Rankings.GetActiveRankings(_timeService.SwedenNow.DateTime).ToListAsync();
+            var brokers = await _dbContext.Brokers.GetAllBrokers().ToListAsync();
+            return Ok(brokers.Select(b => new BrokerItemResponse
+            {
+                Key = b.OrganizationPrefix,
+                Name = b.Name,
+                Description = b.Name,
+                OrganisationNumber = b.OrganizationNumber,
+                Regions = rankings.Where(r => r.BrokerId == b.BrokerId).Select(r => r.RegionId.ToSwedishString("D2"))
+                //Should be a rank as well, and possibly if it has been censured...
+            }));
         }
 
         private ActionResult<IEnumerable<ListItemResponse>> DescriptionsAsJson<T>()

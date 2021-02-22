@@ -606,9 +606,10 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<Order> GetOrderWithBrokerAndOrderNumber(this IQueryable<Order> orders, string orderNumber, int brokerId)
            => await orders
                 .SingleOrDefaultAsync(o => o.OrderNumber == orderNumber && o.Requests.Any(r => r.Ranking.BrokerId == brokerId));
+
         public static async Task<Broker> GetBrokerByIdentifier(this IQueryable<Broker> brokers, string identifier)
            => await brokers
-                .SingleOrDefaultAsync(b => b.OrganizationNumber == identifier);
+                .SingleOrDefaultAsync(b => b.OrganizationPrefix == identifier);
 
         public static async Task<Request> GetActiveRequestForApiWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId)
              => await requests.GetRequestsWithBaseIncludesAndRegionAndLanguage()
@@ -889,6 +890,9 @@ namespace Tolk.BusinessLogic.Utilities
             => await requests.Where(r => r.OrderId == id)
             .Include(r => r.Ranking)
             .OrderBy(r => r.RequestId).LastAsync();
+
+        public static IQueryable<Broker> GetAllBrokers(this IQueryable<Broker> brokers)
+            => brokers.OrderBy(c => c.Name);
 
         public static IQueryable<CustomerOrganisation> GetAllCustomers(this IQueryable<CustomerOrganisation> customerOrganisations)
             => customerOrganisations.Include(c => c.ParentCustomerOrganisation).OrderBy(c => c.Name);

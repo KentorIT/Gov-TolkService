@@ -916,7 +916,8 @@ Sammanställning:
             {
                 CreateWebHookCall(new OrderAnsweredModel
                 {
-                    OrderNumber = orderNumber
+                    OrderNumber = orderNumber, 
+                    BrokerKey = request.Ranking.Broker.OrganizationPrefix
                 },
                 webhook.ContactInformation,
                 webhook.NotificationType,
@@ -974,7 +975,8 @@ Sammanställning:
                 CreateWebHookCall(new OrderDeclinedModel
                 {
                     OrderNumber = orderNumber,
-                    Message = request.DenyMessage
+                    Message = request.DenyMessage,
+                    BrokerKey = request.Ranking.Broker.OrganizationPrefix
                 },
                 webhook.ContactInformation,
                 webhook.NotificationType,
@@ -1366,7 +1368,8 @@ Sammanställning:
             {
                 CreateWebHookCall(new OrderAcceptedModel
                 {
-                    OrderNumber = orderNumber
+                    OrderNumber = orderNumber,
+                    BrokerKey = request.Ranking.Broker.OrganizationPrefix
                 },
                 webhook.ContactInformation,
                 webhook.NotificationType,

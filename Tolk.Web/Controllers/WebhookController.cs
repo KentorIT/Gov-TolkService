@@ -88,7 +88,7 @@ namespace Tolk.Web.Controllers
                     OutboundWebHookCallId = notification.OutboundWebHookCallId,
                     CreatedAt = notification.CreatedAt,
                     DeliveredAt = notification.DeliveredAt,
-                    BrokerName = notification.RecipientUser.Broker.Name,
+                    BrokerName = notification.RecipientUser?.Broker?.Name ?? notification.RecipientUser?.CustomerOrganisation?.Name ?? notification.RecipientUser.FullName,
                     Payload = notification.Payload,
                     NotificationType = notification.NotificationType,
                     RecipientUrl = notification.RecipientUrl.AsUri(),
