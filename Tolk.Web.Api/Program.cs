@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Tolk.Web.Api
 {
@@ -13,10 +12,6 @@ namespace Tolk.Web.Api
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .ConfigureLogging(loggingBuilder =>
-                {
-                    loggingBuilder.AddAzureWebAppDiagnostics();
-                })
                 .UseStartup<Startup>();
     }
 }

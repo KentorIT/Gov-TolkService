@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
+using Microsoft.Extensions.Hosting;
 
 namespace Tolk.Web.Api
 {
@@ -33,7 +34,6 @@ namespace Tolk.Web.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<TolkApiOptions>(Configuration);
-            services.AddApplicationInsightsTelemetry();
 
             services.AddDistributedMemoryCache();
             services.AddScoped<DateCalculationService>();
@@ -70,7 +70,8 @@ namespace Tolk.Web.Api
                 opt.AddPolicy(Policies.Customer, builder => builder.RequireClaim(TolkClaimTypes.CustomerOrganisationId));
             });
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddRazorPages();
+            services.AddControllers().AddNewtonsoftJson();
             services.AddOpenApiDocument(document =>
             {
                 document.OperationProcessors.Add(new AddRequiredHeaderParameter("X-Kammarkollegiet-InterpreterService-UserName"));
@@ -85,27 +86,28 @@ namespace Tolk.Web.Api
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            app.UseAuthentication();
-            app.UseStaticFiles();
-            app.UseOpenApi();
-            app.UseSwaggerUi3();
-
             if (Configuration.GetSection("EnableFileLogging").Get<bool>())
             {
                 loggerFactory.AddLog4Net(Configuration.GetSection("Log4NetCore").Get<Microsoft.Extensions.Logging.Log4NetProviderOptions>());
             }
+            app.UseStaticFiles();
 
-            app.UseMvc(routes =>
+            app.UseOpenApi();
+            app.UseSwaggerUi3();
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}");
+                    pattern: "{controller=Home}/{action=Index}");
             });
         }
     }
