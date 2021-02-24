@@ -139,7 +139,7 @@ namespace Tolk.Web.Api.Controllers
                 {
                     AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());
                     var request = await _apiOrderService.GetRequestFromOrderAndBrokerIdentifier(model.OrderNumber, model.BrokerIdentifier);
-                    if (request == null && request.Order.CustomerOrganisationId != apiUser.CustomerOrganisationId )
+                    if (request == null || request.Order.CustomerOrganisationId != apiUser.CustomerOrganisationId )
                     {
                         return ReturnError(ErrorCodes.OrderNotFound, method);
                     }

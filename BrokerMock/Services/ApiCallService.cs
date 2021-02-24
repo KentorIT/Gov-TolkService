@@ -154,7 +154,7 @@ namespace BrokerMock.Services
         public async Task<RequestDetailsResponse> GetOrderRequest(string orderNumber)
         {
             var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/View", $"orderNumber={orderNumber}"));
-            if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+            if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/View]:: Boknings-ID: {orderNumber}");
                 return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
@@ -176,7 +176,7 @@ namespace BrokerMock.Services
         public async Task<RequestGroupDetailsResponse> GetOrderGroupRequest(string orderGroupNumber)
         {
             var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"orderGroupNumber={orderGroupNumber}"));
-            if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+            if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
                 var viewResponse = JsonConvert.DeserializeObject<RequestGroupDetailsResponse>(await response.Content.ReadAsStringAsync());
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View]:: Boknings-ID: {viewResponse.OrderGroupNumber}");
@@ -192,7 +192,7 @@ namespace BrokerMock.Services
         public async Task<RequestDetailsResponse> GetOrderRequisition(string orderNumber)
         {
             var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Requisition/View", $"orderNumber={orderNumber}&IncludePreviousRequisitions=false"));
-            if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+            if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/View]:: Boknings-ID: {orderNumber}");
             }
@@ -221,7 +221,7 @@ namespace BrokerMock.Services
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
                 var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Requisition/Create"), content);
-                if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+                if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create]:: Rekvisition skapad för Boknings-ID: {orderNumber}");
                 }
@@ -238,7 +238,7 @@ namespace BrokerMock.Services
         public async Task<RequestDetailsResponse> GetInterpreter(string officialInterpreterId)
         {
             var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/View", $"officialInterpreterId={officialInterpreterId}"));
-            ViewInterpreterResponse responseInterpreter = response.Content.ReadAsAsync<ViewInterpreterResponse>().Result;
+            ViewInterpreterResponse responseInterpreter = JsonConvert.DeserializeObject<ViewInterpreterResponse>(await response.Content.ReadAsStringAsync());
             if (responseInterpreter.Success)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/View]:: Hämtade Tolk {responseInterpreter.Interpreter.Email} med hjälp av kamkid: {officialInterpreterId}");
@@ -254,7 +254,7 @@ namespace BrokerMock.Services
         public async Task<RequestDetailsResponse> GetInterpreter(int interpreterId)
         {
             var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/View", $"interpreterId={interpreterId}"));
-            ViewInterpreterResponse responseInterpreter = response.Content.ReadAsAsync<ViewInterpreterResponse>().Result;
+            ViewInterpreterResponse responseInterpreter = JsonConvert.DeserializeObject<ViewInterpreterResponse>(await response.Content.ReadAsStringAsync());
             if (responseInterpreter.Success)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/View]:: Hämtade Tolk {responseInterpreter.Interpreter.Email} med hjälp av id: {interpreterId}");

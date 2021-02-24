@@ -18,7 +18,7 @@ namespace Tolk.Api.Payloads.WebHookPayloads
             {
                 if (PriceListRows != null && PriceListRows.Any())
                 {
-                    return PriceListRows.Sum(r => r.TotalPrice);
+                    return PriceListRows.Sum(r => r.TotalPrice());
                 }
                 return price;
             }
@@ -28,7 +28,7 @@ namespace Tolk.Api.Payloads.WebHookPayloads
             }
         }
 
-        internal decimal RoundedPrice => decimal.Round(Price, 2, MidpointRounding.AwayFromZero);
+        internal decimal RoundedPrice() => decimal.Round(Price, 2, MidpointRounding.AwayFromZero);
 
         public IEnumerable<PriceRowListModel> PriceListRows { get; set; }
 

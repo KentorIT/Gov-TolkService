@@ -114,7 +114,7 @@ namespace BrokerMock.Controllers
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
                 var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/Accept"), content);
-                if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Boknings-ID: {orderNumber} accepterat reklamation");
                 }
@@ -138,7 +138,7 @@ namespace BrokerMock.Controllers
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
                 var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/Dispute"), content);
-                if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/Dispute]:: Boknings-ID: {orderNumber} Bestrider reklamation!");
                 }
@@ -154,7 +154,7 @@ namespace BrokerMock.Controllers
         private async Task<ComplaintDetailsResponse> GetComplaint(string orderNumber)
         {
             var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/View", $"orderNumber={orderNumber}"));
-            if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+            if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/View]:: Reklamation för Boknings-ID: {orderNumber} lyckad hämtning!");
             }

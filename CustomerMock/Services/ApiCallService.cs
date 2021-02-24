@@ -179,7 +179,7 @@ namespace CustomerMock.Services
             if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
                 var info = JsonConvert.DeserializeObject<CreateOrderResponse>(await response.Content.ReadAsStringAsync());
-                return $"Order skapad: {info.OrderNumber}, beräknat pris: {info.PriceInformation.TotalPrice.ToSwedishString()}";
+                return $"Order skapad: {info.OrderNumber}, beräknat pris: {info.PriceInformation.TotalPrice().ToSwedishString()}";
             }
             else
             {
@@ -217,12 +217,12 @@ namespace CustomerMock.Services
             if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
                 var info = JsonConvert.DeserializeObject<CreateOrderResponse>(await response.Content.ReadAsStringAsync());
-                return $"Svar har godkänts för order: {info.OrderNumber}";
+                return $"Svar har godkänts för order: {orderNumber}";
             }
             else
             {
                 var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                return $"Order skapades INTE. Felmeddelande: {errorResponse.ErrorMessage}";
+                return $"Svar kunde INTE godkännas. Felmeddelande: {errorResponse.ErrorMessage}";
             }
         }
 
@@ -256,7 +256,7 @@ namespace CustomerMock.Services
             else
             {
                 var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                return $"Order skapades INTE. Felmeddelande: {errorResponse.ErrorMessage}";
+                return $"Svar kunde INTE avslås. Felmeddelande: {errorResponse.ErrorMessage}";
             }
         }
 

@@ -588,7 +588,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Create"), content))
                 {
-                    CreateInterpreterResponse responseInterpreter = response.Content.ReadAsAsync<CreateInterpreterResponse>().Result;
+                    CreateInterpreterResponse responseInterpreter = JsonConvert.DeserializeObject<CreateInterpreterResponse>(await response.Content.ReadAsStringAsync());
                     if (responseInterpreter.Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Create]:: Tolk {responseInterpreter.Interpreter.Email} skapades med detta id: {responseInterpreter.Interpreter.InterpreterId}");
@@ -612,7 +612,8 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content))
                 {
-                    UpdateInterpreterResponse responseInterpreter = response.Content.ReadAsAsync<UpdateInterpreterResponse>().Result;
+
+                    UpdateInterpreterResponse responseInterpreter = JsonConvert.DeserializeObject<UpdateInterpreterResponse>(await response.Content.ReadAsStringAsync());
                     if (responseInterpreter.Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Update]:: Tolk {responseInterpreter.Interpreter.Email} förnamnet ändrades från: {originalFirstName} till: {responseInterpreter.Interpreter.FirstName}");
@@ -635,7 +636,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content))
                 {
-                    UpdateInterpreterResponse responseInterpreter = response.Content.ReadAsAsync<UpdateInterpreterResponse>().Result;
+                    UpdateInterpreterResponse responseInterpreter = JsonConvert.DeserializeObject<UpdateInterpreterResponse>(await response.Content.ReadAsStringAsync());
                     if (responseInterpreter.Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Update]:: Tolk {responseInterpreter.Interpreter.Email} {(payload.IsActive ? "aktiverades" : "inaktiverades")}");
@@ -691,7 +692,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Answer"), content))
                 {
-                    var answer = response.Content.ReadAsAsync<AnswerResponse>().Result;
+                    var answer = JsonConvert.DeserializeObject<AnswerResponse>(await response.Content.ReadAsStringAsync());
                     if (answer.Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Answer]:: Boknings-ID: {orderNumber} skickad tolk: {interpreter.Email}, och fick tillbaka id: {answer.InterpreterId}");
@@ -735,7 +736,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Answer"), content))
                 {
-                    var answer = response.Content.ReadAsAsync<GroupAnswerResponse>().Result;
+                    var answer = JsonConvert.DeserializeObject<GroupAnswerResponse>(await response.Content.ReadAsStringAsync());
                     if (answer.Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer]:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}, och fick tillbaka id: {answer.InterpreterId}. {(answer.ExtraInterpreterId.HasValue ? $"Extra tolk id: {answer.ExtraInterpreterId}" : string.Empty)}");
@@ -764,7 +765,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/AcceptReplacement"), content))
                 {
-                    if ((await response.Content.ReadAsAsync<ResponseBase>()).Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/AcceptReplacement]:: Boknings-ID: {orderNumber} ersättning har accepterats");
                     }
@@ -790,7 +791,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Acknowledge"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Acknowledge]:: Boknings-ID: {orderNumber} accat mottagande");
                     }
@@ -815,7 +816,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmDenial"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmDenial] Unauthorized:: Boknings-ID: {orderNumber} accat nekande");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmDenial]:: Boknings-ID: {orderNumber} accat nekande");
                     }
@@ -840,7 +845,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmDenial"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmDenial]:: Boknings-ID: {orderGroupNumber} accat nekande");
                     }
@@ -865,7 +870,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmCancellation"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmCancellation]:: Boknings-ID: {orderGroupNumber} konfirmerat gruppavbokning");
                     }
@@ -890,7 +895,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmCancellation"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmCancellation]:: Boknings-ID: {orderNumber} konfirmerat avbokning");
                     }
@@ -915,7 +920,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoAnswer"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoAnswer]:: Boknings-ID: {orderNumber} tagit del av obesvarad förfrågan");
                     }
@@ -939,7 +944,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmUpdate"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmUpdate]:: Boknings-ID: {orderNumber} tagit del av ändrad förfrågan");
                     }
@@ -963,7 +968,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmNoAnswer"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmNoAnswer]:: Boknings-ID: {orderGroupNumber} tagit del av obesvarad sammanhållen förfrågan");
                     }
@@ -987,7 +992,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoRequisition"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoRequisition]:: Boknings-ID: {orderNumber} arkiverad utan rekvisition");
                     }
@@ -1011,7 +1016,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Acknowledge"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Acknowledge]:: Sammanhållen Boknings-ID: {orderGroupNumber} accat mottagande");
                     }
@@ -1037,7 +1042,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Decline"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Decline]:: Boknings-ID: {orderNumber} Svarat nej på förfrågan");
                     }
@@ -1063,7 +1068,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Decline"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Decline]:: Sammanhållen Boknings-ID: {orderGroupNumber} Svarat nej på förfrågan");
                     }
@@ -1081,7 +1086,7 @@ namespace BrokerMock.Controllers
         {
             using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"OrderGroupNumber={orderGroupNumber}&callingUser=regular-user@formedling1.se")))
             {
-                if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View]:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
                 }
@@ -1097,7 +1102,7 @@ namespace BrokerMock.Controllers
         {
             using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/File", $"OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
             {
-                var file = response.Content.ReadAsAsync<FileResponse>().Result;
+                var file = JsonConvert.DeserializeObject<FileResponse>(await response.Content.ReadAsStringAsync());
                 if (file.Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File]:: Boknings-ID: {orderNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
@@ -1115,7 +1120,7 @@ namespace BrokerMock.Controllers
         {
             using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/File", $"OrderGroupNumber={orderGroupNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
             {
-                var file = response.Content.ReadAsAsync<FileResponse>().Result;
+                var file = JsonConvert.DeserializeObject<FileResponse>(await response.Content.ReadAsStringAsync());
                 if (file.Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/File]:: Boknings-ID: {orderGroupNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
@@ -1145,7 +1150,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ChangeInterpreter"), content))
                 {
-                    var answer = response.Content.ReadAsAsync<ChangeInterpreterResponse>().Result;
+                    var answer = JsonConvert.DeserializeObject<ChangeInterpreterResponse>(await response.Content.ReadAsStringAsync());
                     if (answer.Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter]:: Boknings-ID: {orderNumber} ändrat tolk: {interpreter.Email}, och fick tillbaka id: {answer.InterpreterId}");
@@ -1173,7 +1178,7 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Cancel"), content))
                 {
-                    if (response.Content.ReadAsAsync<ResponseBase>().Result.Success)
+                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Cancel]:: Boknings-ID: {orderNumber} avbokat från förmedling");
                     }

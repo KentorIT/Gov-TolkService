@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace BrokerMock
 {
-    public static class Program
+    public class Program
     {
         public static void Main(string[] args)
         {

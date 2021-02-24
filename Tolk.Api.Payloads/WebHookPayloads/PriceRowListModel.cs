@@ -10,12 +10,8 @@
 
         public int Quantity { get; set; }
 
-        public decimal TotalPrice
-        {
-            get
-            {
-                return Price * Quantity;
-            }
-        }
+        public decimal TotalPrice() => Price * Quantity;
+
+
     }
 }
