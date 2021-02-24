@@ -59,7 +59,7 @@ namespace Tolk.BusinessLogic.Entities
             var builder = new BodyBuilder();
 
             message.From.Add(from);
-            message.To.Add(new MailboxAddress(Recipient));
+            message.To.Add(MailboxAddress.Parse(Recipient));
             message.Subject = Subject;
 
             builder.TextBody = PlainBody;

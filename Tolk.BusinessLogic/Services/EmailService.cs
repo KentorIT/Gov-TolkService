@@ -133,7 +133,7 @@ namespace Tolk.BusinessLogic.Services
                 var message = new MimeMessage();
 
                 message.From.Add(from);
-                message.To.Add(new MailboxAddress(_secondLineSupportMail));
+                message.To.Add(MailboxAddress.Parse(_secondLineSupportMail));
                 message.Subject = subject;
                 var builder = new BodyBuilder
                 {
