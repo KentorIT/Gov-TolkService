@@ -3,7 +3,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
-    public class ChangeEmailModel
+    public class ChangeEmailModel : IModel
     {
         [Required]
         [DataType(DataType.Password)]

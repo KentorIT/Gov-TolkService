@@ -6,7 +6,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class RequestAcceptModel
+    public class RequestAcceptModel : IModel
     {
         public int RequestId { get; set; }
 

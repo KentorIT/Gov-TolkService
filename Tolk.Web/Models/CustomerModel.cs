@@ -8,7 +8,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class CustomerModel
+    public class CustomerModel : IModel
     {
         public int? CustomerId { get; set; }
 

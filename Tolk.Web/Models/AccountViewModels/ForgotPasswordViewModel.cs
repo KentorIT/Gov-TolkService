@@ -2,7 +2,7 @@
 
 namespace Tolk.Web.Models.AccountViewModels
 {
-    public class ForgotPasswordViewModel
+    public class ForgotPasswordViewModel : IModel
     {
         [Required]
         [EmailAddress]

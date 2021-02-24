@@ -2,7 +2,7 @@
 
 namespace Tolk.Web.Models
 {
-    public class ConnectUserUnitModel
+    public class ConnectUserUnitModel : IModel
     {
 
         [Required]

@@ -4,7 +4,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
-    public class AccountViewModel
+    public class AccountViewModel : IModel
     {
         [Display(Name = "Användarnamn")]
         public string UserName { get; set; }

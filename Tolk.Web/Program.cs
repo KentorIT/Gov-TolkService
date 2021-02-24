@@ -25,10 +25,6 @@ namespace Tolk.Web
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .ConfigureLogging(loggingBuilder =>
-                {
-                    loggingBuilder.AddAzureWebAppDiagnostics();
-                })
                 .UseStartup<Startup>()
                 .Build();
     }

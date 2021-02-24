@@ -6,7 +6,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class InterpreterAnswerModel
+    public class InterpreterAnswerModel : IModel
     {
 
         [ClientRequired]

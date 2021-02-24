@@ -7,7 +7,7 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
-    public class ComplaintFilterModel
+    public class ComplaintFilterModel : IModel
     {
         [Display(Name = "Boknings-ID")]
         public string OrderNumber { get; set; }

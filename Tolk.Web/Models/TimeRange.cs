@@ -4,7 +4,7 @@ using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class TimeRange
+    public class TimeRange : IModel
     {
         [Display(Name = "Datum")]
         [Required(ErrorMessage = "Ange datum")]

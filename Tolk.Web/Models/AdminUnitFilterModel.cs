@@ -4,7 +4,7 @@ using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models
 {
-    public class AdminUnitFilterModel
+    public class AdminUnitFilterModel : IModel
     {
         public int Id { get; set; }
 

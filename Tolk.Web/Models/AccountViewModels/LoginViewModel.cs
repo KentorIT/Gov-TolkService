@@ -3,7 +3,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
-    public class LoginViewModel
+    public class LoginViewModel : IModel
     {
         [Required]
         [Display(Name = "E-post eller användarnamn")]

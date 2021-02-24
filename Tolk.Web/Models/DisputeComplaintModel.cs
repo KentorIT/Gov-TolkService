@@ -2,7 +2,7 @@
 
 namespace Tolk.Web.Models
 {
-    public class DisputeComplaintModel
+    public class DisputeComplaintModel : IModel
     {
         public int ComplaintId { get; set; }
 

@@ -4,7 +4,7 @@ using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.Web.Models
 {
-    public class InterpreterModel
+    public class InterpreterModel : IModel
     {
         public int? Id { get; set; }
 

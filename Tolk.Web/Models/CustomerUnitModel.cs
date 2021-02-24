@@ -6,7 +6,7 @@ using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.Web.Models
 {
-    public class CustomerUnitModel
+    public class CustomerUnitModel : IModel
     {
         public int CustomerUnitId { get; set; }
 

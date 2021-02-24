@@ -1,5 +1,4 @@
-﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
-@using Tolk.Web.Authorization
+﻿@using Tolk.Web.Authorization
 @using Microsoft.AspNetCore.Authorization
 @using Tolk.Web.Helpers
 @using Tolk.BusinessLogic
@@ -46,7 +45,6 @@
         <link rel="stylesheet" href="~/lib/datatables/datatables.min.css" />
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
-    @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
     @if ((await AuthorizationService.AuthorizeAsync(User, Policies.ViewMenuAndStartLists)).Succeeded)

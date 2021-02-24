@@ -4,7 +4,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class NotificationSettingsModel
+    public class NotificationSettingsModel : IModel
     {
         [NoDisplayName]
         public NotificationType Type { get; set; }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace Tolk.Web.Services
 {
@@ -20,8 +21,9 @@ namespace Tolk.Web.Services
             IOptions<SecurityStampValidatorOptions> options,
             SignInManager<AspNetUser> signInManager,
             UserManager<AspNetUser> userManager,
-            ISystemClock clock)
-            : base(options, signInManager, clock)
+            ISystemClock clock,
+            ILoggerFactory logger)
+            : base(options, signInManager, clock, logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;

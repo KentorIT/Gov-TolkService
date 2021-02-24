@@ -2,7 +2,7 @@
 
 namespace Tolk.Web.Models
 {
-    public class RequestGroupDeclineModel
+    public class RequestGroupDeclineModel : IModel
     {
         public int DeniedRequestGroupId { get; set; }
 

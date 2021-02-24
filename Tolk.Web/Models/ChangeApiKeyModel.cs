@@ -3,7 +3,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class ChangeApiKeyModel
+    public class ChangeApiKeyModel : IModel
     {
         [Required]
         [DataType(DataType.Password)]

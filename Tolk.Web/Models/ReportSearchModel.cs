@@ -3,7 +3,7 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
-    public class ReportSearchModel
+    public class ReportSearchModel : IModel
     {
         [Display(Name = "Välj datumintervall")]
         public DateRange ReportDate { get; set; }

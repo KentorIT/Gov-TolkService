@@ -5,7 +5,7 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
-    public class WebHookModel
+    public class WebHookModel : IModel
     {
         [Display(Name = "Id")]
         public int OutboundWebHookCallId { get; set; }

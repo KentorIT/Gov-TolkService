@@ -5,7 +5,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class UserModel
+    public class UserModel : IModel
     {
         public int? Id { get; set; }
 

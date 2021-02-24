@@ -9,7 +9,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class OrderRequirementModel
+    public class OrderRequirementModel : IModel
     {
         public int? OrderRequirementId { get; set; }
 

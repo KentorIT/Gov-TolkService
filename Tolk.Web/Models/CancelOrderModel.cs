@@ -2,7 +2,7 @@
 
 namespace Tolk.Web.Models
 {
-    public class CancelOrderModel
+    public class CancelOrderModel : IModel
     {
         public int OrderId { get; set; }
 

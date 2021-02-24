@@ -6,7 +6,7 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
-    public class AssignmentModel
+    public class AssignmentModel : IModel
     {
         public int RequestId { get; set; }
 

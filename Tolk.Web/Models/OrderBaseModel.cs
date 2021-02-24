@@ -11,7 +11,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class OrderBaseModel
+    public class OrderBaseModel : IModel
     {
         [Display(Name = "Län")]
         public string RegionName { get; set; }

@@ -7,7 +7,7 @@ using E = Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
-    public class InterpreterLocationAddressModel
+    public class InterpreterLocationAddressModel : IModel
     {
 
         [Display(Name = "Inställelsesätt")]

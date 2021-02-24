@@ -5,7 +5,7 @@ using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
-    public class RequestFilterModel
+    public class RequestFilterModel : IModel
     {
         [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }

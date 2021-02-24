@@ -2,7 +2,7 @@
 
 namespace Tolk.Web.Models
 {
-    public class CommentRequisitionModel
+    public class CommentRequisitionModel : IModel
     {
         public int RequisitionId { get; set; }
 

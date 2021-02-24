@@ -6,7 +6,7 @@ using Tolk.BusinessLogic.Services;
 
 namespace Tolk.Web.Models
 {
-    public class AssignmentFilterModel
+    public class AssignmentFilterModel : IModel
     {
         [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }

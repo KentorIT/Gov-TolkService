@@ -2,7 +2,7 @@
 
 namespace Tolk.Web.Models
 {
-    public class RequestCancelModel
+    public class RequestCancelModel : IModel
     {
 
         public int RequestId { get; set; }

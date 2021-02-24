@@ -2,7 +2,7 @@
 
 namespace Tolk.Web.Models
 {
-    public class ConfirmOrderChangeModel
+    public class ConfirmOrderChangeModel : IModel
     {
         public int RequestId { get; set; }
 

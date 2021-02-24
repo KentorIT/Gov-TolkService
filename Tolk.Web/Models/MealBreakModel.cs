@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Tolk.Web.Models
 {
-    public class MealBreakModel
+    public class MealBreakModel : IModel
     {
 
         [Required]

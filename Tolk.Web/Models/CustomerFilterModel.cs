@@ -6,7 +6,7 @@ using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models
 {
-    public class CustomerFilterModel
+    public class CustomerFilterModel : IModel
     {
         [Display(Name = "Föräldermyndighet")]
         public int? ParentId { get; set; }

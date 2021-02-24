@@ -3,7 +3,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
-    public class RegisterViewModel
+    public class RegisterViewModel : IModel
     {
         [Required]
         [EmailAddress]

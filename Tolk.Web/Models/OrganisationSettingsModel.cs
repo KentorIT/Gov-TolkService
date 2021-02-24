@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Tolk.Web.Models
 {
-    public class OrganisationSettingsModel
+    public class OrganisationSettingsModel : IModel
     {
         public string Message { get; set; }
 

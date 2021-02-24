@@ -20,6 +20,7 @@ using Tolk.Web.Authorization;
 using Tolk.Web.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.DataProtection;
+using Tolk.Web.Models;
 
 namespace Tolk.Web
 {
@@ -36,7 +37,6 @@ namespace Tolk.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddApplicationInsightsTelemetry();
             services.Configure<TolkOptions>(Configuration);
             services.PostConfigure<TolkOptions>(opt => opt.Validate());
 
@@ -110,14 +110,16 @@ namespace Tolk.Web
                 opt.SupportedCultures = supportedCultures;
                 opt.SupportedUICultures = supportedCultures;
             });
-
-            services.AddSingleton<IValidationAttributeAdapterProvider, SwedishValidationAttributeAdapterProvider>();
-
+            services.AddLocalization();
             var runEntityScheduler = Configuration["RunEntityScheduler"] == null ? true : bool.Parse(Configuration["RunEntityScheduler"]);
             if (runEntityScheduler)
             {
                 services.AddSingleton<EntityScheduler>();
             }
+            services.AddRazorPages();
+            services.AddControllers()
+                .AddModelBindingMessagesLocalizer(services, typeof(IModel))
+                .AddNewtonsoftJson();
             services.AddAntiforgery(opts => opts.Cookie.Name = "AntiForgery.Kammarkollegiet.Tolk");
             services.AddDataProtection().SetApplicationName("Tolk.Web");
             services.AddTolkBusinessLogicServices();
@@ -127,22 +129,12 @@ namespace Tolk.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(
             IApplicationBuilder app,
-            IHostingEnvironment env,
             TolkDbContext dbContext,
             RoleManager<IdentityRole<int>> roleManager,
             ILoggerFactory loggerFactory
             )
         {
-            if (env.IsDevelopment() && false)
-            {
-                app.UseBrowserLink();
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+            app.UseExceptionHandler("/Home/Error");
             if (Configuration.GetSection("EnableFileLogging").Get<bool>())
             {
                 loggerFactory.AddLog4Net(Configuration.GetSection("Log4NetCore").Get<Log4NetProviderOptions>());
@@ -183,8 +175,6 @@ namespace Tolk.Web
             }
             app.UseStaticFiles();
 
-            app.UseAuthentication();
-
             var swedishCulture = new CultureInfo("sv-SE");
             var cultureArray = new[] { swedishCulture };
 
@@ -205,11 +195,14 @@ namespace Tolk.Web
                     }
                 }
             });
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

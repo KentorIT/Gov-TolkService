@@ -8,7 +8,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class RequestGroupBaseModel
+    public class RequestGroupBaseModel : IModel
     {
         public int RequestGroupId { get; set; }
 

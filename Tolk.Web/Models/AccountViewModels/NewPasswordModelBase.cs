@@ -3,7 +3,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models.AccountViewModels
 {
-    public abstract class NewPasswordModelBase
+    public abstract class NewPasswordModelBase : IModel
     {
         [ClientRequired]
         [NoAutoComplete]

@@ -3,7 +3,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class FaqModel
+    public class FaqModel : IModel
     {
         public int FaqId { get; set; }
 

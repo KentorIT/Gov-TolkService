@@ -19,7 +19,7 @@ namespace Tolk.Web.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class DataAnnotationValidationMessages {
@@ -63,27 +63,27 @@ namespace Tolk.Web.Resources {
         /// <summary>
         ///   Looks up a localized string similar to {0} är inte samma som {1}..
         /// </summary>
-        public static string Compare {
+        public static string CompareAttribute_ValidationError {
             get {
-                return ResourceManager.GetString("Compare", resourceCulture);
+                return ResourceManager.GetString("CompareAttribute_ValidationError", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} måste anges..
         /// </summary>
-        public static string Required {
+        public static string RequiredAttribute_ValidationError {
             get {
-                return ResourceManager.GetString("Required", resourceCulture);
+                return ResourceManager.GetString("RequiredAttribute_ValidationError", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} får ha max {1} bokstäver..
         /// </summary>
-        public static string StringLength {
+        public static string StringLengthAttribute_ValidationError {
             get {
-                return ResourceManager.GetString("StringLength", resourceCulture);
+                return ResourceManager.GetString("StringLengthAttribute_ValidationError", resourceCulture);
             }
         }
     }

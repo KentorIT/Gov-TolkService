@@ -6,7 +6,7 @@ using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models
 {
-    public class ComplaintModel
+    public class ComplaintModel : IModel
     {
         public int RequestId { get; set; }
 

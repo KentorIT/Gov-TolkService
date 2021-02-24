@@ -5,7 +5,7 @@ using Tolk.BusinessLogic.Entities;
 
 namespace Tolk.Web.Models
 {
-    public class SystemMessageModel
+    public class SystemMessageModel : IModel
     {
         public int SystemMessageId { get; set; }
 
