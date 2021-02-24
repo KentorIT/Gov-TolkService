@@ -692,6 +692,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Answer"), content))
                 {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Answer]:: [Request/Answer] Unauthorized:: Boknings-ID: {orderNumber} skickad tolk: {interpreter.Email}");
+                        return true;
+                    }
                     var answer = JsonConvert.DeserializeObject<AnswerResponse>(await response.Content.ReadAsStringAsync());
                     if (answer.Success)
                     {
