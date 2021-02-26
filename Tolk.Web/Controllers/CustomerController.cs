@@ -224,7 +224,7 @@ namespace Tolk.Web.Controllers
             //Test prefix
             if (_dbContext.CustomerOrganisations.Any(c =>
                  c.CustomerOrganisationId != model.CustomerId &&
-                 c.OrganisationPrefix != null && c.OrganisationPrefix.Equals(model.OrganisationPrefix, StringComparison.InvariantCultureIgnoreCase)))
+                 c.OrganisationPrefix != null && c.OrganisationPrefix.ToLower() == model.OrganisationPrefix.ToLower()))
             {
                 ModelState.AddModelError(nameof(model.OrganisationPrefix), $"Denna Namnprefix används redan i tjänsten.");
                 valid = false;

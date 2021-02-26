@@ -215,7 +215,7 @@ namespace Tolk.Web.Services
                 .Select(l => new TellusLanguageModel
                 {
                     Id = l.TellusName,
-                    Value = l.Name.ToSwedishLower()
+                    Value = l.Name.ToLower()
                 }).Concat(_languageModels.Where(l => l.AllwaysAdd || l.AddOnTest)
                     .Select(l => new TellusLanguageModel
                     {

@@ -434,15 +434,8 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<CustomerUnit> GetCustomerUnitsForUser(this IQueryable<CustomerUnit> customerUnits, int userId)
           => customerUnits.Where(cu => cu.CustomerUnitUsers.Any(cuu => cuu.UserId == userId));
 
-        public static IQueryable<CustomerUnitUser> GetCustomerUnitsWithCustomerUnitForAllUsers(this IQueryable<CustomerUnitUser> customerUnitUsers, IEnumerable<int> userIds, int customerUnitId)
-          => customerUnitUsers.Where(cuu => userIds.Contains(cuu.UserId) && cuu.CustomerUnitId == customerUnitId);
-
-        public async static Task<IEnumerable<int>> GetUserIdsForCustomerUnitsWithCustomerUnitId(this IQueryable<CustomerUnitUser> customerUnitUsers, int customerUnitId)
-          => await customerUnitUsers.Include(cuu => cuu.CustomerUnit).Include(cuu => cuu.User)
-                .Where(cuu => cuu.CustomerUnitId == customerUnitId).Select(cuu => cuu.UserId).ToListAsync();
-
-        public static IQueryable<AspNetUser> GetUsersByUserIds(this IQueryable<AspNetUser> users, IEnumerable<int> userIds)
-          => users.Where(u => userIds.Contains(u.Id));
+        public static IQueryable<CustomerUnitUser> GetUsersForCustomerUnit(this IQueryable<CustomerUnitUser> customerUnitUsers, int customerUnitId)
+          => customerUnitUsers.Where(cu => cu.CustomerUnitId == customerUnitId).Include(cu => cu.User);
 
         public async static Task<IEnumerable<IdentityUserClaim<int>>> GetClaimsForUser(this IQueryable<IdentityUserClaim<int>> claims, int userId)
             => await claims.Where(u => u.UserId == userId).ToListAsync();

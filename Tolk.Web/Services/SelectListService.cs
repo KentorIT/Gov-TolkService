@@ -305,26 +305,27 @@ namespace Tolk.Web.Services
                 var items = _cache.Get(organisationsSelectListKey).FromByteArray<IEnumerable<SerializableExtendedSelectListItem>>();
                 if (items == null)
                 {
-                    items = _dbContext.CustomerOrganisations.OrderBy(c => c.Name)
+                    var list = _dbContext.CustomerOrganisations.OrderBy(c => c.Name)
                         .Select(c => new SerializableExtendedSelectListItem
                         {
                             Text = $"{c.Name} ({OrganisationType.GovernmentBody.GetDescription()})",
                             Value = $"{c.CustomerOrganisationId.ToSwedishString()}_{OrganisationType.GovernmentBody}",
                             AdditionalDataAttribute = OrganisationType.GovernmentBody.ToString(),
-                        }).Union(_dbContext.Brokers.OrderBy(c => c.Name)
+                        }).ToList();
+                    list.AddRange(_dbContext.Brokers.OrderBy(c => c.Name)
                         .Select(b => new SerializableExtendedSelectListItem
                         {
                             Text = $"{b.Name} ({OrganisationType.Broker.GetDescription()})",
                             Value = $"{b.BrokerId.ToSwedishString()}_{OrganisationType.Broker }",
                             AdditionalDataAttribute = OrganisationType.Broker.ToString(),
-                        }).Union(new SerializableExtendedSelectListItem
-                        {
-                            Text = "Kammarkollegiet",
-                            Value = $"0_{OrganisationType.Owner }",
-                            AdditionalDataAttribute = OrganisationType.Owner.ToString(),
-                        }.WrapInEnumerable()
-                        ))
-                        .ToList().AsReadOnly();
+                        }).ToList());
+                    list.Add(new SerializableExtendedSelectListItem
+                    {
+                        Text = "Kammarkollegiet",
+                        Value = $"0_{OrganisationType.Owner }",
+                        AdditionalDataAttribute = OrganisationType.Owner.ToString(),
+                    });
+                    items = list.AsReadOnly();
                     _cache.Set(organisationsSelectListKey, items.ToByteArray(), cacheOptions);
                 }
                 return items.GetExtendedSelectListItems();

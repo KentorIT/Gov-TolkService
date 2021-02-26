@@ -329,7 +329,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         {
             NullCheckHelper.ArgumentCheckNull(prefix, nameof(GenerateUserName), nameof(UserService));
             string userNameStart = $"{prefix.GetPrefix(prefix.Length)}{firstName.GetPrefix()}{lastName.GetPrefix()}";
-            var users = _dbContext.Users.Where(u => u.NormalizedUserName.StartsWithSwedish(userNameStart)).Select(u => u.NormalizedUserName).ToList();
+            var users = _dbContext.Users.Where(u => EF.Functions.Like(u.NormalizedUserName, $"{userNameStart}%")).Select(u => u.NormalizedUserName).ToList();
             for (int i = 1; i < 100; ++i)
             {
                 var userName = $"{userNameStart}{i.ToSwedishString("D2")}";
@@ -361,7 +361,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             var emailIsUniqueForUsers = !_dbContext.Users.Any(u => !u.IsApiUser &&
                      (u.NormalizedEmail == email.ToUpper() ||
                      (u.TemporaryChangedEmailEntry.EmailAddress.ToUpper() == email.ToUpper() && u.TemporaryChangedEmailEntry.UserId != userId)));
-            var emailIsUniqueForUnits = !_dbContext.CustomerUnits.Any(cu => cu.Email.ToSwedishUpper() == email.ToSwedishUpper() && cu.CustomerUnitId != customerUnitId);
+            var emailIsUniqueForUnits = !_dbContext.CustomerUnits.Any(cu => cu.Email.ToUpper() == email.ToUpper() && cu.CustomerUnitId != customerUnitId);
             return emailIsUniqueForUsers && emailIsUniqueForUnits;
 #pragma warning restore CA1304 // 
         }

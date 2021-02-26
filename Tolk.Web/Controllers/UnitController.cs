@@ -127,7 +127,7 @@ namespace Tolk.Web.Controllers
                 if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.View)).Succeeded)
                 {
                     var model = CustomerUnitModel.GetModelFromCustomerUnit(unit);
-                    model.UnitUsers = await GetUnitUsersListItems(await GetUnitUsersIds(id), id);
+                    model.UnitUsers = await GetUnitUsersListItems(id);
                     return View(model);
                 }
             }
@@ -157,7 +157,7 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> Users(int id, string errorMessage = null, string message = null)
         {
             var unit = await _dbContext.CustomerUnits.GetCustomerUnitById(id);
-            var users = await GetUnitUsersListItems(await GetUnitUsersIds(id), id);
+            var users = await GetUnitUsersListItems(id);
 
             if ((await _authorizationService.AuthorizeAsync(User, unit, Policies.Edit)).Succeeded)
             {
@@ -214,27 +214,22 @@ namespace Tolk.Web.Controllers
         private bool IsUniqueName(string name, int? customerUnitId = null)
         {
             return !_dbContext.CustomerUnits.Any(u => u.CustomerOrganisationId == User.GetCustomerOrganisationId()
-                && u.Name.ToSwedishUpper() == name.ToSwedishUpper() && u.CustomerUnitId != customerUnitId);
+                && name.ToLower() == u.Name.ToLower() && u.CustomerUnitId != customerUnitId);
         }
 
-        private async Task<IEnumerable<int>> GetUnitUsersIds(int customerUnitId)
+        private async Task<IEnumerable<DynamicUserListItemModel>> GetUnitUsersListItems(int customerUnitId)
         {
-            return await _dbContext.CustomerUnitUsers.GetUserIdsForCustomerUnitsWithCustomerUnitId(customerUnitId);
-        }
-
-        private async Task<IEnumerable<DynamicUserListItemModel>> GetUnitUsersListItems(IEnumerable<int> unitUsersIds, int customerUnitId)
-        {
-            var customerUnitUsers = await _dbContext.CustomerUnitUsers.GetCustomerUnitsWithCustomerUnitForAllUsers(unitUsersIds, customerUnitId).ToArrayAsync();
-            return _dbContext.Users.GetUsersByUserIds(unitUsersIds).Select(u => new DynamicUserListItemModel
-            {
-                Id = u.Id,
-                CombinedId = u.Id + "_" + customerUnitId,
-                FirstName = u.NameFirst,
-                LastName = u.NameFamily,
-                Email = u.Email,
-                IsActive = u.IsActive,
-                IsLocalAdmin = customerUnitUsers.Any(cu => cu.UserId == u.Id && cu.IsLocalAdmin) ? "Ja" : "Nej"
-            });
+            return await _dbContext.CustomerUnitUsers.GetUsersForCustomerUnit(customerUnitId)
+                .Select(u => new DynamicUserListItemModel
+                {
+                    Id = u.UserId,
+                    CombinedId = $"{u.UserId}_{customerUnitId}",
+                    FirstName = u.User.NameFirst,
+                    LastName = u.User.NameFamily,
+                    Email = u.User.Email,
+                    IsActive = u.User.IsActive,
+                    IsLocalAdmin = u.IsLocalAdmin ? "Ja" : "Nej"
+                }).ToListAsync();
         }
     }
 }

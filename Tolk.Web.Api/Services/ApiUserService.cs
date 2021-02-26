@@ -78,7 +78,7 @@ namespace Tolk.Web.Api.Services
         public async Task<AspNetUser> GetBrokerUser(string caller, int? brokerId)
         {
             return !string.IsNullOrWhiteSpace(caller) ?
-                await _dbContext.Users.SingleOrDefaultAsync(u => (u.NormalizedEmail == caller.ToSwedishUpper() || u.NormalizedUserName == caller.ToSwedishUpper()) &&
+                await _dbContext.Users.SingleOrDefaultAsync(u => (u.NormalizedEmail == caller.ToUpper() || u.NormalizedUserName == caller.ToUpper()) &&
                     u.BrokerId == brokerId && u.IsActive && !u.IsApiUser) :
                 null;
         }
@@ -86,7 +86,7 @@ namespace Tolk.Web.Api.Services
         public async Task<AspNetUser> GetCustomerUser(string caller, int? customerId)
         {
             return !string.IsNullOrWhiteSpace(caller) ?
-                await _dbContext.Users.SingleOrDefaultAsync(u => (u.NormalizedEmail == caller.ToSwedishUpper() || u.NormalizedUserName == caller.ToSwedishUpper()) &&
+                await _dbContext.Users.SingleOrDefaultAsync(u => (u.NormalizedEmail == caller.ToUpper() || u.NormalizedUserName == caller.ToUpper()) &&
                     u.CustomerOrganisationId == customerId && u.IsActive && !u.IsApiUser) :
                 null;
         }

@@ -337,7 +337,7 @@ namespace Tolk.Web.Controllers
             _logger.LogDebug("Requesting password reset for {email}", model.Email);
             if (ModelState.IsValid)
             {
-                var user = await _dbContext.Users.SingleOrDefaultAsync(u => !u.IsApiUser && u.IsActive && u.NormalizedEmail == model.Email.ToSwedishUpper());
+                var user = await _dbContext.Users.SingleOrDefaultAsync(u => !u.IsApiUser && u.IsActive && u.NormalizedEmail == model.Email.ToUpper());
                 if (user == null)
                 {
                     _logger.LogInformation("Tried to reset password for {email}, but found no such user.",
