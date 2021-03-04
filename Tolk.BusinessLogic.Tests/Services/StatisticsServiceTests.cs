@@ -41,13 +41,6 @@ namespace Tolk.BusinessLogic.Tests.Services
             _tolkDbContext.AddRange(mockRankings.Where(newObj => !_tolkDbContext.Rankings
                 .Select(existObj => existObj.RankingId).Contains(newObj.RankingId)));
 
-            _tolkDbContext.AddRange(MockEntities.MockCustomers.Where(newObj => !_tolkDbContext.CustomerOrganisations
-                .Select(existObj => existObj.CustomerOrganisationId).Contains(newObj.CustomerOrganisationId)));
-
-            _tolkDbContext.AddRange(MockEntities.MockCustomerUsers(MockEntities.MockCustomers).Where(newObj => !_tolkDbContext.Users.Select(existObj => existObj.UserName).Contains(newObj.UserName)));
-
-            _tolkDbContext.AddRange(mockOrders.Where(newObj => !_tolkDbContext.Orders.Select(existObj => existObj.OrderId).Contains(newObj.OrderId)));
-
             _tolkDbContext.AddRange(mockOrders.Where(newObj => !_tolkDbContext.Orders.Select(existObj => existObj.OrderId).Contains(newObj.OrderId)));
 
             _tolkDbContext.AddRange(regions.Where(newObj => !_tolkDbContext.Regions.Select(existObj => existObj.RegionId).Contains(newObj.RegionId)));
@@ -435,7 +428,6 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         public void GetOrderCustomerStatistics(int noOfTotalOrdersToCheck, int noOfTop1, int noOfTop2, int noOfTop3, int noOfTop4, int noOfTop5, int expectedNoOfListItems)
         {
-
             if (noOfTotalOrdersToCheck != (noOfTop1 + noOfTop2 + noOfTop3 + noOfTop4 + noOfTop5))
                 Assert.True(false, "Incorrect InlineData, noOfTotalOrdersToCheck cant differ from the amount of each no of top value");
             if ((noOfTop1 < noOfTop2) || (noOfTop2 < noOfTop3) || (noOfTop3 < noOfTop4) || (noOfTop4 < noOfTop5))
