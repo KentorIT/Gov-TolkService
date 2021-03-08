@@ -30,21 +30,24 @@ namespace Tolk.BusinessLogic.Tests.Services
 
             var mockLanguages = MockEntities.MockLanguages;
             var mockRankings = MockEntities.MockRankings;
-            var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
+            var mockCustomers = MockEntities.MockCustomers;
+            var mockCustomerUsers = MockEntities.MockCustomerUsers(mockCustomers);
             var mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers);
             var mockRequisitions = MockEntities.MockRequisitions(mockOrders);
             var mockComplaints = MockEntities.MockComplaints(mockOrders);
             var regions = Region.Regions;
-
-            _tolkDbContext.AddRange(mockLanguages.Where(newObj => !_tolkDbContext.Languages.Select(existObj => existObj.LanguageId).Contains(newObj.LanguageId)));
-
-            _tolkDbContext.AddRange(mockRankings.Where(newObj => !_tolkDbContext.Rankings
-                .Select(existObj => existObj.RankingId).Contains(newObj.RankingId)));
-
-            _tolkDbContext.AddRange(mockOrders.Where(newObj => !_tolkDbContext.Orders.Select(existObj => existObj.OrderId).Contains(newObj.OrderId)));
-
-            _tolkDbContext.AddRange(regions.Where(newObj => !_tolkDbContext.Regions.Select(existObj => existObj.RegionId).Contains(newObj.RegionId)));
-
+            //Initialize data if not already initialized
+            if (!_tolkDbContext.CustomerOrganisations.Any())
+            {
+                _tolkDbContext.AddRange(mockCustomers);
+                _tolkDbContext.AddRange(mockCustomerUsers);
+                _tolkDbContext.AddRange(mockLanguages);
+                _tolkDbContext.AddRange(mockRankings);
+                _tolkDbContext.AddRange(mockOrders);
+                _tolkDbContext.AddRange(mockRequisitions);
+                _tolkDbContext.AddRange(mockComplaints);
+                _tolkDbContext.AddRange(regions);
+            }
             _tolkDbContext.SaveChanges();
             _statService = new StatisticsService(_tolkDbContext, _clock);
         }
@@ -425,7 +428,6 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(9, 3, 2, 2, 1, 1, 5)]
         [InlineData(9, 2, 2, 2, 2, 1, 5)]
         [InlineData(9, 4, 3, 2, 0, 0, 3)]
-
         public void GetOrderCustomerStatistics(int noOfTotalOrdersToCheck, int noOfTop1, int noOfTop2, int noOfTop3, int noOfTop4, int noOfTop5, int expectedNoOfListItems)
         {
             if (noOfTotalOrdersToCheck != (noOfTop1 + noOfTop2 + noOfTop3 + noOfTop4 + noOfTop5))

@@ -8,9 +8,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 {
     public static class MockEntities
     {
-        public static CustomerOrganisation[] MockCustomers
-        {
-            get => new[]
+        public static CustomerOrganisation[] MockCustomers => new[]
             {
                 new CustomerOrganisation{CustomerOrganisationId = 1, Name = "Myndighet A" },
                 new CustomerOrganisation{CustomerOrganisationId = 2, Name = "Myndighet B" },
@@ -19,11 +17,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new CustomerOrganisation{CustomerOrganisationId = 5, Name = "Myndighet E" },
                 new CustomerOrganisation{CustomerOrganisationId = 6, Name = "Myndighet F" },
             };
-        }
 
-        public static AspNetUser[] MockCustomerUsers(CustomerOrganisation[] mockCustomers)
-        {
-            return new[]
+        public static AspNetUser[] MockCustomerUsers(CustomerOrganisation[] mockCustomers) => new[]
             {
                 new AspNetUser(1, "Arne@a.se", "Arne", "Arne", "Aronson", mockCustomers[0]),
                 new AspNetUser(2, "Berit@b.se", "Berit", "Berit", "Bryntesson", mockCustomers[1]),
@@ -32,11 +27,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new AspNetUser(5, "emanuel@d.se", "Emanuel", "Emanuel", "Eriksson", mockCustomers[3]),
                 new AspNetUser(6, "filippa@d.se", "Filippa", "Filippa", "Fröman", mockCustomers[3]),
             };
-        }
 
-        public static Language[] MockLanguages
-        {
-            get => new[]
+        public static Language[] MockLanguages => new[]
             {
                 new Language { LanguageId = 1, Name = "English" },
                 new Language { LanguageId = 2, Name = "German" },
@@ -47,20 +39,14 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Language { LanguageId = 7, Name = "Arabic" },
                 new Language { LanguageId = 8, Name = "Italian" },
             };
-        }
 
-        public static Ranking[] MockRankings
-        {
-            get => new[]
+        public static Ranking[] MockRankings => new[]
             {
                 new Ranking { RankingId = 1, BrokerId = 1, Rank = 1, Quarantines = new List<Quarantine>() },
                 new Ranking { RankingId = 2, BrokerId = 2, Rank = 2, Quarantines = new List<Quarantine>() },
             };
-        }
 
-        public static Ranking[] MockRankingsWithQuarantines
-        {
-            get => new[]
+        public static Ranking[] MockRankingsWithQuarantines => new[]
             {
                 new Ranking {
                     RegionId = 1,
@@ -144,16 +130,12 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     }.ToList()
                 },
             };
-        }
 
-        public static CustomerUnit[] MockUnits
-        {
-            get => new[]
+        public static CustomerUnit[] MockUnits => new[]
             {
                 new CustomerUnit { CustomerUnitId = 1, CustomerOrganisationId = 4 },
                 new CustomerUnit { CustomerUnitId = 2, CustomerOrganisationId = 4 },
             };
-        }
 
         public static Order[] MockOrders(Language[] mockLanguages, Ranking[] mockRankings, AspNetUser[] mockCustomerUsers)
         {
