@@ -20,7 +20,7 @@ namespace CustomerMock.Controllers
             _apiService = apiService;
             _logger = logger;
         }
-
+        #region actions from home page 
         public async Task<JsonResult> CreateSeveralOrders(int numberOfOrders)
         {
             return Json(new { Message = await _apiService.CreateSeveralOrders(numberOfOrders) });
@@ -40,7 +40,12 @@ namespace CustomerMock.Controllers
         {
             return Json(new { Message = await _apiService.DenyAnswer(orderNumber, brokerKey) });
         }
+        public async Task<JsonResult> ConfirmNoAnswer(string orderNumber)
+        {
+            return Json(new { Message = await _apiService.ConfirmNoAnswer(orderNumber) });
+        }
 
+        #endregion 
         #region incomming web hooks
 
         [HttpPost]

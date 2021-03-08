@@ -588,6 +588,12 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Create"), content))
                 {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Create] FAILED Unauthorized:: Tolk {payload.Email} kunde inte skapas");
+                        return true;
+                    }
+
                     CreateInterpreterResponse responseInterpreter = JsonConvert.DeserializeObject<CreateInterpreterResponse>(await response.Content.ReadAsStringAsync());
                     if (responseInterpreter.Success)
                     {
@@ -612,7 +618,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content))
                 {
-
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Update] FAILED Unauthorized:: Tolk {payload.Email} förnamnet kunde inte ändras");
+                        return true;
+                    }
                     UpdateInterpreterResponse responseInterpreter = JsonConvert.DeserializeObject<UpdateInterpreterResponse>(await response.Content.ReadAsStringAsync());
                     if (responseInterpreter.Success)
                     {
@@ -636,6 +646,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content))
                 {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Update] FAILED Unauthorized:: Tolk {payload.Email} förnamnet kunde inte {(payload.IsActive ? "aktiverades" : "inaktiverades")}");
+                        return null;
+                    }
                     UpdateInterpreterResponse responseInterpreter = JsonConvert.DeserializeObject<UpdateInterpreterResponse>(await response.Content.ReadAsStringAsync());
                     if (responseInterpreter.Success)
                     {
@@ -741,6 +756,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Answer"), content))
                 {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}");
+                        return false;
+                    }
                     var answer = JsonConvert.DeserializeObject<GroupAnswerResponse>(await response.Content.ReadAsStringAsync());
                     if (answer.Success)
                     {
@@ -796,6 +816,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Acknowledge"), content))
                 {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Acknowledge] FAILED Unauthorized:: Boknings-ID: {orderNumber} accat mottagande");
+                        return false;
+                    }
                     if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Acknowledge]:: Boknings-ID: {orderNumber} accat mottagande");
@@ -850,7 +875,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmDenial"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmDenial] FAILED :: Boknings-ID: {orderGroupNumber} accat nekande");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmDenial]:: Boknings-ID: {orderGroupNumber} accat nekande");
                     }
@@ -875,7 +904,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmCancellation"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmCancellation] FAILED Unauthorized:: Boknings-ID: {orderGroupNumber} konfirmerat gruppavbokning");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmCancellation]:: Boknings-ID: {orderGroupNumber} konfirmerat gruppavbokning");
                     }
@@ -900,7 +933,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmCancellation"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmCancellation] FAILED Unauthorized:: Boknings-ID: {orderNumber} konfirmerat avbokning");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmCancellation]:: Boknings-ID: {orderNumber} konfirmerat avbokning");
                     }
@@ -925,7 +962,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoAnswer"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoAnswer] FAILED Unauthorized:: Boknings-ID: {orderNumber} tagit del av obesvarad förfrågan");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoAnswer]:: Boknings-ID: {orderNumber} tagit del av obesvarad förfrågan");
                     }
@@ -949,7 +990,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmUpdate"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmUpdate] FAILED Unauthorized:: Boknings-ID: {orderNumber} tagit del av ändrad förfrågan");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmUpdate]:: Boknings-ID: {orderNumber} tagit del av ändrad förfrågan");
                     }
@@ -973,7 +1018,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmNoAnswer"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmNoAnswer] FAILED Unauthorized:: Boknings-ID: {orderGroupNumber} tagit del av obesvarad sammanhållen förfrågan");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmNoAnswer]:: Boknings-ID: {orderGroupNumber} tagit del av obesvarad sammanhållen förfrågan");
                     }
@@ -997,13 +1046,17 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoRequisition"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoRequisition] FAILED Unauthorized:: Boknings-ID: {orderNumber} arkiverad utan rekvisition");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoRequisition]:: Boknings-ID: {orderNumber} arkiverad utan rekvisition");
                     }
                     else
                     {
-                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoRequisition] FAILED:: Boknings-ID: {orderNumber} arkiverad utan rekvisitionn");
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoRequisition] FAILED:: Boknings-ID: {orderNumber} arkiverad utan rekvisition");
                     }
                 }
                 return true;
@@ -1021,7 +1074,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Acknowledge"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Acknowledge] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} accat mottagande");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Acknowledge]:: Sammanhållen Boknings-ID: {orderGroupNumber} accat mottagande");
                     }
@@ -1047,7 +1104,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Decline"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Decline] FAILED Unauthorized:: Boknings-ID: {orderNumber} Svarat nej på förfrågan");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Decline]:: Boknings-ID: {orderNumber} Svarat nej på förfrågan");
                     }
@@ -1073,7 +1134,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Decline"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Decline] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} Svarat nej på förfrågan");
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Decline]:: Sammanhållen Boknings-ID: {orderGroupNumber} Svarat nej på förfrågan");
                     }
@@ -1091,7 +1156,11 @@ namespace BrokerMock.Controllers
         {
             using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"OrderGroupNumber={orderGroupNumber}&callingUser=regular-user@formedling1.se")))
             {
-                if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
+                }
+                else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View]:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
                 }
@@ -1155,6 +1224,11 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ChangeInterpreter"), content))
                 {
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter] FAILED Unauthorized:: Boknings-ID: {orderNumber} skickade tolk: {interpreter.Email}");
+                        return true;
+                    }
                     var answer = JsonConvert.DeserializeObject<ChangeInterpreterResponse>(await response.Content.ReadAsStringAsync());
                     if (answer.Success)
                     {
@@ -1183,7 +1257,12 @@ namespace BrokerMock.Controllers
             {
                 using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Cancel"), content))
                 {
-                    if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    {
+                        await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Cancel] FAILED Unauthorized:: Boknings-ID: {orderNumber} avbokat från förmedling");
+                        return true;
+                    }
+                    else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
                         await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Cancel]:: Boknings-ID: {orderNumber} avbokat från förmedling");
                     }

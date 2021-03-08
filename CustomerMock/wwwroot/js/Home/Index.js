@@ -64,6 +64,19 @@ $(function () {
             }
         });
     });
+
+    $("body").on("click", ".confirm-no-answer", function () {
+        $.ajax({
+            url: "/Order/ConfirmNoAnswer?orderNumber=" + $(".order-description").val(),
+            type: 'GET',
+            success: function (data) {
+                var msg = data.message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                var li = document.createElement("li");
+                li.textContent = msg;
+                $(".api-response-list").append(li);
+            }
+        });
+    });
 });
 
 var connection = new signalR.HubConnectionBuilder()
