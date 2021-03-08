@@ -8,5 +8,6 @@ namespace Tolk.BusinessLogic.Utilities
         public Uri GoodInterpreterPractice { get; set; }
         public Uri AgreementInfo { get; set; }
         public Uri GovernmentalCentralPurchasing { get; set; }
+        public Uri RegistryOfInterpreters { get; set; }
     }
 }

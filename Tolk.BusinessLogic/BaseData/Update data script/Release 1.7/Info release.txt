@@ -1,0 +1,5 @@
+New appsetting RegistryOfInterpreters section ExternalLinks:
+
+ "ExternalLinks": {
+    "RegistryOfInterpreters": "https://www.kammarkollegiet.se/vara-tjanster/tolk/sok-tolk-i-vart-register" 
+	}
