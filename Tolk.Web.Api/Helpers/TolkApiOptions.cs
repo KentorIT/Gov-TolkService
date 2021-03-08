@@ -34,6 +34,7 @@ namespace Tolk.Web.Api.Helpers
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.OrderNotFound, ErrorMessage = "The provided order number could not be found, connected to your organisation." },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.OrderGroupNotFound, ErrorMessage = "The provided order group number could not be found, connected to your organisation." },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.OrderNotValid, ErrorMessage = "The provided order cannot be created." },
+                    new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.OrderNotInCorrectState, ErrorMessage = "The order was not in a correct state." },
                };
 
         public static List<ErrorResponse> CommonErrorResponses =>

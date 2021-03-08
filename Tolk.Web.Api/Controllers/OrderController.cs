@@ -169,6 +169,7 @@ namespace Tolk.Web.Api.Controllers
             }
             return ReturnError(ErrorCodes.OrderNotValid, method);
         }
+        
         [HttpPost]
         [ProducesResponseType(200, Type = typeof(ResponseBase))]
         [ProducesResponseType(403, Type = typeof(ErrorResponse))]
@@ -220,6 +221,58 @@ namespace Tolk.Web.Api.Controllers
             return ReturnError(ErrorCodes.OrderNotValid, method);
         }
 
+        [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [OpenApiTag("Order")]
+        [Description("Anropas för att acceptera att ingen svarat på avropet")]
+        [OpenApiIgnore]//Not applicable for broker api, hence hiding it from swagger
+        public async Task<IActionResult> ConfirmNoAnswer([FromBody] ConfirmNoAnswerModel model)
+        {
+            var method = $"{nameof(OrderController)}.{nameof(ConfirmNoAnswer)}";
+            _logger.LogDebug($"{method} was called");
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing, method);
+            }
+            if (!_tolkBaseOptions.EnableCustomerApi)
+            {
+                _logger.LogWarning($"{model.CallingUser} called {method}, but CustomerApi is not enabled!");
+                return BadRequest(new ValidationProblemDetails { Title = "CustomerApi is not enabled!" });
+            }
+            if (string.IsNullOrEmpty(model.CallingUser))
+            {
+                return ReturnError(ErrorCodes.CallingUserMissing, method);
+            }
+            _logger.LogInformation($"{model.CallingUser} is confirming that no-one accepted {model.OrderNumber}");
+            if (ModelState.IsValid)
+            {
+                AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());
+                Order order = await _dbContext.Orders.GetOrderByOrderNumber(model.OrderNumber);
+                if (order.CustomerOrganisationId != apiUser.CustomerOrganisationId)
+                {
+                    return ReturnError(ErrorCodes.OrderNotFound, method);
+                }
+                if (order.Status != OrderStatus.NoBrokerAcceptedOrder)
+                {
+                    return ReturnError(ErrorCodes.OrderNotInCorrectState, method);
+                }
+                var user = await _apiUserService.GetCustomerUser(model.CallingUser, apiUser.CustomerOrganisationId);
+                if (user == null)
+                {
+                    return ReturnError(ErrorCodes.CallingUserMissing, method);
+                }
+                Order fullOrder = await _dbContext.Orders.GetFullOrderById(order.OrderId);
+
+                await _orderService.ConfirmNoAnswer(fullOrder, user.Id, apiUser.Id);
+                await _dbContext.SaveChangesAsync();
+                _logger.LogInformation($"{order.OrderId} was denied");
+                return Ok(new ResponseBase());
+            }
+            return ReturnError(ErrorCodes.OrderNotValid, method);
+        }
+
         #endregion
 
         #region getting methods
@@ -232,7 +285,7 @@ namespace Tolk.Web.Api.Controllers
         private IActionResult ReturnError(string errorCode, string failingMethod, string specifiedErrorMessage = null)
         {
             _logger.LogInformation($"{errorCode} was returned from {failingMethod}");
-            var message = TolkApiOptions.BrokerApiErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
+            var message = TolkApiOptions.CustomerApiErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
             if (!string.IsNullOrEmpty(specifiedErrorMessage))
             {
                 message.ErrorMessage = specifiedErrorMessage;

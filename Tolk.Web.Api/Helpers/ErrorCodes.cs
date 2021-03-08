@@ -26,5 +26,6 @@ namespace Tolk.Web.Api.Helpers
         public const string RequestIsPartOfAGroup = nameof(RequestIsPartOfAGroup);
         public const string CallingUserMissing = nameof(CallingUserMissing);
         public const string OrderNotValid = nameof(OrderNotValid);
+        public const string OrderNotInCorrectState = nameof(OrderNotInCorrectState);
     }
 }

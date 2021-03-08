@@ -527,6 +527,9 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<Order> GetFullOrderById(this IQueryable<Order> orders, int id)
             => await orders.GetOrdersWithInclude().SingleAsync(o => o.OrderId == id);
 
+        public static async Task<Order> GetOrderByOrderNumber(this IQueryable<Order> orders, string orderNumber)
+            => await orders.SingleAsync(o => o.OrderNumber == orderNumber);
+
         public static async Task<Order> GetFullOrderByRequestId(this IQueryable<Order> orders, int id)
             => await orders.GetOrdersWithInclude().SingleAsync(o => o.Requests.Any(r => r.RequestId == id));
 

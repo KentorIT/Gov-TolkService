@@ -210,21 +210,21 @@ namespace Tolk.Web.Services
 
         public TellusLanguagesResponse GetLanguages()
         {
-            var tellusLanguages = _dbContext.Languages.Where(l => !string.IsNullOrEmpty(l.TellusName) &&
-                !_languageModels.Any(t => t.RemoveOnTest && t.Id == l.TellusName))
+            var tellusLanguages = _dbContext.Languages.Where(l => !string.IsNullOrEmpty(l.TellusName))
                 .Select(l => new TellusLanguageModel
                 {
                     Id = l.TellusName,
                     Value = l.Name.ToLower()
-                }).Concat(_languageModels.Where(l => l.AllwaysAdd || l.AddOnTest)
+                }).ToList().Where(l => _languageModels.Any(t => t.RemoveOnTest && t.Id == l.Id));
+            return new TellusLanguagesResponse
+            {
+                Result = tellusLanguages
+                    .Concat(_languageModels.Where(l => l.AllwaysAdd || l.AddOnTest)
                     .Select(l => new TellusLanguageModel
                     {
                         Id = l.Id,
                         Value = l.Value
-                    }));
-            return new TellusLanguagesResponse
-            {
-                Result = tellusLanguages,
+                    })),
                 Status = 200,
             };
         }
