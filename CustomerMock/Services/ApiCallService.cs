@@ -216,7 +216,6 @@ namespace CustomerMock.Services
             }
             if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
-                var info = JsonConvert.DeserializeObject<CreateOrderResponse>(await response.Content.ReadAsStringAsync());
                 return $"Svar har godkänts för order: {orderNumber}";
             }
             else
@@ -289,6 +288,70 @@ namespace CustomerMock.Services
             {
                 var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
                 return $"Det gick inte att arkivera order {orderNumber}. Felmeddelande: {errorResponse.ErrorMessage}";
+            }
+        }
+
+        public async Task<string> ConfirmCancellation(string orderNumber)
+        {
+            await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Arkivera att man sett att förmedlnig har avbokat order {orderNumber}");
+            var payload = new ConfirmCancellationModel
+            {
+                CallingUser = "patrik@polisen.se",
+                OrderNumber = orderNumber,
+            };
+
+            using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Order/ConfirmCancellation"), content);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return "Anropet saknar autentisering";
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                var message = JsonConvert.DeserializeObject<ValidationProblemDetails>(await response.Content.ReadAsStringAsync());
+                return $"Det gick inte att arkivera order {orderNumber}: {message.Title}";
+            }
+            if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+            {
+                var info = JsonConvert.DeserializeObject<CreateOrderResponse>(await response.Content.ReadAsStringAsync());
+                return $"Order: {info.OrderNumber} har arkiverats";
+            }
+            else
+            {
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                return $"Det gick inte att arkivera order {orderNumber}. Felmeddelande: {errorResponse.ErrorMessage}";
+            }
+        }
+        public async Task<string> CancelOrder(string orderNumber, string message)
+        {
+            await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Avboka order: {orderNumber}");
+            var payload = new OrderCancelModel
+            {
+                CallingUser = "patrik@polisen.se",
+                OrderNumber = orderNumber,
+                Message = message
+            };
+
+            using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Order/Cancel"), content);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return "Anropet saknar autentisering";
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                var errorMessage = JsonConvert.DeserializeObject<ValidationProblemDetails>(await response.Content.ReadAsStringAsync());
+                return $"Det gick inte att avboka order {orderNumber}: {errorMessage.Title}";
+            }
+            if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+            {
+                var info = JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync());
+                return $"Order: {orderNumber} har avbokats";
+            }
+            else
+            {
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                return $"Det gick inte att avboka order {orderNumber}. Felmeddelande: {errorResponse.ErrorMessage}";
             }
         }
 

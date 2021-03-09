@@ -44,6 +44,14 @@ namespace CustomerMock.Controllers
         {
             return Json(new { Message = await _apiService.ConfirmNoAnswer(orderNumber) });
         }
+        public async Task<JsonResult> ConfirmCancellation(string orderNumber)
+        {
+            return Json(new { Message = await _apiService.ConfirmCancellation(orderNumber) });
+        }
+        public async Task<JsonResult> Cancel(string orderNumber, string message)
+        {
+            return Json(new { Message = await _apiService.CancelOrder(orderNumber, message) });
+        }
 
         #endregion 
         #region incomming web hooks

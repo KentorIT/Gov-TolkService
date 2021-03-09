@@ -11,7 +11,7 @@ $(function () {
         $("." + $(this).data("list")).empty();
     });
 
-   $("body").on("click", ".create-order", function () {
+    $("body").on("click", ".create-order", function () {
         $.ajax({
             url: "/Order/Create?description=" + $(".order-description").val(),
             type: 'GET',
@@ -68,6 +68,33 @@ $(function () {
     $("body").on("click", ".confirm-no-answer", function () {
         $.ajax({
             url: "/Order/ConfirmNoAnswer?orderNumber=" + $(".order-description").val(),
+            type: 'GET',
+            success: function (data) {
+                var msg = data.message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                var li = document.createElement("li");
+                li.textContent = msg;
+                $(".api-response-list").append(li);
+            }
+        });
+    });
+
+    $("body").on("click", ".confirm-cancellation", function () {
+        $.ajax({
+            url: "/Order/ConfirmCancellation?orderNumber=" + $(".order-description").val(),
+            type: 'GET',
+            success: function (data) {
+                var msg = data.message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                var li = document.createElement("li");
+                li.textContent = msg;
+                $(".api-response-list").append(li);
+            }
+        });
+    });
+
+    $("body").on("click", ".cancel-order", function () {
+        var $info = $(".order-description").val().split(";");
+        $.ajax({
+            url: "/Order/Cancel?orderNumber=" + $info[0] + "&Message=" + $info[1],
             type: 'GET',
             success: function (data) {
                 var msg = data.message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
