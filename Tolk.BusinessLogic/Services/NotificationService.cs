@@ -1337,8 +1337,8 @@ Sammanställning:
 
         private async Task<string> GetRequisitionPriceInformationForMail(Requisition requisition)
         {
-            //requisition.PriceRows = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisition.RequisitionId).ToListAsync();
-            DisplayPriceInformation priceInfo = PriceCalculationService.GetPriceInformationToDisplay(await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisition.RequisitionId).OfType<PriceRowBase>().ToListAsync());
+            var prices = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisition.RequisitionId).ToListAsync();
+            DisplayPriceInformation priceInfo = PriceCalculationService.GetPriceInformationToDisplay(prices.OfType<PriceRowBase>());
             string invoiceInfo = string.Empty;
             invoiceInfo += $"Följande tolktaxa har använts för beräkning: {priceInfo.PriceListTypeDescription} {priceInfo.CompetencePriceDescription}\n\n";
             foreach (DisplayPriceRow dpr in priceInfo.DisplayPriceRows)
