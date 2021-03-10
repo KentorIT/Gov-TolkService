@@ -117,7 +117,7 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("order_declined", false)]
         OrderDeclined = 28,
 
-        [Description("Beställning avbokad avförmedling")]
+        [Description("Beställning avbokad av förmedling")]
         [CustomName("order_cancelled_by_broker", false)]
         OrderCancelledByBroker = 29,
     }
