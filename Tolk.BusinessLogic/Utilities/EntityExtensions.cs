@@ -1142,12 +1142,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
                 .SingleAsync(r => r.RequestGroupId == id);
 
-
         public static async Task<Request> GetRequestWithInterpreterById(this IQueryable<Request> requests, int id)
             => await requests.Include(r => r.Interpreter).SingleAsync(r => r.RequestId == id);
-
     }
-
 }
-
-

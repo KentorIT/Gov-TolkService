@@ -14,6 +14,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize(Policy = Policies.Interpreter)]
     public class AssignmentController : Controller
     {
         private readonly TolkDbContext _dbContext;
