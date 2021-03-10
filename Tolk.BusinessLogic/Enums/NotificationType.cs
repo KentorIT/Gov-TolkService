@@ -113,8 +113,12 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("order_answered", false)]
         OrderAnswered = 27,
 
-        [Description("Beställning besvarad, inväntar godkännande av beställare")]
+        [Description("Beställning avböjd av förmedling")]
         [CustomName("order_declined", false)]
         OrderDeclined = 28,
+
+        [Description("Beställning avbokad avförmedling")]
+        [CustomName("order_cancelled_by_broker", false)]
+        OrderCancelledByBroker = 29,
     }
 }

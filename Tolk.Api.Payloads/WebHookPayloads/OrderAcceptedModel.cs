@@ -20,4 +20,10 @@
         public string Message { get; set; }
         public string BrokerKey { get; set; }
     }
+    public class OrderCancelledModel : WebHookPayloadBaseModel
+    {
+        public string OrderNumber { get; set; }
+        public string Message { get; set; }
+        public string BrokerKey { get; set; }
+    }
 }

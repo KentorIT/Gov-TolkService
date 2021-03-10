@@ -1031,6 +1031,19 @@ Sammanställning:
             CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har avbokat tolkuppdraget med boknings-ID {orderNumber}",
                 body + GoToOrderPlain(request.Order.OrderId),
                 HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId));
+            var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderCancelledByBroker, NotificationChannel.Webhook, NotificationConsumerType.Customer);
+            if (webhook != null)
+            {
+                CreateWebHookCall(new OrderCancelledModel
+                {
+                    OrderNumber = orderNumber,
+                    Message = request.DenyMessage,
+                    BrokerKey = request.Ranking.Broker.OrganizationPrefix
+                },
+                webhook.ContactInformation,
+                webhook.NotificationType,
+                webhook.RecipientUserId);
+            }
         }
 
         public void RequestReplamentOrderAccepted(Request request)

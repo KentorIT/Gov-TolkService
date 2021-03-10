@@ -85,6 +85,16 @@ namespace CustomerMock.Controllers
             return new JsonResult("Success");
         }
 
+        [HttpPost]
+        public async Task<JsonResult> OrderCancelled([FromBody] OrderCancelledModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Order: {payload.OrderNumber} förmedling {await _apiService.GetBrokerName(payload.BrokerKey)} avbokade, med detta meddelande: {payload.Message} ");
+            }
+            return new JsonResult("Success");
+        }
+
         #endregion
 
     }
