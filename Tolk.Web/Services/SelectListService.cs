@@ -499,7 +499,8 @@ namespace Tolk.Web.Services
                     {
                         Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName} (Handläggare)" : $"{u.UserName} (Handläggare)",
                         Value = u.Id.ToSwedishString(),
-                    }).Union(_dbContext.Users.Where(u => u.Interpreter.Brokers.Any(b => b.BrokerId == brokerId))
+                    }).ToList()
+                    .Union(_dbContext.Users.Where(u => u.Interpreter.Brokers.Any(b => b.BrokerId == brokerId))
                         .Select(u => new SelectListItem
                         {
                             Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName}" : $"{u.UserName} (Tolk)",
