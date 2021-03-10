@@ -47,7 +47,7 @@ namespace Tolk.Web.Helpers
                 }
                 else
                 {
-                    list = getModel(filteredData).OrderBy(sort).Skip(request.Start).Take(request.Length);
+                    list = getModel(filteredData).ToList().AsQueryable().OrderBy(sort).Skip(request.Start).Take(request.Length);
                 }
             }
             var response = DataTablesResponse.Create(request, totalCount, filteredData.Count(), list);
