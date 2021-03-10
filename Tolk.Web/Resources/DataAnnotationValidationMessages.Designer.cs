@@ -61,6 +61,15 @@ namespace Tolk.Web.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} måste anges..
+        /// </summary>
+        public static string ClientRequiredAttribute_ValidationError {
+            get {
+                return ResourceManager.GetString("ClientRequiredAttribute_ValidationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} är inte samma som {1}..
         /// </summary>
         public static string CompareAttribute_ValidationError {
