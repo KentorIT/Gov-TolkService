@@ -24,6 +24,7 @@ namespace BrokerMock.Services
         private readonly IMemoryCache _cache;
         private readonly static HttpClient client = new HttpClient(GetCertHandler());
         private readonly static HttpClient unauthorizedClient = new HttpClient();
+        private readonly object clientLock = new object();
 
         public ApiCallService(IHubContext<WebHooksHub> hubContext, IOptions<BrokerMockOptions> options, IMemoryCache cache)
         {
@@ -31,7 +32,7 @@ namespace BrokerMock.Services
             _options = options?.Value;
             _cache = cache;
             client.DefaultRequestHeaders.Accept.Clear();
-            lock (this)
+            lock (clientLock)
             {
                 if (_options.UseApiKey)
                 {
