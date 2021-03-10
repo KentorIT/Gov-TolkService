@@ -8,7 +8,7 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(IsIdColumn = true, Index = 0, Name = nameof(Id), Visible = false)]
         public int Id { get; set; }
 
-        [ColumnDefinitions(Index = 1, Name = nameof(Name), Title = "Namn")]
+        [ColumnDefinitions(Index = 1, Name = nameof(Name), ColumnName = "LastName", SortOnWebServer = false, Title = "Namn")]
         public string Name { get; set; }
 
         [ColumnDefinitions(Index = 2, Name = nameof(Email), Title = "E-postadress")]
