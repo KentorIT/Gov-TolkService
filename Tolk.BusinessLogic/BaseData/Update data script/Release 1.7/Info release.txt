@@ -1,5 +1,6 @@
-New appsetting RegistryOfInterpreters section ExternalLinks:
+New appsetting RegistryOfInterpreters, GitHubSourceCode section ExternalLinks:
 
  "ExternalLinks": {
     "RegistryOfInterpreters": "https://www.kammarkollegiet.se/vara-tjanster/tolk/sok-tolk-i-vart-register" 
+	"GitHubSourceCode": "https://github.com/KentorIT/Gov-TolkService"
 	}

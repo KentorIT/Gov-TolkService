@@ -1,11 +1,16 @@
-﻿@{
+﻿@using Tolk.Web.Helpers;
+@using Microsoft.Extensions.Options;
+@inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
+
+@{
     ViewData["Title"] = "Om applikationen";
 }
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
     <div class="row">
-        <div class="col-sm-12">
-            Applikationen är utvecklad på uppdrag av Kammarkollegiet under AGPLv3-licens.
+        <div class="col-sm-8">
+            <p>Applikationen är utvecklad på uppdrag av Kammarkollegiet under AGPLv3-licens.</p>
+            <p>Kammarkollegiets avropstjänst för tolkar version <i>@GitHelper.Version</i> tillhandahålls med öppen källkodslicensen AGPLv3. Källkod och licensinformation finns på <a href="@Options.Value.ExternalLinks.GitHubSourceCode" target="_blank">GitHub</a>.</p>
         </div>
     </div>
 </section>
