@@ -121,15 +121,16 @@ namespace CustomerMock.Services
 
         }
 
-        public async Task<string> CreateSeveralOrders(int numberOfOrders, int delay = 1000)
+        public async Task<string> CreateSeveralOrders(int numberOfOrders, int delay)
         {
+            var now = DateTime.Now;
+            string message = $"Börjar beställa {numberOfOrders}st ordrar {now.ToString("yyyy-MM-dd hh:mm:ss")}, med {delay} ms fördröjning. Förväntat slut utan fördröjning: {now.AddMilliseconds(numberOfOrders * delay).ToString("yyyy-MM-dd hh:mm:ss")} ";
             for (int i = 0; i < numberOfOrders; ++i)
             {
                 await CreateOrder((i % 2 == 0) ? "ADDTRAVELCOSTS" : string.Empty);
-                Thread.Sleep(1000);
+                Thread.Sleep(delay);
             }
-            return $"Nu har {numberOfOrders} ordrar skickats";
-
+            return message + $" Faktisk sluttid: {DateTime.Now.AddMilliseconds(numberOfOrders * delay).ToString("yyyy-MM-dd hh:mm:ss")}";
         }
 
         public async Task<string> CreateOrder(string description)

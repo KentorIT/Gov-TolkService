@@ -25,8 +25,9 @@ $(function () {
     });
 
     $("body").on("click", ".create-several-orders", function () {
+        var $info = $(".number-of-orders").val().split(";");
         $.ajax({
-            url: "/Order/CreateSeveralOrders?numberOfOrders=" + $(".number-of-orders").val(),
+            url: "/Order/CreateSeveralOrders?numberOfOrders=" + $info[0] + "&delay=" + $info[1],
             type: 'GET',
             success: function (data) {
                 var msg = data.message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

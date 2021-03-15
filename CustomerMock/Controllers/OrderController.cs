@@ -21,9 +21,9 @@ namespace CustomerMock.Controllers
             _logger = logger;
         }
         #region actions from home page 
-        public async Task<JsonResult> CreateSeveralOrders(int numberOfOrders)
+        public async Task<JsonResult> CreateSeveralOrders(int numberOfOrders, int delay = 1000)
         {
-            return Json(new { Message = await _apiService.CreateSeveralOrders(numberOfOrders) });
+            return Json(new { Message = await _apiService.CreateSeveralOrders(numberOfOrders, delay) });
         }
 
         public async Task<JsonResult> Create(string description)

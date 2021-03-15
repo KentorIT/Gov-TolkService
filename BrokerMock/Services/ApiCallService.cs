@@ -277,6 +277,8 @@ namespace BrokerMock.Services
             return JsonConvert.DeserializeObject<RequestDetailsResponse>(await response.Content.ReadAsStringAsync());
         }
 
+        public HttpClient ApiClient => client;
+
         private static HttpClientHandler GetCertHandler()
         {
             var handler = new HttpClientHandler

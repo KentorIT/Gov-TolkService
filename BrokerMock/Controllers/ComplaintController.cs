@@ -27,7 +27,6 @@ namespace BrokerMock.Controllers
         private readonly BrokerMockOptions _options;
         private readonly ApiCallService _apiService;
         private readonly IMemoryCache _cache;
-        private readonly static HttpClient client = new HttpClient(GetCertHandler());
 
         public ComplaintController(IHubContext<WebHooksHub> hubContext, IOptions<BrokerMockOptions> options, ApiCallService apiService, IMemoryCache cache)
         {
@@ -35,12 +34,6 @@ namespace BrokerMock.Controllers
             _options = options.Value;
             _apiService = apiService;
             _cache = cache;
-            client.DefaultRequestHeaders.Accept.Clear();
-            if (_options.UseApiKey && !client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-UserName"))
-            {
-                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-UserName", _options.ApiUserName);
-                client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-ApiKey", _options.ApiKey);
-            }
         }
 
         #region incomming
@@ -113,7 +106,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/Accept"), content);
+                var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/Accept"), content);
                 if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Boknings-ID: {orderNumber} accepterat reklamation");
@@ -137,7 +130,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/Dispute"), content);
+                var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/Dispute"), content);
                 if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                 {
                     await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/Dispute]:: Boknings-ID: {orderNumber} Bestrider reklamation!");
@@ -153,7 +146,7 @@ namespace BrokerMock.Controllers
 
         private async Task<ComplaintDetailsResponse> GetComplaint(string orderNumber)
         {
-            var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/View", $"orderNumber={orderNumber}"));
+            var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/View", $"orderNumber={orderNumber}"));
             if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/View]:: Reklamation för Boknings-ID: {orderNumber} lyckad hämtning!");
@@ -169,17 +162,6 @@ namespace BrokerMock.Controllers
         #endregion
 
         #region COMMON STUFF
-
-        private static HttpClientHandler GetCertHandler()
-        {
-            var handler = new HttpClientHandler
-            {
-                ClientCertificateOptions = ClientCertificateOption.Manual,
-                SslProtocols = SslProtocols.Tls12
-            };
-            handler.ClientCertificates.Add(new X509Certificate2("cert.crt"));
-            return handler;
-        }
 
         private static IEnumerable<string> GetExtraInstructions(string description)
         {

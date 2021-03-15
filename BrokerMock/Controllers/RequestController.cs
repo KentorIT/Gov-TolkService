@@ -29,7 +29,6 @@ namespace BrokerMock.Controllers
         private readonly BrokerMockOptions _options;
         private readonly ApiCallService _apiService;
         private readonly IMemoryCache _cache;
-        private readonly static HttpClient client = new HttpClient(GetCertHandler());
 
         private readonly object clientLock = new object();
 
@@ -39,20 +38,6 @@ namespace BrokerMock.Controllers
             _options = options.Value;
             _apiService = apiService;
             _cache = cache;
-            if (_options.UseApiKey)
-            {
-                lock (clientLock)
-                {
-                    if (!client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-UserName"))
-                    {
-                        client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-UserName", _options.ApiUserName);
-                    }
-                    if (!client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-ApiKey"))
-                    {
-                        client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-ApiKey", _options.ApiKey);
-                    }
-                }
-            }
         }
 
         #region incomming
@@ -586,7 +571,7 @@ namespace BrokerMock.Controllers
         {
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Create"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Create"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -616,7 +601,7 @@ namespace BrokerMock.Controllers
             payload.FirstName = $"Ö{payload.FirstName}";
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -644,7 +629,7 @@ namespace BrokerMock.Controllers
             payload.IsActive = !payload.IsActive;
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -705,7 +690,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Answer"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Answer"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -754,7 +739,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Answer"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Answer"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -788,7 +773,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/AcceptReplacement"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/AcceptReplacement"), content))
                 {
                     if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
                     {
@@ -814,7 +799,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Acknowledge"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Acknowledge"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -844,7 +829,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmDenial"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmDenial"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -873,7 +858,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmDenial"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmDenial"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -902,7 +887,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmCancellation"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmCancellation"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -931,7 +916,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmCancellation"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmCancellation"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -960,7 +945,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoAnswer"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoAnswer"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -988,7 +973,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmUpdate"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmUpdate"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -1016,7 +1001,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmNoAnswer"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmNoAnswer"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -1044,7 +1029,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoRequisition"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoRequisition"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -1072,7 +1057,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Acknowledge"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Acknowledge"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -1102,7 +1087,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Decline"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Decline"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -1132,7 +1117,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Decline"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Decline"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -1154,7 +1139,7 @@ namespace BrokerMock.Controllers
 
         private async Task<bool> ViewGroup(string orderGroupNumber)
         {
-            using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"OrderGroupNumber={orderGroupNumber}&callingUser=regular-user@formedling1.se")))
+            using (var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"OrderGroupNumber={orderGroupNumber}&callingUser=regular-user@formedling1.se")))
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
@@ -1174,7 +1159,7 @@ namespace BrokerMock.Controllers
 
         private async Task<bool> GetFile(string orderNumber, int attachmentId)
         {
-            using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/File", $"OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
+            using (var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/File", $"OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
             {
                 var file = JsonConvert.DeserializeObject<FileResponse>(await response.Content.ReadAsStringAsync());
                 if (file.Success)
@@ -1192,7 +1177,7 @@ namespace BrokerMock.Controllers
 
         private async Task<bool> GetGroupFile(string orderGroupNumber, int attachmentId)
         {
-            using (var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/File", $"OrderGroupNumber={orderGroupNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
+            using (var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/File", $"OrderGroupNumber={orderGroupNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
             {
                 var file = JsonConvert.DeserializeObject<FileResponse>(await response.Content.ReadAsStringAsync());
                 if (file.Success)
@@ -1222,7 +1207,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ChangeInterpreter"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ChangeInterpreter"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
@@ -1255,7 +1240,7 @@ namespace BrokerMock.Controllers
             };
             using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
             {
-                using (var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Cancel"), content))
+                using (var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Cancel"), content))
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
