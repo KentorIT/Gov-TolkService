@@ -1,7 +1,9 @@
-﻿using System;
+﻿using NJsonSchema.Annotations;
+using System;
 
 namespace Tolk.Api.Payloads.ApiPayloads
 {
+    [JsonSchemaFlatten]
     public class RequestGroupAnswerModel : ApiPayloadBaseModel
     {
         public string OrderGroupNumber { get; set; }

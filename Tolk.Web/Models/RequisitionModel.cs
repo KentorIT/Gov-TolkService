@@ -121,7 +121,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Sluttid för måltidspaus")]
         public DateTimeOffset MealBreakEndAt { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<MealBreak> MealBreaks { get; set; }
 
         [DataType(DataType.MultilineText)]

@@ -1,7 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using NJsonSchema.Annotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Tolk.Api.Payloads.ApiPayloads
 {
+    [JsonSchemaFlatten]
     public class RequestAcknowledgeModel : ApiPayloadBaseModel
     {
         [Required]

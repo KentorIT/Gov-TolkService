@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NJsonSchema.Annotations;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -6,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Tolk.Api.Payloads.ApiPayloads
 {
     [Description("Schema för att besvara ett avrop")]
+    [JsonSchemaFlatten]
     public class RequestAnswerModel : ApiPayloadBaseModel
     {
         [Description("Id på det avrop som skall besvaras")]
