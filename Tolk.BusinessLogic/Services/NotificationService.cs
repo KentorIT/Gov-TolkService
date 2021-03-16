@@ -447,7 +447,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnswerAutomaticallyApproved), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
-                OrderReferenceNumberInfo(request) +
+                OrderReferenceNumberInfo(request.Order) +
                 $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                 $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
                 InterpreterCompetenceInfo(request.CompetenceLevel) +
@@ -469,6 +469,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             Order order = requestGroup.OrderGroup.FirstOrder;
 
             var body = $"Svar på  sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
+                OrderReferenceNumberInfo(order) +
                 $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                 $"\tTillfällen: \n" +
                 $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
@@ -902,7 +903,7 @@ Sammanställning:
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAccepted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}\n\n" +
-                    OrderReferenceNumberInfo(request) +
+                    OrderReferenceNumberInfo(request.Order) +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                     $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
                     InterpreterCompetenceInfo(request.CompetenceLevel) +
@@ -925,9 +926,9 @@ Sammanställning:
             }
         }
 
-        private string OrderReferenceNumberInfo(Request request)
+        private string OrderReferenceNumberInfo(Order order)
         {
-            return string.IsNullOrWhiteSpace(request.Order.CustomerReferenceNumber) ? string.Empty : $"Myndighetens ärendenummer: {request.Order.CustomerReferenceNumber}\n";
+            return string.IsNullOrWhiteSpace(order.CustomerReferenceNumber) ? string.Empty : $"Myndighetens ärendenummer: {order.CustomerReferenceNumber}\n";
         }
 
         private string InterpreterCompetenceInfo(int? competenceInfo)
@@ -941,6 +942,7 @@ Sammanställning:
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
             Order order = requestGroup.OrderGroup.FirstOrder;
             var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer)}\n\n" +
+                OrderReferenceNumberInfo(order) +
                 $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                 $"\tTillfällen: \n" +
                 $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
@@ -1090,7 +1092,7 @@ Sammanställning:
             string orderNumber = request.Order.OrderNumber;
 
             var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
-                OrderReferenceNumberInfo(request) +
+                OrderReferenceNumberInfo(request.Order) +
                 $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                 $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
                 $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" + GetRequireApprovementText(request.LatestAnswerTimeForCustomer)
@@ -1132,7 +1134,7 @@ Sammanställning:
             {
                 case InterpereterChangeAcceptOrigin.NoNeedForUserAccept:
                     var bodyNoAccept = $"Nytt svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
-                        OrderReferenceNumberInfo(request) +
+                        OrderReferenceNumberInfo(request.Order) +
                         $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                         $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
                         $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" +
