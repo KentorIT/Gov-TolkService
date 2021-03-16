@@ -364,7 +364,7 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.CallingUserMissing, method);
                 }
                 Order fullOrder = await _dbContext.Orders.GetFullOrderById(order.OrderId);
-#warning Not handling central order handlers correctly
+//NOTE Not handling central order handlers correctly (this is not a public api, just used in internal testing)
                 if (!fullOrder.IsAuthorizedAsCreator(GetUnitsForUser(user.Id), apiUser.CustomerOrganisationId, user.Id, false))
                 {
                     return ReturnError(ErrorCodes.Unauthorized, method, "The user does not have the right to cancel this order");
