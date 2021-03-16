@@ -183,69 +183,67 @@ namespace Tolk.Web.TagHelpers
                 output.TagMode = TagMode.StartTagAndEndTag;
                 string className = "form-group";
 
-                using (var writer = new StringWriter())
+                using var writer = new StringWriter();
+                switch (InputType)
                 {
-                    switch (InputType)
-                    {
-                        case InputTypeSelect:
-                            WriteLabel(writer);
-                            WriteSelect(writer);
-                            WriteValidation(writer);
-                            break;
-                        case InputTypeRadioButtonGroup:
-                            WriteRadioGroup(writer);
-                            WriteValidation(writer);
-                            break;
-                        case InputTypeCheckboxGroup:
-                            WriteCheckboxGroup(writer);
-                            WriteValidation(writer);
-                            break;
-                        case InputTypeDateTimeOffset:
-                            WriteDateTimeOffsetBlock(writer);
-                            break;
-                        case InputTypePassword:
-                            WriteLabel(writer);
-                            WritePassword(writer);
-                            WriteValidation(writer);
-                            break;
-                        case InputTypeCheckbox:
-                            className = "checkbox";
-                            WriteCheckBoxInLabel(writer);
-                            WriteValidation(writer);
-                            break;
-                        case InputTypeTextArea:
-                            WriteLabel(writer);
-                            WriteTextArea(writer);
-                            WriteValidation(writer);
-                            break;
-                        case InputTypeTime:
-                            WriteLabel(writer);
-                            WriteTimeBox(writer);
-                            WriteValidation(writer);
-                            break;
-                        case InputTypeDateRange:
-                            WriteDateRangeBlock(writer);
-                            break;
-                        case InputTypeTimeRange:
-                            WriteTimeRangeBlock(writer);
-                            break;
-                        case InputTypeSplitTimeRange:
-                            className = "split-time-area";
-                            WriteSplitTimeRangeBlock(writer);
-                            break;
-                        case InputTypeHiddenTimeRangeHidden:
-                            WriteTimeRangeBlock(writer, true);
-                            break;
-                        default:
-                            WriteLabel(writer);
-                            WriteInput(writer);
-                            WriteValidation(writer);
-                            break;
-                    }
-
-                    output.AddClass(className, _htmlEncoder);
-                    output.Content.AppendHtml(writer.ToString());
+                    case InputTypeSelect:
+                        WriteLabel(writer);
+                        WriteSelect(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeRadioButtonGroup:
+                        WriteRadioGroup(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeCheckboxGroup:
+                        WriteCheckboxGroup(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeDateTimeOffset:
+                        WriteDateTimeOffsetBlock(writer);
+                        break;
+                    case InputTypePassword:
+                        WriteLabel(writer);
+                        WritePassword(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeCheckbox:
+                        className = "checkbox";
+                        WriteCheckBoxInLabel(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeTextArea:
+                        WriteLabel(writer);
+                        WriteTextArea(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeTime:
+                        WriteLabel(writer);
+                        WriteTimeBox(writer);
+                        WriteValidation(writer);
+                        break;
+                    case InputTypeDateRange:
+                        WriteDateRangeBlock(writer);
+                        break;
+                    case InputTypeTimeRange:
+                        WriteTimeRangeBlock(writer);
+                        break;
+                    case InputTypeSplitTimeRange:
+                        className = "split-time-area";
+                        WriteSplitTimeRangeBlock(writer);
+                        break;
+                    case InputTypeHiddenTimeRangeHidden:
+                        WriteTimeRangeBlock(writer, true);
+                        break;
+                    default:
+                        WriteLabel(writer);
+                        WriteInput(writer);
+                        WriteValidation(writer);
+                        break;
                 }
+
+                output.AddClass(className, _htmlEncoder);
+                output.Content.AppendHtml(writer.ToString());
             }
         }
 
@@ -945,7 +943,7 @@ namespace Tolk.Web.TagHelpers
             {
                 var item = itArr[i];
                 var itemName = $"{id}_{i}";
-                bool valueShouldBeChecked = string.IsNullOrWhiteSpace(checkedValue) ? false : item.Value == checkedValue;
+                bool valueShouldBeChecked = !string.IsNullOrWhiteSpace(checkedValue) && item.Value == checkedValue;
                 var checkedAttr = valueShouldBeChecked ? "checked=\"checked\"" : "";
                 // Done manually because GenerateRadioButton automatically sets id=For.Name, which it shouldn't
                 var inputElem = $"<input id=\"{itemName}\" name=\"{For.Name}\" type=\"radio\" value=\"{item.Value}\" {checkedAttr}/>";
@@ -1007,7 +1005,7 @@ namespace Tolk.Web.TagHelpers
                 var item = itemsArr[i];
                 var itemName = $"{id}_{i}";
 
-                bool isChecked = selectedItems != null ? selectedItems.Select(s => s.Value).Contains(item.Value) : false;
+                bool isChecked = selectedItems != null && selectedItems.Select(s => s.Value).Contains(item.Value);
                 var checkedAttr = isChecked ? "checked=\"checked\"" : "";
 
                 // Done manually because GenerateCheckbox automatically sets id=For.Name, which it shouldn't

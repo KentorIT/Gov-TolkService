@@ -434,7 +434,7 @@ namespace Tolk.Web.Api.Controllers
                     model.ExpectedTravelCostInfo,
                     model.LatestAnswerTimeForCustomer
                 );
-                _dbContext.SaveChanges();
+                await _dbContext.SaveChangesAsync();
 
                 return Ok(new ResponseBase());
             }

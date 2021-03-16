@@ -1050,57 +1050,49 @@ namespace BrokerMock.Controllers
 
         private async Task<bool> ViewGroup(string orderGroupNumber)
         {
-            using (var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"OrderGroupNumber={orderGroupNumber}&callingUser=regular-user@formedling1.se")))
+            using var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"OrderGroupNumber={orderGroupNumber}&callingUser=regular-user@formedling1.se"));
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
-                }
-                else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View]:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
-                }
-                else
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
-                }
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
+            }
+            else if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View]:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
+            }
+            else
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
             }
             return true;
         }
 
         private async Task<bool> GetFile(string orderNumber, int attachmentId)
         {
-            using (var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/File", $"OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
+            using var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/File", $"OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se"));
+            var file = JsonConvert.DeserializeObject<FileResponse>(await response.Content.ReadAsStringAsync());
+            if (file.Success)
             {
-                var file = JsonConvert.DeserializeObject<FileResponse>(await response.Content.ReadAsStringAsync());
-                if (file.Success)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File]:: Boknings-ID: {orderNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
-                }
-                else
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File] FAILED:: Boknings-ID: {orderNumber} accat mottagande");
-                }
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File]:: Boknings-ID: {orderNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
             }
-
+            else
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/File] FAILED:: Boknings-ID: {orderNumber} accat mottagande");
+            }
             return true;
         }
 
         private async Task<bool> GetGroupFile(string orderGroupNumber, int attachmentId)
         {
-            using (var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/File", $"OrderGroupNumber={orderGroupNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se")))
+            using var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/File", $"OrderGroupNumber={orderGroupNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se"));
+            var file = JsonConvert.DeserializeObject<FileResponse>(await response.Content.ReadAsStringAsync());
+            if (file.Success)
             {
-                var file = JsonConvert.DeserializeObject<FileResponse>(await response.Content.ReadAsStringAsync());
-                if (file.Success)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/File]:: Boknings-ID: {orderGroupNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
-                }
-                else
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/File] FAILED:: Boknings-ID: {orderGroupNumber} accat mottagande");
-                }
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/File]:: Boknings-ID: {orderGroupNumber} fil hämtad. Base64 stäng var {file.FileBase64.Length} tecken lång");
             }
-
+            else
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/File] FAILED:: Boknings-ID: {orderGroupNumber} accat mottagande");
+            }
             return true;
         }
 

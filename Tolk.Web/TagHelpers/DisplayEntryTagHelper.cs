@@ -59,24 +59,23 @@ namespace Tolk.Web.TagHelpers
                 output.TagName = "div";
                 output.TagMode = TagMode.StartTagAndEndTag;
                 output.Attributes.Add("class", "form-group");
-                using (var writer = new StringWriter())
-                {            // Check if label will be displayed
-                    var type = For.ModelExplorer.Metadata.ContainerType;
-                    var isDisplayed = true;
-                    var isSubItem = false;
-                    var property = type?.GetProperty(For.ModelExplorer.Metadata.PropertyName);
-                    if (property != null)
-                    {
-                        isDisplayed = !Attribute.IsDefined(property, typeof(NoDisplayNameAttribute));
-                        isSubItem = Attribute.IsDefined(property, typeof(SubItemAttribute));
-                    }
-                    if (isDisplayed)
-                    {
-                        WriteLabel(writer, isSubItem);
-                    }
-                    WriteDetails(writer);
-                    output.Content.AppendHtml(writer.ToString());
+                using var writer = new StringWriter();
+                // Check if label will be displayed
+                var type = For.ModelExplorer.Metadata.ContainerType;
+                var isDisplayed = true;
+                var isSubItem = false;
+                var property = type?.GetProperty(For.ModelExplorer.Metadata.PropertyName);
+                if (property != null)
+                {
+                    isDisplayed = !Attribute.IsDefined(property, typeof(NoDisplayNameAttribute));
+                    isSubItem = Attribute.IsDefined(property, typeof(SubItemAttribute));
                 }
+                if (isDisplayed)
+                {
+                    WriteLabel(writer, isSubItem);
+                }
+                WriteDetails(writer);
+                output.Content.AppendHtml(writer.ToString());
             }
         }
 

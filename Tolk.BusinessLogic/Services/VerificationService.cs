@@ -54,11 +54,10 @@ namespace Tolk.BusinessLogic.Services
                 {
                     return VerificationResult.LanguageNotRegistered;
                 }
-                TellusInterpreterResponse information;
 
                 var response = await client.GetAsync($"{_tolkBaseOptions.Tellus.Uri}{interpreterId}");
                 string content = await response.Content.ReadAsStringAsync();
-                information = JsonConvert.DeserializeObject<TellusInterpreterResponse>(content);
+                TellusInterpreterResponse information = JsonConvert.DeserializeObject<TellusInterpreterResponse>(content);
 
                 return CheckInterpreter(competenceLevel, order, information);
             }

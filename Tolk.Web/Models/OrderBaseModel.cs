@@ -105,7 +105,7 @@ namespace Tolk.Web.Models
         public AttachmentListModel AttachmentListModel { get; set; }
 
         [Display(Name = "Kompetensnivå är ett krav")]
-        public virtual bool SpecificCompetenceLevelRequired => CompetenceLevelDesireType == null ? false : EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement;
+        public virtual bool SpecificCompetenceLevelRequired => CompetenceLevelDesireType != null && EnumHelper.Parse<DesireType>(CompetenceLevelDesireType.SelectedItem.Value) == DesireType.Requirement;
 
         public decimal TotalPrice => OrderOccasionDisplayModels?.Sum(o => o.PriceInformationModel.TotalPriceToDisplay) ?? 0;
 
@@ -187,12 +187,9 @@ namespace Tolk.Web.Models
         #region extra requirements
 
         [Display(Name = "Tillkommande krav och/eller önskemål", Description = "Klicka på +-ikonen för att lägga till andra krav såsom tolkens kön, specifik tolk eller andra krav. Förmedlingen behöver inte uppfylla önskemål.")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderRequirementModel> OrderRequirements { get; set; }
 
-
         [Display(Name = "Tillkommande önskemål", Description = "Klicka på +-ikonen för att lägga till andra önskemål såsom tolkens kön, specifik tolk eller andra önskemål. Önskemål är inte tvingande för förmedlingen")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderDesiredRequirementModel> OrderDesiredRequirements { get; set; }
 
         #endregion
@@ -215,8 +212,7 @@ namespace Tolk.Web.Models
                 if (OrderRequirements != null && OrderRequirements.Any(or => or.RequirementType == RequirementType.Dialect))
                 {
                     StringBuilder sb = new StringBuilder();
-                    List<OrderRequirementModel> reqs;
-                    reqs = OrderRequirements.Where(or => or.RequirementType == RequirementType.Dialect).ToList();
+                    List<OrderRequirementModel> reqs = OrderRequirements.Where(or => or.RequirementType == RequirementType.Dialect).ToList();
                     foreach (OrderRequirementModel orm in reqs)
                     {
                         sb.Append(orm.RequirementIsRequired ? $"Krav på dialekt: {orm.RequirementDescription}" : $"Önskemål om dialekt: {orm.RequirementDescription}");

@@ -81,8 +81,7 @@ namespace Tolk.Web.Controllers
                     }
 
                     using Stream stream = file.OpenReadStream();
-                    byte[] byteArray;
-                    byteArray = new byte[file.Length];
+                    byte[] byteArray = new byte[file.Length];
                     stream.Read(byteArray, 0, (int)file.Length);
                     stream.Close();
                     var fileName = Path.GetFileName(file.FileName);

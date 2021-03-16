@@ -64,7 +64,6 @@ namespace Tolk.Web.Services
             _logger.LogInformation("EntityScheduler initialized");
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         private async void Run(bool isInit = false)
         {
             _logger.LogTrace("EntityScheduler waking up.");
@@ -86,14 +85,12 @@ namespace Tolk.Web.Services
 
             if (isInit)
             {
-                using (TolkDbContext context = _options.GetContext())
-                {
-                    await context.OutboundEmails.Where(e => e.IsHandling == true)
-                        .Select(c => c).ForEachAsync(c => c.IsHandling = false);
-                    await context.OutboundWebHookCalls.Where(e => e.IsHandling == true)
-                        .Select(c => c).ForEachAsync(c => c.IsHandling = false);
-                    await context.SaveChangesAsync();
-                }
+                using TolkDbContext context = _options.GetContext();
+                await context.OutboundEmails.Where(e => e.IsHandling == true)
+                    .Select(c => c).ForEachAsync(c => c.IsHandling = false);
+                await context.OutboundWebHookCalls.Where(e => e.IsHandling == true)
+                    .Select(c => c).ForEachAsync(c => c.IsHandling = false);
+                await context.SaveChangesAsync();
             }
 
             try
@@ -112,33 +109,31 @@ namespace Tolk.Web.Services
                 else
                 {
                     //would like to have a timer here, to make it possible to get tighter runs if the last run ran for longer than 10 seconds or somethng...
-                    using (var serviceScope = _services.CreateScope())
+                    using var serviceScope = _services.CreateScope();
+                    Task[] tasksToRun;
+
+                    if (_clock.SwedenNow > nextDailyRunTime)
                     {
-                        Task[] tasksToRun;
+                        nextDailyRunTime = nextDailyRunTime.AddDays(1);
+                        nextDailyRunTime -= nextDailyRunTime.TimeOfDay;
+                        nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
+                        _logger.LogTrace("Running DailyRunTime, next run on {0}", nextDailyRunTime);
 
-                        if (_clock.SwedenNow > nextDailyRunTime)
+                        tasksToRun = new Task[]
                         {
-                            nextDailyRunTime = nextDailyRunTime.AddDays(1);
-                            nextDailyRunTime -= nextDailyRunTime.TimeOfDay;
-                            nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
-                            _logger.LogTrace("Running DailyRunTime, next run on {0}", nextDailyRunTime);
-
-                            tasksToRun = new Task[]
-                            {
                             RunDailyJobs(serviceScope.ServiceProvider),
-                            };
-                        }
-                        else
+                        };
+                    }
+                    else
+                    {
+                        tasksToRun = new Task[]
                         {
-                            tasksToRun = new Task[]
-                            {
                                 RunContinousJobs(serviceScope.ServiceProvider),
-                            };
-                        }
-                        if (!Task.WaitAll(tasksToRun, allotedTimeAllTasks))
-                        {
-                            throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTimeAllTasks / 1000} seconds");
-                        }
+                        };
+                    }
+                    if (!Task.WaitAll(tasksToRun, allotedTimeAllTasks))
+                    {
+                        throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTimeAllTasks / 1000} seconds");
                     }
                 }
             }

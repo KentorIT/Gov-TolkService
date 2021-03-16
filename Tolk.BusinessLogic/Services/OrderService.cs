@@ -73,7 +73,7 @@ namespace Tolk.BusinessLogic.Services
 
             foreach (var complaintId in expiredComplaintIds)
             {
-                using var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable);
+                using var trn = await _tolkDbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
                 try
                 {
                     var expiredComplaint = await _tolkDbContext.Complaints
@@ -94,13 +94,13 @@ namespace Tolk.BusinessLogic.Services
                         expiredComplaint.AnsweredAt = _clock.SwedenNow;
                         expiredComplaint.AnswerMessage = $"Systemet har efter {_tolkBaseOptions.MonthsToApproveComplaints} månader automatiskt godtagit reklamationen då svar uteblivit.";
                         await _tolkDbContext.SaveChangesAsync();
-                        trn.Commit();
+                        await trn.CommitAsync();
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failure processing expired complaint {complaintId}", complaintId);
-                    trn.Rollback();
+                    await trn.RollbackAsync();
                     await SendErrorMail(nameof(HandleExpiredComplaints), ex);
                 }
             }
@@ -627,7 +627,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task CleanTempAttachments()
         {
-            using var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable);
+            using var trn = await _tolkDbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
             try
             {
                 _logger.LogInformation("Cleaning temporary attachments");
@@ -654,14 +654,14 @@ namespace Tolk.BusinessLogic.Services
                 }
                 if (attachmentsGroupsToDelete.Any() || attachmentsToDelete.Any())
                 {
-                    trn.Commit();
+                    await trn.CommitAsync();
                 }
                 _logger.LogInformation("Done cleaning temporary attachments");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failure processing {methodName}", nameof(CleanTempAttachments));
-                trn.Rollback();
+                await trn.RollbackAsync();
                 await SendErrorMail(nameof(CleanTempAttachments), ex);
             }
         }
@@ -846,7 +846,7 @@ namespace Tolk.BusinessLogic.Services
 
             foreach (var requestId in expiredRequestIds)
             {
-                using var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable);
+                using var trn = await _tolkDbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
                 try
                 {
                     var expiredRequest = await _tolkDbContext.Requests.GetExpiredRequest(_clock.SwedenNow, requestId);
@@ -889,13 +889,13 @@ namespace Tolk.BusinessLogic.Services
                             _notificationService.RequestExpiredDueToInactivity(expiredRequest);
                             await CreateRequest(expiredRequest.Order, expiredRequest);
                         }
-                        trn.Commit();
+                        await trn.CommitAsync();
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failure processing expired request {requestId}", requestId);
-                    trn.Rollback();
+                    await trn.RollbackAsync();
                     await SendErrorMail(nameof(HandleExpiredRequests), ex);
                 }
             }
@@ -911,7 +911,7 @@ namespace Tolk.BusinessLogic.Services
                 expiredRequestGroupIds.Count, string.Join(", ", expiredRequestGroupIds));
             foreach (var requestGroupId in expiredRequestGroupIds)
             {
-                using var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable);
+                using var trn = await _tolkDbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
                 try
                 {
                     var expiredRequestGroup = await _tolkDbContext.RequestGroups.GetExpiredRequestGroup(_clock.SwedenNow, requestGroupId);
@@ -946,13 +946,13 @@ namespace Tolk.BusinessLogic.Services
                             await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
                         }
 
-                        trn.Commit();
+                        await trn.CommitAsync();
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failure processing expired request group {requestGroupId}", requestGroupId);
-                    trn.Rollback();
+                    await trn.RollbackAsync();
                     await SendErrorMail(nameof(HandleExpiredRequestGroups), ex);
                 }
             }
@@ -972,7 +972,7 @@ namespace Tolk.BusinessLogic.Services
 
             foreach (var requestId in nonAnsweredRespondedRequestsId)
             {
-                using var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable);
+                using var trn = await _tolkDbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
                 try
                 {
                     var request = await _tolkDbContext.Requests.GetNonAnsweredRespondedRequest(_clock.SwedenNow, requestId);
@@ -990,13 +990,13 @@ namespace Tolk.BusinessLogic.Services
                         _notificationService.RequestExpiredDueToNoAnswerFromCustomer(request);
                         await TerminateOrder(request.Order);
                         await _tolkDbContext.SaveChangesAsync();
-                        trn.Commit();
+                        await trn.CommitAsync();
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failure processing {methodName} for request {requestId}", nameof(HandleExpiredNonAnsweredRespondedRequests), requestId);
-                    trn.Rollback();
+                    await trn.RollbackAsync();
                     await SendErrorMail(nameof(HandleExpiredNonAnsweredRespondedRequests), ex);
                 }
             }
@@ -1012,7 +1012,7 @@ namespace Tolk.BusinessLogic.Services
 
             foreach (var requestGroupId in nonAnsweredRespondedRequestGroupsId)
             {
-                using var trn = _tolkDbContext.Database.BeginTransaction(IsolationLevel.Serializable);
+                using var trn = await _tolkDbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable);
                 try
                 {
                     var requestGroup = await _tolkDbContext.RequestGroups.GetNonAnsweredRespondedRequestGroup(_clock.SwedenNow, requestGroupId);
@@ -1031,13 +1031,13 @@ namespace Tolk.BusinessLogic.Services
                         _notificationService.RequestGroupExpiredDueToNoAnswerFromCustomer(requestGroup);
                         await _tolkDbContext.SaveChangesAsync();
                         await TerminateOrderGroup(requestGroup.OrderGroup);
-                        trn.Commit();
+                        await trn.CommitAsync();
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failure processing {methodName} for request group {requestGroupId}", nameof(HandleExpiredNonAnsweredRespondedRequestGroups), requestGroupId);
-                    trn.Rollback();
+                    await trn.RollbackAsync();
                     await SendErrorMail(nameof(HandleExpiredNonAnsweredRespondedRequestGroups), ex);
                 }
             }
