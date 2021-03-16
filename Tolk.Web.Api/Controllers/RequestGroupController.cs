@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NSwag.Annotations;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.ApiPayloads;
@@ -52,7 +54,11 @@ namespace Tolk.Web.Api.Controllers
         #region Updating Methods
 
         [HttpPost]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
+        [ProducesResponseType(200, Type = typeof(GroupAnswerResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att svara på ett inkommet sammanhållet avrop")]
+        [OpenApiTag("RequestGroup", AddToDocument = true, Description = "Grupp av metoder för att hantera sammanhållna beställningar(avrop)")]
         public async Task<IActionResult> Answer([FromBody] RequestGroupAnswerModel model)
         {
             if (model == null)
@@ -126,6 +132,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att bekräfta mottagandet av ett sammanhållet avrop")]
+        [OpenApiTag("RequestGroup")]
         public async Task<IActionResult> Acknowledge([FromBody] RequestGroupAcknowledgeModel model)
         {
             if (model == null)
@@ -154,6 +165,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att avstå tillsättning av ett sammanhållet avrop")]
+        [OpenApiTag("RequestGroup")]
         public async Task<IActionResult> Decline([FromBody] RequestGroupDeclineModel model)
         {
             if (model == null)
@@ -183,6 +199,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att kvittera en nekad tillsättning av ett sammanhållet avrop")]
+        [OpenApiTag("RequestGroup")]
         public async Task<IActionResult> ConfirmDenial([FromBody] ConfirmGroupDenialModel model)
         {
             if (model == null)
@@ -218,6 +239,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att kvittera information om uteblivet svar på tillsättning av ett sammanhållet avrop")]
+        [OpenApiTag("RequestGroup")]
         public async Task<IActionResult> ConfirmNoAnswer([FromBody] ConfirmGroupNoAnswerModel model)
         {
             if (model == null)
@@ -252,6 +278,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att kvittera information om avbokning av ett sammanhållet avrop")]
+        [OpenApiTag("RequestGroup")]
         public async Task<IActionResult> ConfirmCancellation([FromBody] ConfirmGroupCancellationModel model)
         {
             if (model == null)
@@ -290,7 +321,11 @@ namespace Tolk.Web.Api.Controllers
         #region getting methods
 
         [HttpGet]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
+        [ProducesResponseType(200, Type = typeof(RequestGroupDetailsResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Returnerar all information om ett sammanhållet avrop")]
+        [OpenApiTag("RequestGroup")]
         public async Task<IActionResult> View(string orderGroupNumber, string callingUser)
         {
             _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active request for the order group {orderGroupNumber}");
@@ -317,6 +352,11 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(200, Type = typeof(FileResponse))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Returnerar en fil i base64 format, kopplad till ett specifikt uppdrag")]
+        [OpenApiTag("RequestGroup")]
         public async Task<IActionResult> File(string orderGroupNumber, int attachmentId, string callingUser)
         {
             _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order group {orderGroupNumber}");

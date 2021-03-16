@@ -616,7 +616,7 @@ namespace Tolk.Web.Api.Controllers
         #region getting methods
 
         [HttpGet]
-        [ProducesResponseType(200, Type = typeof(RequestDetailsResponse))]
+        [ProducesResponseType(200, Type = typeof(FileResponse))]
         [ProducesResponseType(403, Type = typeof(ErrorResponse))]
         [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
         [Description("Returnerar en fil i base64 format, kopplad till ett specifikt uppdrag")]
@@ -653,7 +653,6 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpGet]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         [ProducesResponseType(200, Type = typeof(RequestDetailsResponse))]
         [ProducesResponseType(403, Type = typeof(ErrorResponse))]
         [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
