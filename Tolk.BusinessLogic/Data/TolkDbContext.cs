@@ -498,6 +498,12 @@ namespace Tolk.BusinessLogic.Data
                 .HasOne(t => t.ImpersonatingUpdatedByUser)
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //Views
+            builder.Entity<OrderListRow>().HasNoKey().ToView(nameof(OrderListRows));
+            builder.Entity<RequestListRow>().HasNoKey().ToView(nameof(RequestListRows));
+            builder.Entity<CustomerStartListRow>().HasNoKey().ToView(nameof(CustomerStartListRows));
+            builder.Entity<BrokerStartListRow>().HasNoKey().ToView(nameof(BrokerStartListRows));
         }
 
         public DbSet<Region> Regions { get; set; }
@@ -641,12 +647,13 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<OrderChangeConfirmation> OrderChangeConfirmations { get; set; }
 
-        public DbQuery<OrderListRow> OrderListRows { get; set; }
+        public DbSet<OrderListRow> OrderListRows { get; set; }
 
-        public DbQuery<RequestListRow> RequestListRows { get; set; }
+        public DbSet<RequestListRow> RequestListRows { get; set; }
 
-        public DbQuery<CustomerStartListRow> CustomerStartListRows { get; set; }
-        public DbQuery<BrokerStartListRow> BrokerStartListRows { get; set; }
+        public DbSet<CustomerStartListRow> CustomerStartListRows { get; set; }
+
+        public DbSet<BrokerStartListRow> BrokerStartListRows { get; set; }
 
         private static bool isUserStoreInitialized = false;
 
