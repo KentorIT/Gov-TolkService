@@ -67,78 +67,71 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         private async Task CallWebhook(int callId)
         {
-            using (TolkDbContext context = _options.GetContext())
+            using TolkDbContext context = _options.GetContext();
+            var call = await context.OutboundWebHookCalls
+           .Include(c => c.RecipientUser)
+           .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId && e.DeliveredAt == null && e.FailedTries < NumberOfTries);
+
+            bool success = false;
+            string errorMessage = string.Empty;
+            try
             {
-                var call = await context.OutboundWebHookCalls
-               .Include(c => c.RecipientUser)
-               .SingleOrDefaultAsync(e => e.OutboundWebHookCallId == callId && e.DeliveredAt == null && e.FailedTries < NumberOfTries);
-
-                bool success = false;
-                string errorMessage = string.Empty;
-                try
+                if (call == null)
                 {
-                    if (call == null)
+                    _logger.LogInformation("Call {callId} was in list to be handled, but seems to have been handled already.", call.OutboundWebHookCallId);
+                }
+                else
+                {
+                    //Use short cache, so that each call to the same api user does not have to retrieve claims
+                    IEnumerable<IdentityUserClaim<int>> claims = (call.RecipientUser != null) ? await context.UserClaims.GetClaimsForUser(call.RecipientUser.Id) : null;
+                    using var requestMessage = new HttpRequestMessage(HttpMethod.Post, call.RecipientUrl);
+                    requestMessage.Headers.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
+                    requestMessage.Headers.Add("X-Kammarkollegiet-InterpreterService-Delivery", call.OutboundWebHookCallId.ToSwedishString());
+                    string encryptedCallbackKey = claims?.SingleOrDefault(c => c.ClaimType == "CallbackApiKey")?.ClaimValue;
+                    if (!string.IsNullOrWhiteSpace(encryptedCallbackKey))
                     {
-                        _logger.LogInformation("Call {callId} was in list to be handled, but seems to have been handled already.", call.OutboundWebHookCallId);
+                        requestMessage.Headers.Add("X-Kammarkollegiet-InterpreterService-ApiKey", EncryptHelper.Decrypt(encryptedCallbackKey, _options.PublicOrigin, call.RecipientUser.UserName));
                     }
-                    else
+                    //Also add cert to call
+                    _logger.LogInformation("Calling web hook {recipientUrl} with message {callId}", call.RecipientUrl, call.OutboundWebHookCallId);
+
+                    using var content = new StringContent(call.Payload, Encoding.UTF8, "application/json");
+                    requestMessage.Content = content;
+                    var response = await client.SendAsync(requestMessage);
+
+                    success = response.IsSuccessStatusCode;
+                    if (!success)
                     {
-                        //Use short cache, so that each call to the same api user does not have to retrieve claims
-                        IEnumerable<IdentityUserClaim<int>> claims = (call.RecipientUser != null) ? await context.UserClaims.GetClaimsForUser(call.RecipientUser.Id) : null;
-                        using (var requestMessage = new HttpRequestMessage(HttpMethod.Post, call.RecipientUrl))
-                        {
-                            requestMessage.Headers.Add("X-Kammarkollegiet-InterpreterService-Event", call.NotificationType.GetCustomName());
-                            requestMessage.Headers.Add("X-Kammarkollegiet-InterpreterService-Delivery", call.OutboundWebHookCallId.ToSwedishString());
-                            string encryptedCallbackKey = claims?.SingleOrDefault(c => c.ClaimType == "CallbackApiKey")?.ClaimValue;
-                            if (!string.IsNullOrWhiteSpace(encryptedCallbackKey))
-                            {
-                                requestMessage.Headers.Add("X-Kammarkollegiet-InterpreterService-ApiKey", EncryptHelper.Decrypt(encryptedCallbackKey, _options.PublicOrigin, call.RecipientUser.UserName));
-                            }
-                            //Also add cert to call
-                            _logger.LogInformation("Calling web hook {recipientUrl} with message {callId}", call.RecipientUrl, call.OutboundWebHookCallId);
-
-                            using (var content = new StringContent(call.Payload, Encoding.UTF8, "application/json"))
-                            {
-                                requestMessage.Content = content;
-                                var response = await client.SendAsync(requestMessage);
-
-                                success = response.IsSuccessStatusCode;
-                                if (!success)
-                                {
-                                    _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}, try number {tries}", call.OutboundWebHookCallId, response.StatusCode, call.FailedTries + 1);
-                                    errorMessage = $"Call {call.OutboundWebHookCallId} failed with the following status code: {response.StatusCode}, try number {call.FailedTries + 1}";
-                                }
-                            }
-                        }
+                        _logger.LogWarning("Call {callId} failed with the following status code: {statusCode}, try number {tries}", call.OutboundWebHookCallId, response.StatusCode, call.FailedTries + 1);
+                        errorMessage = $"Call {call.OutboundWebHookCallId} failed with the following status code: {response.StatusCode}, try number {call.FailedTries + 1}";
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error on this side when calling web hook {callId}, try number {tries}", call.OutboundWebHookCallId, call.FailedTries + 1);
+                errorMessage = $"Error on the \"{Constants.SystemName}\" server side for call {call.OutboundWebHookCallId}. Contact {_options.Support.FirstLineEmail} for more information.";
+            }
+            finally
+            {
+                if (success)
                 {
-                    _logger.LogError(ex, "Error on this side when calling web hook {callId}, try number {tries}", call.OutboundWebHookCallId, call.FailedTries + 1);
-                    errorMessage = $"Error on the \"{Constants.SystemName}\" server side for call {call.OutboundWebHookCallId}. Contact {_options.Support.FirstLineEmail} for more information.";
+                    call.DeliveredAt = _clock.SwedenNow;
                 }
-                finally
+                else
                 {
-                    if (success)
+                    call.FailedTries++;
+                    FailedWebHookCall failedCall = new FailedWebHookCall { OutboundWebHookCallId = call.OutboundWebHookCallId, ErrorMessage = errorMessage, FailedAt = _clock.SwedenNow };
+                    context.FailedWebHookCalls.Add(failedCall);
+                    if (call.FailedTries == NumberOfTries && call.NotificationType != Enums.NotificationType.ErrorNotification)
                     {
-                        call.DeliveredAt = _clock.SwedenNow;
+                        call.HasNotifiedFailure = false;
                     }
-                    else
-                    {
-                        call.FailedTries++;
-                        FailedWebHookCall failedCall = new FailedWebHookCall { OutboundWebHookCallId = call.OutboundWebHookCallId, ErrorMessage = errorMessage, FailedAt = _clock.SwedenNow };
-                        context.FailedWebHookCalls.Add(failedCall);
-                        if (call.FailedTries == NumberOfTries && call.NotificationType != Enums.NotificationType.ErrorNotification)
-                        {
-                            call.HasNotifiedFailure = false;
-                        }
-                    }
-                    call.IsHandling = false;
-                    await context.SaveChangesAsync();
                 }
+                call.IsHandling = false;
+                await context.SaveChangesAsync();
             }
         }
     }

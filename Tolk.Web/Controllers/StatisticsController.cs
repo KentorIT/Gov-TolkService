@@ -140,7 +140,6 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(List));
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope", Justification = "notallowed to use using here, the code throws...")]
         private ActionResult CreateExcelFile(IEnumerable<ReportRow> rows, string organisationName, ReportType reportType)
         {
             string fileName = $"{EnumHelper.GetDescription(reportType)}_{organisationName}_{_clock.SwedenNow.DateTime.ToSwedishString("yyyy-MM-dd HH:mm")}.xlsx";

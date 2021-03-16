@@ -19,12 +19,10 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         public DateCalculationServiceTests()
         {
-            using (var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays))
-            {
-                tolkDbContext.AddRange(MockEntities.Holidays.Where(newHoliday =>
-                !tolkDbContext.Holidays.Select(existingHoliday => existingHoliday.Date).Contains(newHoliday.Date)));
-                tolkDbContext.SaveChanges();
-            }
+            using var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays);
+            tolkDbContext.AddRange(MockEntities.Holidays.Where(newHoliday =>
+            !tolkDbContext.Holidays.Select(existingHoliday => existingHoliday.Date).Contains(newHoliday.Date)));
+            tolkDbContext.SaveChanges();
         }
 
         private TolkDbContext CreateTolkDbContext(string databaseName = "empty")
@@ -45,57 +43,49 @@ namespace Tolk.BusinessLogic.Tests.Services
         [Fact]
         public void GetWorkDaysBetween_ThrowsIfFirstDateIsAfterSecondDate()
         {
-            using (var tolkDbContext = CreateTolkDbContext())
-            {
-                var subject = new DateCalculationService(tolkDbContext, CreateCacheService(tolkDbContext));
+            using var tolkDbContext = CreateTolkDbContext();
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
 
-                Action a = () => subject.GetWorkDaysBetween(new DateTime(1), new DateTime(0));
+            Action a = () => subject.GetWorkDaysBetween(new DateTime(1), new DateTime(0));
 
-                a.Should().Throw<ArgumentException>();
-            }
+            a.Should().Throw<ArgumentException>();
         }
 
         [Fact]
         public void GetWorkDaysBetween_ThrowsIfFirstDateIsNotPlainDate()
         {
-            using (var tolkDbContext = CreateTolkDbContext())
-            {
-                var subject = new DateCalculationService(tolkDbContext, CreateCacheService(tolkDbContext));
+            using var tolkDbContext = CreateTolkDbContext();
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
 
-                Action a = () => subject.GetWorkDaysBetween(new DateTime(2018, 06, 04, 14, 00, 00), new DateTime(2018, 06, 05));
+            Action a = () => subject.GetWorkDaysBetween(new DateTime(2018, 06, 04, 14, 00, 00), new DateTime(2018, 06, 05));
 
-                a.Should().Throw<ArgumentException>()
-                    .And.ParamName.Should().Be("firstDate");
-            }
+            a.Should().Throw<ArgumentException>()
+                .And.ParamName.Should().Be("firstDate");
         }
 
         [Fact]
         public void GetWorkDaysBetween_ThrowsIfSecondDateIsNotPlainDate()
         {
-            using (var tolkDbContext = CreateTolkDbContext())
-            {
-                var subject = new DateCalculationService(tolkDbContext, CreateCacheService(tolkDbContext));
+            using var tolkDbContext = CreateTolkDbContext();
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
 
-                Action a = () => subject.GetWorkDaysBetween(new DateTime(2018, 06, 04), new DateTime(2018, 06, 05, 14, 00, 00));
+            Action a = () => subject.GetWorkDaysBetween(new DateTime(2018, 06, 04), new DateTime(2018, 06, 05, 14, 00, 00));
 
-                a.Should().Throw<ArgumentException>()
-                    .And.ParamName.Should().Be("secondDate");
-            }
+            a.Should().Throw<ArgumentException>()
+                .And.ParamName.Should().Be("secondDate");
         }
 
         [Fact]
         public void GetWorkDaysBetween_ThrowsDateTimeKindsAreDifferent()
         {
-            using (var tolkDbContext = CreateTolkDbContext())
-            {
-                var subject = new DateCalculationService(tolkDbContext, CreateCacheService(tolkDbContext));
+            using var tolkDbContext = CreateTolkDbContext();
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
 
-                Action a = () => subject.GetWorkDaysBetween(
-                new DateTime(2018, 5, 1, 0, 0, 0, DateTimeKind.Local),
-                new DateTime(2018, 6, 1, 0, 0, 0, DateTimeKind.Unspecified));
+            Action a = () => subject.GetWorkDaysBetween(
+            new DateTime(2018, 5, 1, 0, 0, 0, DateTimeKind.Local),
+            new DateTime(2018, 6, 1, 0, 0, 0, DateTimeKind.Unspecified));
 
-                a.Should().Throw<ArgumentException>();
-            }
+            a.Should().Throw<ArgumentException>();
         }
 
         [Theory]
@@ -120,13 +110,11 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-08-01", "2018-08-31", 22)] //August month
         public void GetWorkDaysBefore(string firstDate, string secondDate, int actual)
         {
-            using (var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays))
-            {
-                var subject = new DateCalculationService(tolkDbContext, CreateCacheService(tolkDbContext));
+            using var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays);
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
 
-                subject.GetWorkDaysBetween(DateTime.Parse(firstDate), DateTime.Parse(secondDate))
-                .Should().Be(actual, "there are {0} workdays between {1} and {2}", actual, firstDate, secondDate);
-            }
+            subject.GetWorkDaysBetween(DateTime.Parse(firstDate), DateTime.Parse(secondDate))
+            .Should().Be(actual, "there are {0} workdays between {1} and {2}", actual, firstDate, secondDate);
         }
 
         [Theory]
@@ -199,13 +187,11 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-09-05 16:00:00", "2018-09-05 18:00:00", 0)] // Part of day Wednesday (0 24h period)
         public void GetNoOf24HsPeriodsOfWorkDaysBetween(string firstDate, string secondDate, int actual)
         {
-            using (var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays))
-            {
-                var subject = new DateCalculationService(tolkDbContext, CreateCacheService(tolkDbContext));
+            using var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays);
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
 
-                subject.GetNoOf24HsPeriodsWorkDaysBetween(DateTime.Parse(firstDate), DateTime.Parse(secondDate))
-                .Should().Be(actual, "there are {0} full 24h periods of workday time between {1} and {2}", actual, firstDate, secondDate);
-            }
+            subject.GetNoOf24HsPeriodsWorkDaysBetween(DateTime.Parse(firstDate), DateTime.Parse(secondDate))
+            .Should().Be(actual, "there are {0} full 24h periods of workday time between {1} and {2}", actual, firstDate, secondDate);
         }
 
         [Theory]
@@ -280,13 +266,11 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-04-02 16:00:00", "2018-04-02 19:00:00", 0)] // Easter Friday (3h but non work day)
         public void GetNoOfHoursOfWorkDaysBetween(string firstDate, string secondDate, int actual)
         {
-            using (var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays))
-            {
-                var subject = new DateCalculationService(tolkDbContext, CreateCacheService(tolkDbContext));
+            using var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays);
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
 
-                subject.GetNoOfHoursOfWorkDaysBetween(DateTime.Parse(firstDate), DateTime.Parse(secondDate))
-                .Should().Be(actual, "there are {0} hours of workday time between {1} and {2}", actual, firstDate, secondDate);
-            }
+            subject.GetNoOfHoursOfWorkDaysBetween(DateTime.Parse(firstDate), DateTime.Parse(secondDate))
+            .Should().Be(actual, "there are {0} hours of workday time between {1} and {2}", actual, firstDate, secondDate);
         }
 
         [Theory]
@@ -298,13 +282,11 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         public void GetLastWorkDay(string date, string expected)
         {
-            using (var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays))
-            {
-                var subject = new DateCalculationService(tolkDbContext, CreateCacheService(tolkDbContext));
+            using var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays);
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
 
-                subject.GetLastWorkDay(DateTime.Parse(date))
-                    .Should().Be(DateTime.Parse(expected), "that is the last workday before {0}", date);
-            }
+            subject.GetLastWorkDay(DateTime.Parse(date))
+                .Should().Be(DateTime.Parse(expected), "that is the last workday before {0}", date);
         }
 
         [Theory]
@@ -316,13 +298,10 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         public void IsWorkDay(string date, bool expected)
         {
-            using (var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays))
-            {
-                var subject = new DateCalculationService(tolkDbContext, CreateCacheService(tolkDbContext));
-                string errorMessage = expected ? "should be a workday" : "should not be a workday";
-                subject.IsWorkingDay(DateTime.Parse(date))
-                    .Should().Be(expected, "{0} {1}", date, errorMessage);
-            }
+            using var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays);
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
+            string errorMessage = expected ? "should be a workday" : "should not be a workday";
+            subject.IsWorkingDay(DateTime.Parse(date)).Should().Be(expected, "{0} {1}", date, errorMessage);
         }
 
         [Theory]
@@ -333,13 +312,9 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2018-09-05", "2018-09-05")]//Normal work day
         public void GetFirstWorkDay(string date, string expected)
         {
-            using (var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays))
-            {
-                var subject = new DateCalculationService(tolkDbContext, CreateCacheService(tolkDbContext));
-
-                subject.GetFirstWorkDay(DateTime.Parse(date))
-                    .Should().Be(DateTime.Parse(expected), "that is the first workday after {0}", date);
-            }
+            using var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays);
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
+            subject.GetFirstWorkDay(DateTime.Parse(date)).Should().Be(DateTime.Parse(expected), "that is the first workday after {0}", date);
         }
     }
 }

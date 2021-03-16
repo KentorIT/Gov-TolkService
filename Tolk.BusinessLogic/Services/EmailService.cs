@@ -32,83 +32,78 @@ namespace Tolk.BusinessLogic.Services
             _secondLineSupportMail = _options.Support?.SecondLineEmail;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task SendEmails()
         {
-            using (TolkDbContext context = _options.GetContext())
+            using TolkDbContext context = _options.GetContext();
+            var emailIds = await context.OutboundEmails
+            .Where(e => e.DeliveredAt == null && !e.IsHandling)
+            .Select(e => e.OutboundEmailId)
+            .ToListAsync();
+
+            _logger.LogInformation("Found {count} emails to send: {emailIds}",
+                emailIds.Count, string.Join(", ", emailIds));
+
+            if (emailIds.Any())
             {
-                var emailIds = await context.OutboundEmails
-                .Where(e => e.DeliveredAt == null && !e.IsHandling)
-                .Select(e => e.OutboundEmailId)
-                .ToListAsync();
-
-                _logger.LogInformation("Found {count} emails to send: {emailIds}",
-                    emailIds.Count, string.Join(", ", emailIds));
-
-                if (emailIds.Any())
+                try
                 {
-                    try
+                    var emails = context.OutboundEmails
+                        .Where(e => emailIds.Contains(e.OutboundEmailId) && e.IsHandling == false)
+                        .Select(c => c);
+                    await emails.ForEachAsync(c => c.IsHandling = true);
+                    await context.SaveChangesAsync();
+
+                    using var client = new SmtpClient();
+                    await client.ConnectAsync(_options.Smtp.Host, _options.Smtp.Port, _options.Smtp.UseAuthentication ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto);
+                    if (_options.Smtp.UseAuthentication)
                     {
-                        var emails = context.OutboundEmails
-                            .Where(e => emailIds.Contains(e.OutboundEmailId) && e.IsHandling == false)
-                            .Select(c => c);
-                        await emails.ForEachAsync(c => c.IsHandling = true);
-                        await context.SaveChangesAsync();
+                        await client.AuthenticateAsync(_options.Smtp.UserName, _options.Smtp.Password);
+                    }
+                    var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.Smtp.FromAddress);
 
-                        using (var client = new SmtpClient())
+                    foreach (var emailId in emailIds)
+                    {
+                        var email = await context.OutboundEmails
+                            .SingleOrDefaultAsync(e => e.OutboundEmailId == emailId && e.DeliveredAt == null);
+                        try
                         {
-                            await client.ConnectAsync(_options.Smtp.Host, _options.Smtp.Port, _options.Smtp.UseAuthentication ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto);
-                            if (_options.Smtp.UseAuthentication)
+                            if (email == null)
                             {
-                                await client.AuthenticateAsync(_options.Smtp.UserName, _options.Smtp.Password);
+                                _logger.LogInformation("Email {emailId} was in list to be sent, but now appears to have been sent.", emailId);
                             }
-                            var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.Smtp.FromAddress);
-
-                            foreach (var emailId in emailIds)
+                            else
                             {
-                                var email = await context.OutboundEmails
-                                    .SingleOrDefaultAsync(e => e.OutboundEmailId == emailId && e.DeliveredAt == null);
-                                try
-                                {
-                                    if (email == null)
-                                    {
-                                        _logger.LogInformation("Email {emailId} was in list to be sent, but now appears to have been sent.", emailId);
-                                    }
-                                    else
-                                    {
-                                        email.IsHandling = true;
-                                        await context.SaveChangesAsync();
-                                        _logger.LogInformation("Sending email {emailId} to {recipient}", emailId, email.Recipient);
+                                email.IsHandling = true;
+                                await context.SaveChangesAsync();
+                                _logger.LogInformation("Sending email {emailId} to {recipient}", emailId, email.Recipient);
 
-                                        await client.SendAsync(email.ToMimeKitMessage(from));
-                                        email.DeliveredAt = _clock.SwedenNow;
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogError(ex, "Failure sending e-mail {emailId}");
-                                }
-                                finally
-                                {
-                                    email.IsHandling = false;
-                                    await context.SaveChangesAsync();
-                                }
+                                await client.SendAsync(email.ToMimeKitMessage(from));
+                                email.DeliveredAt = _clock.SwedenNow;
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failure sending e-mail {emailId}");
+                        }
+                        finally
+                        {
+                            email.IsHandling = false;
+                            await context.SaveChangesAsync();
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Something went wrong when sending emails");
-                    }
-                    finally
-                    {
-                        //Making sure no emails are left hanging
-                        var emails = context.OutboundEmails
-                            .Where(e => emailIds.Contains(e.OutboundEmailId) && e.IsHandling == true)
-                            .Select(c => c);
-                        await emails.ForEachAsync(c => c.IsHandling = false);
-                        await context.SaveChangesAsync();
-                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Something went wrong when sending emails");
+                }
+                finally
+                {
+                    //Making sure no emails are left hanging
+                    var emails = context.OutboundEmails
+                        .Where(e => emailIds.Contains(e.OutboundEmailId) && e.IsHandling == true)
+                        .Select(c => c);
+                    await emails.ForEachAsync(c => c.IsHandling = false);
+                    await context.SaveChangesAsync();
                 }
             }
         }
@@ -119,37 +114,34 @@ namespace Tolk.BusinessLogic.Services
                 $"Exception message:\n{ex?.Message}\n\nException info:\n{ex?.ToString()}\n\nStackTrace:\n{ex?.StackTrace}");
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task SendApplicationManagementEmail(string subject, string messageBody)
         {
-            using (var client = new SmtpClient())
+            using var client = new SmtpClient();
+            await client.ConnectAsync(_options.Smtp.Host, _options.Smtp.Port, _options.Smtp.UseAuthentication ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto);
+            if (_options.Smtp.UseAuthentication)
             {
-                await client.ConnectAsync(_options.Smtp.Host, _options.Smtp.Port, _options.Smtp.UseAuthentication ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto);
-                if (_options.Smtp.UseAuthentication)
-                {
-                    await client.AuthenticateAsync(_options.Smtp.UserName, _options.Smtp.Password);
-                }
-                var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.Smtp.FromAddress);
-                var message = new MimeMessage();
+                await client.AuthenticateAsync(_options.Smtp.UserName, _options.Smtp.Password);
+            }
+            var from = new MailboxAddress(_senderPrepend + Constants.SystemName, _options.Smtp.FromAddress);
+            var message = new MimeMessage();
 
-                message.From.Add(from);
-                message.To.Add(MailboxAddress.Parse(_secondLineSupportMail));
-                message.Subject = subject;
-                var builder = new BodyBuilder
-                {
-                    TextBody = messageBody
-                };
-                message.Body = builder.ToMessageBody();
-                try
-                {
-                    _logger.LogInformation("Sending email to {recipient}", _secondLineSupportMail);
-                    await client.SendAsync(message);
+            message.From.Add(from);
+            message.To.Add(MailboxAddress.Parse(_secondLineSupportMail));
+            message.Subject = subject;
+            var builder = new BodyBuilder
+            {
+                TextBody = messageBody
+            };
+            message.Body = builder.ToMessageBody();
+            try
+            {
+                _logger.LogInformation("Sending email to {recipient}", _secondLineSupportMail);
+                await client.SendAsync(message);
 
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogError(exception, "Failure sending e-mail to {recipient}", _secondLineSupportMail);
-                }
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Failure sending e-mail to {recipient}", _secondLineSupportMail);
             }
         }
     }

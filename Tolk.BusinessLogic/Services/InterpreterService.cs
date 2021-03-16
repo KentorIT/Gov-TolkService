@@ -19,7 +19,7 @@ namespace Tolk.BusinessLogic.Services
 
         public bool IsUniqueOfficialInterpreterId(string officialInterpreterId, int brokerId, int? interpreterBrokerId = null)
         {
-            return string.IsNullOrWhiteSpace(officialInterpreterId) ? true : !_dbContext.InterpreterBrokers.Any(i => i.BrokerId == brokerId && i.OfficialInterpreterId.ToUpper() == officialInterpreterId.ToUpper() && i.InterpreterBrokerId != interpreterBrokerId);
+            return string.IsNullOrWhiteSpace(officialInterpreterId) || !_dbContext.InterpreterBrokers.Any(i => i.BrokerId == brokerId && i.OfficialInterpreterId.ToUpper() == officialInterpreterId.ToUpper() && i.InterpreterBrokerId != interpreterBrokerId);
         }
 
         public async Task<InterpreterBroker> GetInterpreter(int interpreterId, InterpreterInformation interpreterInformation, int brokerId)

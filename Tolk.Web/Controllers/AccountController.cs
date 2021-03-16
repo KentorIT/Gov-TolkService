@@ -127,39 +127,37 @@ namespace Tolk.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+                if (user != null)
                 {
-                    if (user != null)
+                    // Check if user is authorized to change account
+                    if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
                     {
-                        // Check if user is authorized to change account
-                        if (!await _userManager.CheckPasswordAsync(user, model.CurrentPassword))
-                        {
-                            ModelState.AddModelError(nameof(model.CurrentPassword), "Lösenordet som angivits är felaktigt.");
-                            return View(model);
-                        }
-                        await _userService.LogOnUpdateAsync(user.Id, impersonatingUpdatedById: User.TryGetImpersonatorId());
-                        user.NameFirst = model.NameFirst;
-                        user.NameFamily = model.NameFamily;
-                        user.PhoneNumber = model.PhoneWork;
-                        user.PhoneNumberCellphone = model.PhoneCellphone;
+                        ModelState.AddModelError(nameof(model.CurrentPassword), "Lösenordet som angivits är felaktigt.");
+                        return View(model);
+                    }
+                    await _userService.LogOnUpdateAsync(user.Id, impersonatingUpdatedById: User.TryGetImpersonatorId());
+                    user.NameFirst = model.NameFirst;
+                    user.NameFamily = model.NameFamily;
+                    user.PhoneNumber = model.PhoneWork;
+                    user.PhoneNumberCellphone = model.PhoneCellphone;
 
-                        var result = await _userManager.UpdateAsync(user);
-                        if (result.Succeeded)
-                        {
-                            _logger.LogInformation("Successfully created new user {userId}", user.Id);
-                            //when user is updated refresh sign in to get possible updated claims
-                            if (!User.IsImpersonated())
-                            {
-                                await _signInManager.RefreshSignInAsync(user);
-                            }
-                            transaction.Complete();
-                            return RedirectToAction(nameof(Index));
-                        }
-                    }
-                    else
+                    var result = await _userManager.UpdateAsync(user);
+                    if (result.Succeeded)
                     {
-                        throw new ApplicationException($"Can't find user {user.Id}");
+                        _logger.LogInformation("Successfully created new user {userId}", user.Id);
+                        //when user is updated refresh sign in to get possible updated claims
+                        if (!User.IsImpersonated())
+                        {
+                            await _signInManager.RefreshSignInAsync(user);
+                        }
+                        transaction.Complete();
+                        return RedirectToAction(nameof(Index));
                     }
+                }
+                else
+                {
+                    throw new ApplicationException($"Can't find user {user.Id}");
                 }
             }
             return View(model);
@@ -489,36 +487,34 @@ namespace Tolk.Web.Controllers
                 // Explicit transaction to ensure both check and all updates
                 // are done atomically. The user and role managers call SaveChanges
                 // multiple times internally.
-                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+                using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+                if (_dbContext.IsUserStoreInitialized)
                 {
-                    if (_dbContext.IsUserStoreInitialized)
+                    _logger.LogWarning("Tried to CreateInitialUser even though users/roles exist in the database.");
+                    ModelState.AddModelError(model.Email, "Det finns redan användare/roller i databasen, den här operationen är inte tillgänglig.");
+                }
+                else
+                {
+                    var user = new AspNetUser(model.Email, _userService.GenerateUserName(model.FirstName, model.LastName, string.Empty), model.FirstName, model.LastName)
                     {
-                        _logger.LogWarning("Tried to CreateInitialUser even though users/roles exist in the database.");
-                        ModelState.AddModelError(model.Email, "Det finns redan användare/roller i databasen, den här operationen är inte tillgänglig.");
-                    }
-                    else
-                    {
-                        var user = new AspNetUser(model.Email, _userService.GenerateUserName(model.FirstName, model.LastName, string.Empty), model.FirstName, model.LastName)
-                        {
-                            EmailConfirmed = true
-                        };
+                        EmailConfirmed = true
+                    };
 
-                        var result = await _userManager.CreateAsync(user, model.NewPassword);
+                    var result = await _userManager.CreateAsync(user, model.NewPassword);
+                    if (result.Succeeded)
+                    {
+                        _logger.LogInformation("Created initial user account {0}", user.UserName);
+
+                        result = await _userManager.AddToRolesAsync(user, new[] { Roles.SystemAdministrator, Roles.Impersonator });
                         if (result.Succeeded)
                         {
-                            _logger.LogInformation("Created initial user account {0}", user.UserName);
-
-                            result = await _userManager.AddToRolesAsync(user, new[] { Roles.SystemAdministrator, Roles.Impersonator });
-                            if (result.Succeeded)
-                            {
-                                _logger.LogInformation("Added {0} to System administrator and Impersonator roles", user.UserName);
-                                transaction.Complete();
-                                return RedirectToAction("Index", "Home");
-                            }
-                            await _userService.LogCreateAsync(user.Id);
+                            _logger.LogInformation("Added {0} to System administrator and Impersonator roles", user.UserName);
+                            transaction.Complete();
+                            return RedirectToAction("Index", "Home");
                         }
-                        AddErrors(result);
+                        await _userService.LogCreateAsync(user.Id);
                     }
+                    AddErrors(result);
                 }
             }
             return View(model);
@@ -636,68 +632,42 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
-                    using (var trn = await _dbContext.Database.BeginTransactionAsync())
+                    using var trn = await _dbContext.Database.BeginTransactionAsync();
+                    var domain = model.Email.Split('@')[1];
+
+                    var organisation = await _dbContext.CustomerOrganisations.GetParentOrganisationsByDomain(domain);
+                    organisation.SubCustomerOrganisations = await _dbContext.CustomerOrganisations.GetSubOrganisationsByParent(organisation.CustomerOrganisationId).ToListAsync();
+
+                    if (organisation != null)
                     {
-                        var domain = model.Email.Split('@')[1];
-
-                        var organisation = await _dbContext.CustomerOrganisations.GetParentOrganisationsByDomain(domain);
-                        organisation.SubCustomerOrganisations = await _dbContext.CustomerOrganisations.GetSubOrganisationsByParent(organisation.CustomerOrganisationId).ToListAsync();
-
-                        if (organisation != null)
+                        //if organization has SubCustomerOrganisations check that one is choosed, else display the list 
+                        if (organisation.SubCustomerOrganisations.Any() && string.IsNullOrEmpty(model.OrganisationIdentifier))
                         {
-                            //if organization has SubCustomerOrganisations check that one is choosed, else display the list 
-                            if (organisation.SubCustomerOrganisations.Any() && string.IsNullOrEmpty(model.OrganisationIdentifier))
-                            {
-                                model.ParentOrganisationId = organisation.CustomerOrganisationId;
-                                ModelState.AddModelError(nameof(model.Email), $"E-postdomänen {domain} har flera organisationer kopplade till sig. Välj vilken organisation du tillhör i listan nedan. Hittar du inte din organisation så kontakta {_options.Support.UserAccountEmail}.");
-                                return View(model);
-                            }
-                            else
-                            {
-                                //check if user has changed parent domain to another valid parent domain
-                                if (!string.IsNullOrEmpty(model.OrganisationIdentifier))
-                                {
-                                    var selectedOrganisationId = model.OrganisationIdentifier.ToSwedishInt();
-                                    organisation = await _dbContext.CustomerOrganisations
-                                        .Where(c => (c.CustomerOrganisationId == selectedOrganisationId && c.ParentCustomerOrganisationId == organisation.CustomerOrganisationId)
-                                        || (c.CustomerOrganisationId == organisation.CustomerOrganisationId && c.CustomerOrganisationId == selectedOrganisationId))
-                                        .SingleOrDefaultAsync();
-                                    if (organisation == null)
-                                    {
-                                        ModelState.AddModelError(nameof(model.Email), $"Organisationen som valdes tillhörde inte domänen {domain}. Försök igen.");
-                                        return View(model);
-                                    }
-                                }
-                                var user = new AspNetUser(model.Email,
-                                    _userService.GenerateUserName(model.FirstName, model.LastName, organisation.OrganisationPrefix),
-                                    model.FirstName,
-                                    model.LastName,
-                                    organisation);
-                                var result = await _userManager.CreateAsync(user);
-
-                                if (result.Succeeded)
-                                {
-                                    await _userService.SendInviteAsync(user);
-                                    await _userService.LogCreateAsync(user.Id);
-
-                                    trn.Commit();
-                                    return RedirectToAction(nameof(ConfirmAccountLinkSent));
-                                }
-                                AddErrors(result);
-                                return View(model);
-                            }
+                            model.ParentOrganisationId = organisation.CustomerOrganisationId;
+                            ModelState.AddModelError(nameof(model.Email), $"E-postdomänen {domain} har flera organisationer kopplade till sig. Välj vilken organisation du tillhör i listan nedan. Hittar du inte din organisation så kontakta {_options.Support.UserAccountEmail}.");
+                            return View(model);
                         }
-
-                        var broker = await _dbContext.Brokers
-                            .SingleOrDefaultAsync(b => b.EmailDomain == domain);
-
-                        if (broker != null)
+                        else
                         {
+                            //check if user has changed parent domain to another valid parent domain
+                            if (!string.IsNullOrEmpty(model.OrganisationIdentifier))
+                            {
+                                var selectedOrganisationId = model.OrganisationIdentifier.ToSwedishInt();
+                                organisation = await _dbContext.CustomerOrganisations
+                                    .Where(c => (c.CustomerOrganisationId == selectedOrganisationId && c.ParentCustomerOrganisationId == organisation.CustomerOrganisationId)
+                                    || (c.CustomerOrganisationId == organisation.CustomerOrganisationId && c.CustomerOrganisationId == selectedOrganisationId))
+                                    .SingleOrDefaultAsync();
+                                if (organisation == null)
+                                {
+                                    ModelState.AddModelError(nameof(model.Email), $"Organisationen som valdes tillhörde inte domänen {domain}. Försök igen.");
+                                    return View(model);
+                                }
+                            }
                             var user = new AspNetUser(model.Email,
-                                    _userService.GenerateUserName(model.FirstName, model.LastName, broker.OrganizationPrefix),
-                                    model.FirstName,
-                                    model.LastName,
-                                    broker);
+                                _userService.GenerateUserName(model.FirstName, model.LastName, organisation.OrganisationPrefix),
+                                model.FirstName,
+                                model.LastName,
+                                organisation);
                             var result = await _userManager.CreateAsync(user);
 
                             if (result.Succeeded)
@@ -711,9 +681,33 @@ namespace Tolk.Web.Controllers
                             AddErrors(result);
                             return View(model);
                         }
-                        ModelState.AddModelError(nameof(model.Email),
-                            $"Myndighet med e-postdomänen {domain} finns ännu inte registrerad i tjänsten. Kontakta {_options.Support.UserAccountEmail}.");
                     }
+
+                    var broker = await _dbContext.Brokers
+                        .SingleOrDefaultAsync(b => b.EmailDomain == domain);
+
+                    if (broker != null)
+                    {
+                        var user = new AspNetUser(model.Email,
+                                _userService.GenerateUserName(model.FirstName, model.LastName, broker.OrganizationPrefix),
+                                model.FirstName,
+                                model.LastName,
+                                broker);
+                        var result = await _userManager.CreateAsync(user);
+
+                        if (result.Succeeded)
+                        {
+                            await _userService.SendInviteAsync(user);
+                            await _userService.LogCreateAsync(user.Id);
+
+                            trn.Commit();
+                            return RedirectToAction(nameof(ConfirmAccountLinkSent));
+                        }
+                        AddErrors(result);
+                        return View(model);
+                    }
+                    ModelState.AddModelError(nameof(model.Email),
+                        $"Myndighet med e-postdomänen {domain} finns ännu inte registrerad i tjänsten. Kontakta {_options.Support.UserAccountEmail}.");
                 }
             }
 
@@ -901,46 +895,44 @@ namespace Tolk.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                using (var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-                {
-                    var user = await _userManager.FindByIdAsync(model.UserId);
+                using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+                var user = await _userManager.FindByIdAsync(model.UserId);
 
-                    if (user != null)
+                if (user != null)
+                {
+                    await _userService.LogUpdatePasswordAsync(user.Id);
+                    var result = await _userManager.ResetPasswordAsync(user, model.PasswordToken, model.NewPassword);
+                    if (result.Succeeded)
                     {
-                        await _userService.LogUpdatePasswordAsync(user.Id);
-                        var result = await _userManager.ResetPasswordAsync(user, model.PasswordToken, model.NewPassword);
+                        await _userService.LogOnUpdateAsync(user.Id);
+                        // Resetting the security stamp invalidates the password token so operation cannot be redone.
+                        await _userManager.UpdateSecurityStampAsync(user);
+                        await _signInManager.SignInAsync(user, true);
+
+                        user.NameFirst = model.NameFirst;
+                        user.NameFamily = model.NameFamily;
+                        user.PhoneNumber = model.PhoneWork;
+                        user.PhoneNumberCellphone = model.PhoneCellphone;
+                        user.LastLoginAt = _clock.SwedenNow;
+                        result = await _userManager.UpdateAsync(user);
+                        await _userService.LogLoginAsync(user.Id);
+                        model.IsCustomer = user.CustomerOrganisationId.HasValue;
                         if (result.Succeeded)
                         {
-                            await _userService.LogOnUpdateAsync(user.Id);
-                            // Resetting the security stamp invalidates the password token so operation cannot be redone.
-                            await _userManager.UpdateSecurityStampAsync(user);
-                            await _signInManager.SignInAsync(user, true);
-
-                            user.NameFirst = model.NameFirst;
-                            user.NameFamily = model.NameFamily;
-                            user.PhoneNumber = model.PhoneWork;
-                            user.PhoneNumberCellphone = model.PhoneCellphone;
-                            user.LastLoginAt = _clock.SwedenNow;
-                            result = await _userManager.UpdateAsync(user);
-                            await _userService.LogLoginAsync(user.Id);
-                            model.IsCustomer = user.CustomerOrganisationId.HasValue;
-                            if (result.Succeeded)
+                            _logger.LogInformation("Successfully created new user {userId}", user.Id);
+                            //when user is updated refresh sign in to get possible updated claims
+                            if (!User.IsImpersonated())
                             {
-                                _logger.LogInformation("Successfully created new user {userId}", user.Id);
-                                //when user is updated refresh sign in to get possible updated claims
-                                if (!User.IsImpersonated())
-                                {
-                                    await _signInManager.RefreshSignInAsync(user);
-                                }
-                                transaction.Complete();
-                                return View(nameof(RegisterNewAccountConfirmation), model);
+                                await _signInManager.RefreshSignInAsync(user);
                             }
+                            transaction.Complete();
+                            return View(nameof(RegisterNewAccountConfirmation), model);
                         }
                     }
-                    else
-                    {
-                        throw new ApplicationException($"Found no user with id {model.UserId}");
-                    }
+                }
+                else
+                {
+                    throw new ApplicationException($"Found no user with id {model.UserId}");
                 }
             }
 

@@ -180,18 +180,16 @@ namespace Tolk.Web.Controllers
                     var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                     if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
                     {
-                        using (var trn = await _dbContext.Database.BeginTransactionAsync())
-                        {
-                            // add a few lists, used when copying in constructor
-                            order.CompetenceRequirements = await _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(order.OrderId).ToListAsync();
-                            order.InterpreterLocations = new List<OrderInterpreterLocation>();
-                            Order replacementOrder = new Order(order);
-                            model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value, CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
-                            await _orderService.ReplaceOrder(order, replacementOrder, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
-                            await _dbContext.SaveChangesAsync();
-                            trn.Commit();
-                            return RedirectToAction("Index", "Home", new { message = "Ersättningsuppdrag är skickat" });
-                        }
+                        using var trn = await _dbContext.Database.BeginTransactionAsync();
+                        // add a few lists, used when copying in constructor
+                        order.CompetenceRequirements = await _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(order.OrderId).ToListAsync();
+                        order.InterpreterLocations = new List<OrderInterpreterLocation>();
+                        Order replacementOrder = new Order(order);
+                        model.UpdateOrder(replacementOrder, model.TimeRange.StartDateTime.Value, model.TimeRange.EndDateTime.Value, CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
+                        await _orderService.ReplaceOrder(order, replacementOrder, User.GetUserId(), User.TryGetImpersonatorId(), model.CancelMessage);
+                        await _dbContext.SaveChangesAsync();
+                        trn.Commit();
+                        return RedirectToAction("Index", "Home", new { message = "Ersättningsuppdrag är skickat" });
                     }
                 }
             }
@@ -403,30 +401,28 @@ namespace Tolk.Web.Controllers
             }
             if (ModelState.IsValid)
             {
-                using (var trn = await _dbContext.Database.BeginTransactionAsync())
+                using var trn = await _dbContext.Database.BeginTransactionAsync();
+                if (model.IsMultipleOrders)
                 {
-                    if (model.IsMultipleOrders)
-                    {
-                        var orderGroup = await CreateNewOrderGroup(await GetOrdersForGroup(model));
-                        model.UpdateOrderGroup(orderGroup, CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
-                        await _dbContext.AddAsync(orderGroup);
-                        //TODO: LASTANSWER BY HAS TO BE NULL IF NOT ONLY ONE OCCASION WITH EXTRA INTERPRETER!!
-                        await _orderService.CreateRequestGroup(orderGroup, latestAnswerBy: model.LatestAnswerBy);
+                    var orderGroup = await CreateNewOrderGroup(await GetOrdersForGroup(model));
+                    model.UpdateOrderGroup(orderGroup, CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
+                    await _dbContext.AddAsync(orderGroup);
+                    //TODO: LASTANSWER BY HAS TO BE NULL IF NOT ONLY ONE OCCASION WITH EXTRA INTERPRETER!!
+                    await _orderService.CreateRequestGroup(orderGroup, latestAnswerBy: model.LatestAnswerBy);
 
-                        await _dbContext.SaveChangesAsync();
-                        trn.Commit();
-                        return RedirectToAction(nameof(SentGroup), new { id = orderGroup.OrderGroupId });
-                    }
-                    else
-                    {
-                        Order order = await CreateNewOrder();
-                        var firstOccasion = model.FirstOccasion;
-                        model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
-                        await _orderService.Create(order, latestAnswerBy: model.LatestAnswerBy);
-                        await _dbContext.SaveChangesAsync();
-                        trn.Commit();
-                        return RedirectToAction(nameof(Sent), new { id = order.OrderId });
-                    }
+                    await _dbContext.SaveChangesAsync();
+                    trn.Commit();
+                    return RedirectToAction(nameof(SentGroup), new { id = orderGroup.OrderGroupId });
+                }
+                else
+                {
+                    Order order = await CreateNewOrder();
+                    var firstOccasion = model.FirstOccasion;
+                    model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
+                    await _orderService.Create(order, latestAnswerBy: model.LatestAnswerBy);
+                    await _dbContext.SaveChangesAsync();
+                    trn.Commit();
+                    return RedirectToAction(nameof(Sent), new { id = order.OrderId });
                 }
             }
             return View(model);

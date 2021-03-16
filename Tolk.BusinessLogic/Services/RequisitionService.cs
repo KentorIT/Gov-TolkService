@@ -64,46 +64,44 @@ namespace Tolk.BusinessLogic.Services
                 mealbreaks
             );
 
-            using (var transaction = _dbContext.Database.BeginTransaction())
+            using var transaction = _dbContext.Database.BeginTransaction();
+            var requisition = new Requisition
             {
-                var requisition = new Requisition
-                {
-                    Status = RequisitionStatus.Created,
-                    CreatedBy = userId,
-                    CreatedAt = _clock.SwedenNow,
-                    ImpersonatingCreatedBy = impersonatorId,
-                    Message = message,
-                    SessionStartedAt = sessionStartedAt,
-                    SessionEndedAt = sessionEndedAt,
-                    TimeWasteNormalTime = timeWasteNormalTime,
-                    TimeWasteIWHTime = timeWasteIWHTime,
-                    InterpretersTaxCard = interpreterTaxCard,
-                    PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)).ToList(),
-                    Attachments = attachments,
-                    MealBreaks = mealbreaks,
-                    CarCompensation = carCompensation,
-                    PerDiem = perDiem,
-                    RequestOrReplacingOrderPeriodUsed = useRequestRows,
-                };
+                Status = RequisitionStatus.Created,
+                CreatedBy = userId,
+                CreatedAt = _clock.SwedenNow,
+                ImpersonatingCreatedBy = impersonatorId,
+                Message = message,
+                SessionStartedAt = sessionStartedAt,
+                SessionEndedAt = sessionEndedAt,
+                TimeWasteNormalTime = timeWasteNormalTime,
+                TimeWasteIWHTime = timeWasteIWHTime,
+                InterpretersTaxCard = interpreterTaxCard,
+                PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)).ToList(),
+                Attachments = attachments,
+                MealBreaks = mealbreaks,
+                CarCompensation = carCompensation,
+                PerDiem = perDiem,
+                RequestOrReplacingOrderPeriodUsed = useRequestRows,
+            };
 
-                foreach (var tag in _dbContext.TemporaryAttachmentGroups.Where(t => t.TemporaryAttachmentGroupKey == fileGroupKey))
-                {
-                    _dbContext.TemporaryAttachmentGroups.Remove(tag);
-                }
-                request.CreateRequisition(requisition);
-                await _dbContext.SaveChangesAsync();
-                var replacingRequisition = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Commented &&
-                    !r.ReplacedByRequisitionId.HasValue);
-                if (replacingRequisition != null)
-                {
-                    replacingRequisition.ReplacedByRequisitionId = requisition.RequisitionId;
-                    await _dbContext.SaveChangesAsync();
-                }
-                transaction.Commit();
-                _logger.LogDebug($"Created requisition {requisition.RequisitionId} for request {request.RequestId}");
-                _notificationService.RequisitionCreated(requisition);
-                return requisition;
+            foreach (var tag in _dbContext.TemporaryAttachmentGroups.Where(t => t.TemporaryAttachmentGroupKey == fileGroupKey))
+            {
+                _dbContext.TemporaryAttachmentGroups.Remove(tag);
             }
+            request.CreateRequisition(requisition);
+            await _dbContext.SaveChangesAsync();
+            var replacingRequisition = request.Requisitions.SingleOrDefault(r => r.Status == RequisitionStatus.Commented &&
+                !r.ReplacedByRequisitionId.HasValue);
+            if (replacingRequisition != null)
+            {
+                replacingRequisition.ReplacedByRequisitionId = requisition.RequisitionId;
+                await _dbContext.SaveChangesAsync();
+            }
+            transaction.Commit();
+            _logger.LogDebug($"Created requisition {requisition.RequisitionId} for request {request.RequestId}");
+            _notificationService.RequisitionCreated(requisition);
+            return requisition;
         }
 
         public async Task Review(Requisition requisition, int userId, int? impersonatorId)
@@ -114,6 +112,7 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogDebug($"Requisition reviewed {requisition.RequisitionId}");
             await _notificationService.RequisitionReviewed(requisition);
         }
+
         public async Task ConfirmNoReview(Requisition requisition, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(requisition, nameof(ConfirmNoReview), nameof(RequisitionService));

@@ -270,93 +270,90 @@ namespace Tolk.BusinessLogic.Services
 
         #region Generate Excel
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Needed to get better Ef code")]
         public static MemoryStream CreateExcelFile(IEnumerable<ReportRow> rows, ReportType reportType)
         {
-            using (var workbook = new XLWorkbook())
+            using var workbook = new XLWorkbook();
+            var rowsWorksheet = workbook.Worksheets.Add(EnumHelper.GetDescription(reportType));
+            char columnLetter = 'A';
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "BokningsId";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderNumber);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = reportType.GetCustomName();
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportDate);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Språk";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Language);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Län";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Region);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Uppdragstyp";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentType);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolkens kompetensnivå";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterCompetenceLevel.GetDescription());
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Kammarkollegiets tolknr";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterId);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterLocation);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tid för uppdrag";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentDate);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighetens ärendenummer";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReferenceNumber);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Accepterar restid";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AllowExceedingTravelCost);
+            switch (reportType)
             {
-                var rowsWorksheet = workbook.Worksheets.Add(EnumHelper.GetDescription(reportType));
-                char columnLetter = 'A';
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "BokningsId";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderNumber);
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = reportType.GetCustomName();
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportDate);
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Språk";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Language);
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Län";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Region);
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Uppdragstyp";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentType);
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolkens kompetensnivå";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterCompetenceLevel.GetDescription());
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Kammarkollegiets tolknr";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterId);
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterLocation);
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tid för uppdrag";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentDate);
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighetens ärendenummer";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReferenceNumber);
-                rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Accepterar restid";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AllowExceedingTravelCost);
-                switch (reportType)
-                {
-                    case ReportType.RequestsForBrokers:
-                    case ReportType.OrdersForCustomer:
-                    case ReportType.OrdersForSystemAdministrator:
-                    case ReportType.RequisitionsForSystemAdministrator:
-                    case ReportType.RequisitionsForBroker:
-                    case ReportType.RequisitionsForCustomer:
-                    case ReportType.ComplaintsForCustomer:
-                    case ReportType.ComplaintsForBroker:
-                    case ReportType.ComplaintsForSystemAdministrator:
-                        rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Status";
-                        rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Status.ToString());
-                        break;
-                    case ReportType.DeliveredOrdersBrokers:
-                    case ReportType.DeliveredOrdersCustomer:
-                    case ReportType.DeliveredOrdersSystemAdministrator:
-                        rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Rekvisition finns";
-                        rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasRequisition ? "Ja" : "Nej");
-                        rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Reklamation finns";
-                        rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasComplaint ? "Ja" : "Nej");
-                        rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Belopp enligt bekräftelse (SEK)";
-                        rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
-                        rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
-                        break;
-                }
-                if (rows.FirstOrDefault() is ReportRequisitionRow)
-                {
-                    CreateColumnsForRequisition(rowsWorksheet, (rows as IEnumerable<ReportRequisitionRow>).Select(r => r), ref columnLetter, reportType);
-                }
-                else if (rows.FirstOrDefault() is ReportComplaintRow)
-                {
-                    CreateColumnsForComplaint(rowsWorksheet, (rows as IEnumerable<ReportComplaintRow>).Select(r => r), ref columnLetter, reportType);
-                }
-                else if (rows.FirstOrDefault() is ReportOrderRow)
-                {
-                    CreateColumnsForOrder(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter);
-                }
-                switch (EnumHelper.Parent<ReportType, ReportGroup>(reportType))
-                {
-                    case ReportGroup.SystemAdminReport:
-                        CreateColumnsForSystemAdministrator(rowsWorksheet, rows, ref columnLetter);
-                        break;
-                    case ReportGroup.BrokerReport:
-                        CreateColumnsForBroker(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRow);
-                        break;
-                    case ReportGroup.CustomerReport:
-                        CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRow);
-                        break;
-                }
-                rowsWorksheet.Row(1).Style.Font.Bold = true;
-                rowsWorksheet.Columns().AdjustToContents();
-                MemoryStream memoryStream = new MemoryStream();
-                workbook.SaveAs(memoryStream);
-                memoryStream.Flush();
-                memoryStream.Position = 0;
-                return memoryStream;
+                case ReportType.RequestsForBrokers:
+                case ReportType.OrdersForCustomer:
+                case ReportType.OrdersForSystemAdministrator:
+                case ReportType.RequisitionsForSystemAdministrator:
+                case ReportType.RequisitionsForBroker:
+                case ReportType.RequisitionsForCustomer:
+                case ReportType.ComplaintsForCustomer:
+                case ReportType.ComplaintsForBroker:
+                case ReportType.ComplaintsForSystemAdministrator:
+                    rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Status";
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Status.ToString());
+                    break;
+                case ReportType.DeliveredOrdersBrokers:
+                case ReportType.DeliveredOrdersCustomer:
+                case ReportType.DeliveredOrdersSystemAdministrator:
+                    rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Rekvisition finns";
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasRequisition ? "Ja" : "Nej");
+                    rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Reklamation finns";
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasComplaint ? "Ja" : "Nej");
+                    rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Belopp enligt bekräftelse (SEK)";
+                    rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
+                    break;
             }
+            if (rows.FirstOrDefault() is ReportRequisitionRow)
+            {
+                CreateColumnsForRequisition(rowsWorksheet, (rows as IEnumerable<ReportRequisitionRow>).Select(r => r), ref columnLetter, reportType);
+            }
+            else if (rows.FirstOrDefault() is ReportComplaintRow)
+            {
+                CreateColumnsForComplaint(rowsWorksheet, (rows as IEnumerable<ReportComplaintRow>).Select(r => r), ref columnLetter, reportType);
+            }
+            else if (rows.FirstOrDefault() is ReportOrderRow)
+            {
+                CreateColumnsForOrder(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter);
+            }
+            switch (EnumHelper.Parent<ReportType, ReportGroup>(reportType))
+            {
+                case ReportGroup.SystemAdminReport:
+                    CreateColumnsForSystemAdministrator(rowsWorksheet, rows, ref columnLetter);
+                    break;
+                case ReportGroup.BrokerReport:
+                    CreateColumnsForBroker(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRow);
+                    break;
+                case ReportGroup.CustomerReport:
+                    CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRow);
+                    break;
+            }
+            rowsWorksheet.Row(1).Style.Font.Bold = true;
+            rowsWorksheet.Columns().AdjustToContents();
+            MemoryStream memoryStream = new MemoryStream();
+            workbook.SaveAs(memoryStream);
+            memoryStream.Flush();
+            memoryStream.Position = 0;
+            return memoryStream;
         }
 
         private static void CreateColumnsForOrder(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
@@ -503,7 +500,6 @@ namespace Tolk.BusinessLogic.Services
             return $"{columnLetter}{index}";
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1305:Specify IFormatProvider", Justification = "Needed to get better ef code")]
         public static IEnumerable<ReportRow> GetOrderExcelFileRows(ReportOrderModel reportOrder, ReportType reportType)
         {
             var isBroker = (reportType == ReportType.DeliveredOrdersBrokers || reportType == ReportType.RequestsForBrokers);

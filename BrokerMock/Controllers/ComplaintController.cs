@@ -43,7 +43,7 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} har fått reklamation registrerad.");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Boknings-ID: {payload.OrderNumber} har fått reklamation registrerad.");
             }
             if (_cache.Get<List<ListItemResponse>>("LocationTypes") == null)
             {
@@ -69,7 +69,7 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} reklamationens bestridning har accepterats.");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Boknings-ID: {payload.OrderNumber} reklamationens bestridning har accepterats.");
             }
             return new JsonResult("Success");
         }
@@ -79,7 +79,7 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Boknings-ID: {payload.OrderNumber} reklamationens bestridning godtogs inte. Inväntar extern process.");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Boknings-ID: {payload.OrderNumber} reklamationens bestridning godtogs inte. Inväntar extern process.");
             }
             var extraInstructions = GetExtraInstructions(payload.Message);
 
@@ -104,20 +104,18 @@ namespace BrokerMock.Controllers
                 OrderNumber = orderNumber,
                 CallingUser = "regular-user@formedling1.se"
             };
-            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+            var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/Accept"), content);
+            if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
-                var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/Accept"), content);
-                if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Boknings-ID: {orderNumber} accepterat reklamation");
-                }
-                else
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept] FAILED:: Boknings-ID: {orderNumber} accepterat reklamation");
-                }
-
-                return true;
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Boknings-ID: {orderNumber} accepterat reklamation");
             }
+            else
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept] FAILED:: Boknings-ID: {orderNumber} accepterat reklamation");
+            }
+
+            return true;
         }
 
         private async Task<bool> Dispute(string orderNumber, string message)
@@ -128,20 +126,18 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se",
                 Message = message
             };
-            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+            var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/Dispute"), content);
+            if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
-                var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Complaint/Dispute"), content);
-                if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/Dispute]:: Boknings-ID: {orderNumber} Bestrider reklamation!");
-                }
-                else
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/Dispute] FAILED:: Boknings-ID: {orderNumber}Bestrider reklamation!");
-                }
-
-                return true;
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/Dispute]:: Boknings-ID: {orderNumber} Bestrider reklamation!");
             }
+            else
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Complaint/Dispute] FAILED:: Boknings-ID: {orderNumber}Bestrider reklamation!");
+            }
+
+            return true;
         }
 
         private async Task<ComplaintDetailsResponse> GetComplaint(string orderNumber)

@@ -7,12 +7,10 @@ namespace Tolk.BusinessLogic.Services
 {
     public class DateCalculationService
     {
-        private readonly TolkDbContext _tolkDbContext;
         private readonly CacheService _cacheService;
 
-        public DateCalculationService(TolkDbContext tolkDbContext, CacheService cacheService)
+        public DateCalculationService(CacheService cacheService)
         {
-            _tolkDbContext = tolkDbContext;
             _cacheService = cacheService;
         }
 

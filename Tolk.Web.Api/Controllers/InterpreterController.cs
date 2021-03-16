@@ -37,7 +37,6 @@ namespace Tolk.Web.Api.Controllers
         #region Updating Methods
 
         [HttpPost]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         [ProducesResponseType(200, Type = typeof(CreateInterpreterResponse))]
         [ProducesResponseType(403, Type = typeof(ErrorResponse))]
         [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
@@ -74,7 +73,6 @@ namespace Tolk.Web.Api.Controllers
         }
 
         [HttpPost]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         [ProducesResponseType(200, Type = typeof(UpdateInterpreterResponse))]
         [ProducesResponseType(403, Type = typeof(ErrorResponse))]
         [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
@@ -115,7 +113,6 @@ namespace Tolk.Web.Api.Controllers
         #region getting methods
 
         [HttpGet]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "This is a public api, do not return 500")]
         [ProducesResponseType(200, Type = typeof(ViewInterpreterResponse))]
         [ProducesResponseType(403, Type = typeof(ErrorResponse))]
         [Description("Returnerar all information om en registrerad tolk kopplad till den anropande förmedlingen")]

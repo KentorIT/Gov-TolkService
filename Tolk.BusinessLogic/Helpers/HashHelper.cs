@@ -10,22 +10,18 @@ namespace Tolk.BusinessLogic.Services
         public static string CreateSalt(int size)
         {
             //Generate a cryptographic random number.
-            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
-            {
-                byte[] buff = new byte[size];
-                rng.GetBytes(buff);
-                return Convert.ToBase64String(buff);
-            }
+            using RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+            byte[] buff = new byte[size];
+            rng.GetBytes(buff);
+            return Convert.ToBase64String(buff);
         }
 
         public static string GenerateHash(string input, string salt)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(input + salt);
-            using (SHA256Managed sHA256ManagedString = new SHA256Managed())
-            {
-                byte[] hash = sHA256ManagedString.ComputeHash(bytes);
-                return Convert.ToBase64String(hash);
-            }
+            using SHA256Managed sHA256ManagedString = new SHA256Managed();
+            byte[] hash = sHA256ManagedString.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
         }
 
         public static bool AreEqual(string plainTextInput, string hashedInput, string salt)

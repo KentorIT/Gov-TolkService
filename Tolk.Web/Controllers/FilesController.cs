@@ -82,26 +82,24 @@ namespace Tolk.Web.Controllers
                         });
                     }
 
-                    using (Stream stream = file.OpenReadStream())
+                    using Stream stream = file.OpenReadStream();
+                    byte[] byteArray;
+                    byteArray = new byte[file.Length];
+                    stream.Read(byteArray, 0, (int)file.Length);
+                    stream.Close();
+                    var fileName = Path.GetFileName(file.FileName);
+                    var attachment = new Attachment
                     {
-                        byte[] byteArray;
-                        byteArray = new byte[file.Length];
-                        stream.Read(byteArray, 0, (int)file.Length);
-                        stream.Close();
-                        var fileName = Path.GetFileName(file.FileName);
-                        var attachment = new Attachment
-                        {
 
-                            Blob = byteArray,
-                            FileName = fileName,
-                            CreatedBy = User.GetUserId(),
-                            ImpersonatingCreator = User.TryGetImpersonatorId(),
-                            TemporaryAttachmentGroup = new TemporaryAttachmentGroup { TemporaryAttachmentGroupKey = groupKey.Value, CreatedAt = _clock.SwedenNow, }
-                        };
-                        _dbContext.Attachments.Add(attachment);
-                        _dbContext.SaveChanges();
-                        list.Add(new FileModel { Id = attachment.AttachmentId, FileName = fileName, Size = file.Length });
-                    }
+                        Blob = byteArray,
+                        FileName = fileName,
+                        CreatedBy = User.GetUserId(),
+                        ImpersonatingCreator = User.TryGetImpersonatorId(),
+                        TemporaryAttachmentGroup = new TemporaryAttachmentGroup { TemporaryAttachmentGroupKey = groupKey.Value, CreatedAt = _clock.SwedenNow, }
+                    };
+                    _dbContext.Attachments.Add(attachment);
+                    _dbContext.SaveChanges();
+                    list.Add(new FileModel { Id = attachment.AttachmentId, FileName = fileName, Size = file.Length });
                 }
                 trn.Commit();
             }

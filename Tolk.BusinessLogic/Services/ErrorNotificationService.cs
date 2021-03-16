@@ -12,27 +12,20 @@ namespace Tolk.BusinessLogic.Services
     public class ErrorNotificationService
     {
         private readonly ILogger<ErrorNotificationService> _logger;
-        private readonly TolkOptions _options;
-        private readonly ISwedishClock _clock;
         private readonly INotificationService _notificationService;
         private readonly TolkDbContext _tolkDbContext;
 
         public ErrorNotificationService(
             ILogger<ErrorNotificationService> logger,
-            IOptions<TolkOptions> options,
-            ISwedishClock clock,
             INotificationService notificationService,
             TolkDbContext tolkDbContext
         )
         {
             _logger = logger;
-            _options = options?.Value;
-            _clock = clock;
             _notificationService = notificationService;
             _tolkDbContext = tolkDbContext;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task CheckForFailuresToReport()
         {
             var callIds = await _tolkDbContext.OutboundWebHookCalls

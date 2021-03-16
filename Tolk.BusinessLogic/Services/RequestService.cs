@@ -84,7 +84,6 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Extra interpreter answer is only required if the request group contains a request for an extra interpreter.")]
         public async Task AcceptGroup(
             RequestGroup requestGroup,
             DateTimeOffset answerTime,
@@ -196,21 +195,16 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "To follow the standards when using current service")]
         public void Acknowledge(Request request, DateTimeOffset acknowledgeTime, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Acknowledge), nameof(RequestService));
             request.Received(acknowledgeTime, userId, impersonatorId);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "To follow the standards when using current service")]
         public async Task AcknowledgeGroup(RequestGroup requestGroup, DateTimeOffset acknowledgeTime, int userId, int? impersonatorId)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcknowledgeGroup), nameof(RequestService));
-            if (requestGroup.Requests == null)
-            {
-                requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
-            }
+            requestGroup.Requests ??= await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
             requestGroup.Received(acknowledgeTime, userId, impersonatorId);
         }
 
@@ -477,7 +471,6 @@ namespace Tolk.BusinessLogic.Services
         /// Deletes RequestViews that remain in database if session ends for user (session is set to 120 min)
         /// </summary>
         /// <returns></returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task DeleteRequestViews()
         {
             _logger.LogInformation("Start checking for RequestViews to delete");
@@ -505,7 +498,6 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Must not stop, any errors must be swollowed")]
         public async Task DeleteRequestGroupViews()
         {
             _logger.LogInformation("Start checking for RequestGroupViews to delete");

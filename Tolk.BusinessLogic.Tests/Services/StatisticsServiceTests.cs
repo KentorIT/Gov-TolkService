@@ -24,7 +24,6 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         public StatisticsServiceTests()
         {
-            var i = DateTimeOffset.Now;
             _tolkDbContext = CreateTolkDbContext();
             _clock = new StubSwedishClock(DateTimeOffset.Now.ToString());
 

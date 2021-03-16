@@ -228,21 +228,19 @@ namespace BrokerMock.Services
                 Message = "Testar att skicka en ny rekvisition, då",
                 MealBreaks = Enumerable.Empty<MealBreakModel>()
             };
-            using (var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json"))
+            using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Requisition/Create"), content);
+            if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
-                var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Requisition/Create"), content);
-                if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
-                {
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create]:: Rekvisition skapad för Boknings-ID: {orderNumber}");
-                }
-                else
-                {
-                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                    await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create] FAILED:: Rekvisition skulle skapas för Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
-                }
-
-                return true;
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create]:: Rekvisition skapad för Boknings-ID: {orderNumber}");
             }
+            else
+            {
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Requisition/Create] FAILED:: Rekvisition skulle skapas för Boknings-ID: {orderNumber} ErrorMessage: {errorResponse.ErrorMessage}");
+            }
+
+            return true;
         }
 
         public async Task<RequestDetailsResponse> GetInterpreter(string officialInterpreterId)

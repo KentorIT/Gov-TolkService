@@ -22,8 +22,6 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Catch the general exceptions and log, the startpage must be displayed")]
-
     public class HomeController : Controller
     {
         private readonly TolkDbContext _dbContext;
@@ -539,19 +537,6 @@ namespace Tolk.Web.Controllers
                 : c.OrderStatus == OrderStatus.NoBrokerAcceptedOrder ? c.AnsweredAt ?? c.RequestExpiresAt
                 : c.OrderStatus == OrderStatus.AwaitingDeadlineFromCustomer ? c.LastRequestCreatedUpdatedAt
                 : c.AnsweredAt;
-        }
-
-        private static DateTimeOffset? GetInfoDateForCustomerForGroup(CustomerStartListRow og)
-        {
-            switch (og.OrderGroupStatus)
-            {
-                case OrderStatus.NoBrokerAcceptedOrder:
-                    return og.AnsweredAt ?? og.RequestExpiresAt;
-                case OrderStatus.AwaitingDeadlineFromCustomer:
-                    return og.LastRequestCreatedUpdatedAt;
-                default:
-                    return og.AnsweredAt;
-            }
         }
 
         private IEnumerable<StartList> GetBrokerStartLists()
