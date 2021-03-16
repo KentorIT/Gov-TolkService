@@ -33,7 +33,7 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Rekvisition för Boknings-ID: {payload.OrderNumber} har blivit graskad");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Rekvisition för Boknings-ID: {payload.OrderNumber} har blivit graskad");
             }
 
             return new JsonResult("Success");
@@ -44,7 +44,7 @@ namespace BrokerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Svaret på Boknings-ID: {payload.OrderNumber} har nekats, med meddelande: '{payload.Message}'");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Svaret på Boknings-ID: {payload.OrderNumber} har nekats, med meddelande: '{payload.Message}'");
             }
             if (_cache.Get<List<ListItemResponse>>("LocationTypes") == null)
             {
