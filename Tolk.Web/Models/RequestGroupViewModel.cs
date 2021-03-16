@@ -118,7 +118,7 @@ namespace Tolk.Web.Models
                 BrokerOrganizationNumber = requestGroup.Ranking?.Broker.OrganizationNumber,
                 DenyMessage = requestGroup.DenyMessage,
                 CancelMessage = requestGroup.CancelMessage,
-                ExpiresAt = requestGroup.ExpiresAt ?? null,
+                ExpiresAt = requestGroup.ExpiresAt,
                 LatestAnswerTimeForCustomer = requestGroup.LatestAnswerTimeForCustomer,
                 CustomerInformationModel = new CustomerInformationModel
                 {

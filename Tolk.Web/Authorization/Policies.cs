@@ -70,36 +70,36 @@ namespace Tolk.Web.Authorization
             services.AddSingleton<IAuthorizationHandler, TolkOptionsRequirementHandler>();
         }
 
-        private readonly static Func<AuthorizationHandlerContext, bool> ViewMenuAndStartListsHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> ViewMenuAndStartListsHandler = (context) =>
         {
             return context.User.HasClaim(c => c.Type == TolkClaimTypes.IsPasswordSet) || context.User.IsImpersonated();
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> HasPasswordHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> HasPasswordHandler = (context) =>
         {
             return context.User.HasClaim(c => c.Type == TolkClaimTypes.IsPasswordSet);
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> CustomerOrAdminHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> CustomerOrAdminHandler = (context) =>
         {
             return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) ||
                 context.User.IsInRole(Roles.SystemAdministrator);
         };
 
 
-        private readonly static Func<AuthorizationHandlerContext, bool> ApplicationAdminOrBrokerCentralAdminHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> ApplicationAdminOrBrokerCentralAdminHandler = (context) =>
         {
             return (context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && context.User.IsInRole(Roles.CentralAdministrator)) ||
                 context.User.IsInRole(Roles.ApplicationAdministrator);
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> CentralLocalAdminHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> CentralLocalAdminHandler = (context) =>
         {
             return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) &&
                (context.User.IsInRole(Roles.CentralAdministrator) || context.User.HasClaim(c => c.Type == TolkClaimTypes.LocalAdminCustomerUnits));
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> SystemCentralLocalAdminHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> SystemCentralLocalAdminHandler = (context) =>
         {
             return (context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && context.User.HasClaim(c => c.Type == TolkClaimTypes.LocalAdminCustomerUnits))
             || context.User.IsInRole(Roles.CentralAdministrator)
@@ -107,7 +107,7 @@ namespace Tolk.Web.Authorization
             || context.User.IsInRole(Roles.ApplicationAdministrator);
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> EditHandler = (context) =>
         {
             var user = context.User;
             var localAdminCustomerUnits = user.TryGetLocalAdminCustomerUnits();
@@ -154,7 +154,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> DeleteHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> DeleteHandler = (context) =>
         {
             switch (context.Resource)
             {
@@ -165,7 +165,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> EditDefaultSettingsHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> EditDefaultSettingsHandler = (context) =>
         {
             var user = context.User;
             var localAdminCustomerUnits = user.TryGetLocalAdminCustomerUnits();
@@ -183,7 +183,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> EditContactHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> EditContactHandler = (context) =>
         {
             var userId = context.User.GetUserId();
             var customerOrganisationId = context.User.TryGetCustomerOrganisationId();
@@ -196,7 +196,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> ReplaceHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> ReplaceHandler = (context) =>
         {
             var user = context.User;
             var customerOrganisationId = user.TryGetCustomerOrganisationId();
@@ -213,7 +213,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> PrintHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> PrintHandler = (context) =>
         {
             var user = context.User;
             var customerOrganisationId = user.TryGetCustomerOrganisationId();
@@ -226,7 +226,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> CancelHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> CancelHandler = (context) =>
         {
             var user = context.User;
             var customerOrganisationId = user.TryGetCustomerOrganisationId();
@@ -245,7 +245,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> CreateRequisitionHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> CreateRequisitionHandler = (context) =>
         {
             switch (context.Resource)
             {
@@ -256,7 +256,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> CreateComplaintHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> CreateComplaintHandler = (context) =>
         {
             var user = context.User;
             var customerOrganisationId = user.TryGetCustomerOrganisationId();
@@ -269,7 +269,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> AcceptHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> AcceptHandler = (context) =>
         {
             var user = context.User;
             int userId = user.GetUserId();
@@ -300,7 +300,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> ViewHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> ViewHandler = (context) =>
         {
             var user = context.User;
             int userId = user.GetUserId();
@@ -397,7 +397,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> ViewDefaultSettingsHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> ViewDefaultSettingsHandler = (context) =>
         {
             var user = context.User;
             var localAdminCustomerUnits = user.TryGetLocalAdminCustomerUnits();
@@ -428,7 +428,7 @@ namespace Tolk.Web.Authorization
             }
         };
 
-        private readonly static Func<AuthorizationHandlerContext, bool> ConnectHandler = (context) =>
+        private static readonly Func<AuthorizationHandlerContext, bool> ConnectHandler = (context) =>
         {
             var user = context.User;
             var localAdminCustomerUnits = user.TryGetLocalAdminCustomerUnits();

@@ -24,7 +24,7 @@ namespace CustomerMock.Services
         private readonly IHubContext<WebHooksHub> _hubContext;
         private readonly CustomerMockOptions _options;
         private readonly IMemoryCache _cache;
-        private readonly static HttpClient client = new HttpClient();
+        private static readonly HttpClient client = new HttpClient();
 
         public ApiCallService(IHubContext<WebHooksHub> hubContext, IOptions<CustomerMockOptions> options, IMemoryCache cache)
         {

@@ -154,7 +154,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             List<Request> requests = null;
             if (requestExists)
             {
-                requests ??= new List<Request>() { new Request() { Status = requestStatus.Value, InterpreterLocation = (int?)interpreterLocation.Value, PriceRows = new List<RequestPriceRow>() } };
+                requests = new List<Request>() { new Request() { Status = requestStatus.Value, InterpreterLocation = (int?)interpreterLocation.Value, PriceRows = new List<RequestPriceRow>() } };
                 if (travelcost > 0)
                 {
                     requests.First().PriceRows.Add(new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost });
@@ -225,7 +225,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var order = new Order(MockOrders.First())
             {
                 Status = currentStatus,
-                ContactPersonId = prevContactPersonId ?? null,
+                ContactPersonId = prevContactPersonId,
                 OrderChangeLogEntries = new List<OrderChangeLogEntry>(),
                 AllowExceedingTravelCost = AllowExceedingTravelCost.No,
                 CustomerOrganisationId = 1,

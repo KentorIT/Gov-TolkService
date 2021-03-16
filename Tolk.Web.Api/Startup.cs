@@ -86,7 +86,7 @@ namespace Tolk.Web.Api
             }
             if (Configuration.GetSection("EnableFileLogging").Get<bool>())
             {
-                loggerFactory.AddLog4Net(Configuration.GetSection("Log4NetCore").Get<Microsoft.Extensions.Logging.Log4NetProviderOptions>());
+                loggerFactory.AddLog4Net(Configuration.GetSection("Log4NetCore").Get<Log4NetProviderOptions>());
             }
             app.UseStaticFiles();
 

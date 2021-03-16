@@ -437,7 +437,7 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<CustomerUnitUser> GetUsersForCustomerUnit(this IQueryable<CustomerUnitUser> customerUnitUsers, int customerUnitId)
           => customerUnitUsers.Where(cu => cu.CustomerUnitId == customerUnitId).Include(cu => cu.User);
 
-        public async static Task<IEnumerable<IdentityUserClaim<int>>> GetClaimsForUser(this IQueryable<IdentityUserClaim<int>> claims, int userId)
+        public static async Task<IEnumerable<IdentityUserClaim<int>>> GetClaimsForUser(this IQueryable<IdentityUserClaim<int>> claims, int userId)
             => await claims.Where(u => u.UserId == userId).ToListAsync();
 
         public static IQueryable<IdentityUserRole<int>> GetRolesForUser(this IQueryable<IdentityUserRole<int>> roles, int userId)
@@ -453,11 +453,11 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<AspNetUser> GetUserById(this IQueryable<AspNetUser> users, int id)
             => await users.SingleOrDefaultAsync(u => u.Id == id);
 
-        public async static Task<CustomerUnit> GetCustomerUnitById(this IQueryable<CustomerUnit> customerUnits, int id)
+        public static async Task<CustomerUnit> GetCustomerUnitById(this IQueryable<CustomerUnit> customerUnits, int id)
             => await customerUnits.Include(c => c.CreatedByUser).Include(c => c.InactivatedByUser)
                 .Where(c => c.CustomerUnitId == id).SingleOrDefaultAsync();
 
-        public async static Task<Attachment> GetNonConnectedAttachmentById(this IQueryable<Attachment> attachments, int id)
+        public static async Task<Attachment> GetNonConnectedAttachmentById(this IQueryable<Attachment> attachments, int id)
             => await attachments.Include(a => a.TemporaryAttachmentGroup).Where(a => a.AttachmentId == id &&
                 !a.Orders.Any() && !a.Requests.Any() && !a.Requisitions.Any()
                 && !a.OrderGroups.Any() && !a.RequestGroups.Any()).SingleOrDefaultAsync();
@@ -486,13 +486,13 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<OutboundEmail> GetEmailById(this IQueryable<OutboundEmail> emails, int id)
             => await emails.Include(e => e.ReplacedByEmail).SingleOrDefaultAsync(e => e.OutboundEmailId == id);
 
-        public async static Task<OrderGroup> GetOrderGroupById(this IQueryable<OrderGroup> groups, int id)
+        public static async Task<OrderGroup> GetOrderGroupById(this IQueryable<OrderGroup> groups, int id)
             => await groups.SingleOrDefaultAsync(og => og.OrderGroupId == id);
 
-        public async static Task<OrderGroup> GetOrderGroupWithContactsById(this IQueryable<OrderGroup> groups, int id)
+        public static async Task<OrderGroup> GetOrderGroupWithContactsById(this IQueryable<OrderGroup> groups, int id)
            => await groups.Include(g => g.CreatedByUser).SingleOrDefaultAsync(og => og.OrderGroupId == id);
 
-        public async static Task<OrderGroup> GetFullOrderGroupById(this IQueryable<OrderGroup> groups, int id)
+        public static async Task<OrderGroup> GetFullOrderGroupById(this IQueryable<OrderGroup> groups, int id)
            => await groups.Include(o => o.Language)
                 .Include(o => o.Region)
                 .Include(o => o.CustomerOrganisation)
@@ -719,31 +719,31 @@ namespace Tolk.BusinessLogic.Utilities
 
         #endregion
 
-        public async static Task<OrderAttachment> GetOrderAttachmentByAttachmentId(this IQueryable<OrderAttachment> attachments, int id)
+        public static async Task<OrderAttachment> GetOrderAttachmentByAttachmentId(this IQueryable<OrderAttachment> attachments, int id)
             => await attachments.Include(a => a.Attachment).Include(a => a.Order)
             .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
 
-        public async static Task<RequestAttachment> GetRequestAttachmentByAttachmentId(this IQueryable<RequestAttachment> attachments, int id)
+        public static async Task<RequestAttachment> GetRequestAttachmentByAttachmentId(this IQueryable<RequestAttachment> attachments, int id)
          => await attachments.Include(a => a.Attachment).Include(a => a.Request).ThenInclude(r => r.Ranking)
             .Include(a => a.Request).ThenInclude(r => r.Order)
             .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
 
-        public async static Task<RequisitionAttachment> GetRequisitionAttachmentByAttachmentId(this IQueryable<RequisitionAttachment> attachments, int id)
+        public static async Task<RequisitionAttachment> GetRequisitionAttachmentByAttachmentId(this IQueryable<RequisitionAttachment> attachments, int id)
         => await attachments.Include(a => a.Attachment)
             .Include(a => a.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Ranking)
             .Include(a => a.Requisition).ThenInclude(r => r.Request).ThenInclude(r => r.Order)
             .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
 
-        public async static Task<OrderGroupAttachment> GetOrderGroupAttachmentByAttachmentId(this IQueryable<OrderGroupAttachment> attachments, int id)
+        public static async Task<OrderGroupAttachment> GetOrderGroupAttachmentByAttachmentId(this IQueryable<OrderGroupAttachment> attachments, int id)
            => await attachments.Include(a => a.Attachment).Include(a => a.OrderGroup)
             .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
 
-        public async static Task<RequestGroupAttachment> GetRequestGroupAttachmentByAttachmentId(this IQueryable<RequestGroupAttachment> attachments, int id)
+        public static async Task<RequestGroupAttachment> GetRequestGroupAttachmentByAttachmentId(this IQueryable<RequestGroupAttachment> attachments, int id)
          => await attachments.Include(a => a.Attachment).Include(a => a.RequestGroup).ThenInclude(r => r.Ranking)
             .Include(a => a.RequestGroup).ThenInclude(r => r.OrderGroup)
             .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();
 
-        public async static Task<CustomerOrganisation> GetParentOrganisationsByDomain(this IQueryable<CustomerOrganisation> customerOrganisations, string domain)
+        public static async Task<CustomerOrganisation> GetParentOrganisationsByDomain(this IQueryable<CustomerOrganisation> customerOrganisations, string domain)
             => await customerOrganisations.SingleOrDefaultAsync(c => c.EmailDomain == domain && c.ParentCustomerOrganisationId == null);
 
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)

@@ -22,8 +22,8 @@ namespace BrokerMock.Services
         private readonly IHubContext<WebHooksHub> _hubContext;
         private readonly BrokerMockOptions _options;
         private readonly IMemoryCache _cache;
-        private readonly static HttpClient client = new HttpClient(GetCertHandler());
-        private readonly static HttpClient unauthorizedClient = new HttpClient();
+        private static readonly HttpClient client = new HttpClient(GetCertHandler());
+        private static readonly  HttpClient unauthorizedClient = new HttpClient();
         private readonly object clientLock = new object();
 
         public ApiCallService(IHubContext<WebHooksHub> hubContext, IOptions<BrokerMockOptions> options, IMemoryCache cache)

@@ -239,7 +239,7 @@ namespace Tolk.BusinessLogic.Entities
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
-            Interpreter = interpreter ?? throw new InvalidOperationException($"Interpreter is not set.");
+            Interpreter = interpreter ?? throw new InvalidOperationException("Interpreter is not set.");
             InterpreterLocation = (int?)interpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
             RequirementAnswers = requirementAnswers;
@@ -564,15 +564,15 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created))
             {
-                throw new InvalidOperationException($"A requisition cannot be created when there are active requisitions.");
+                throw new InvalidOperationException("A requisition cannot be created when there are active requisitions.");
             }
             if (!(Status == RequestStatus.Approved || Status == RequestStatus.Delivered))
             {
-                throw new InvalidOperationException($"A requisition cannot be created when request is not approved or delivered.");
+                throw new InvalidOperationException("A requisition cannot be created when request is not approved or delivered.");
             }
             if (Order.StartAt > requisition?.CreatedAt)
             {
-                throw new InvalidOperationException($"A requisition cannot be created before order start time.");
+                throw new InvalidOperationException("A requisition cannot be created before order start time.");
             }
             Requisitions.Add(requisition);
             //Change status on order accordingly.
@@ -664,13 +664,13 @@ namespace Tolk.BusinessLogic.Entities
             if (requirements.Count != requirementAnswers.Count ||
                 !requirements.OrderBy(r => r.OrderRequirementId).Select(r => r.OrderRequirementId).SequenceEqual(requirementAnswers.OrderBy(r => r.OrderRequirementId).Select(a => a.OrderRequirementId)))
             {
-                throw new InvalidOperationException($"The set of requirement answers does not match the set of requirements");
+                throw new InvalidOperationException("The set of requirement answers does not match the set of requirements");
             }
             if (requirements.Any(r => r.IsRequired &&
                  requirementAnswers.Any(a => a.OrderRequirementId == r.OrderRequirementId &&
                      !a.CanSatisfyRequirement)))
             {
-                throw new InvalidOperationException($"Negative answer on required requirement");
+                throw new InvalidOperationException("Negative answer on required requirement");
             }
         }
 
