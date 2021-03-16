@@ -22,7 +22,6 @@ namespace Tolk.Web.Services
             {
                 return Task.CompletedTask;
             }
-            DateTime dateTime;
             string timeValueSanitized;
             if (ValueDefinedAndUsed(timeValue))
             {
@@ -43,7 +42,7 @@ namespace Tolk.Web.Services
             {
                 timeValueSanitized = $"{timeHourValue.FirstValue}:{timeMinuteValue.FirstValue}";
             }
-            dateTime = $"{dateValue.FirstValue} {timeValueSanitized}".ToSwedishDateTime();
+            DateTime dateTime = $"{dateValue.FirstValue} {timeValueSanitized}".ToSwedishDateTime();
             var model = dateTime.ToDateTimeOffsetSweden();
 
             bindingContext.Result = ModelBindingResult.Success(model);
