@@ -63,11 +63,9 @@ namespace Tolk.Web.Controllers
             }
             using (var trn = _dbContext.Database.BeginTransaction())
             {
-                if (!groupKey.HasValue)
-                {
-                    //Create group
-                    groupKey = Guid.NewGuid();
-                }
+                //Create group
+                groupKey ??= Guid.NewGuid();
+
                 foreach (var file in files)
                 {
                     var extension = Path.GetExtension(file.FileName);

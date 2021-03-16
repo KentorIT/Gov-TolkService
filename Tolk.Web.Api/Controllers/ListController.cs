@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NSwag.Annotations;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -10,11 +11,10 @@ using Tolk.Api.Payloads.Enums;
 using Tolk.Api.Payloads.Responses;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Authorization;
 using Tolk.Web.Api.Helpers;
-using Tolk.BusinessLogic.Services;
-using NSwag.Annotations;
 
 namespace Tolk.Web.Api.Controllers
 {

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
@@ -6,8 +7,6 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Models;
-using System.Collections.Generic;
-using Org.BouncyCastle.Ocsp;
 
 namespace Tolk.Web.Services
 {

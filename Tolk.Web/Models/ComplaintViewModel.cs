@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Attributes;

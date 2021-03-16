@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
-using Tolk.Web.Api.Services;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Api.Services;
 
 namespace Tolk.Web.Api.Helpers
 {

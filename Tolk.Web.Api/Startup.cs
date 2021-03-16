@@ -1,23 +1,15 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Services;
+using Tolk.Web.Api.Authorization;
 using Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
-using Tolk.Web.Api.Authorization;
-using Tolk.Web.Api.Exceptions;
-using Microsoft.AspNetCore.Diagnostics;
-using Tolk.Api.Payloads.Responses;
-using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
-using System.Text;
-using Microsoft.Extensions.Hosting;
 
 namespace Tolk.Web.Api
 {

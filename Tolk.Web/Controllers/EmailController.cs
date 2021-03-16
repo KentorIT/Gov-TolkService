@@ -6,10 +6,10 @@ using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Services;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
-using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Controllers
 {

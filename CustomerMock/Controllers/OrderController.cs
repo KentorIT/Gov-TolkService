@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
-using CustomerMock.Hubs;
+﻿using CustomerMock.Hubs;
 using CustomerMock.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using Tolk.Api.Payloads.WebHookPayloads;
 
 namespace CustomerMock.Controllers

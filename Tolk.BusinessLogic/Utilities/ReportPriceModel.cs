@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Tolk.BusinessLogic.Utilities
+﻿namespace Tolk.BusinessLogic.Utilities
 {
     public class ReportPriceModel
     {

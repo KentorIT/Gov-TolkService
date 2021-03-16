@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Tolk.Web.Helpers;
 using Tolk.BusinessLogic.Entities;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {

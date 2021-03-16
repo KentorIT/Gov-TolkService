@@ -267,11 +267,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<IActionResult> PasswordLogin(LoginViewModel model, Uri returnUrl)
         {
-            var user = await _userManager.FindByEmailAsync(model.UserName);
-            if (user == null)
-            {
-                user = await _userManager.FindByNameAsync(model.UserName);
-            }
+            var user = await _userManager.FindByEmailAsync(model.UserName) ?? await _userManager.FindByNameAsync(model.UserName);
             if (user != null)
             {
                 var result = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: true, lockoutOnFailure: true);

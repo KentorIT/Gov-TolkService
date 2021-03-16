@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
 using DataTables.AspNet.AspNetCore;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Globalization;
 using System.Reflection;
@@ -17,10 +17,8 @@ using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
-using Tolk.Web.Services;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.DataProtection;
 using Tolk.Web.Models;
+using Tolk.Web.Services;
 
 namespace Tolk.Web
 {

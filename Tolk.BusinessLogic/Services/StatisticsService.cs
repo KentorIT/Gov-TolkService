@@ -7,8 +7,8 @@ using System.Linq;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
 {

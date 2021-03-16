@@ -40,10 +40,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.CentralLocalAdminCustomer)]
         public ActionResult List(UnitFilterModel model)
         {
-            if (model == null)
-            {
-                model = new UnitFilterModel();
-            }
+                model ??= new UnitFilterModel();
 
             IEnumerable<int> localAdminUnits = User.TryGetLocalAdminCustomerUnits() ?? new List<int>();
             var units = _dbContext.CustomerUnits

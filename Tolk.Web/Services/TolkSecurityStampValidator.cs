@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Linq;
 using System.Security.Claims;
@@ -8,7 +9,6 @@ using System.Threading.Tasks;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
-using Microsoft.Extensions.Logging;
 
 namespace Tolk.Web.Services
 {

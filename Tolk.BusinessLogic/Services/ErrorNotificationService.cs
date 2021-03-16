@@ -1,11 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {

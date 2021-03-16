@@ -35,10 +35,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.AppOrSysAdmin)]
         public IActionResult List(FaqFilterModel model)
         {
-            if (model == null)
-            {
-                model = new FaqFilterModel();
-            }
+            model ??= new FaqFilterModel();
             var faqDisplayUserRolesWithFaqs = _dbContext.FaqDisplayUserRole.GetAllFaqWithFaqDisplayUserRoles().Select(f => f);
             var faqs = faqDisplayUserRolesWithFaqs.Select(f => f.Faq).Distinct();
 

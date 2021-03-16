@@ -22,7 +22,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         {
             var orderGroup = MockOrderGroups.Where(og => og.OrderGroupNumber == "JUSTCREATED").Single();
             orderGroup.CreateRequestGroup(MockEntities.MockRankings.AsQueryable(), null, orderGroup.CreatedAt.AddMinutes(1));
-            Assert.Equal(requestGroups, orderGroup.RequestGroups.Count());
+            Assert.Equal(requestGroups, orderGroup.RequestGroups.Count);
             Assert.Equal(orderGroup.RequestGroups.First().Requests.Count, orderGroup.Orders.Count);
             Assert.Equal(expectedStatus, orderGroup.Status);
             Assert.Equal(orderGroup.Status, orderGroup.Orders.First().Status);
@@ -36,7 +36,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         {
             var orderGroup = MockOrderGroups.Where(og => og.OrderGroupNumber == "JUSTCREATED").Single();
             orderGroup.CreateRequestGroup(MockEntities.MockRankingsWithQuarantines.AsQueryable(), null, orderGroup.CreatedAt.AddMinutes(1));
-            Assert.Equal(requestGroups, orderGroup.RequestGroups.Count());
+            Assert.Equal(requestGroups, orderGroup.RequestGroups.Count);
             Assert.Equal(orderGroup.RequestGroups.Last().Requests.Count, orderGroup.Orders.Count);
             Assert.Equal(expectedStatus, orderGroup.Status);
             Assert.Equal(quarantinedStatus, orderGroup.RequestGroups.First().Status);

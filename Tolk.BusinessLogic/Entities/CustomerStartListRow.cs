@@ -1,5 +1,4 @@
-﻿using System;
-using Tolk.BusinessLogic.Enums;
+﻿using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {

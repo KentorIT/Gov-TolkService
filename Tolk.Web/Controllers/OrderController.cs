@@ -295,10 +295,7 @@ namespace Tolk.Web.Controllers
                         }
                         if (orderFieldsUpdated || attachmentChanged)
                         {
-                            if (order.OrderChangeLogEntries == null)
-                            {
-                                order.OrderChangeLogEntries = new List<OrderChangeLogEntry>();
-                            }
+                            order.OrderChangeLogEntries ??= new List<OrderChangeLogEntry>();
                             order.Update(new ChangeOrderModel
                             {
                                 UpdatedAt = _clock.SwedenNow,

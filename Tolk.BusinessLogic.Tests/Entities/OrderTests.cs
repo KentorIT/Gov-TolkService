@@ -154,10 +154,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             List<Request> requests = null;
             if (requestExists)
             {
-                requests = new List<Request>()
-                {
-                    new Request() { Status = requestStatus.Value, InterpreterLocation = (int?)interpreterLocation.Value, PriceRows = new List<RequestPriceRow>() }
-                };
+                requests ??= new List<Request>() { new Request() { Status = requestStatus.Value, InterpreterLocation = (int?)interpreterLocation.Value, PriceRows = new List<RequestPriceRow>() } };
                 if (travelcost > 0)
                 {
                     requests.First().PriceRows.Add(new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost });
@@ -321,7 +318,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             order.CustomerOrganisationId = customer;
             order.RegionId = region;
             order.CreateRequest(MockEntities.MockRankingsWithQuarantines.Where(r => r.RegionId == region).AsQueryable(), null, new DateTimeOffset(2018, 09, 07, 0, 0, 0, new TimeSpan(02, 00, 00)), false);
-            Assert.Equal(requests, order.Requests.Count());
+            Assert.Equal(requests, order.Requests.Count);
             Assert.Equal(expectedStatus, order.Status);
         }
 

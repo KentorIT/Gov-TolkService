@@ -592,10 +592,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
             foreach (Requisition r in requisitions)
             {
-                if (r.Request.Requisitions == null)
-                {
-                    r.Request.Requisitions = new List<Requisition>();
-                }
+                r.Request.Requisitions ??= new List<Requisition>();
+                
                 r.Request.Requisitions.Add(r);
             }
 
@@ -634,10 +632,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
             foreach (Complaint c in complaints)
             {
-                if (c.Request.Complaints == null)
-                {
-                    c.Request.Complaints = new List<Complaint>();
-                }
+                c.Request.Complaints ??= new List<Complaint>();
                 c.Request.Complaints.Add(c);
             }
 
@@ -650,10 +645,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             {
                 foreach (Request r in o.Requests)
                 {
-                    if (r.Requisitions == null)
-                    {
-                        r.Requisitions = new List<Requisition>();
-                    }
+                    r.Requisitions ??= new List<Requisition>();
                     r.Requisitions = requisitions.Where(req => req.Request == r).ToList();
                 }
             }

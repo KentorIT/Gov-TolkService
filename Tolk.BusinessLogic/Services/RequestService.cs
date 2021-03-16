@@ -6,9 +6,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
 {

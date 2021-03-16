@@ -1,11 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Linq;
+﻿using AutoMapper;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Helpers;
-using AutoMapper;
-using System;
-using System.Collections.Generic;
 
 namespace Tolk.Web.Models
 {

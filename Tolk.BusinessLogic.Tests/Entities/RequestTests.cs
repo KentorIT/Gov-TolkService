@@ -194,7 +194,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Equal((int)competenceLevel, request.CompetenceLevel);
             Assert.Equal(requirementAnswers, request.RequirementAnswers);
             Assert.Equal(attachments, request.Attachments);
-            Assert.Equal(priceInfo.PriceRows.Count(), request.PriceRows.Count());
+            Assert.Equal(priceInfo.PriceRows.Count(), request.PriceRows.Count);
             if (priceInfo.PriceRows.Any())
             {
                 Assert.Equal(priceInfo.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price, request.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price);
@@ -256,7 +256,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Equal((int)competenceLevel, request.CompetenceLevel);
             Assert.Equal(requirementAnswers, request.RequirementAnswers);
             Assert.Equal(attachments, request.Attachments);
-            Assert.Equal(priceInfo.PriceRows.Count(), request.PriceRows.Count());
+            Assert.Equal(priceInfo.PriceRows.Count(), request.PriceRows.Count);
             if (priceInfo.PriceRows.Any())
             {
                 Assert.Equal(priceInfo.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price, request.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price);
@@ -597,7 +597,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Equal(acceptTime, request.AnswerDate);
             Assert.Equal(userId, request.AnsweredBy);
             Assert.Equal(impersonatorId, request.ImpersonatingAnsweredBy);
-            Assert.Equal(priceInfo.PriceRows.Count(), request.PriceRows.Count());
+            Assert.Equal(priceInfo.PriceRows.Count(), request.PriceRows.Count);
             if (priceInfo.PriceRows.Any())
             {
                 Assert.Equal(priceInfo.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price, request.PriceRows.SingleOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost).Price);

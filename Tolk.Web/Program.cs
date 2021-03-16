@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Services;
-using Microsoft.Extensions.Logging;
 
 namespace Tolk.Web
 {

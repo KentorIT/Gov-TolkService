@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models

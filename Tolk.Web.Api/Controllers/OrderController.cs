@@ -1,7 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using NSwag;
 using NSwag.Annotations;
@@ -18,7 +17,6 @@ using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Authorization;
-using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
 using Tolk.Web.Api.Services;
 

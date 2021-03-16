@@ -10,10 +10,10 @@ using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Exceptions;
 using Tolk.Web.Api.Helpers;
-using Tolk.BusinessLogic.Services;
 
 
 namespace Tolk.Web.Api.Services

@@ -25,7 +25,7 @@ namespace Tolk.Web.Helpers
                 string gitInfo;
                 if (head.StartsWithSwedish("ref: "))
                 {
-                    var refFile = head.Substring(5).TrimEnd('\n');
+                    var refFile = head[5..].TrimEnd('\n');
                     if (File.Exists($"{gitDir}/{refFile}"))
                     {
                         gitInfo = File.ReadAllText($"{gitDir}/{refFile}").FormatVersion();

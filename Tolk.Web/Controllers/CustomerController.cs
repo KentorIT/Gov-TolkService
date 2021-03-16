@@ -9,9 +9,9 @@ using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
-using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
@@ -55,10 +55,7 @@ namespace Tolk.Web.Controllers
 
         public ActionResult List(CustomerFilterModel model)
         {
-            if (model == null)
-            {
-                model = new CustomerFilterModel();
-            }
+            model ??= new CustomerFilterModel();
 
             return View(new CustomerListModel
             {
