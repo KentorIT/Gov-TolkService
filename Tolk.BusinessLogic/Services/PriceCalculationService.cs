@@ -543,25 +543,17 @@ namespace Tolk.BusinessLogic.Services
 
         private static int GetDisplayOrder(PriceRowType type)
         {
-            switch (type)
+            return type switch
             {
-                case PriceRowType.InterpreterCompensation:
-                    return 1;
-                case PriceRowType.SocialInsuranceCharge:
-                    return 2;
-                case PriceRowType.AdministrativeCharge:
-                    return 3;
-                case PriceRowType.BrokerFee:
-                    return 4;
-                case PriceRowType.TravelCost:
-                    return 5;
-                case PriceRowType.Outlay:
-                    return 6;
-                case PriceRowType.RoundedPrice:
-                    return 100;
-                default:
-                    return 30;
-            }
+                PriceRowType.InterpreterCompensation => 1,
+                PriceRowType.SocialInsuranceCharge => 2,
+                PriceRowType.AdministrativeCharge => 3,
+                PriceRowType.BrokerFee => 4,
+                PriceRowType.TravelCost => 5,
+                PriceRowType.Outlay => 6,
+                PriceRowType.RoundedPrice => 100,
+                _ => 30,
+            };
         }
 
         private static string GetQuantityAndPricePerUnit(PriceRowBase priceRow)

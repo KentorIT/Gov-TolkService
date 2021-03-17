@@ -2,7 +2,6 @@
 using CustomerMock.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.WebHookPayloads;
 
@@ -12,13 +11,11 @@ namespace CustomerMock.Controllers
     {
         private readonly IHubContext<WebHooksHub> _hubContext;
         private readonly ApiCallService _apiService;
-        private readonly ILogger<OrderController> _logger;
 
-        public OrderController(IHubContext<WebHooksHub> hubContext, ApiCallService apiService, ILogger<OrderController> logger)
+        public OrderController(IHubContext<WebHooksHub> hubContext, ApiCallService apiService)
         {
             _hubContext = hubContext;
             _apiService = apiService;
-            _logger = logger;
         }
         #region actions from home page 
         public async Task<JsonResult> CreateSeveralOrders(int numberOfOrders, int delay = 1000)
@@ -61,7 +58,7 @@ namespace CustomerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Order: {payload.OrderNumber} har blivit accepterad av {await _apiService.GetBrokerName(payload.BrokerKey)}");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Order: {payload.OrderNumber} har blivit accepterad av {await _apiService.GetBrokerName(payload.BrokerKey)}");
             }
             return new JsonResult("Success");
         }
@@ -70,7 +67,7 @@ namespace CustomerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Order: {payload.OrderNumber} har blivit besvarad av {await _apiService.GetBrokerName(payload.BrokerKey)}");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Order: {payload.OrderNumber} har blivit besvarad av {await _apiService.GetBrokerName(payload.BrokerKey)}");
             }
             return new JsonResult("Success");
         }
@@ -80,7 +77,7 @@ namespace CustomerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Order: {payload.OrderNumber} förmedling {await _apiService.GetBrokerName(payload.BrokerKey)} tackade nej, med detta meddelande: {payload.Message} ");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Order: {payload.OrderNumber} förmedling {await _apiService.GetBrokerName(payload.BrokerKey)} tackade nej, med detta meddelande: {payload.Message} ");
             }
             return new JsonResult("Success");
         }
@@ -90,7 +87,7 @@ namespace CustomerMock.Controllers
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
-                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type.ToString()}]:: Order: {payload.OrderNumber} förmedling {await _apiService.GetBrokerName(payload.BrokerKey)} avbokade, med detta meddelande: {payload.Message} ");
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Order: {payload.OrderNumber} förmedling {await _apiService.GetBrokerName(payload.BrokerKey)} avbokade, med detta meddelande: {payload.Message} ");
             }
             return new JsonResult("Success");
         }

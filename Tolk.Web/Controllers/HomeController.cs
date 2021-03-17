@@ -97,9 +97,9 @@ namespace Tolk.Web.Controllers
         {
             get
             {
-                bool displayBrokerMessages = !User.TryGetBrokerId().HasValue ? User.IsInRole(Roles.SystemAdministrator) ? true : false : true;
-                bool displayCustomerMessages = !User.TryGetCustomerOrganisationId().HasValue ? User.IsInRole(Roles.SystemAdministrator) ? true : false : true;
-                bool displayCentralAdministratorMessages = !User.IsInRole(Roles.CentralAdministrator) ? User.IsInRole(Roles.SystemAdministrator) ? true : false : true;
+                bool displayBrokerMessages = User.TryGetBrokerId().HasValue || User.IsInRole(Roles.SystemAdministrator);
+                bool displayCustomerMessages = User.TryGetCustomerOrganisationId().HasValue || User.IsInRole(Roles.SystemAdministrator);
+                bool displayCentralAdministratorMessages = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.SystemAdministrator);
 
                 return _dbContext.SystemMessages
                     .Where(s => s.ActiveFrom < _clock.SwedenNow

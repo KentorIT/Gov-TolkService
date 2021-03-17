@@ -1069,7 +1069,7 @@ Sammanställning:
                     NotifyBrokerOnAcceptedAnswer(request, orderNumber);
                     break;
                 default:
-                    throw new NotImplementedException($"{nameof(RequestReplamentOrderAccepted)} cannot send notifications on requests with status: {request.Status.ToString()}");
+                    throw new NotImplementedException($"{nameof(RequestReplamentOrderAccepted)} cannot send notifications on requests with status: {request.Status}");
             }
         }
 
@@ -1149,7 +1149,7 @@ Sammanställning:
                     //No mail to customer if it was the customer that accepted.
                     break;
                 default:
-                    throw new NotImplementedException($"{nameof(RequestChangedInterpreterAccepted)} failed to send mail to customer. {changeOrigin.ToString()} is not a handled {nameof(InterpereterChangeAcceptOrigin)}");
+                    throw new NotImplementedException($"{nameof(RequestChangedInterpreterAccepted)} failed to send mail to customer. {changeOrigin} is not a handled {nameof(InterpereterChangeAcceptOrigin)}");
             }
         }
 
@@ -1475,16 +1475,12 @@ Sammanställning:
 
         private string GoToRequestPlain(int requestId, HtmlHelper.ViewTab tab = HtmlHelper.ViewTab.Default)
         {
-            switch (tab)
+            return tab switch
             {
-                case HtmlHelper.ViewTab.Default:
-                default:
-                    return $"\n\n\nGå till bokningsförfrågan: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}";
-                case HtmlHelper.ViewTab.Requisition:
-                    return $"\n\n\nGå till rekvisition: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=requisition")}";
-                case HtmlHelper.ViewTab.Complaint:
-                    return $"\n\n\nGå till reklamation: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=complaint")}";
-            }
+                HtmlHelper.ViewTab.Requisition => $"\n\n\nGå till rekvisition: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=requisition")}",
+                HtmlHelper.ViewTab.Complaint => $"\n\n\nGå till reklamation: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=complaint")}",
+                _ => $"\n\n\nGå till bokningsförfrågan: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId)}",
+            };
         }
 
         private string GoToRequestGroupPlain(int requestGroupId) => $"\n\n\nGå till bokningsförfrågan: {HtmlHelper.GetRequestGroupViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestGroupId)}";
@@ -1518,16 +1514,12 @@ Sammanställning:
             {
                 return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId), textOverride);
             }
-            switch (tab)
+            return tab switch
             {
-                case HtmlHelper.ViewTab.Default:
-                default:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId), "Till bokning");
-                case HtmlHelper.ViewTab.Requisition:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=requisition"), "Till rekvisition");
-                case HtmlHelper.ViewTab.Complaint:
-                    return breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=complaint"), "Till reklamation");
-            }
+                HtmlHelper.ViewTab.Requisition => breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=requisition"), "Till rekvisition"),
+                HtmlHelper.ViewTab.Complaint => breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId, "tab=complaint"), "Till reklamation"),
+                _ => breakLines + HtmlHelper.GetButtonDefaultLargeTag(HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, requestId), "Till bokning"),
+            };
         }
 
         private string GoToRequestGroupButton(int requestGroupId, string textOverride = null, bool autoBreakLines = true)
