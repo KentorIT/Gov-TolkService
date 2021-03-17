@@ -38,7 +38,7 @@ namespace Tolk.Web.Helpers
 
         public static bool IsImpersonated(this ClaimsPrincipal user)
         {
-            return (user.TryGetImpersonatorId() > 0 ? user.TryGetImpersonatorId() != user.GetUserId() : false);
+            return user.TryGetImpersonatorId() > 0 && user.TryGetImpersonatorId() != user.GetUserId();
         }
 
         public static int GetUserId(this ClaimsPrincipal user)

@@ -452,7 +452,7 @@ namespace Tolk.Web.Services
                 {
                     Text = $"{u.FullName} ({u.Email})",
                     Value = u.Id.ToSwedishString(),
-                }).OrderBy(e => e.Text).ToList();
+                }).ToList().OrderBy(e => e.Text);
         }
 
         public IEnumerable<SelectListItem> CustomerUnitsForCurrentUser
