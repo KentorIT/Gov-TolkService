@@ -152,7 +152,7 @@ namespace Tolk.Web.Api.Controllers
         private IActionResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
-            return Ok(TolkApiOptions.BrokerApiErrorResponses.Single(e => e.ErrorCode == errorCode));
+            return Ok(TolkApiOptions.BrokerApiErrorResponses.Union(TolkApiOptions.CommonErrorResponses).Single(e => e.ErrorCode == errorCode));
         }
 
         #endregion

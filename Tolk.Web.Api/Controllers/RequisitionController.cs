@@ -196,7 +196,7 @@ namespace Tolk.Web.Api.Controllers
         private IActionResult ReturnError(string errorCode)
         {
             //TODO: Add to log, information...
-            var message = TolkApiOptions.BrokerApiErrorResponses.Single(e => e.ErrorCode == errorCode);
+            var message = TolkApiOptions.BrokerApiErrorResponses.Union(TolkApiOptions.CommonErrorResponses).Single(e => e.ErrorCode == errorCode);
             return Ok(message);
         }
 

@@ -711,7 +711,7 @@ namespace Tolk.Web.Api.Controllers
         private IActionResult ReturnError(string errorCode, string specifiedErrorMessage = null)
         {
             //TODO: Add to log, information...
-            var message = TolkApiOptions.BrokerApiErrorResponses.Single(e => e.ErrorCode == errorCode).Copy();
+            var message = TolkApiOptions.BrokerApiErrorResponses.Union(TolkApiOptions.CommonErrorResponses).Single(e => e.ErrorCode == errorCode).Copy();
             if (!string.IsNullOrEmpty(specifiedErrorMessage))
             {
                 message.ErrorMessage = specifiedErrorMessage;
