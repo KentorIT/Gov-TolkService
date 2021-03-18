@@ -63,11 +63,9 @@ namespace Tolk.Web.Models
 
         public PriceInformation PriceInformation { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<FileModel> Files { get; set; }
 
         #region details
-
 
         public string ColorClassName { get => CssClassHelper.GetColorClassNameForOrderStatus(Status); }
 
@@ -117,7 +115,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Bokningsändringar")]
         public string DisplayOrderChangeText { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<int> ConfirmedOrderChangeLogEntries { get; set; } = new List<int>();
 
         #region user rights
@@ -282,6 +279,7 @@ namespace Tolk.Web.Models
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 CustomerName = order.CustomerOrganisation.Name,
                 CustomerOrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
+                CustomerPeppolId = order.CustomerOrganisation.PeppolId,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 CompetenceIsRequired = order.SpecificCompetenceLevelRequired,
                 TimeRange = new TimeRange

@@ -1,6 +1,5 @@
 ﻿@model OrderViewModel
-@{
-    const string IsOrderDetailViewKey = "IsOrderDetailView";
+@{ const string IsOrderDetailViewKey = "IsOrderDetailView";
     bool IsOrderDetailView = ViewData.ContainsKey(IsOrderDetailViewKey) ? (bool)ViewData[IsOrderDetailViewKey] : false;
     string header = (string)ViewData["header"] ?? "Myndighetens uppgifter";
 
@@ -8,58 +7,53 @@
 
     bool isCollapsible = (bool?)ViewData["isCollapsible"] ?? true;
     var divClass = isCollapsible ? "collapse" : "";
-    var divId = (string)ViewData["id"] ?? "CustomerOrganizationInfo";
-}
+    var divId = (string)ViewData["id"] ?? "CustomerOrganizationInfo"; }
 <section aria-label="@header">
     @if (isCollapsible)
     {
-        <a class="collapsible-section" data-toggle="collapse" data-target="#@divId">
-            <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h2>
-        </a>
-    }
-    else
-    {
-        <h1 class="normal-weight">@header</h1>
-    }
+<a class="collapsible-section" data-toggle="collapse" data-target="#@divId">
+    <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> @header</h2>
+</a> }
+else
+{
+<h1 class="normal-weight">@header</h1>}
     <hr />
     <div id="@divId" class="@divClass">
         <div class="row">
             <div class="col-sm-4">
                 <display-entry asp-for="CustomerName" />
+                <display-entry asp-for="CustomerPeppolId" />
                 <display-entry asp-for="InvoiceReference" />
-                <display-entry asp-for="CreatedBy" />
             </div>
             @if (IsOrderDetailView)
             {
-                <div class="col-sm-4">
-                    <display-entry asp-for="CustomerUnitName" />
-                    <display-entry asp-for="UnitName" />
-                    <display-entry asp-for="CustomerReferenceNumber" />
-                </div>
+<div class="col-sm-4">
+    <display-entry asp-for="CustomerUnitName" />
+    <display-entry asp-for="UnitName" />
+    <display-entry asp-for="CustomerReferenceNumber" />
+</div>
                 <div class="col-sm-4">
                     <display-entry asp-for="CustomerOrganisationNumber" />
+                    <display-entry asp-for="CreatedBy" />
                     <display-entry asp-for="ContactPerson" />
                     @if (Model.AllowEditContactPerson)
                     {
-                        <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-primary">@editContactpersonButtonText person</button>
-                        <br /><br />
-                    }
-                </div>
-            }
+    <button type="button" data-toggle="modal" data-target="#EditContactPerson" class="btn btn-primary">@editContactpersonButtonText person</button>
+                        <br /><br />}
+                </div> }
             else
             {
-                <div class="col-sm-4">
-                    <display-entry asp-for="CustomerUnitName" />
-                    <display-entry asp-for="UnitName" />
-                </div>
+<div class="col-sm-4">
+    <display-entry asp-for="CustomerUnitName" />
+    <display-entry asp-for="UnitName" />
+    <display-entry asp-for="CreatedBy" />
+
+</div>
                 <div class="col-sm-4">
                     <display-entry asp-for="CustomerOrganisationNumber" />
                     <display-entry asp-for="CustomerReferenceNumber" />
-                </div>
-                <div class="col-sm-4">
                     <display-entry asp-for="CustomerUseSelfInvoicingInterpreter" />
-                </div>
-            }
+                </div>}
         </div>
     </div>
 </section>

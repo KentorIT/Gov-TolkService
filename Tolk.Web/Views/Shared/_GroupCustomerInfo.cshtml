@@ -12,17 +12,18 @@
         <div class="row">
             <div class="col-sm-4">
                 <display-entry asp-for="Name" />
+                <display-entry asp-for="PeppolId" />
                 @if (!hasPossibleChanges)
                 {
                     <display-entry asp-for="InvoiceReference" />
                 }
+            </div>
+            <div class="col-sm-4">
+                <display-entry asp-for="OrganisationNumber" />
                 @if (!Model.IsCustomer)
                 {
                     <display-entry asp-for="UseSelfInvoicingInterpreter" />
                 }
-                </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="OrganisationNumber" />
                 @if (!hasPossibleChanges)
                 {
                     <display-entry asp-for="UnitName" />

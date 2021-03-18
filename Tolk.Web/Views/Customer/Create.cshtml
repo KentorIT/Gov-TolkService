@@ -26,7 +26,7 @@
                     <form-entry asp-for="OrganisationNumber" />
                 </div>
                 <div class="row col-sm-12">
-                    <form-entry asp-for="OrganisationPrefix" />
+                    <form-entry asp-for="PeppolId" />
                 </div>
                 <div class="row col-sm-12">
                     <form-entry asp-for="TravelCostAgreementType" type="select" asp-items="SelectListService.TravelCostAgreementTypes" />
@@ -35,6 +35,9 @@
             <div class="col-md-4">
                 <div class="row col-sm-12">
                     <form-entry asp-for="ParentId" type="select" asp-items="SelectListService.ParentOrganisations" class="allow-clear" />
+                </div>
+                <div class="row col-sm-12">
+                    <form-entry asp-for="OrganisationPrefix" />
                 </div>
                 <div class="row col-sm-12">
                     @if (Model.CustomerSettings.Any())

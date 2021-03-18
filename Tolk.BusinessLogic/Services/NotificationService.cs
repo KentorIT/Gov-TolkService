@@ -243,7 +243,7 @@ namespace Tolk.BusinessLogic.Services
                    $"\tOrginal Slut: {oldRequest.Order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
                    $"\tErsättning Start: {replacementRequest.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
                    $"\tErsättning Slut: {replacementRequest.Order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                   $"\tSvara senast: {replacementRequest.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}\n\n\n" +
+                   $"\tSvara senast: {replacementRequest.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
                    $"Gå till ersättningsuppdrag: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, replacementRequest.RequestId)}\n" +
                    $"Gå till ursprungligt uppdrag: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, oldRequest.RequestId)}";
                 var bodyHtml = $@"
@@ -317,15 +317,16 @@ namespace Tolk.BusinessLogic.Services
             var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
             if (email != null)
             {
-                string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inkommit via {Constants.SystemName}. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
+                string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}\n\nObservera att bekräftelse måste lämnas via avropstjänsten.\n\n" +
                     $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}\n" +
                     $"\tRegion: {order.Region.Name}\n" +
                     $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                     $"\tStart: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tSlut: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                    $"\tSvara senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}\n\n\n" +
+                    $"\tSvara senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
                     GoToRequestPlain(request.RequestId);
-                string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inkommit via {Constants.SystemName}. Observera att bekräftelse måste lämnas via avropstjänsten.<br />
+
+                string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
 <ul>
 <li>Uppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}</li>
 <li>Region: {order.Region.Name}</li>
@@ -362,20 +363,20 @@ namespace Tolk.BusinessLogic.Services
             var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Email);
             if (email != null)
             {
-                string bodyPlain = $"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} organisationsnummer {orderGroup.CustomerOrganisation.OrganisationNumber} har inkommit via {Constants.SystemName}. Observera att bekräftelse måste lämnas via avropstjänsten.\n" +
+                string bodyPlain = $"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {orderGroup.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {orderGroup.CustomerOrganisation.PeppolId}\n\nObservera att bekräftelse måste lämnas via avropstjänsten.\n\n" +
                     $"\tUppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}\n" +
                     $"\tRegion: {orderGroup.Region.Name}\n" +
                     $"\tSpråk: {orderGroup.LanguageName}\n" +
                     $"\tTillfällen: \n" +
                     $"{GetOccurences(orderGroup.Orders)}\n" +
-                    $"\tSvara senast: {requestGroup.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}\n\n\n" +
+                    $"\tSvara senast: {requestGroup.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
                     GoToRequestGroupPlain(requestGroup.RequestGroupId);
-                string bodyHtml = $@"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} organisationsnummer {orderGroup.CustomerOrganisation.OrganisationNumber} har inkommit via {Constants.SystemName}. Observera att bekräftelse måste lämnas via avropstjänsten.<br />
+                string bodyHtml = $@"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {orderGroup.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {orderGroup.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
                     <ul>
                     <li>Uppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}</li>
                     <li>Region: {orderGroup.Region.Name}</li>
                     <li>Språk: {orderGroup.LanguageName}</li>
-                    <li>{GetOccurencesAsHtmlList(orderGroup.Orders)}</li>
+                    <li>Tillfällen:{GetOccurencesAsHtmlList(orderGroup.Orders)}</li>
                     <li>Svara senast: {requestGroup.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
                     </ul>
                     <div>{GoToRequestGroupButton(requestGroup.RequestGroupId, textOverride: "Till förfrågan", autoBreakLines: false)}</div>";
@@ -870,7 +871,7 @@ Sammanställning:
         public void CustomerCreated(CustomerOrganisation customer)
         {
             NullCheckHelper.ArgumentCheckNull(customer, nameof(CustomerCreated), nameof(NotificationService));
-            var body = $"Myndigheten {customer.Name} med organisationsnummer {customer.OrganisationNumber} har lagts till i systemet. \n Vid användning av tjänstens API kan myndigheten identifieras med denna identifierare: {customer.OrganisationPrefix}";
+            var body = $"Myndigheten {customer.Name} har lagts till i {Constants.SystemName}.\nMyndighetens organisationsnummer: {customer.OrganisationNumber}\nMyndighetens Peppol-ID: {customer.PeppolId}\n\n Vid användning av tjänstens API kan myndigheten identifieras med denna identifierare: {customer.OrganisationPrefix}";
             foreach (int brokerId in _dbContext.Brokers.Select(b => b.BrokerId).ToList())
             {
                 var email = GetOrganisationNotificationSettings(brokerId, NotificationType.CustomerAdded, NotificationChannel.Email);
@@ -885,6 +886,7 @@ Sammanställning:
                     {
                         Key = customer.OrganisationPrefix,
                         OrganisationNumber = customer.OrganisationNumber,
+                        PeppolId = customer.PeppolId,
                         PriceListType = customer.PriceListType.GetCustomName(),
                         Name = customer.Name,
                         Description = customer.ParentCustomerOrganisationId != null ? $"Organiserad under {customer.ParentCustomerOrganisation.Name}" : null,
@@ -1540,6 +1542,7 @@ Sammanställning:
                     Name = order.CustomerOrganisation.Name,
                     Key = order.CustomerOrganisation.OrganisationPrefix,
                     OrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
+                    PeppolId = order.CustomerOrganisation.PeppolId,
                     ContactName = request.Order.CreatedByUser.FullName,
                     ContactPhone = request.Order.ContactPhone,
                     ContactEmail = request.Order.ContactEmail,
@@ -1705,6 +1708,7 @@ Sammanställning:
                     Name = orderGroup.CustomerOrganisation.Name,
                     Key = orderGroup.CustomerOrganisation.OrganisationPrefix,
                     OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
+                    PeppolId = orderGroup.CustomerOrganisation.PeppolId,
                     ContactName = orderGroup.CreatedByUser.FullName,
                     ContactPhone = orderGroup.ContactPhone,
                     ContactEmail = orderGroup.ContactEmail,

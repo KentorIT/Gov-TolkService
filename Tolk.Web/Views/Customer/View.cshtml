@@ -37,7 +37,7 @@
                 <display-entry asp-for="OrganisationNumber" />
             </div>
             <div class="row col-sm-12">
-                <display-entry asp-for="OrganisationPrefix" />
+                <display-entry asp-for="PeppolId" />
             </div>
             <div class="row col-sm-12">
                 <display-entry asp-for="TravelCostAgreementType" />
@@ -46,6 +46,9 @@
         <div class="col-md-4">
             <div class="row col-sm-12">
                 <display-entry asp-for="ParentName" />
+            </div>
+            <div class="row col-sm-12">
+                <display-entry asp-for="OrganisationPrefix" />
             </div>
             <div class="row col-sm-12">
                 @if (Model.CustomerSettings.Any())

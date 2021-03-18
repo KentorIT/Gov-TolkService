@@ -72,6 +72,7 @@ namespace Tolk.Web.Controllers
                     Name = model.CustomerName,
                     CreatedBy = model.CreatedBy,
                     OrganisationNumber = model.CustomerOrganisationNumber,
+                    PeppolId = model.CustomerPeppolId,
                     UnitName = model.CustomerUnitName,
                     DepartmentName = model.UnitName,
                     ReferenceNumber = model.CustomerReferenceNumber,

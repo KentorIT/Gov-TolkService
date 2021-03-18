@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
+                .HasAnnotation("ProductVersion", "3.1.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -23,15 +23,19 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken();
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
                     b.Property<string>("NormalizedName")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
                     b.HasKey("Id");
@@ -48,13 +52,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ClaimType");
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ClaimValue");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RoleId");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -67,13 +75,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ClaimType");
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ClaimValue");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -84,13 +96,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.Property<string>("LoginProvider");
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ProviderKey");
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ProviderDisplayName");
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -101,9 +117,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RoleId");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -114,13 +132,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("LoginProvider");
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Value");
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
@@ -131,60 +153,84 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("AccessFailedCount");
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("BrokerId");
+                    b.Property<int?>("BrokerId")
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken();
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("CustomerOrganisationId");
+                    b.Property<int?>("CustomerOrganisationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
-                    b.Property<bool>("EmailConfirmed");
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
 
-                    b.Property<int?>("InterpreterId");
+                    b.Property<int?>("InterpreterId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsActive");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("IsApiUser");
+                    b.Property<bool>("IsApiUser")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset?>("LastLoginAt");
+                    b.Property<DateTimeOffset?>("LastLoginAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<bool>("LockoutEnabled");
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset?>("LockoutEnd");
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("NameFamily")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.Property<string>("NameFirst")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.Property<string>("NormalizedEmail")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
                     b.Property<string>("NormalizedUserName")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
-                    b.Property<string>("PasswordHash");
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PhoneNumber");
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumberCellphone")
+                        .HasColumnType("nvarchar(32)")
                         .HasMaxLength(32);
 
-                    b.Property<bool>("PhoneNumberConfirmed");
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("SecurityStamp");
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("TwoFactorEnabled");
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
 
                     b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
                     b.HasKey("Id");
@@ -212,13 +258,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("AspNetUserClaimHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ClaimType");
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ClaimValue");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserAuditLogEntryId");
+                    b.Property<int>("UserAuditLogEntryId")
+                        .HasColumnType("int");
 
                     b.HasKey("AspNetUserClaimHistoryEntryId");
 
@@ -231,27 +281,36 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("AspNetUserHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Email")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
-                    b.Property<bool>("IsActive");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("IsApiUser");
+                    b.Property<bool>("IsApiUser")
+                        .HasColumnType("bit");
 
                     b.Property<string>("NameFamily")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.Property<string>("NameFirst")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
-                    b.Property<string>("PhoneNumber");
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumberCellphone")
+                        .HasColumnType("nvarchar(32)")
                         .HasMaxLength(32);
 
-                    b.Property<int>("UserAuditLogEntryId");
+                    b.Property<int>("UserAuditLogEntryId")
+                        .HasColumnType("int");
 
                     b.HasKey("AspNetUserHistoryEntryId");
 
@@ -265,11 +324,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("AspNetUserRoleHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("RoleId");
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UserAuditLogEntryId");
+                    b.Property<int>("UserAuditLogEntryId")
+                        .HasColumnType("int");
 
                     b.HasKey("AspNetUserRoleHistoryEntryId");
 
@@ -284,18 +346,23 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("AttachmentId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<byte[]>("Blob")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
-                    b.Property<int>("CreatedBy");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("FileName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
-                    b.Property<int?>("ImpersonatingCreator");
+                    b.Property<int?>("ImpersonatingCreator")
+                        .HasColumnType("int");
 
                     b.HasKey("AttachmentId");
 
@@ -308,22 +375,28 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Broker", b =>
                 {
-                    b.Property<int>("BrokerId");
+                    b.Property<int>("BrokerId")
+                        .HasColumnType("int");
 
                     b.Property<string>("EmailAddress")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.Property<string>("EmailDomain")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.Property<string>("OrganizationNumber")
+                        .HasColumnType("nvarchar(32)")
                         .HasMaxLength(32);
 
                     b.Property<string>("OrganizationPrefix")
+                        .HasColumnType("nvarchar(8)")
                         .HasMaxLength(8);
 
                     b.HasKey("BrokerId");
@@ -335,49 +408,69 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("ComplaintId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset?>("AnswerDisputedAt");
+                    b.Property<DateTimeOffset?>("AnswerDisputedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("AnswerDisputedBy");
+                    b.Property<int?>("AnswerDisputedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("AnswerDisputedMessage")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
                     b.Property<string>("AnswerMessage")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<DateTimeOffset?>("AnsweredAt");
+                    b.Property<DateTimeOffset?>("AnsweredAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("AnsweredBy");
+                    b.Property<int?>("AnsweredBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("ComplaintMessage")
                         .IsRequired()
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<int>("ComplaintType");
+                    b.Property<int>("ComplaintType")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("CreatedBy");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingAnswerDisputedBy");
+                    b.Property<int?>("ImpersonatingAnswerDisputedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingAnsweredBy");
+                    b.Property<int?>("ImpersonatingAnsweredBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingCreatedBy");
+                    b.Property<int?>("ImpersonatingCreatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingTerminatedBy");
+                    b.Property<int?>("ImpersonatingTerminatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequestId");
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("TerminatedAt");
+                    b.Property<DateTimeOffset?>("TerminatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("TerminatedBy");
+                    b.Property<int?>("TerminatedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("TerminationMessage")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
                     b.HasKey("ComplaintId");
@@ -407,15 +500,20 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("CustomerChangeLogEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CustomerChangeLogType");
+                    b.Property<int>("CustomerChangeLogType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("CustomerOrganisationId");
+                    b.Property<int>("CustomerOrganisationId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("LoggedAt");
+                    b.Property<DateTimeOffset>("LoggedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("UpdatedByUserId");
+                    b.Property<int>("UpdatedByUserId")
+                        .HasColumnType("int");
 
                     b.HasKey("CustomerChangeLogEntryId");
 
@@ -430,27 +528,39 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("CustomerOrganisationId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("EmailDomain")
+                        .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50);
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(100)")
                         .HasMaxLength(100);
 
                     b.Property<string>("OrganisationNumber")
                         .IsRequired()
+                        .HasColumnType("nvarchar(32)")
                         .HasMaxLength(32);
 
                     b.Property<string>("OrganisationPrefix")
+                        .HasColumnType("nvarchar(8)")
                         .HasMaxLength(8);
 
-                    b.Property<int?>("ParentCustomerOrganisationId");
+                    b.Property<int?>("ParentCustomerOrganisationId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("PriceListType");
+                    b.Property<string>("PeppolId")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50);
 
-                    b.Property<int>("TravelCostAgreementType");
+                    b.Property<int>("PriceListType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TravelCostAgreementType")
+                        .HasColumnType("int");
 
                     b.HasKey("CustomerOrganisationId");
 
@@ -461,11 +571,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSetting", b =>
                 {
-                    b.Property<int>("CustomerOrganisationId");
+                    b.Property<int>("CustomerOrganisationId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("CustomerSettingType");
+                    b.Property<int>("CustomerSettingType")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Value");
+                    b.Property<bool>("Value")
+                        .HasColumnType("bit");
 
                     b.HasKey("CustomerOrganisationId", "CustomerSettingType");
 
@@ -476,13 +589,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("CustomerSettingHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CustomerChangeLogEntryId");
+                    b.Property<int>("CustomerChangeLogEntryId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("CustomerSettingType");
+                    b.Property<int>("CustomerSettingType")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Value");
+                    b.Property<bool>("Value")
+                        .HasColumnType("bit");
 
                     b.HasKey("CustomerSettingHistoryEntryId");
 
@@ -495,30 +612,41 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("CustomerUnitId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("CreatedBy");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("CustomerOrganisationId");
+                    b.Property<int>("CustomerOrganisationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
-                    b.Property<int?>("ImpersonatingCreator");
+                    b.Property<int?>("ImpersonatingCreator")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingInactivatedBy");
+                    b.Property<int?>("ImpersonatingInactivatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("InactivatedAt");
+                    b.Property<DateTimeOffset?>("InactivatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("InactivatedBy");
+                    b.Property<int?>("InactivatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsActive");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.HasKey("CustomerUnitId");
@@ -538,11 +666,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnitUser", b =>
                 {
-                    b.Property<int>("CustomerUnitId");
+                    b.Property<int>("CustomerUnitId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsLocalAdmin");
+                    b.Property<bool>("IsLocalAdmin")
+                        .HasColumnType("bit");
 
                     b.HasKey("CustomerUnitId", "UserId");
 
@@ -555,13 +686,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("CustomerUnitUserHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CustomerUnitId");
+                    b.Property<int>("CustomerUnitId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsLocalAdmin");
+                    b.Property<bool>("IsLocalAdmin")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("UserAuditLogEntryId");
+                    b.Property<int>("UserAuditLogEntryId")
+                        .HasColumnType("int");
 
                     b.HasKey("CustomerUnitUserHistoryEntryId");
 
@@ -574,13 +709,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("FailedWebHookCallId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ErrorMessage");
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("FailedAt");
+                    b.Property<DateTimeOffset>("FailedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("OutboundWebHookCallId");
+                    b.Property<int>("OutboundWebHookCallId")
+                        .HasColumnType("int");
 
                     b.HasKey("FailedWebHookCallId");
 
@@ -593,22 +732,30 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("FaqId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Answer")
+                        .HasColumnType("nvarchar(2000)")
                         .HasMaxLength(2000);
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("CreatedBy");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsDisplayed");
+                    b.Property<bool>("IsDisplayed")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset?>("LastUpdatedAt");
+                    b.Property<DateTimeOffset?>("LastUpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("LastUpdatedBy");
+                    b.Property<int?>("LastUpdatedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("Question")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.HasKey("FaqId");
@@ -622,9 +769,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FaqDisplayUserRole", b =>
                 {
-                    b.Property<int>("FaqId");
+                    b.Property<int>("FaqId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("DisplayUserRole");
+                    b.Property<int>("DisplayUserRole")
+                        .HasColumnType("int");
 
                     b.HasKey("FaqId", "DisplayUserRole");
 
@@ -636,10 +785,12 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("date");
 
-                    b.Property<int>("DateType");
+                    b.Property<int>("DateType")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.HasKey("Date", "DateType");
@@ -651,9 +802,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("InterpreterId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool>("IsProtected");
+                    b.Property<bool>("IsProtected")
+                        .HasColumnType("bit");
 
                     b.HasKey("InterpreterId");
 
@@ -664,36 +817,48 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("InterpreterBrokerId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("BrokerId");
+                    b.Property<int>("BrokerId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.Property<string>("FirstName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
-                    b.Property<int?>("ImpersonatingInactivatedBy");
+                    b.Property<int?>("ImpersonatingInactivatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("InactivatedAt");
+                    b.Property<DateTimeOffset?>("InactivatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("InactivatedBy");
+                    b.Property<int?>("InactivatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("InterpreterId");
+                    b.Property<int?>("InterpreterId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsActive");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
-                    b.Property<string>("OfficialInterpreterId");
+                    b.Property<string>("OfficialInterpreterId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.HasKey("InterpreterBrokerId");
@@ -713,26 +878,35 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("LanguageId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool>("Active");
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("HasAuthorized");
+                    b.Property<bool>("HasAuthorized")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("HasEducated");
+                    b.Property<bool>("HasEducated")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("HasHealthcare");
+                    b.Property<bool>("HasHealthcare")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("HasLegal");
+                    b.Property<bool>("HasLegal")
+                        .HasColumnType("bit");
 
                     b.Property<string>("ISO_639_Code")
+                        .HasColumnType("nvarchar(3)")
                         .HasMaxLength(3);
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(100)")
                         .HasMaxLength(100);
 
                     b.Property<string>("TellusName")
+                        .HasColumnType("nvarchar(100)")
                         .HasMaxLength(100);
 
                     b.HasKey("LanguageId");
@@ -744,13 +918,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("MealBreakId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("EndAt");
+                    b.Property<DateTimeOffset>("EndAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("RequisitionId");
+                    b.Property<int>("RequisitionId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("StartAt");
+                    b.Property<DateTimeOffset>("StartAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("MealBreakId");
 
@@ -763,66 +941,93 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("AllowExceedingTravelCost");
+                    b.Property<int?>("AllowExceedingTravelCost")
+                        .HasColumnType("int");
 
-                    b.Property<int>("AssignmentType");
+                    b.Property<int>("AssignmentType")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ContactPersonId");
+                    b.Property<int?>("ContactPersonId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("CreatedBy");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<bool?>("CreatorIsInterpreterUser");
+                    b.Property<bool?>("CreatorIsInterpreterUser")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("CustomerOrganisationId");
+                    b.Property<int>("CustomerOrganisationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("CustomerReferenceNumber")
+                        .HasColumnType("nvarchar(100)")
                         .HasMaxLength(100);
 
-                    b.Property<int?>("CustomerUnitId");
+                    b.Property<int?>("CustomerUnitId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<DateTimeOffset>("EndAt");
+                    b.Property<DateTimeOffset>("EndAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("ImpersonatingCreator");
+                    b.Property<int?>("ImpersonatingCreator")
+                        .HasColumnType("int");
 
                     b.Property<string>("InvoiceReference")
+                        .HasColumnType("nvarchar(100)")
                         .HasMaxLength(100);
 
-                    b.Property<int?>("IsExtraInterpreterForOrderId");
+                    b.Property<int?>("IsExtraInterpreterForOrderId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("LanguageHasAuthorizedInterpreter");
+                    b.Property<bool>("LanguageHasAuthorizedInterpreter")
+                        .HasColumnType("bit");
 
-                    b.Property<int?>("LanguageId");
+                    b.Property<int?>("LanguageId")
+                        .HasColumnType("int");
 
-                    b.Property<bool?>("MealBreakIncluded");
+                    b.Property<bool?>("MealBreakIncluded")
+                        .HasColumnType("bit");
 
-                    b.Property<int?>("OrderGroupId");
+                    b.Property<int?>("OrderGroupId")
+                        .HasColumnType("int");
 
                     b.Property<string>("OrderNumber")
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("nvarchar(max)")
                         .HasComputedColumnSql("CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))");
 
                     b.Property<string>("OtherLanguage")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
-                    b.Property<int>("RegionId");
+                    b.Property<int>("RegionId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ReplacingOrderId");
+                    b.Property<int?>("ReplacingOrderId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("SpecificCompetenceLevelRequired");
+                    b.Property<bool>("SpecificCompetenceLevelRequired")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset>("StartAt");
+                    b.Property<DateTimeOffset>("StartAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("UnitName")
+                        .HasColumnType("nvarchar(100)")
                         .HasMaxLength(100);
 
                     b.HasKey("OrderId");
@@ -856,9 +1061,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachment", b =>
                 {
-                    b.Property<int>("OrderId");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("AttachmentId");
+                    b.Property<int>("AttachmentId")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderId", "AttachmentId");
 
@@ -871,13 +1078,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderAttachmentHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("AttachmentId");
+                    b.Property<int>("AttachmentId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderChangeLogEntryId");
+                    b.Property<int>("OrderChangeLogEntryId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("OrderGroupAttachmentRemoved");
+                    b.Property<bool>("OrderGroupAttachmentRemoved")
+                        .HasColumnType("bit");
 
                     b.HasKey("OrderAttachmentHistoryEntryId");
 
@@ -892,15 +1103,20 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderChangeConfirmationId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("ConfirmedAt");
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("ConfirmedBy");
+                    b.Property<int>("ConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingConfirmedBy");
+                    b.Property<int?>("ImpersonatingConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderChangeLogEntryId");
+                    b.Property<int>("OrderChangeLogEntryId")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderChangeConfirmationId");
 
@@ -918,19 +1134,26 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderChangeLogEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("BrokerId");
+                    b.Property<int?>("BrokerId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("LoggedAt");
+                    b.Property<DateTimeOffset>("LoggedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("OrderChangeLogType");
+                    b.Property<int>("OrderChangeLogType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderId");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("UpdatedByImpersonatorId");
+                    b.Property<int?>("UpdatedByImpersonatorId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UpdatedByUserId");
+                    b.Property<int>("UpdatedByUserId")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderChangeLogEntryId");
 
@@ -949,13 +1172,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderCompetenceRequirementId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CompetenceLevel");
+                    b.Property<int>("CompetenceLevel")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderId");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("Rank");
+                    b.Property<int?>("Rank")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderCompetenceRequirementId");
 
@@ -968,11 +1195,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderContactPersonHistoryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("OrderChangeLogEntryId");
+                    b.Property<int>("OrderChangeLogEntryId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("PreviousContactPersonId");
+                    b.Property<int?>("PreviousContactPersonId")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderContactPersonHistoryId");
 
@@ -988,44 +1218,61 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderGroupId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("AllowExceedingTravelCost");
+                    b.Property<int?>("AllowExceedingTravelCost")
+                        .HasColumnType("int");
 
-                    b.Property<int>("AssignmentType");
+                    b.Property<int>("AssignmentType")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("CreatedBy");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<bool?>("CreatorIsInterpreterUser");
+                    b.Property<bool?>("CreatorIsInterpreterUser")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("CustomerOrganisationId");
+                    b.Property<int>("CustomerOrganisationId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("CustomerUnitId");
+                    b.Property<int?>("CustomerUnitId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingCreator");
+                    b.Property<int?>("ImpersonatingCreator")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("LanguageHasAuthorizedInterpreter");
+                    b.Property<bool>("LanguageHasAuthorizedInterpreter")
+                        .HasColumnType("bit");
 
-                    b.Property<int?>("LanguageId");
+                    b.Property<int?>("LanguageId")
+                        .HasColumnType("int");
 
                     b.Property<string>("OrderGroupNumber")
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("nvarchar(255)")
                         .HasComputedColumnSql("'G-' + CAST(YEAR([CreatedAt]) AS NVARCHAR(100)) + '-' + CAST(([OrderGroupId]+(100000)) AS NVARCHAR(100))")
                         .HasMaxLength(255);
 
                     b.Property<string>("OtherLanguage")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
-                    b.Property<int>("RegionId");
+                    b.Property<int>("RegionId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("RequireSameInterpreter");
+                    b.Property<bool>("RequireSameInterpreter")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("SpecificCompetenceLevelRequired");
+                    b.Property<bool>("SpecificCompetenceLevelRequired")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderGroupId");
 
@@ -1046,9 +1293,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupAttachment", b =>
                 {
-                    b.Property<int>("OrderGroupId");
+                    b.Property<int>("OrderGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("AttachmentId");
+                    b.Property<int>("AttachmentId")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderGroupId", "AttachmentId");
 
@@ -1059,11 +1308,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupCompetenceRequirement", b =>
                 {
-                    b.Property<int>("OrderGroupId");
+                    b.Property<int>("OrderGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("CompetenceLevel");
+                    b.Property<int>("CompetenceLevel")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("Rank");
+                    b.Property<int?>("Rank")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderGroupId", "CompetenceLevel");
 
@@ -1072,11 +1324,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupInterpreterLocation", b =>
                 {
-                    b.Property<int>("OrderGroupId");
+                    b.Property<int>("OrderGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("InterpreterLocation");
+                    b.Property<int>("InterpreterLocation")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Rank");
+                    b.Property<int>("Rank")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderGroupId", "InterpreterLocation");
 
@@ -1087,16 +1342,21 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderGroupRequirementId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Description")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<bool>("IsRequired");
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("OrderGroupId");
+                    b.Property<int>("OrderGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequirementType");
+                    b.Property<int>("RequirementType")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderGroupRequirementId");
 
@@ -1109,17 +1369,23 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderGroupStatusConfirmationId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("ConfirmedAt");
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("ConfirmedBy");
+                    b.Property<int>("ConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingConfirmedBy");
+                    b.Property<int?>("ImpersonatingConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderGroupId");
+                    b.Property<int>("OrderGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderStatus");
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderGroupStatusConfirmationId");
 
@@ -1136,13 +1402,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ChangeOrderType");
+                    b.Property<int>("ChangeOrderType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderChangeLogEntryId");
+                    b.Property<int>("OrderChangeLogEntryId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Value");
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("OrderHistoryEntryId");
 
@@ -1153,19 +1423,25 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderInterpreterLocation", b =>
                 {
-                    b.Property<int>("OrderId");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("InterpreterLocation");
+                    b.Property<int>("InterpreterLocation")
+                        .HasColumnType("int");
 
                     b.Property<string>("City")
+                        .HasColumnType("nvarchar(100)")
                         .HasMaxLength(100);
 
                     b.Property<string>("OffSiteContactInformation")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
-                    b.Property<int>("Rank");
+                    b.Property<int>("Rank")
+                        .HasColumnType("int");
 
                     b.Property<string>("Street")
+                        .HasColumnType("nvarchar(100)")
                         .HasMaxLength(100);
 
                     b.HasKey("OrderId", "InterpreterLocation");
@@ -1177,24 +1453,32 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderPriceRowId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("EndAt");
+                    b.Property<DateTimeOffset>("EndAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("OrderId");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<int?>("PriceCalculationChargeId");
+                    b.Property<int?>("PriceCalculationChargeId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("PriceListRowId");
+                    b.Property<int?>("PriceListRowId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("PriceRowType");
+                    b.Property<int>("PriceRowType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Quantity");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("StartAt");
+                    b.Property<DateTimeOffset>("StartAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("OrderPriceRowId");
 
@@ -1211,18 +1495,24 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderRequirementId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Description")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<bool>("IsRequired");
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
 
-                    b.Property<int?>("OrderGroupRequirementId");
+                    b.Property<int?>("OrderGroupRequirementId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderId");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequirementType");
+                    b.Property<int>("RequirementType")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderRequirementId");
 
@@ -1235,14 +1525,18 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderRequirementRequestAnswer", b =>
                 {
-                    b.Property<int>("RequestId");
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderRequirementId");
+                    b.Property<int>("OrderRequirementId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Answer")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<bool>("CanSatisfyRequirement");
+                    b.Property<bool>("CanSatisfyRequirement")
+                        .HasColumnType("bit");
 
                     b.HasKey("RequestId", "OrderRequirementId");
 
@@ -1255,17 +1549,23 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OrderStatusConfirmationId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("ConfirmedAt");
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("ConfirmedBy");
+                    b.Property<int>("ConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingConfirmedBy");
+                    b.Property<int?>("ImpersonatingConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderId");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OrderStatus");
+                    b.Property<int>("OrderStatus")
+                        .HasColumnType("int");
 
                     b.HasKey("OrderStatusConfirmationId");
 
@@ -1282,29 +1582,39 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OutboundEmailId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("DeliveredAt");
+                    b.Property<DateTimeOffset?>("DeliveredAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("HtmlBody")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsHandling");
+                    b.Property<bool>("IsHandling")
+                        .HasColumnType("bit");
 
                     b.Property<string>("PlainBody")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Recipient")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ReplacingEmailId");
+                    b.Property<int?>("ReplacingEmailId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ResentByUserId");
+                    b.Property<int?>("ResentByUserId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Subject")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("OutboundEmailId");
 
@@ -1321,33 +1631,46 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("OutboundWebHookCallId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("DeliveredAt");
+                    b.Property<DateTimeOffset?>("DeliveredAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("FailedTries");
+                    b.Property<int>("FailedTries")
+                        .HasColumnType("int");
 
-                    b.Property<bool?>("HasNotifiedFailure");
+                    b.Property<bool?>("HasNotifiedFailure")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("IsHandling");
+                    b.Property<bool>("IsHandling")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("NotificationType");
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("int");
 
                     b.Property<string>("Payload")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RecipientUrl")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("RecipientUserId");
+                    b.Property<int>("RecipientUserId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ResentHookId");
+                    b.Property<int?>("ResentHookId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ResentImpersonatorUserId");
+                    b.Property<int?>("ResentImpersonatorUserId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ResentUserId");
+                    b.Property<int?>("ResentUserId")
+                        .HasColumnType("int");
 
                     b.HasKey("OutboundWebHookCallId");
 
@@ -1368,16 +1691,20 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("PriceCalculationChargeId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<decimal>("ChargePercentage")
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<int>("ChargeTypeId");
+                    b.Property<int>("ChargeTypeId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("EndDate");
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("StartDate");
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("PriceCalculationChargeId");
 
@@ -1388,22 +1715,29 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int?>("PriceListRowId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CompetenceLevel");
+                    b.Property<int>("CompetenceLevel")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("EndDate");
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("MaxMinutes");
+                    b.Property<int>("MaxMinutes")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<int>("PriceListRowType");
+                    b.Property<int>("PriceListRowType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("PriceListType");
+                    b.Property<int>("PriceListType")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("StartDate");
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("PriceListRowId");
 
@@ -1414,26 +1748,36 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("QuarantineId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("ActiveFrom");
+                    b.Property<DateTimeOffset>("ActiveFrom")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("ActiveTo");
+                    b.Property<DateTimeOffset>("ActiveTo")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("CreatedBy");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("CustomerOrganisationId");
+                    b.Property<int>("CustomerOrganisationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Motivation")
+                        .HasColumnType("nvarchar(1024)")
                         .HasMaxLength(1024);
 
-                    b.Property<int>("RankingId");
+                    b.Property<int>("RankingId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt");
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("UpdatedBy");
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("QuarantineId");
 
@@ -1452,20 +1796,27 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("QuarantineHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("ActiveFrom");
+                    b.Property<DateTimeOffset>("ActiveFrom")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("ActiveTo");
+                    b.Property<DateTimeOffset>("ActiveTo")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("LoggedAt");
+                    b.Property<DateTimeOffset>("LoggedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Motivation")
+                        .HasColumnType("nvarchar(1024)")
                         .HasMaxLength(1024);
 
-                    b.Property<int>("QuarantineId");
+                    b.Property<int>("QuarantineId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("UpdatedById");
+                    b.Property<int?>("UpdatedById")
+                        .HasColumnType("int");
 
                     b.HasKey("QuarantineHistoryEntryId");
 
@@ -1480,12 +1831,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RankingId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<decimal>("BrokerFee")
                         .HasColumnType("decimal(5, 2)");
 
-                    b.Property<int>("BrokerId");
+                    b.Property<int>("BrokerId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("FirstValidDate")
                         .HasColumnType("date");
@@ -1493,9 +1846,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTime>("LastValidDate")
                         .HasColumnType("date");
 
-                    b.Property<int>("Rank");
+                    b.Property<int>("Rank")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RegionId");
+                    b.Property<int>("RegionId")
+                        .HasColumnType("int");
 
                     b.HasKey("RankingId");
 
@@ -1508,10 +1863,12 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Region", b =>
                 {
-                    b.Property<int>("RegionId");
+                    b.Property<int>("RegionId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("nvarchar(20)")
                         .HasMaxLength(20);
 
                     b.HasKey("RegionId");
@@ -1630,75 +1987,108 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequestId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset?>("AnswerDate");
+                    b.Property<DateTimeOffset?>("AnswerDate")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("AnswerProcessedAt");
+                    b.Property<DateTimeOffset?>("AnswerProcessedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("AnswerProcessedBy");
+                    b.Property<int?>("AnswerProcessedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("AnsweredBy");
+                    b.Property<int?>("AnsweredBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("BrokerMessage")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
                     b.Property<string>("CancelMessage")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<DateTimeOffset?>("CancelledAt");
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("CancelledBy");
+                    b.Property<int?>("CancelledBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("CompetenceLevel");
+                    b.Property<int?>("CompetenceLevel")
+                        .HasColumnType("int");
 
-                    b.Property<bool?>("CompletedNotificationIsHandled");
+                    b.Property<bool?>("CompletedNotificationIsHandled")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DenyMessage")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
                     b.Property<string>("ExpectedTravelCostInfo")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<DateTimeOffset?>("ExpiresAt");
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("ImpersonatingAnswerProcessedBy");
+                    b.Property<int?>("ImpersonatingAnswerProcessedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingAnsweredBy");
+                    b.Property<int?>("ImpersonatingAnsweredBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingCanceller");
+                    b.Property<int?>("ImpersonatingCanceller")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingReceivedBy");
+                    b.Property<int?>("ImpersonatingReceivedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("InterpreterBrokerId");
+                    b.Property<int?>("InterpreterBrokerId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("InterpreterCompetenceVerificationResultOnAssign");
+                    b.Property<int?>("InterpreterCompetenceVerificationResultOnAssign")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("InterpreterCompetenceVerificationResultOnStart");
+                    b.Property<int?>("InterpreterCompetenceVerificationResultOnStart")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("InterpreterLocation");
+                    b.Property<int?>("InterpreterLocation")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsTerminalRequest");
+                    b.Property<bool>("IsTerminalRequest")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset?>("LatestAnswerTimeForCustomer");
+                    b.Property<DateTimeOffset?>("LatestAnswerTimeForCustomer")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("OrderId");
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("QuarantineId");
+                    b.Property<int?>("QuarantineId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RankingId");
+                    b.Property<int>("RankingId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ReceivedBy");
+                    b.Property<int?>("ReceivedBy")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("RecievedAt");
+                    b.Property<DateTimeOffset?>("RecievedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("ReplacingRequestId");
+                    b.Property<int?>("ReplacingRequestId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("RequestGroupId");
+                    b.Property<int?>("RequestGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("RequestId");
 
@@ -1737,9 +2127,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestAttachment", b =>
                 {
-                    b.Property<int>("RequestId");
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("AttachmentId");
+                    b.Property<int>("AttachmentId")
+                        .HasColumnType("int");
 
                     b.HasKey("RequestId", "AttachmentId");
 
@@ -1752,56 +2144,80 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequestGroupId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset?>("AnswerDate");
+                    b.Property<DateTimeOffset?>("AnswerDate")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("AnswerProcessedAt");
+                    b.Property<DateTimeOffset?>("AnswerProcessedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("AnswerProcessedBy");
+                    b.Property<int?>("AnswerProcessedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("AnsweredBy");
+                    b.Property<int?>("AnsweredBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("BrokerMessage")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
                     b.Property<string>("CancelMessage")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<DateTimeOffset?>("CancelledAt");
+                    b.Property<DateTimeOffset?>("CancelledAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("CancelledBy");
+                    b.Property<int?>("CancelledBy")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("DenyMessage")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<DateTimeOffset?>("ExpiresAt");
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("ImpersonatingAnswerProcessedBy");
+                    b.Property<int?>("ImpersonatingAnswerProcessedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingAnsweredBy");
+                    b.Property<int?>("ImpersonatingAnsweredBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingCanceller");
+                    b.Property<int?>("ImpersonatingCanceller")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingReceivedBy");
+                    b.Property<int?>("ImpersonatingReceivedBy")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("IsTerminalRequest");
+                    b.Property<bool>("IsTerminalRequest")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset?>("LatestAnswerTimeForCustomer");
+                    b.Property<DateTimeOffset?>("LatestAnswerTimeForCustomer")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("OrderGroupId");
+                    b.Property<int>("OrderGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("QuarantineId");
+                    b.Property<int?>("QuarantineId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RankingId");
+                    b.Property<int>("RankingId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ReceivedBy");
+                    b.Property<int?>("ReceivedBy")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("RecievedAt");
+                    b.Property<DateTimeOffset?>("RecievedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("RequestGroupId");
 
@@ -1832,9 +2248,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroupAttachment", b =>
                 {
-                    b.Property<int>("RequestGroupId");
+                    b.Property<int>("RequestGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("AttachmentId");
+                    b.Property<int>("AttachmentId")
+                        .HasColumnType("int");
 
                     b.HasKey("RequestGroupId", "AttachmentId");
 
@@ -1847,17 +2265,23 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequestGroupStatusConfirmationId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("ConfirmedAt");
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("ConfirmedBy");
+                    b.Property<int>("ConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingConfirmedBy");
+                    b.Property<int?>("ImpersonatingConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequestGroupId");
+                    b.Property<int>("RequestGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequestStatus");
+                    b.Property<int>("RequestStatus")
+                        .HasColumnType("int");
 
                     b.HasKey("RequestGroupStatusConfirmationId");
 
@@ -1872,13 +2296,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroupUpdateLatestAnswerTime", b =>
                 {
-                    b.Property<int>("RequestGroupId");
+                    b.Property<int>("RequestGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatorUpdatedBy");
+                    b.Property<int?>("ImpersonatorUpdatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("UpdatedAt");
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("UpdatedBy");
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("RequestGroupId");
 
@@ -1893,15 +2321,20 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequestGroupViewId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ImpersonatingViewedBy");
+                    b.Property<int?>("ImpersonatingViewedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequestGroupId");
+                    b.Property<int>("RequestGroupId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("ViewedAt");
+                    b.Property<DateTimeOffset>("ViewedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("ViewedBy");
+                    b.Property<int>("ViewedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("RequestGroupViewId");
 
@@ -1918,24 +2351,32 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequestPriceRowId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("EndAt");
+                    b.Property<DateTimeOffset>("EndAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<int?>("PriceCalculationChargeId");
+                    b.Property<int?>("PriceCalculationChargeId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("PriceListRowId");
+                    b.Property<int?>("PriceListRowId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("PriceRowType");
+                    b.Property<int>("PriceRowType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Quantity");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequestId");
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("StartAt");
+                    b.Property<DateTimeOffset>("StartAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("RequestPriceRowId");
 
@@ -1952,17 +2393,23 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequestStatusConfirmationId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("ConfirmedAt");
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("ConfirmedBy");
+                    b.Property<int>("ConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingConfirmedBy");
+                    b.Property<int?>("ImpersonatingConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequestId");
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequestStatus");
+                    b.Property<int>("RequestStatus")
+                        .HasColumnType("int");
 
                     b.HasKey("RequestStatusConfirmationId");
 
@@ -1977,13 +2424,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestUpdateLatestAnswerTime", b =>
                 {
-                    b.Property<int>("RequestId");
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatorUpdatedBy");
+                    b.Property<int?>("ImpersonatorUpdatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("UpdatedAt");
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("UpdatedBy");
+                    b.Property<int>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("RequestId");
 
@@ -1998,15 +2449,20 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequestViewId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("ImpersonatingViewedBy");
+                    b.Property<int?>("ImpersonatingViewedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequestId");
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("ViewedAt");
+                    b.Property<DateTimeOffset>("ViewedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("ViewedBy");
+                    b.Property<int>("ViewedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("RequestViewId");
 
@@ -2023,49 +2479,69 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequisitionId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("CarCompensation");
+                    b.Property<int?>("CarCompensation")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("CreatedBy");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("CustomerComment")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
-                    b.Property<int?>("ImpersonatingCreatedBy");
+                    b.Property<int?>("ImpersonatingCreatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingProcessedBy");
+                    b.Property<int?>("ImpersonatingProcessedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("InterpretersTaxCard");
+                    b.Property<int?>("InterpretersTaxCard")
+                        .HasColumnType("int");
 
                     b.Property<string>("Message")
                         .IsRequired()
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
                     b.Property<string>("PerDiem")
+                        .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
-                    b.Property<DateTimeOffset?>("ProcessedAt");
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("ProcessedBy");
+                    b.Property<int?>("ProcessedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ReplacedByRequisitionId");
+                    b.Property<int?>("ReplacedByRequisitionId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequestId");
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("RequestOrReplacingOrderPeriodUsed");
+                    b.Property<bool>("RequestOrReplacingOrderPeriodUsed")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset>("SessionEndedAt");
+                    b.Property<DateTimeOffset>("SessionEndedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("SessionStartedAt");
+                    b.Property<DateTimeOffset>("SessionStartedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("Status");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("TimeWasteIWHTime");
+                    b.Property<int?>("TimeWasteIWHTime")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("TimeWasteNormalTime");
+                    b.Property<int?>("TimeWasteNormalTime")
+                        .HasColumnType("int");
 
                     b.HasKey("RequisitionId");
 
@@ -2086,9 +2562,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionAttachment", b =>
                 {
-                    b.Property<int>("RequisitionId");
+                    b.Property<int>("RequisitionId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("AttachmentId");
+                    b.Property<int>("AttachmentId")
+                        .HasColumnType("int");
 
                     b.HasKey("RequisitionId", "AttachmentId");
 
@@ -2101,24 +2579,32 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequisitionPriceRowId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("EndAt");
+                    b.Property<DateTimeOffset>("EndAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<int?>("PriceCalculationChargeId");
+                    b.Property<int?>("PriceCalculationChargeId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("PriceListRowId");
+                    b.Property<int?>("PriceListRowId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("PriceRowType");
+                    b.Property<int>("PriceRowType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Quantity");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequisitionId");
+                    b.Property<int>("RequisitionId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("StartAt");
+                    b.Property<DateTimeOffset>("StartAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("RequisitionPriceRowId");
 
@@ -2135,17 +2621,23 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("RequisitionStatusConfirmationId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("ConfirmedAt");
+                    b.Property<DateTimeOffset>("ConfirmedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("ConfirmedBy");
+                    b.Property<int>("ConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingConfirmedBy");
+                    b.Property<int?>("ImpersonatingConfirmedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequisitionId");
+                    b.Property<int>("RequisitionId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RequisitionStatus");
+                    b.Property<int>("RequisitionStatus")
+                        .HasColumnType("int");
 
                     b.HasKey("RequisitionStatusConfirmationId");
 
@@ -2162,33 +2654,46 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("SystemMessageId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("ActiveFrom");
+                    b.Property<DateTimeOffset>("ActiveFrom")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("ActiveTo");
+                    b.Property<DateTimeOffset>("ActiveTo")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("CreatedBy");
+                    b.Property<int>("CreatedBy")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingCreator");
+                    b.Property<int?>("ImpersonatingCreator")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("ImpersonatingLastUpdated");
+                    b.Property<int?>("ImpersonatingLastUpdated")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("LastUpdatedAt");
+                    b.Property<DateTimeOffset?>("LastUpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("LastUpdatedBy");
+                    b.Property<int?>("LastUpdatedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("SystemMessageHeader")
+                        .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);
 
                     b.Property<string>("SystemMessageText")
+                        .HasColumnType("nvarchar(2000)")
                         .HasMaxLength(2000);
 
-                    b.Property<int>("SystemMessageType");
+                    b.Property<int>("SystemMessageType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("SystemMessageUserTypeGroup");
+                    b.Property<int>("SystemMessageUserTypeGroup")
+                        .HasColumnType("int");
 
                     b.HasKey("SystemMessageId");
 
@@ -2205,11 +2710,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.TemporaryAttachmentGroup", b =>
                 {
-                    b.Property<Guid>("TemporaryAttachmentGroupKey");
+                    b.Property<Guid>("TemporaryAttachmentGroupKey")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("AttachmentId");
+                    b.Property<int>("AttachmentId")
+                        .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("CreatedAt");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("TemporaryAttachmentGroupKey", "AttachmentId");
 
@@ -2221,16 +2729,21 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.TemporaryChangedEmailEntry", b =>
                 {
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.Property<string>("EmailAddress")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("ExpirationDate");
+                    b.Property<DateTimeOffset>("ExpirationDate")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("ImpersonatingUpdatedByUserId");
+                    b.Property<int?>("ImpersonatingUpdatedByUserId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UpdatedByUserId");
+                    b.Property<int>("UpdatedByUserId")
+                        .HasColumnType("int");
 
                     b.HasKey("UserId");
 
@@ -2245,17 +2758,23 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("UserAuditLogEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("LoggedAt");
+                    b.Property<DateTimeOffset>("LoggedAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("UpdatedByImpersonatorId");
+                    b.Property<int?>("UpdatedByImpersonatorId")
+                        .HasColumnType("int");
 
-                    b.Property<int?>("UpdatedByUserId");
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UserChangeType");
+                    b.Property<int>("UserChangeType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("UserAuditLogEntryId");
 
@@ -2270,11 +2789,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSetting", b =>
                 {
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("DefaultSettingType");
+                    b.Property<int>("DefaultSettingType")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Value");
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId", "DefaultSettingType");
 
@@ -2285,13 +2807,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("UserDefaultSettingHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("DefaultSettingType");
+                    b.Property<int>("DefaultSettingType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UserAuditLogEntryId");
+                    b.Property<int>("UserAuditLogEntryId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Value");
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserDefaultSettingHistoryEntryId");
 
@@ -2304,15 +2830,20 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("UserDefaultSettingOrderRequirementId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Description");
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsRequired");
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("RequirementType");
+                    b.Property<int>("RequirementType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("UserDefaultSettingOrderRequirementId");
 
@@ -2325,15 +2856,20 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("UserDefaultSettingsOrderRequirementHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Description");
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsRequired");
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("RequirementType");
+                    b.Property<int>("RequirementType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UserAuditLogEntryId");
+                    b.Property<int>("UserAuditLogEntryId")
+                        .HasColumnType("int");
 
                     b.HasKey("UserDefaultSettingsOrderRequirementHistoryEntryId");
 
@@ -2346,11 +2882,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("UserLoginLogEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset>("LoggedInAt");
+                    b.Property<DateTimeOffset>("LoggedInAt")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("UserLoginLogEntryId");
 
@@ -2361,13 +2900,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserNotificationSetting", b =>
                 {
-                    b.Property<int>("UserId");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("NotificationChannel");
+                    b.Property<int>("NotificationChannel")
+                        .HasColumnType("int");
 
-                    b.Property<int>("NotificationType");
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("int");
 
-                    b.Property<string>("ConnectionInformation");
+                    b.Property<string>("ConnectionInformation")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId", "NotificationChannel", "NotificationType");
 
@@ -2378,15 +2921,20 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Property<int>("UserNotificationSettingHistoryEntryId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ConnectionInformation");
+                    b.Property<string>("ConnectionInformation")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("NotificationChannel");
+                    b.Property<int>("NotificationChannel")
+                        .HasColumnType("int");
 
-                    b.Property<int>("NotificationType");
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("UserAuditLogEntryId");
+                    b.Property<int>("UserAuditLogEntryId")
+                        .HasColumnType("int");
 
                     b.HasKey("UserNotificationSettingHistoryEntryId");
 
@@ -2397,47 +2945,53 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser")
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", null)
                         .WithMany("Claims")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser")
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<int>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser")
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", null)
                         .WithMany("Roles")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser")
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.AspNetUser", b =>
@@ -2460,7 +3014,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
                         .WithMany("ClaimsHistory")
                         .HasForeignKey("UserAuditLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.AspNetUserHistoryEntry", b =>
@@ -2468,7 +3023,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
                         .WithOne("UserHistory")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.AspNetUserHistoryEntry", "UserAuditLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.AspNetUserRoleHistoryEntry", b =>
@@ -2476,12 +3032,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
                         .WithMany("RolesHistory")
                         .HasForeignKey("UserAuditLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Attachment", b =>
@@ -2489,7 +3047,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
                         .WithMany()
@@ -2512,7 +3071,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "AnswerDisputedByImpersonator")
                         .WithMany()
@@ -2537,7 +3097,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("Complaints")
                         .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "TerminatingUser")
                         .WithMany()
@@ -2550,12 +3111,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
                         .WithMany("CustomerChangeLogEntries")
                         .HasForeignKey("CustomerOrganisationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisation", b =>
@@ -2570,7 +3133,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
                         .WithMany("CustomerSettings")
                         .HasForeignKey("CustomerOrganisationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSettingHistoryEntry", b =>
@@ -2578,7 +3142,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerChangeLogEntry", "CustomerChangeLogEntry")
                         .WithMany("CustomerSettingHistories")
                         .HasForeignKey("CustomerChangeLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnit", b =>
@@ -2586,12 +3151,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
                         .WithMany()
                         .HasForeignKey("CustomerOrganisationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
                         .WithMany()
@@ -2614,12 +3181,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerUnit", "CustomerUnit")
                         .WithMany("CustomerUnitUsers")
                         .HasForeignKey("CustomerUnitId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
                         .WithMany("CustomerUnits")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnitUserHistoryEntry", b =>
@@ -2627,7 +3196,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
                         .WithMany("CustomerUnitUsersHistory")
                         .HasForeignKey("UserAuditLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>
@@ -2635,7 +3205,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OutboundWebHookCall", "OutboundWebHookCall")
                         .WithMany("FailedCalls")
                         .HasForeignKey("OutboundWebHookCallId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Faq", b =>
@@ -2643,7 +3214,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "LastUpdatedByUser")
                         .WithMany()
@@ -2656,7 +3228,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Faq", "Faq")
                         .WithMany("FaqDisplayUserRoles")
                         .HasForeignKey("FaqId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.InterpreterBroker", b =>
@@ -2664,7 +3237,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Broker", "Broker")
                         .WithMany()
                         .HasForeignKey("BrokerId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "InactivatedByImpersonator")
                         .WithMany()
@@ -2686,7 +3260,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "Requisition")
                         .WithMany("MealBreaks")
                         .HasForeignKey("RequisitionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Order", b =>
@@ -2698,12 +3273,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
                         .WithMany()
                         .HasForeignKey("CustomerOrganisationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerUnit", "CustomerUnit")
                         .WithMany()
@@ -2729,7 +3306,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Region", "Region")
                         .WithMany()
                         .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "ReplacingOrder")
                         .WithOne("ReplacedByOrder")
@@ -2741,12 +3319,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
                         .WithMany("Orders")
                         .HasForeignKey("AttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("Attachments")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachmentHistoryEntry", b =>
@@ -2754,12 +3334,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
                         .WithMany("OrderAttachmentHistoryEntries")
                         .HasForeignKey("AttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", "OrderChangeLogEntry")
                         .WithMany("OrderAttachmentHistoryEntries")
                         .HasForeignKey("OrderChangeLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderChangeConfirmation", b =>
@@ -2767,7 +3349,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ConfirmedByUser")
                         .WithMany()
                         .HasForeignKey("ConfirmedBy")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ImpersonatingConfirmedByUser")
                         .WithMany()
@@ -2776,7 +3359,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", "OrderChangeLogEntry")
                         .WithOne("OrderChangeConfirmation")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.OrderChangeConfirmation", "OrderChangeLogEntryId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", b =>
@@ -2788,7 +3372,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("OrderChangeLogEntries")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByImpersonatorUser")
                         .WithMany()
@@ -2797,7 +3382,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>
@@ -2805,7 +3391,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("CompetenceRequirements")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderContactPersonHistory", b =>
@@ -2813,7 +3400,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", "OrderChangeLogEntry")
                         .WithOne("OrderContactPersonHistory")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.OrderContactPersonHistory", "OrderChangeLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "PreviousContactPersonUser")
                         .WithMany()
@@ -2825,12 +3413,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
                         .WithMany()
                         .HasForeignKey("CustomerOrganisationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerUnit", "CustomerUnit")
                         .WithMany()
@@ -2847,7 +3437,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Region", "Region")
                         .WithMany()
                         .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupAttachment", b =>
@@ -2855,12 +3446,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
                         .WithMany("OrderGroups")
                         .HasForeignKey("AttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
                         .WithMany("Attachments")
                         .HasForeignKey("OrderGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupCompetenceRequirement", b =>
@@ -2868,7 +3461,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
                         .WithMany("CompetenceRequirements")
                         .HasForeignKey("OrderGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupInterpreterLocation", b =>
@@ -2876,7 +3470,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
                         .WithMany("InterpreterLocations")
                         .HasForeignKey("OrderGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupRequirement", b =>
@@ -2884,7 +3479,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
                         .WithMany("Requirements")
                         .HasForeignKey("OrderGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupStatusConfirmation", b =>
@@ -2892,7 +3488,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ConfirmedByUser")
                         .WithMany()
                         .HasForeignKey("ConfirmedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ImpersonatingConfirmedByUser")
                         .WithMany()
@@ -2902,7 +3499,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
                         .WithMany("StatusConfirmations")
                         .HasForeignKey("OrderGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderHistoryEntry", b =>
@@ -2910,7 +3508,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", "OrderChangeLogEntry")
                         .WithMany("OrderHistories")
                         .HasForeignKey("OrderChangeLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderInterpreterLocation", b =>
@@ -2918,7 +3517,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("InterpreterLocations")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderPriceRow", b =>
@@ -2926,7 +3526,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("PriceRows")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.PriceCalculationCharge", "PriceCalculationCharge")
                         .WithMany()
@@ -2946,7 +3547,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("Requirements")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderRequirementRequestAnswer", b =>
@@ -2954,12 +3556,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderRequirement", "OrderRequirement")
                         .WithMany("RequirementAnswers")
                         .HasForeignKey("OrderRequirementId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("RequirementAnswers")
                         .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderStatusConfirmation", b =>
@@ -2967,7 +3571,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ConfirmedByUser")
                         .WithMany()
                         .HasForeignKey("ConfirmedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ImpersonatingConfirmedByUser")
                         .WithMany()
@@ -2977,7 +3582,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("OrderStatusConfirmations")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundEmail", b =>
@@ -2997,7 +3603,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "RecipientUser")
                         .WithMany()
                         .HasForeignKey("RecipientUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.OutboundWebHookCall", "ResentHook")
                         .WithOne("ReplacingWebHook")
@@ -3019,17 +3626,20 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
                         .WithMany()
                         .HasForeignKey("CustomerOrganisationId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Ranking", "Ranking")
                         .WithMany("Quarantines")
                         .HasForeignKey("RankingId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedUser")
                         .WithMany()
@@ -3041,7 +3651,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Quarantine", "Quarantine")
                         .WithMany()
                         .HasForeignKey("QuarantineId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
                         .WithMany()
@@ -3053,12 +3664,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Broker", "Broker")
                         .WithMany("Rankings")
                         .HasForeignKey("BrokerId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Region", "Region")
                         .WithMany("Rankings")
                         .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Request", b =>
@@ -3105,7 +3718,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("Requests")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Quarantine", "Quarantine")
                         .WithMany("QuarantinedRequests")
@@ -3114,7 +3728,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Ranking", "Ranking")
                         .WithMany("Requests")
                         .HasForeignKey("RankingId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ReceivedByUser")
                         .WithMany()
@@ -3135,12 +3750,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
                         .WithMany("Requests")
                         .HasForeignKey("AttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("Attachments")
                         .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroup", b =>
@@ -3176,7 +3793,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.OrderGroup", "OrderGroup")
                         .WithMany("RequestGroups")
                         .HasForeignKey("OrderGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Quarantine", "Quarantine")
                         .WithMany()
@@ -3185,7 +3803,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Ranking", "Ranking")
                         .WithMany()
                         .HasForeignKey("RankingId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ReceivedByUser")
                         .WithMany()
@@ -3197,12 +3816,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
                         .WithMany("RequestGroups")
                         .HasForeignKey("AttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.RequestGroup", "RequestGroup")
                         .WithMany("Attachments")
                         .HasForeignKey("RequestGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroupStatusConfirmation", b =>
@@ -3210,7 +3831,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ConfirmedByUser")
                         .WithMany()
                         .HasForeignKey("ConfirmedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ImpersonatingConfirmedByUser")
                         .WithMany()
@@ -3220,7 +3842,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.RequestGroup", "RequestGroup")
                         .WithMany("StatusConfirmations")
                         .HasForeignKey("RequestGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroupUpdateLatestAnswerTime", b =>
@@ -3233,12 +3856,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.RequestGroup", "RequestGroup")
                         .WithOne("RequestGroupUpdateLatestAnswerTime")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.RequestGroupUpdateLatestAnswerTime", "RequestGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroupView", b =>
@@ -3251,12 +3876,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.RequestGroup", "RequestGroup")
                         .WithMany("Views")
                         .HasForeignKey("RequestGroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ViewedByUser")
                         .WithMany()
                         .HasForeignKey("ViewedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestPriceRow", b =>
@@ -3272,7 +3899,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("PriceRows")
                         .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestStatusConfirmation", b =>
@@ -3280,7 +3908,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ConfirmedByUser")
                         .WithMany()
                         .HasForeignKey("ConfirmedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ImpersonatingConfirmedByUser")
                         .WithMany()
@@ -3290,7 +3919,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("RequestStatusConfirmations")
                         .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestUpdateLatestAnswerTime", b =>
@@ -3303,12 +3933,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithOne("RequestUpdateLatestAnswerTime")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.RequestUpdateLatestAnswerTime", "RequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestView", b =>
@@ -3321,12 +3953,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("RequestViews")
                         .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ViewedByUser")
                         .WithMany()
                         .HasForeignKey("ViewedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Requisition", b =>
@@ -3334,7 +3968,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
                         .WithMany()
@@ -3358,7 +3993,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("Requisitions")
                         .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionAttachment", b =>
@@ -3366,12 +4002,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
                         .WithMany("Requisitions")
                         .HasForeignKey("AttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "Requisition")
                         .WithMany("Attachments")
                         .HasForeignKey("RequisitionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionPriceRow", b =>
@@ -3387,7 +4025,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "Requisition")
                         .WithMany("PriceRows")
                         .HasForeignKey("RequisitionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionStatusConfirmation", b =>
@@ -3395,7 +4034,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ConfirmedByUser")
                         .WithMany()
                         .HasForeignKey("ConfirmedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "ImpersonatingConfirmedByUser")
                         .WithMany()
@@ -3405,7 +4045,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "Requisition")
                         .WithMany("RequisitionStatusConfirmations")
                         .HasForeignKey("RequisitionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.SystemMessage", b =>
@@ -3413,7 +4054,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
                         .WithMany()
@@ -3436,7 +4078,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
                         .WithOne("TemporaryAttachmentGroup")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.TemporaryAttachmentGroup", "AttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.TemporaryChangedEmailEntry", b =>
@@ -3449,12 +4092,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
                         .WithOne("TemporaryChangedEmailEntry")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.TemporaryChangedEmailEntry", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserAuditLogEntry", b =>
@@ -3471,7 +4116,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
                         .WithMany("AuditLogEntries")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSetting", b =>
@@ -3479,7 +4125,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
                         .WithMany("DefaultSettings")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSettingHistoryEntry", b =>
@@ -3487,7 +4134,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
                         .WithMany("DefaultsHistory")
                         .HasForeignKey("UserAuditLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSettingOrderRequirement", b =>
@@ -3495,7 +4143,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
                         .WithMany("DefaultSettingOrderRequirements")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSettingsOrderRequirementHistoryEntry", b =>
@@ -3503,7 +4152,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
                         .WithMany("DefaultOrderRequirementsHistory")
                         .HasForeignKey("UserAuditLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserLoginLogEntry", b =>
@@ -3511,7 +4161,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
                         .WithMany("LoginLogEntries")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserNotificationSetting", b =>
@@ -3519,7 +4170,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "User")
                         .WithMany("NotificationSettings")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserNotificationSettingHistoryEntry", b =>
@@ -3527,7 +4179,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
                         .WithMany("NotificationsHistory")
                         .HasForeignKey("UserAuditLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -12,13 +12,10 @@ namespace Tolk.Web.Models
         public bool AllowConfirmationDenial { get; set; } = false;
         public bool AllowConfirmNoAnswer { get; set; } = false;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> DesiredRequirementAnswers { get; set; }
 
         [Display(Name = "Tillsatt tolk")]
@@ -128,6 +125,7 @@ namespace Tolk.Web.Models
                     DepartmentName = order.UnitName,
                     InvoiceReference = order.InvoiceReference,
                     OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
+                    PeppolId = orderGroup.CustomerOrganisation.PeppolId,
                     ReferenceNumber = order.CustomerReferenceNumber
                 },
                 OccasionList = new OccasionListModel
@@ -146,7 +144,7 @@ namespace Tolk.Web.Models
                         Description = r.Description,
                         RequirementType = r.RequirementType,
                         Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                        CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
+                        CanMeetRequirement = request.RequirementAnswers != null && (request.RequirementAnswers.Any() && request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement),
                     }).ToList(),
                     DesiredRequirementAnswers = order.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
@@ -155,7 +153,7 @@ namespace Tolk.Web.Models
                         Description = r.Description,
                         RequirementType = r.RequirementType,
                         Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                        CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
+                        CanMeetRequirement = request.RequirementAnswers != null && (request.RequirementAnswers.Any() && request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement),
                     }).ToList(),
                 },
                 ExtraInterpreterAnswerModel = requestGroup.HasExtraInterpreter ? new InterpreterAnswerModel
@@ -167,7 +165,7 @@ namespace Tolk.Web.Models
                         Description = r.Description,
                         RequirementType = r.RequirementType,
                         Answer = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                        CanMeetRequirement = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.Any() ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
+                        CanMeetRequirement = requestExtraInterpreter.RequirementAnswers != null && (requestExtraInterpreter.RequirementAnswers.Any() && requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement),
                     }).ToList(),
                     DesiredRequirementAnswers = orderExtraInterpreter.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
@@ -176,7 +174,7 @@ namespace Tolk.Web.Models
                         Description = r.Description,
                         RequirementType = r.RequirementType,
                         Answer = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                        CanMeetRequirement = requestExtraInterpreter.RequirementAnswers != null ? requestExtraInterpreter.RequirementAnswers.Any() ? requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
+                        CanMeetRequirement = requestExtraInterpreter.RequirementAnswers != null && (requestExtraInterpreter.RequirementAnswers.Any() && requestExtraInterpreter.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement),
                     }).ToList(),
                 } : null,
                 HasExtraInterpreter = requestGroup.HasExtraInterpreter,

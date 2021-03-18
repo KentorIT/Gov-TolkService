@@ -105,6 +105,7 @@ namespace Tolk.Web.Models
                 InvoiceReference = orderGroup.FirstOrder.InvoiceReference,
                 CustomerName = orderGroup.CustomerOrganisation.Name,
                 CustomerOrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
+                CustomerPeppolId = orderGroup.CustomerOrganisation.PeppolId,
                 CustomerReferenceNumber = orderGroup.FirstOrder.CustomerReferenceNumber,
                 LanguageName = orderGroup.OtherLanguage ?? orderGroup.Language?.Name ?? "-",
                 CustomerUnitName = orderGroup.CustomerUnit?.Name ?? string.Empty,

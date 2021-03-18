@@ -100,6 +100,7 @@ namespace Tolk.Web.Models
                     DepartmentName = order.UnitName,
                     InvoiceReference = order.InvoiceReference,
                     OrganisationNumber = orderGroup.CustomerOrganisation.OrganisationNumber,
+                    PeppolId = orderGroup.CustomerOrganisation.PeppolId,
                     ReferenceNumber = order.CustomerReferenceNumber
                 },
                 Description = order.Description,

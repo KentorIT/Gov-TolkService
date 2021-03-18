@@ -40,6 +40,9 @@ namespace Tolk.Web.Models
         [Required]
         public string OrganisationNumber { get; set; }
 
+        [Display(Name = "Peppol-ID")]
+        public string PeppolId { get; set; }
+
         [Display(Name = "EmailDomän", Description = "Detta används när en användare som kopplar upp sig själv, för att kunna räkna ut med vilken organisation hen skall kopplas till.")]
         [Required]
         public string EmailDomain { get; set; }
@@ -54,7 +57,6 @@ namespace Tolk.Web.Models
 
         public AdminUnitFilterModel UnitFilterModel { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         [SubItem]
         public List<CustomerSettingModel> CustomerSettings { get; set; }
 
@@ -77,6 +79,7 @@ namespace Tolk.Web.Models
                 EmailDomain = customer.EmailDomain,
                 OrganisationPrefix = customer.OrganisationPrefix,
                 OrganisationNumber = customer.OrganisationNumber,
+                PeppolId = customer.PeppolId,
                 TravelCostAgreementType = customer.TravelCostAgreementType,
                 Message = message,
                 UserPageMode = new UserPageMode
@@ -96,6 +99,7 @@ namespace Tolk.Web.Models
             customer.ParentCustomerOrganisationId = ParentId;
             customer.EmailDomain = EmailDomain;
             customer.OrganisationNumber = OrganisationNumber;
+            customer.PeppolId = PeppolId;
             if (isNewCustomer)
             {
                 customer.PriceListType = PriceListType.Value;

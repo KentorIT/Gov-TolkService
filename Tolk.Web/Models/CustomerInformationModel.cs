@@ -19,6 +19,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighetens organisationsnummer")]
         public string OrganisationNumber { get; set; }
 
+        [Display(Name = "Myndighetens peppol-ID")]
+        public string PeppolId { get; set; }
+
         [Display(Name = "Myndighetens ärendenummer")]
         public string ReferenceNumber { get; set; }
 

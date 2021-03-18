@@ -5,6 +5,7 @@
         public string Name { get; set; }
         public string Key { get; set; }
         public string OrganisationNumber { get; set; }
+        public string PeppolId { get; set; }
         public string ContactName { get; set; }
         public string ContactPhone { get; set; }
         public string ContactEmail { get; set; }

@@ -27,7 +27,6 @@ namespace Tolk.Web.Models
 
         public string ViewedByUser { get; set; } = string.Empty;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<FileModel> Files { get; set; }
 
         public AttachmentListModel AttachmentListModel { get; set; }
@@ -65,7 +64,6 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolkens kompetensnivå")]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
         [Display(Name = "Bedömd resekostnad")]
