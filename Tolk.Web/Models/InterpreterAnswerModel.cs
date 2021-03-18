@@ -63,10 +63,8 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public string DeclineMessage { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> DesiredRequirementAnswers { get; set; }
 
     }

@@ -14,11 +14,6 @@ namespace Tolk.Web.Models
     [AutoMap(typeof(OrderModel))]
     public class ReplaceOrderModel : OrderBaseModel
     {
-        /* 
-        ContactPersonId
-        Files
-         */
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<FileModel> Files { get; set; }
 
         public Guid? FileGroupKey { get; set; }

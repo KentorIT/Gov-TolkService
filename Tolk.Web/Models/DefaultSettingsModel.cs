@@ -74,16 +74,12 @@ namespace Tolk.Web.Models
         [Placeholder("Er fakturareferens...")]
         public string InvoiceReference { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderRequirementModel> OrderRequirements { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderDesiredRequirementModel> OrderDesiredRequirements { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderRequirementModel> SavedOrderRequirements { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderDesiredRequirementModel> SavedOrderDesiredRequirements { get; set; }
 
         public bool IsFirstTimeUser { get; set; }

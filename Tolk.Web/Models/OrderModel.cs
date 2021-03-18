@@ -96,7 +96,6 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public RadioButtonGroup CreatorIsInterpreterUser { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderOccasionModel> Occasions { get; set; }
 
         public bool DisplayForBroker { get; set; } = false;
@@ -109,7 +108,6 @@ namespace Tolk.Web.Models
 
         public PriceInformation PriceInformation { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<FileModel> Files { get; set; }
 
         public Guid? FileGroupKey { get; set; }

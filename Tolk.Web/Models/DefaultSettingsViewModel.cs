@@ -62,11 +62,9 @@ namespace Tolk.Web.Models
         public string InvoiceReference { get; set; }
 
         [Display(Name = "Tillkommande krav")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderRequirementModel> OrderRequirements { get; set; }
 
         [Display(Name = "Tillkommande önskemål")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<OrderDesiredRequirementModel> OrderDesiredRequirements { get; set; }
 
         public string Message { get; set; }

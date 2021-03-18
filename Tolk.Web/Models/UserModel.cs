@@ -71,7 +71,6 @@ namespace Tolk.Web.Models
 
         public UserTypes UserType { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<UnitUserModel> UnitUsers { get; set; }
 
         public IEnumerable<UnitUserModel> NonEditableUnitUsers { get; set; }

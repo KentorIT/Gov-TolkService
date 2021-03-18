@@ -22,10 +22,8 @@ namespace Tolk.Web.Models
         public string NewInterpreterPhoneNumber { get; set; }
         public string NewInterpreterEmail { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; } = new List<RequestRequirementAnswerModel>();
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> DesiredRequirementAnswers { get; set; } = new List<RequestRequirementAnswerModel>();
 
         public decimal? ExpectedTravelCosts { get; set; }
@@ -38,7 +36,6 @@ namespace Tolk.Web.Models
 
         public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<FileModel> Files { get; set; }
 
         [ClientRequired]

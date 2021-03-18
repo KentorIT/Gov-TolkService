@@ -40,7 +40,6 @@ namespace Tolk.Web.Models
 
         public string ViewedByUser { get; set; } = string.Empty;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<FileModel> Files { get; set; }
 
         public AttachmentListModel AttachmentListModel { get; set; }
@@ -117,13 +116,10 @@ namespace Tolk.Web.Models
         [StringLength(255)]
         public string NewInterpreterPhoneNumber { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Used in razor view")]
         public List<RequestRequirementAnswerModel> DesiredRequirementAnswers { get; set; }
 
         public int? RequisitionId { get; set; }
@@ -226,7 +222,7 @@ namespace Tolk.Web.Models
                     Description = r.Description,
                     RequirementType = r.RequirementType,
                     Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
+                    CanMeetRequirement = request.RequirementAnswers != null && (request.RequirementAnswers.Any() && request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement),
                 }).ToList(),
                 RequiredRequirementAnswers = request.Order.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
                 {
@@ -235,7 +231,7 @@ namespace Tolk.Web.Models
                     Description = r.Description,
                     RequirementType = r.RequirementType,
                     Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
+                    CanMeetRequirement = request.RequirementAnswers != null && (request.RequirementAnswers.Any() && request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement),
                 }).ToList(),
                 DesiredRequirementAnswers = request.Order.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
                 {
@@ -244,7 +240,7 @@ namespace Tolk.Web.Models
                     Description = r.Description,
                     RequirementType = r.RequirementType,
                     Answer = request.RequirementAnswers != null ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId)?.Answer : string.Empty,
-                    CanMeetRequirement = request.RequirementAnswers != null ? request.RequirementAnswers.Any() ? request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement : false : false,
+                    CanMeetRequirement = request.RequirementAnswers != null && (request.RequirementAnswers.Any() && request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement),
                 }).ToList(),
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
                 OrderViewModel = OrderViewModel.GetModelFromOrder(request.Order, request, true),
