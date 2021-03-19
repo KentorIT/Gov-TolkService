@@ -44,7 +44,7 @@ namespace Tolk.BusinessLogic.Services
                 CreatedBy = userId,
                 ImpersonatingCreatedBy = impersonatorId
             };
-            request.CreateComplaint(complaint);
+            request.CreateComplaint(complaint, _clock.SwedenNow);
             _notificationService.ComplaintCreated(complaint);
             _logger.LogDebug($"Created complaint for request {request.RequestId}");
         }

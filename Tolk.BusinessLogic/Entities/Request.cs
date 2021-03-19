@@ -147,7 +147,9 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCreateRequisition => !Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) && IsApprovedOrDelivered;
 
-        public bool CanCreateComplaint => !Complaints.Any() && IsApprovedOrDelivered;
+        public bool CanCreateComplaint(DateTimeOffset swedenNow) => !Complaints.Any() && HasCorrectStatusForCreateComplaint && !(IsApprovedOrDelivered && Order.StartAt > swedenNow);
+
+        public bool HasCorrectStatusForCreateComplaint => IsApprovedOrDelivered || Status == RequestStatus.CancelledByBroker;
 
         public bool IsApprovedOrDelivered => (Status == RequestStatus.Approved || Status == RequestStatus.Delivered);
 
@@ -161,9 +163,9 @@ namespace Tolk.BusinessLogic.Entities
 
         #region Methods
 
-        public void CreateComplaint(Complaint complaint)
+        public void CreateComplaint(Complaint complaint, DateTimeOffset now)
         {
-            if (!CanCreateComplaint)
+            if (!CanCreateComplaint(now))
             {
                 throw new InvalidOperationException("Det gick inte att skapa reklamation");
             }

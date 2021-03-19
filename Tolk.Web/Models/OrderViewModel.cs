@@ -133,7 +133,7 @@ namespace Tolk.Web.Models
         public bool RequestCanBeReplaced { get; set; } = false;
         public bool RequestCanBePrinted { get; set; } = false;
         public bool RequestIsApprovedOrDelivered { get; set; } = false;
-
+        public bool HasCorrectStatusForCreateComplaint { get; set; } = false;
         public bool StartAtIsInFuture { get; set; } = false;
         public bool TimeIsValidForOrderReplacement { get; set; } = false;
         public bool MealbreakIncluded { get; set; } = false;
@@ -184,7 +184,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Skapa ersättningsuppdrag")]
         public bool AddReplacementOrder { get; set; } = false;
 
-        public bool AllowComplaintCreation => !HasComplaints && RequestIsApprovedOrDelivered && !StartAtIsInFuture && UserCanCreateComplaint;
+        public bool AllowComplaintCreation => !HasComplaints && HasCorrectStatusForCreateComplaint && !(RequestIsApprovedOrDelivered && StartAtIsInFuture) && UserCanCreateComplaint;
 
         public bool AllowRequestPrint => RequestCanBePrinted && UserCanPrint;
 
@@ -306,6 +306,7 @@ namespace Tolk.Web.Models
                 model.RequestId = request.RequestId;
                 model.RequestGroupId = request.RequestGroupId;
                 model.RequestIsApprovedOrDelivered = request.IsApprovedOrDelivered;
+                model.HasCorrectStatusForCreateComplaint = request.HasCorrectStatusForCreateComplaint;
                 if (model.ActiveRequestIsAnswered)
                 {
                     model.CancelMessage = request.CancelMessage;

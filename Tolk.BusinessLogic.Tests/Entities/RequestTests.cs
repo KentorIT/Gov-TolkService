@@ -1606,11 +1606,14 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.ConfirmOrderChange(request.Order.OrderChangeLogEntries.Select(oc => oc.OrderChangeLogEntryId).ToList(), DateTimeOffset.Now, 1, null);
             Assert.Throws<InvalidOperationException>(() => request.ConfirmOrderChange(request.Order.OrderChangeLogEntries.Select(oc => oc.OrderChangeLogEntryId).ToList(), DateTimeOffset.Now, 1, null));
-
         }
 
-        [Fact]
-        public void CreateComplaint_Valid()
+        [Theory]
+        [InlineData(RequestStatus.Delivered, -1)]
+        [InlineData(RequestStatus.Approved, -1)]
+        [InlineData(RequestStatus.CancelledByBroker, 1)]
+        [InlineData(RequestStatus.CancelledByBroker, -1)]
+        public void CreateComplaint_Valid(RequestStatus status, int addDaysToNow)
         {
             var complaint = new Complaint
             {
@@ -1620,27 +1623,83 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             var request = new Request
             {
-                Status = RequestStatus.Approved,
+                Status = status,
                 Complaints = new List<Complaint>()
             };
-            request.CreateComplaint(complaint);
-
+            request.Order = new Order(MockOrder)
+            {
+                StartAt = DateTimeOffset.Now.AddDays(addDaysToNow)
+            };
+            request.CreateComplaint(complaint, DateTimeOffset.Now);
             Assert.Single(request.Complaints);
             Assert.Equal(complaint, request.Complaints[0]);
         }
 
         [Fact]
-        public void CreateComplaint_Invalid()
+        public void CreateComplaint_Invalid_ComplaintExists()
         {
-            var request = new Request()
+            var request = new Request
             {
+                Status = RequestStatus.Approved,
                 Complaints = new List<Complaint>()
                 {
                     new Complaint()
                 }
             };
-            Assert.Throws<InvalidOperationException>(() => request.CreateComplaint(new Complaint()));
+            request.Order = new Order(MockOrder)
+            {
+                StartAt = DateTimeOffset.Now.AddDays(-1)
+            };
+            Assert.Throws<InvalidOperationException>(() => request.CreateComplaint(new Complaint(), DateTimeOffset.Now));
         }
+
+        [Theory]
+        [InlineData(RequestStatus.Accepted)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
+        [InlineData(RequestStatus.CancelledByCreator)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.Created)]
+        [InlineData(RequestStatus.DeclinedByBroker)]
+        [InlineData(RequestStatus.DeniedByCreator)]
+        [InlineData(RequestStatus.DeniedByTimeLimit)]
+        [InlineData(RequestStatus.InterpreterReplaced)]
+        [InlineData(RequestStatus.LostDueToQuarantine)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer)]
+        [InlineData(RequestStatus.Received)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker)]
+        public void CreateComplaint_Invalid_NotCorrectStatus(RequestStatus status)
+        {
+            var request = new Request
+            {
+                Status = status,
+                Complaints = new List<Complaint>()
+            };
+            request.Order = new Order(MockOrder)
+            {
+                StartAt = DateTimeOffset.Now.AddDays(-1)
+            };
+            Assert.Throws<InvalidOperationException>(() => request.CreateComplaint(new Complaint(), DateTimeOffset.Now));
+        }
+
+        [Theory]
+        [InlineData(RequestStatus.Approved)]
+        [InlineData(RequestStatus.Delivered)]
+        public void CreateComplaint_Invalid_Orderdate(RequestStatus status)
+        {
+            var request = new Request
+            {
+                Status = status,
+                Complaints = new List<Complaint>()
+            };
+            request.Order = new Order(MockOrder)
+            {
+                StartAt = DateTimeOffset.Now.AddDays(1)
+            };
+            Assert.Throws<InvalidOperationException>(() => request.CreateComplaint(new Complaint(), DateTimeOffset.Now));
+        }
+
 
         //REQUIREMENTS
 

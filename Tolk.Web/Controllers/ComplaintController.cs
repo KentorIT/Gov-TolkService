@@ -1,4 +1,5 @@
 ﻿using DataTables.AspNet.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -25,13 +26,15 @@ namespace Tolk.Web.Controllers
         private readonly ILogger _logger;
         private readonly ComplaintService _complaintService;
         private readonly EventLogService _eventLogService;
+        private readonly ISwedishClock _clock;
 
         public ComplaintController(
             TolkDbContext dbContext,
             IAuthorizationService authorizationService,
             ILogger<ComplaintController> logger,
             ComplaintService complaintService,
-            EventLogService eventLogService
+            EventLogService eventLogService,
+            ISwedishClock clock
             )
         {
             _dbContext = dbContext;
@@ -39,6 +42,7 @@ namespace Tolk.Web.Controllers
             _logger = logger;
             _complaintService = complaintService;
             _eventLogService = eventLogService;
+            _clock = clock;
         }
 
         public IActionResult List()
@@ -125,13 +129,13 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Create(int id)
         {
             Request request = await _dbContext.Requests.GetRequestForOtherViewsById(id);
-
+            request.Complaints = await _dbContext.Complaints.GetComplaintsForRequest(id).ToListAsync();
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.CreateComplaint)).Succeeded)
             {
-                if (!request.IsApprovedOrDelivered)
+                if (!request.CanCreateComplaint(_clock.SwedenNow))
                 {
                     _logger.LogWarning("Wrong status when trying to Create complaint. Status: {request.Status}, RequestId {request.RequestId}", request.Status, request.RequestId);
-                    return RedirectToAction("Index", "Home", new { errormessage = "Bokning har inte rätt status för att kunna göra en reklamation" });
+                    return RedirectToAction("Index", "Home", new { errormessage = "Bokning är inte i rätt tillstånd för att kunna göra en reklamation" });
                 }
                 return View(ComplaintModel.GetModelFromRequest(request));
             }
