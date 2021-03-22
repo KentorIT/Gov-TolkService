@@ -168,7 +168,7 @@ namespace Tolk.Web.Controllers
             if (!await _userManager.HasPasswordAsync(await _userManager.GetUserAsync(User)))
             {
                 return Forbid();
-            };
+            }
 
             return View();
         }
