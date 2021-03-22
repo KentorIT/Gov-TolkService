@@ -6,35 +6,35 @@ AS
 --Requests
 SELECT
 DISTINCT
-	5 'RowType'
+	5 RowType
    ,r.RequestId 
    ,ra.BrokerId
-   ,COALESCE(l.Name, o.OtherLanguage) 'LanguageName'
+   ,COALESCE(l.Name, o.OtherLanguage) LanguageName
    ,o.OrderNumber 
    ,og.OrderGroupNumber
    ,o.StartAt
    ,o.EndAt
-   ,r.Status 'RequestStatus'
-   ,rg.Status 'RequestGroupStatus'
-   ,anu.NameFirst + ' ' + anu.NameFamily 'ViewedBy'
-   ,anu.Id 'ViewedByUserId'
-   ,r.CreatedAt 'EntityDate'
+   ,r.Status RequestStatus
+   ,rg.Status RequestGroupStatus
+   ,anu.NameFirst + ' ' + anu.NameFamily ViewedBy
+   ,anu.Id ViewedByUserId
+   ,r.CreatedAt EntityDate
    ,r.RequestGroupId 
-   ,co.Name 'CustomerName'
+   ,co.Name CustomerName
    ,o.ReplacingOrderId
    ,r.CompetenceLevel
-   ,NULL 'ExtraCompetencelevel'
-   ,ru.UpdatedAt 'LastRequestCreatedUpdatedAt'
+   ,NULL ExtraCompetencelevel
+   ,ru.UpdatedAt LastRequestCreatedUpdatedAt
    ,r.LatestAnswerTimeForCustomer
-   ,r.AnswerDate 'AnsweredAt'
-   ,r.AnswerProcessedAt 'AnswerProcessedAt'
+   ,r.AnswerDate AnsweredAt
+   ,r.AnswerProcessedAt AnswerProcessedAt
    ,r.CancelledAt
-   ,r.ExpiresAt 'RequestExpiresAt'
-   ,NULL 'NoOfChildren'
-   ,NULL 'NoOfExtraInterpreter'
-   ,NULL 'RequisitionStatus'
-   ,NULL 'ComplaintStatus'
-   ,ocle.LoggedAt 'OrderChangedAt'
+   ,r.ExpiresAt RequestExpiresAt
+   ,NULL NoOfChildren
+   ,NULL NoOfExtraInterpreter
+   ,NULL RequisitionStatus
+   ,NULL ComplaintStatus
+   ,ocle.LoggedAt OrderChangedAt
 FROM dbo.Requests r
 INNER JOIN dbo.Orders o
 	ON r.OrderId = o.OrderId
@@ -62,7 +62,8 @@ LEFT JOIN dbo.OrderChangeLogEntries ocle
 	AND ocle.OrderChangeLogEntryId IN 
 	(SELECT TOP 1 oc.OrderChangeLogEntryId FROM dbo.OrderChangeLogEntries oc 
 	LEFT JOIN dbo.OrderChangeConfirmations occo ON occo.OrderChangeLogEntryId = oc.OrderChangeLogEntryId
-	WHERE oc.BrokerId = ra.BrokerId AND oc.OrderChangeLogType <> 2 ORDER BY oc.LoggedAt DESC)
+	WHERE oc.BrokerId = ra.BrokerId AND oc.OrderChangeLogType <> 2 AND occo.OrderChangeConfirmationId IS NULL
+	ORDER BY oc.LoggedAt DESC)
 LEFT JOIN OrderChangeConfirmations occ
 	ON ocle.OrderChangeLogEntryId = occ.OrderChangeLogEntryId
 WHERE (r.Status IN (1, 2) 
@@ -75,39 +76,39 @@ OR (r.Status = 5  AND o.StartAt > GETDATE()))
 UNION
 SELECT
 DISTINCT
-	6 'RowType'
-   ,NULL 'RequestId'
+	6 RowType
+   ,NULL RequestId
    ,ra.BrokerId
-   ,COALESCE(l.Name, o.OtherLanguage) 'LanguageName'
-   ,''  'OrderNumber'
+   ,COALESCE(l.Name, o.OtherLanguage) LanguageName
+   ,'' OrderNumber
    ,og.OrderGroupNumber
    ,o.StartAt
    ,o.EndAt
-   ,NULL 'RequestStatus'
-   ,rg.Status 'RequestGroupStatus'
-   ,anu.NameFirst + ' ' + anu.NameFamily 'ViewedBy'
-   ,anu.Id 'ViewedByUserId'
-   ,rg.CreatedAt 'EntityDate'
+   ,NULL RequestStatus
+   ,rg.Status RequestGroupStatus
+   ,anu.NameFirst + ' ' + anu.NameFamily ViewedBy
+   ,anu.Id ViewedByUserId
+   ,rg.CreatedAt EntityDate
    ,rg.RequestGroupId 
-   ,co.Name 'CustomerName'
+   ,co.Name CustomerName
    ,NULL ReplacingOrderId 
       ,(SELECT TOP 1 rComp.CompetenceLevel FROM dbo.Requests rComp
    INNER JOIN dbo.Orders oComp ON rComp.OrderId = oComp.OrderId
-   WHERE rComp.RequestGroupId = rg.RequestGroupId AND oComp.IsExtraInterpreterForOrderId IS NULL) 'Competencelevel'
+   WHERE rComp.RequestGroupId = rg.RequestGroupId AND oComp.IsExtraInterpreterForOrderId IS NULL) Competencelevel
    ,(SELECT TOP 1 rXComp.CompetenceLevel FROM dbo.Requests rXComp
    INNER JOIN dbo.Orders oXComp ON rXComp.OrderId = oXComp.OrderId
-   WHERE rXComp.RequestGroupId = rg.RequestGroupId AND oXComp.IsExtraInterpreterForOrderId IS NOT NULL) 'ExtraCompetencelevel'
+   WHERE rXComp.RequestGroupId = rg.RequestGroupId AND oXComp.IsExtraInterpreterForOrderId IS NOT NULL) ExtraCompetencelevel
    ,rg.LatestAnswerTimeForCustomer
-   ,ru.UpdatedAt 'LastRequestCreatedUpdatedAt'
-   ,rg.AnswerDate 'AnsweredAt'
-   ,NULL'AnswerProcessedAt'
+   ,ru.UpdatedAt LastRequestCreatedUpdatedAt
+   ,rg.AnswerDate AnsweredAt
+   ,NULL AnswerProcessedAt
    ,rg.CancelledAt
-   ,rg.ExpiresAt 'RequestExpiresAt'
-   ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId) 'NoOfChildren'
-   ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId AND IsExtraInterpreterForOrderId  IS NOT NULL) 'NoOfExtraInterpreter'
-   ,NULL 'RequisitionStatus'
-   ,NULL 'ComplaintStatus'
-   ,NULL 'OrderChangedAt'
+   ,rg.ExpiresAt RequestExpiresAt
+   ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId) NoOfChildren
+   ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId AND IsExtraInterpreterForOrderId  IS NOT NULL) NoOfExtraInterpreter
+   ,NULL RequisitionStatus
+   ,NULL ComplaintStatus
+   ,NULL OrderChangedAt
 FROM dbo.RequestGroups rg
 INNER JOIN dbo.OrderGroups og
 	ON og.OrderGroupId = rg.OrderGroupId
@@ -137,35 +138,35 @@ UNION
 --Requisitions
 SELECT
 DISTINCT
-	3 'RowType'
+	3 RowType
    ,r.RequestId
     ,ra.BrokerId
-   ,COALESCE(l.Name, o.OtherLanguage) 'LanguageName'
+   ,COALESCE(l.Name, o.OtherLanguage) LanguageName
    ,o.OrderNumber
    ,og.OrderGroupNumber
    ,o.StartAt
    ,o.EndAt
-   ,NULL 'RequestStatus'
-   ,NULL 'RequestGroupStatus'
-   ,anu.NameFirst + ' ' + anu.NameFamily 'ViewedBy'
-   ,anu.Id 'ViewedByUserId'
-   ,rs.CreatedAt 'EntityDate'
-   ,rs.RequestGroupId 'RequestGroupId'
-   ,co.Name 'CustomerName'
+   ,NULL RequestStatus
+   ,NULL RequestGroupStatus
+   ,anu.NameFirst + ' ' + anu.NameFamily ViewedBy
+   ,anu.Id ViewedByUserId
+   ,rs.CreatedAt EntityDate
+   ,rs.RequestGroupId RequestGroupId
+   ,co.Name CustomerName
    ,NULL ReplacingOrderId 
-   ,rs.CompetenceLevel 'Competencelevel'
-   ,NULL 'ExtraCompetencelevel'
-   ,NULL 'LatestAnswerTimeForCustomer'
-   ,NULL 'LastRequestCreatedUpdatedAt'
-   ,r.ProcessedAt 'AnsweredAt'
-   ,NULL'AnswerProcessedAt'
-   ,NULL 'CancelledAt'
-   ,NULL 'RequestExpiresAt'
-   ,0 'NoOfChildren'
-   ,0 'NoOfExtraInterpreter'
-   ,r.Status 'RequisitionStatus'
-   ,NULL 'ComplaintStatus'
-   ,NULL 'OrderChangedAt'
+   ,rs.CompetenceLevel Competencelevel
+   ,NULL ExtraCompetencelevel
+   ,NULL LatestAnswerTimeForCustomer
+   ,NULL LastRequestCreatedUpdatedAt
+   ,r.ProcessedAt AnsweredAt
+   ,NULL AnswerProcessedAt
+   ,NULL CancelledAt
+   ,NULL RequestExpiresAt
+   ,0 NoOfChildren
+   ,0 NoOfExtraInterpreter
+   ,r.Status RequisitionStatus
+   ,NULL ComplaintStatus
+   ,NULL OrderChangedAt
 FROM dbo.Requisitions r
 INNER JOIN dbo.Requests rs
 	ON r.RequestId = rs.RequestId
@@ -191,35 +192,35 @@ UNION
 --Complaints
 SELECT
 DISTINCT
-	4 'RowType'
+	4 RowType
    ,r.RequestId
    ,ra.BrokerId
-   ,COALESCE(l.Name, o.OtherLanguage) 'LanguageName'
+   ,COALESCE(l.Name, o.OtherLanguage) LanguageName
    ,o.OrderNumber
    ,og.OrderGroupNumber
    ,o.StartAt
    ,o.EndAt
-   ,NULL 'RequestStatus'
-   ,NULL 'RequestGroupStatus'
-   ,anu.NameFirst + ' ' + anu.NameFamily 'ViewedBy'
-   ,anu.Id 'ViewedByUserId'
-   ,c.CreatedAt 'EntityDate'
+   ,NULL RequestStatus
+   ,NULL RequestGroupStatus
+   ,anu.NameFirst + ' ' + anu.NameFamily ViewedBy
+   ,anu.Id ViewedByUserId
+   ,c.CreatedAt EntityDate
    ,r.RequestGroupId
-   ,co.Name 'CustomerName'
+   ,co.Name CustomerName
    ,NULL ReplacingOrderId 
-   ,r.CompetenceLevel 'Competencelevel'
-   ,NULL 'ExtraCompetencelevel'
-   ,NULL 'LatestAnswerTimeForCustomer'
-   ,NULL 'LastRequestCreatedUpdatedAt'
-   ,NULL 'AnsweredAt'
-   ,NULL'AnswerProcessedAt'
-   ,NULL 'CancelledAt'
-   ,NULL 'RequestExpiresAt'
-   ,NULL 'NoOfChildren'
-   ,NULL 'NoOfExtraInterpreter'
-   ,NULL 'RequisitionStatus'
-   ,c.Status 'ComplaintStatus'
-   ,NULL 'OrderChangedAt'
+   ,r.CompetenceLevel Competencelevel
+   ,NULL ExtraCompetencelevel
+   ,NULL LatestAnswerTimeForCustomer
+   ,NULL LastRequestCreatedUpdatedAt
+   ,NULL AnsweredAt
+   ,NULL AnswerProcessedAt
+   ,NULL CancelledAt
+   ,NULL RequestExpiresAt
+   ,NULL NoOfChildren
+   ,NULL NoOfExtraInterpreter
+   ,NULL RequisitionStatus
+   ,c.Status ComplaintStatus
+   ,NULL OrderChangedAt
 FROM dbo.Complaints c
 INNER JOIN dbo.Requests r
 	ON c.RequestId = r.RequestId
