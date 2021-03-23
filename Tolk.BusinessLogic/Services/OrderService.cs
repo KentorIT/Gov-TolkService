@@ -941,11 +941,11 @@ namespace Tolk.BusinessLogic.Services
                         }
                         else
                         {
+                            expiredRequestGroup.OrderGroup.RequestGroups = await _tolkDbContext.RequestGroups.GetRequestGroupsForOrderGroup(expiredRequestGroup.OrderGroupId).ToListAsync();
                             expiredRequestGroup.SetStatus(RequestStatus.DeniedByTimeLimit);
                             _notificationService.RequestGroupExpiredDueToInactivity(expiredRequestGroup);
                             await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
                         }
-
                         await trn.CommitAsync();
                     }
                 }
