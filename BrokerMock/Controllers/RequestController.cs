@@ -27,6 +27,8 @@ namespace BrokerMock.Controllers
         private readonly BrokerMockOptions _options;
         private readonly ApiCallService _apiService;
         private readonly IMemoryCache _cache;
+        private static readonly HttpClient client = new HttpClient();
+        private readonly object clientLock = new object();
 
         public RequestController(IHubContext<WebHooksHub> hubContext, IOptions<BrokerMockOptions> options, ApiCallService apiService, IMemoryCache cache)
         {
@@ -34,6 +36,21 @@ namespace BrokerMock.Controllers
             _options = options.Value;
             _apiService = apiService;
             _cache = cache;
+            client.DefaultRequestHeaders.Accept.Clear();
+            lock (clientLock)
+            {
+                if (_options.UseApiKey)
+                {
+                    if (!client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-UserName"))
+                    {
+                        client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-UserName", _options.ApiUserName);
+                    }
+                    if (!client.DefaultRequestHeaders.Any(h => h.Key == "X-Kammarkollegiet-InterpreterService-ApiKey"))
+                    {
+                        client.DefaultRequestHeaders.Add("X-Kammarkollegiet-InterpreterService-ApiKey", _options.ApiKey);
+                    }
+                }
+            }
         }
 
         #region incomming
@@ -566,7 +583,7 @@ namespace BrokerMock.Controllers
         private async Task<bool> CreateInterpreter(InterpreterDetailsModel payload)
         {
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Create"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Create"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Create] FAILED Unauthorized:: Tolk {payload.Email} kunde inte skapas");
@@ -591,7 +608,7 @@ namespace BrokerMock.Controllers
             var originalFirstName = payload.FirstName;
             payload.FirstName = $"Ö{payload.FirstName}";
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Update] FAILED Unauthorized:: Tolk {payload.Email} förnamnet kunde inte ändras");
@@ -614,7 +631,7 @@ namespace BrokerMock.Controllers
         {
             payload.IsActive = !payload.IsActive;
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Interpreter/Update"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Interpreter/Update] FAILED Unauthorized:: Tolk {payload.Email} förnamnet kunde inte {(payload.IsActive ? "aktiverades" : "inaktiverades")}");
@@ -670,7 +687,7 @@ namespace BrokerMock.Controllers
                 LatestAnswerTimeForCustomer = latestAnswerAt
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Answer"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Answer"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Answer]:: [Request/Answer] Unauthorized:: Boknings-ID: {orderNumber} skickad tolk: {interpreter.Email}");
@@ -714,7 +731,7 @@ namespace BrokerMock.Controllers
                 } : new InterpreterGroupAnswerModel { Accepted = false, DeclineMessage = "Det är svårt för att lösa det, helt enkelt." },
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Answer"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Answer"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}");
@@ -743,7 +760,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se",
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/AcceptReplacement"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/AcceptReplacement"), content);
             if (JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync()).Success)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/AcceptReplacement]:: Boknings-ID: {orderNumber} ersättning har accepterats");
@@ -765,7 +782,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Acknowledge"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Acknowledge"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Acknowledge] FAILED Unauthorized:: Boknings-ID: {orderNumber} accat mottagande");
@@ -790,7 +807,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmDenial"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmDenial"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmDenial] Unauthorized:: Boknings-ID: {orderNumber} accat nekande");
@@ -814,7 +831,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmDenial"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmDenial"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmDenial] FAILED :: Boknings-ID: {orderGroupNumber} accat nekande");
@@ -838,7 +855,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmCancellation"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmCancellation"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmCancellation] FAILED Unauthorized:: Boknings-ID: {orderGroupNumber} konfirmerat gruppavbokning");
@@ -862,7 +879,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmCancellation"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmCancellation"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmCancellation] FAILED Unauthorized:: Boknings-ID: {orderNumber} konfirmerat avbokning");
@@ -886,7 +903,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoAnswer"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoAnswer"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoAnswer] FAILED Unauthorized:: Boknings-ID: {orderNumber} tagit del av obesvarad förfrågan");
@@ -910,7 +927,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmUpdate"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmUpdate"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmUpdate] FAILED Unauthorized:: Boknings-ID: {orderNumber} tagit del av ändrad förfrågan");
@@ -934,7 +951,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmNoAnswer"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/ConfirmNoAnswer"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/ConfirmNoAnswer] FAILED Unauthorized:: Boknings-ID: {orderGroupNumber} tagit del av obesvarad sammanhållen förfrågan");
@@ -958,7 +975,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoRequisition"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ConfirmNoRequisition"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ConfirmNoRequisition] FAILED Unauthorized:: Boknings-ID: {orderNumber} arkiverad utan rekvisition");
@@ -982,7 +999,7 @@ namespace BrokerMock.Controllers
                 CallingUser = "regular-user@formedling1.se"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Acknowledge"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Acknowledge"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Acknowledge] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} accat mottagande");
@@ -1007,7 +1024,7 @@ namespace BrokerMock.Controllers
                 Message = message
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Decline"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Decline"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Decline] FAILED Unauthorized:: Boknings-ID: {orderNumber} Svarat nej på förfrågan");
@@ -1032,7 +1049,7 @@ namespace BrokerMock.Controllers
                 Message = message
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Decline"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Decline"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Decline] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} Svarat nej på förfrågan");
@@ -1050,7 +1067,7 @@ namespace BrokerMock.Controllers
 
         private async Task<bool> ViewGroup(string orderGroupNumber)
         {
-            using var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"OrderGroupNumber={orderGroupNumber}&callingUser=regular-user@formedling1.se"));
+            using var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/View", $"OrderGroupNumber={orderGroupNumber}&callingUser=regular-user@formedling1.se"));
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/View] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} hämtat förfrågan");
@@ -1068,7 +1085,7 @@ namespace BrokerMock.Controllers
 
         private async Task<bool> GetFile(string orderNumber, int attachmentId)
         {
-            using var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/File", $"OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se"));
+            using var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("Request/File", $"OrderNumber={orderNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se"));
             var file = JsonConvert.DeserializeObject<FileResponse>(await response.Content.ReadAsStringAsync());
             if (file.Success)
             {
@@ -1083,7 +1100,7 @@ namespace BrokerMock.Controllers
 
         private async Task<bool> GetGroupFile(string orderGroupNumber, int attachmentId)
         {
-            using var response = await _apiService.ApiClient.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/File", $"OrderGroupNumber={orderGroupNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se"));
+            using var response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/File", $"OrderGroupNumber={orderGroupNumber}&AttachmentId={attachmentId}&callingUser=regular-user@formedling1.se"));
             var file = JsonConvert.DeserializeObject<FileResponse>(await response.Content.ReadAsStringAsync());
             if (file.Success)
             {
@@ -1109,7 +1126,7 @@ namespace BrokerMock.Controllers
                 RequirementAnswers = requirementAnswers
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ChangeInterpreter"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/ChangeInterpreter"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/ChangeInterpreter] FAILED Unauthorized:: Boknings-ID: {orderNumber} skickade tolk: {interpreter.Email}");
@@ -1137,7 +1154,7 @@ namespace BrokerMock.Controllers
                 Message = "Cancelled at hello"
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await _apiService.ApiClient.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Cancel"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Cancel"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Cancel] FAILED Unauthorized:: Boknings-ID: {orderNumber} avbokat från förmedling");
