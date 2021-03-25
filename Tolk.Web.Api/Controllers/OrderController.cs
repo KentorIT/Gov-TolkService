@@ -143,7 +143,7 @@ namespace Tolk.Web.Api.Controllers
                     }
                     if (!request.CanApprove)
                     {
-                        return ReturnError(ErrorCodes.RequestNotInCorrectState, method);
+                        return ReturnError(ErrorCodes.OrderNotInCorrectState, method);
                     }
                     var user = await _apiUserService.GetCustomerUser(model.CallingUser, apiUser.CustomerOrganisationId);
                     if (user == null)
@@ -203,7 +203,7 @@ namespace Tolk.Web.Api.Controllers
                 }
                 if (!request.CanApprove)
                 {
-                    return ReturnError(ErrorCodes.RequestNotInCorrectState, method);
+                    return ReturnError(ErrorCodes.OrderNotInCorrectState, method);
                 }
                 var user = await _apiUserService.GetCustomerUser(model.CallingUser, apiUser.CustomerOrganisationId);
                 if (user == null)
