@@ -182,7 +182,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
 
             request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
-                requirementAnswers, attachments, priceInfo, null, null);
+                requirementAnswers, attachments, priceInfo, "12345", null, null);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -244,7 +244,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
 
             request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
-                requirementAnswers, attachments, priceInfo, null, latestAnswerTimeForCustomerDate);
+                requirementAnswers, attachments, priceInfo, null, latestAnswerTimeForCustomerDate, "12345");
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -300,7 +300,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
 
             Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
-                requirementAnswers, attachments, priceInfo, null, null));
+                requirementAnswers, attachments, priceInfo, null, null, "12345"));
         }
 
         [Theory]
@@ -341,7 +341,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
 
             Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
-                requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(1)));
+                requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(1), "12345"));
         }
 
         [Fact]
@@ -373,7 +373,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
 
             Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, InterpreterLocation.OnSite, competenceLevel,
-                requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(-1)));
+                requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(-1), "12345"));
         }
 
         [Fact]
@@ -405,7 +405,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
 
             Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, InterpreterLocation.OnSite, competenceLevel,
-                requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(2)));
+                requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(2), "12345"));
         }
 
         [Theory]
@@ -479,7 +479,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Throws<InvalidOperationException>(() => request.Accept(DateTime.Now, 10, null,
                 interpreter, InterpreterLocation.OnSite, CompetenceAndSpecialistLevel.AuthorizedInterpreter,
                 new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(),
-                new PriceInformation(), null, null));
+                new PriceInformation(), null, null, "12345"));
         }
 
         [Theory]
@@ -590,7 +590,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var impersonatorId = (int?)null;
             var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
 
-            request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "Blir jättereskostnad pga allt är så dyrt!", InterpreterLocation.OnSite, priceInfo, null);
+            request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "Blir jättereskostnad pga allt är så dyrt!", InterpreterLocation.OnSite, priceInfo, null, "12345");
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -634,7 +634,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
 
             Assert.Throws<InvalidOperationException>(() =>
-                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "Blir jättereskostnad pga allt är så dyrt!", interpreterLocation, priceInfo, null));
+                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "Blir jättereskostnad pga allt är så dyrt!", interpreterLocation, priceInfo, null, null));
         }
 
         [Theory]
@@ -669,7 +669,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
 
             Assert.Throws<InvalidOperationException>(() =>
-                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "", interpreterLocation, priceInfo, DateTime.Now.AddDays(1)));
+                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "", interpreterLocation, priceInfo, DateTime.Now.AddDays(1), string.Empty));
         }
         [Fact]
         public void AcceptReplacementOrder_InValidLatestAnswerDateBeforeNow()
@@ -695,7 +695,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
 
             Assert.Throws<InvalidOperationException>(() =>
-                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "", InterpreterLocation.OnSite, priceInfo, DateTime.Now.AddDays(-1)));
+                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "", InterpreterLocation.OnSite, priceInfo, DateTime.Now.AddDays(-1), "12345"));
         }
 
         [Fact]
@@ -722,7 +722,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
 
             Assert.Throws<InvalidOperationException>(() =>
-                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "", InterpreterLocation.OnSite, priceInfo, DateTime.Now.AddDays(2)));
+                request.AcceptReplacementOrder(acceptTime, userId, impersonatorId, "", InterpreterLocation.OnSite, priceInfo, DateTime.Now.AddDays(2), null));
         }
 
         [Theory]
@@ -772,7 +772,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 PriceRows = new List<RequestPriceRow>()
             };
             Assert.Throws<InvalidOperationException>(() =>
-                request.AcceptReplacementOrder(DateTime.Now, 10, null, null, InterpreterLocation.OnSite, new PriceInformation { PriceRows = new List<RequestPriceRow>() }, null));
+                request.AcceptReplacementOrder(DateTime.Now, 10, null, null, InterpreterLocation.OnSite, new PriceInformation { PriceRows = new List<RequestPriceRow>() }, null, null));
         }
 
         [Theory]
@@ -837,7 +837,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
 
             request.ReplaceInterpreter(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
-                requirementAnswers, attachments, priceInfo, isAutoAccepted, oldRequest, null);
+                requirementAnswers, attachments, priceInfo, isAutoAccepted, oldRequest, null, string.Empty);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -880,7 +880,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Status = status,
             };
             Assert.Throws<InvalidOperationException>(() =>
-                request.ReplaceInterpreter(DateTime.Now, 10, null, null, InterpreterLocation.OffSitePhone, CompetenceAndSpecialistLevel.OtherInterpreter, null, null, null, false, null, null));
+                request.ReplaceInterpreter(DateTime.Now, 10, null, null, InterpreterLocation.OffSitePhone, CompetenceAndSpecialistLevel.OtherInterpreter, null, null, null, false, null, null, "121"));
         }
 
         [Theory]
@@ -1729,7 +1729,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                 null,
-                null);
+                null,
+                "12345");
         }
 
         [Fact]
@@ -1759,7 +1760,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     null,
-                    null)
+                    null,
+                    "12345")
             );
         }
 
@@ -1790,7 +1792,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     null,
-                    null)
+                    null,
+                    "12345")
             );
         }
 
@@ -1821,7 +1824,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     null,
-                    null)
+                    null,
+                    "12345")
             );
         }
         // no on not required
@@ -1851,7 +1855,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     "Blir jättereskostnad pga allt är så dyrt!",
-                    null);
+                    null,
+                    "12345");
         }
 
         [Fact]
@@ -1880,7 +1885,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     null,
-                    null);
+                    null,
+                    "12345");
         }
         // no answer on not required
         [Fact]
@@ -1910,7 +1916,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     "Blir jättereskostnad pga allt är så dyrt!",
-                    null)
+                    null,
+                    "12345")
             );
         }
 
@@ -1949,7 +1956,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                 null,
-                null);
+                null,
+                "12345");
         }
 
         // yes and no on required
@@ -1988,7 +1996,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                 null,
-                null);
+                null,
+                "12345");
         }
 
         [Fact]
@@ -2027,7 +2036,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     "Blir jättereskostnad pga allt är så dyrt!",
-                    null)
+                    null,
+                    "12345")
             );
         }
 
@@ -2062,7 +2072,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                 "Blir jättereskostnad pga allt är så dyrt!",
-                null);
+                null,
+                "12345");
 
         }
 
@@ -2110,7 +2121,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                 null,
-                null);
+                null,
+                "12345");
         }
 
         [Fact]
@@ -2142,7 +2154,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                 null,
-                null);
+                null,
+                "12345");
         }
 
         [Theory]
@@ -2180,7 +2193,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     null,
-                    null)
+                    null,
+                "12345")
             );
         }
 
@@ -2217,7 +2231,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                 null,
-                null);
+                null,
+                "12345");
         }
 
         [Theory]
@@ -2255,7 +2270,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     null,
-                    null)
+                    null,
+                    "12345")
             );
         }
 
@@ -2290,7 +2306,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     null,
-                    null)
+                    null,
+                "12345")
             );
         }
 
@@ -2325,7 +2342,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                 null,
-                null);
+                null,
+                "12345");
         }
 
         [Theory]
@@ -2360,7 +2378,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     null,
-                    null)
+                    null,
+                "12345")
             );
         }
 
@@ -2397,7 +2416,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 new List<RequestAttachment>(),
                 new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                 null,
-                null);
+                null,
+                "12345");
         }
 
         [Theory]
@@ -2433,7 +2453,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     new List<RequestAttachment>(),
                     new PriceInformation() { PriceRows = new List<PriceRowBase>() },
                     null,
-                    null)
+                    null,
+                "12345")
             );
         }
     }

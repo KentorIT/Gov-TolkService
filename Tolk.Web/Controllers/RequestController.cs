@@ -221,7 +221,8 @@ namespace Tolk.Web.Controllers
                                         model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
                                         model.ExpectedTravelCosts,
                                         model.ExpectedTravelCostInfo,
-                                        (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null
+                                        (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
+                                        model.BrokerReferenceNumber
                                     );
                                 }
                                 catch (InvalidOperationException ex)
@@ -244,7 +245,8 @@ namespace Tolk.Web.Controllers
                                     model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
                                     model.ExpectedTravelCosts,
                                     model.ExpectedTravelCostInfo,
-                                    (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null
+                                    (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
+                                    model.BrokerReferenceNumber
                                 );
                             }
                         }
@@ -258,7 +260,8 @@ namespace Tolk.Web.Controllers
                                  model.InterpreterLocation.Value,
                                  model.ExpectedTravelCosts,
                                  model.ExpectedTravelCostInfo,
-                                 (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null
+                                 (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
+                                 model.BrokerReferenceNumber
                              );
                         }
                         await _dbContext.SaveChangesAsync();
@@ -520,13 +523,14 @@ namespace Tolk.Web.Controllers
             await _listToModelService.AddInformationFromListsToModel(model.OrderViewModel);
             model.AttachmentListModel = model.OrderViewModel.RequestAttachmentListModel;
             model.OrderViewModel.CustomerUseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
+            model.BrokerReferenceNumber = request.BrokerReferenceNumber;
             return model;
         }
 
         private async Task<OrderViewModel> GetModelForView(Request request)
         {
             var order = await _dbContext.Orders.GetFullOrderByRequestId(request.RequestId);
-            var model = OrderViewModel.GetModelFromOrder(order, request, true);
+            var model = OrderViewModel.GetModelFromOrder(order, request, true, true);
             model.StartAtIsInFuture = order.StartAt > _clock.SwedenNow;
             model.UserCanCanCreateRequisition = _authorizationService.AuthorizeAsync(User, request, Policies.Edit).Result.Succeeded;
             model.UserCanCancelRequest = _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;

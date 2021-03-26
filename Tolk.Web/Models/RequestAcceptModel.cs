@@ -30,6 +30,8 @@ namespace Tolk.Web.Models
 
         public string ExpectedTravelCostInfo { get; set; }
 
+        public string BrokerReferenceNumber { get; set; }
+
         public RequestStatus Status { get; set; }
 
         public RadioButtonGroup SetLatestAnswerTimeForCustomer { get; set; }

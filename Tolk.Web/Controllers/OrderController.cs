@@ -96,7 +96,7 @@ namespace Tolk.Web.Controllers
             {
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);
 
-                var model = OrderViewModel.GetModelFromOrder(order, request);
+                var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator));
 
                 model.UserCanEdit = (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.UserCanCancelOrder = (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
@@ -611,7 +611,7 @@ namespace Tolk.Web.Controllers
                     return RedirectToAction(nameof(View), new { id, errorMessage = "Bokningen har fel status för att skriva ut en bokningsbekräftelse" });
                 }
 
-                var model = OrderViewModel.GetModelFromOrder(order, request);
+                var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator));
                 model.BrokerName = request.Ranking.Broker.Name;
                 model.CreatedBy = request.Order.CreatedByUser.FullName;
                 model.RequestId = request.RequestId;

@@ -136,7 +136,8 @@ namespace Tolk.Web.Api.Controllers
                         new List<RequestAttachment>(),
                         model.ExpectedTravelCosts,
                         model.ExpectedTravelCostInfo,
-                        model.LatestAnswerTimeForCustomer
+                        model.LatestAnswerTimeForCustomer,
+                        model.BrokerReferenceNumber
                     );
                     await _dbContext.SaveChangesAsync();
                     return Ok(new AnswerResponse { InterpreterId = interpreter.InterpreterBrokerId });
@@ -363,7 +364,8 @@ namespace Tolk.Web.Api.Controllers
                         new List<RequestAttachment>(),
                         model.ExpectedTravelCosts,
                         model.ExpectedTravelCostInfo,
-                        model.LatestAnswerTimeForCustomer);
+                        model.LatestAnswerTimeForCustomer, 
+                        model.BrokerReferenceNumber);
                     await _dbContext.SaveChangesAsync();
                 }
                 catch (InvalidOperationException ex)
@@ -432,7 +434,8 @@ namespace Tolk.Web.Api.Controllers
                     EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                     model.ExpectedTravelCosts,
                     model.ExpectedTravelCostInfo,
-                    model.LatestAnswerTimeForCustomer
+                    model.LatestAnswerTimeForCustomer,
+                    model.BrokerReferenceNumber
                 );
                 await _dbContext.SaveChangesAsync();
 

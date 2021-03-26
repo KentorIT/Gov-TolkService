@@ -2006,6 +2006,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);
 
+                    b.Property<string>("BrokerReferenceNumber")
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
+
                     b.Property<string>("CancelMessage")
                         .HasColumnType("nvarchar(1000)")
                         .HasMaxLength(1000);

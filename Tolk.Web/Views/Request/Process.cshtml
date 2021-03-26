@@ -133,7 +133,6 @@
                     <div class="row">
                         @if (!(Model.OrderViewModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
                         {
-
                             <div class="col-sm-4">
                                 <label>Tillkommande krav</label> @HelpLinkService.Anchor("tillkommande-krav")<br />
                                 @if (Model.RequiredRequirementAnswers.Any())
@@ -180,8 +179,12 @@
                                 <br />
                                 <br />
                             </div>
-
                         }
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <form-entry asp-for="BrokerReferenceNumber" />
+                        </div>
                     </div>
 
                     @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderViewModel)

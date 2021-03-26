@@ -85,6 +85,7 @@ namespace Tolk.Web.Api.Services
                 StatusMessage = request.DenyMessage ?? request.CancelMessage,
                 CreatedAt = request.CreatedAt,
                 OrderNumber = request.Order.OrderNumber,
+                BrokerReferenceNumber = request.BrokerReferenceNumber,
                 CustomerInformation = new CustomerInformationModel
                 {
                     Name = request.Order.CustomerOrganisation.Name,

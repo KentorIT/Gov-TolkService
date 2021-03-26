@@ -154,6 +154,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Svara senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 
+        [Display(Name = "Förmedlingens bokningsnummer", Description = "Här kan ni som förmedling ange ett eget bokningsnummer att koppla till bokningen.")]
+        public string BrokerReferenceNumber { get; set; }
+
         public bool AllowProcessing { get; set; } = true;
 
         public bool DisplayExpectedTravelCostInfo { get; set; }
@@ -213,6 +216,7 @@ namespace Tolk.Web.Models
                 RequestId = request.RequestId,
                 CreatedAt = request.CreatedAt,
                 ExpiresAt = request.ExpiresAt,
+                BrokerReferenceNumber = request.BrokerReferenceNumber,
                 Interpreter = request.Interpreter?.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
@@ -243,7 +247,7 @@ namespace Tolk.Web.Models
                     CanMeetRequirement = request.RequirementAnswers != null && (request.RequirementAnswers.Any() && request.RequirementAnswers.FirstOrDefault(ra => ra.OrderRequirementId == r.OrderRequirementId).CanSatisfyRequirement),
                 }).ToList(),
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
-                OrderViewModel = OrderViewModel.GetModelFromOrder(request.Order, request, true),
+                OrderViewModel = OrderViewModel.GetModelFromOrder(request.Order, request, true, true),
                 LatestAnswerTimeForCustomer = request.LatestAnswerTimeForCustomer,
             };
         }

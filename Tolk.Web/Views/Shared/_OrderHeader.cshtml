@@ -74,13 +74,30 @@
                 <display-entry asp-for="ActiveRequest.CreatedAt" />
             }
         </div>
+        @if (!string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber) || !string.IsNullOrWhiteSpace(Model.BrokerReferenceNumber))
+        {
+    <div class="col-sm-12">
         @if (!string.IsNullOrWhiteSpace(Model.CustomerReferenceNumber))
         {
-            <div class="col-sm-12">
-                <span class="gray-border-left">
-                    Myndighetens ärendenummer: @Model.CustomerReferenceNumber
-                </span>
+            <div class="gray-border-left">
+                Myndighetens ärendenummer: @Model.CustomerReferenceNumber
             </div>
         }
+        @if (!string.IsNullOrWhiteSpace(Model.BrokerReferenceNumber))
+        {
+            <div class="gray-border-left">
+                Förmedlingens bokningsnummer: @Model.BrokerReferenceNumber
+            </div>
+        }
+    </div>
+        }
+        @*@if (!string.IsNullOrWhiteSpace(Model.BrokerReferenceNumber))
+            {
+                <div class="col-sm-6">
+                    <span class="gray-border-left">
+                        Förmedlingens bokningsnummer: @Model.BrokerReferenceNumber
+                    </span>
+                </div>
+            }*@
     </div>
 </section>

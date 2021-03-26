@@ -28,6 +28,8 @@ namespace Tolk.Api.Payloads.ApiPayloads
 
         [Description("Förväntad reskostnad, om någon.")]
         public decimal? ExpectedTravelCosts { get; set; }
+
+        [Description("Eventuell beskrivning av förväntad reskostnad")]
         public string ExpectedTravelCostInfo { get; set; }
 
         [Description("Om avropet innehåller specifika krav så skall dessa besvaras här.")]
@@ -35,5 +37,8 @@ namespace Tolk.Api.Payloads.ApiPayloads
 
         [Description("Beskriver en sista svarstid för beställaren att godkänna svaret.")]
         public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
+
+        [Description ("Förmedlingens eget bokningsnummer att koppla till bokningen.")]
+        public string BrokerReferenceNumber { get; set; }
     }
 }

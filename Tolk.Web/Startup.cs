@@ -109,7 +109,7 @@ namespace Tolk.Web
                 opt.SupportedUICultures = supportedCultures;
             });
             services.AddLocalization();
-            var runEntityScheduler = Configuration["RunEntityScheduler"] == null ? true : bool.Parse(Configuration["RunEntityScheduler"]);
+            var runEntityScheduler = Configuration["RunEntityScheduler"] == null || bool.Parse(Configuration["RunEntityScheduler"]);
             if (runEntityScheduler)
             {
                 services.AddSingleton<EntityScheduler>();

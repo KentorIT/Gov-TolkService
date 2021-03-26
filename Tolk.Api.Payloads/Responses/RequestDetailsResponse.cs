@@ -15,6 +15,7 @@ namespace Tolk.Api.Payloads.Responses
         public string StatusMessage { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public string OrderNumber { get; set; }
+        public string BrokerReferenceNumber { get; set; }
         public CustomerInformationModel CustomerInformation { get; set; }
         public string Region { get; set; }
         public DateTimeOffset? ExpiresAt { get; set; }

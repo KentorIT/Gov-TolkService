@@ -47,7 +47,7 @@ namespace Tolk.BusinessLogic.Services
             //customer send email with info about requisition created 
             if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
             {
-                string body = $"Rekvisition har skapats pga att myndigheten har avbokat uppdrag med boknings-ID {orderNumber}. Uppdraget avbokades med detta meddelande:\n{request.CancelMessage}\n" +
+                string body = $"Rekvisition har skapats pga att myndigheten har avbokat uppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)}. Uppdraget avbokades med detta meddelande:\n{request.CancelMessage}\n" +
                      (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, i de fall något ersättningsuppdrag inte kan ordnas av kund. Observera att ersättning kan tillkomma för eventuell tidsspillan som tolken skulle behövt ta ut för genomförande av aktuellt uppdrag. Även kostnader avseende resor och boende som ej är avbokningsbara, alternativt avbokningskostnader för resor och boende som avbokats kan tillkomma. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna."
                      : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.");
                 CreateEmail(GetRecipientsFromOrder(request.Order, true), $"Rekvisition har skapats pga avbokat uppdrag boknings-ID {orderNumber}",
@@ -62,7 +62,7 @@ namespace Tolk.BusinessLogic.Services
                 if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
                 {
                     string body = $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
-                         $"Uppdraget har boknings-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}." +
+                         $"Uppdraget har boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)} och skulle ha startat {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}." +
                          (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, i de fall något ersättningsuppdrag inte kan ordnas av kund. Observera att ersättning kan tillkomma för eventuell tidsspillan som tolken skulle behövt ta ut för genomförande av aktuellt uppdrag. Även kostnader avseende resor och boende som ej är avbokningsbara, alternativt avbokningskostnader för resor och boende som avbokats kan tillkomma. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.");
                     CreateEmail(email.ContactInformation, $"Avbokat tolkuppdrag boknings-ID {orderNumber}",
                         body + GoToRequestPlain(request.RequestId),
@@ -174,7 +174,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 var attachmentText = attachmentChanged ? "Bifogade filer har ändrats.\n\n" : string.Empty;
                 var orderFieldText = orderFieldsUpdated ? GetOrderChangeText(order, lastEntry, interpreterLocationText) : string.Empty;
-                string body = $"Ert tolkuppdrag med boknings-ID {orderNumber} hos {request.Order.CustomerOrganisation.Name} har uppdaterats med ny information.\n\n {attachmentText} {orderFieldText}\nKlicka på länken nedan för att se det uppdaterade tolkuppdraget i sin helhet.";
+                string body = $"Ert tolkuppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)} hos {request.Order.CustomerOrganisation.Name} har uppdaterats med ny information.\n\n {attachmentText} {orderFieldText}\nKlicka på länken nedan för att se det uppdaterade tolkuppdraget i sin helhet.";
                 CreateEmail(email.ContactInformation, $"Tolkuppdrag med boknings-ID {orderNumber} har uppdaterats",
                     body + GoToRequestPlain(request.RequestId),
                     HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
@@ -502,8 +502,8 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             {
                 CreateEmail(email.ContactInformation,
                     $"Svar på bokningsförfrågan med boknings-ID {orderNumber} har underkänts",
-                    $"Ert svar på bokningsförfrågan {orderNumber} underkändes med följande meddelande:\n{request.DenyMessage}. {GoToRequestPlain(request.RequestId)}",
-                    $"Ert svar på bokningsförfrågan {orderNumber} underkändes med följande meddelande:<br />{request.DenyMessage}. {GoToRequestButton(request.RequestId)}",
+                    $"Ert svar på bokningsförfrågan {orderNumber}{RequestReferenceNumberInfo(request)} underkändes med följande meddelande:\n{request.DenyMessage}.{GoToRequestPlain(request.RequestId)}",
+                    $"Ert svar på bokningsförfrågan {orderNumber}{RequestReferenceNumberInfo(request)} underkändes med följande meddelande:<br />{request.DenyMessage}.{GoToRequestButton(request.RequestId)}",
                     true
                 );
             }
@@ -684,7 +684,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             if (email != null)
             {
                 CreateEmail(email.ContactInformation, $"En reklamation har registrerats för tolkuppdrag med boknings-ID {orderNumber}",
-                $@"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har skapats.
+                $@"Reklamation för tolkuppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(complaint.Request)} har skapats.
 Reklamationstyp:
 {complaint.ComplaintType.GetDescription()}
 
@@ -744,8 +744,8 @@ Angiven reklamationsbeskrivning:
             if (email != null)
             {
                 CreateEmail(email.ContactInformation, $"Ert bestridande av reklamation avslogs för tolkuppdrag {orderNumber}",
-                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har avslagits med följande meddelande:\n{complaint.AnswerDisputedMessage} {GoToRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
-                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har avslagits med följande meddelande:<br />{complaint.AnswerDisputedMessage} {GoToRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
+                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(complaint.Request)} har avslagits med följande meddelande:\n{complaint.AnswerDisputedMessage} {GoToRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
+                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(complaint.Request)} har avslagits med följande meddelande:<br />{complaint.AnswerDisputedMessage} {GoToRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
                     true
                 );
             }
@@ -774,8 +774,8 @@ Angiven reklamationsbeskrivning:
             if (email != null)
             {
                 CreateEmail(email.ContactInformation, $"Ert bestridande av reklamation har godtagits för tolkuppdrag {orderNumber}",
-                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits med följande meddelande:\n{complaint.AnswerDisputedMessage} {GoToRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
-                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits med följande meddelande:<br />{complaint.AnswerDisputedMessage} {GoToRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
+                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(complaint.Request)} har godtagits med följande meddelande:\n{complaint.AnswerDisputedMessage} {GoToRequestPlain(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
+                    $"Bestridande av reklamation för tolkuppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(complaint.Request)} har godtagits med följande meddelande:<br />{complaint.AnswerDisputedMessage} {GoToRequestButton(complaint.Request.RequestId, HtmlHelper.ViewTab.Complaint)}",
                     true
                 );
             }
@@ -843,7 +843,7 @@ Sammanställning:
         {
             NullCheckHelper.ArgumentCheckNull(requisition, nameof(RequisitionCommented), nameof(NotificationService));
             string orderNumber = requisition.Request.Order.OrderNumber;
-            var body = $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber} har kommenterats av myndighet. Följande kommentar har angivits:\n{requisition.CustomerComment}";
+            var body = $"Rekvisition för tolkuppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(requisition.Request)} har kommenterats av myndighet. Följande kommentar har angivits:\n{requisition.CustomerComment}";
             var email = GetOrganisationNotificationSettings(requisition.Request.Ranking.BrokerId, NotificationType.RequisitionCommented, NotificationChannel.Email);
             if (email != null)
             {
@@ -933,6 +933,11 @@ Sammanställning:
             return string.IsNullOrWhiteSpace(order.CustomerReferenceNumber) ? string.Empty : $"Myndighetens ärendenummer: {order.CustomerReferenceNumber}\n";
         }
 
+        private string RequestReferenceNumberInfo(Request request)
+        {
+            return string.IsNullOrWhiteSpace(request.BrokerReferenceNumber) ? string.Empty : $" (förmedlingens bokningsnummer: {request.BrokerReferenceNumber})";
+        }
+
         private string InterpreterCompetenceInfo(int? competenceInfo)
         {
             return $"Tolkens kompetensnivå: {((CompetenceAndSpecialistLevel?)competenceInfo)?.GetDescription() ?? "Information saknas"}";
@@ -1002,7 +1007,7 @@ Sammanställning:
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCompleted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
-            var body = $"Tiden för tolkuppdrag med boknings-ID {orderNumber} har passerat. Det är nu möjligt att registrera en rekvisition för uppdraget eller arkivera bokningen som avslutad utan att göra en rekvisition. För att komma till bokningen följ länken nedan:";
+            var body = $"Tiden för tolkuppdrag med boknings-ID {orderNumber} {RequestReferenceNumberInfo(request)} har passerat. Det är nu möjligt att registrera en rekvisition för uppdraget eller arkivera bokningen som avslutad utan att göra en rekvisition. För att komma till bokningen följ länken nedan:";
             var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAssignmentTimePassed, NotificationChannel.Email);
             if (email != null)
             {
@@ -1113,8 +1118,8 @@ Sammanställning:
             if (email != null)
             {
                 CreateEmail(email.ContactInformation, $"Byte av tolk godkänt för boknings-ID {orderNumber}",
-                $"Bytet av tolk har godkänts för tolkuppdrag med boknings-ID {orderNumber}. {GoToRequestPlain(request.RequestId)}",
-                $"Bytet av tolk har godkänts för tolkuppdrag med boknings-ID {orderNumber}. {GoToRequestButton(request.RequestId)}",
+                $"Bytet av tolk har godkänts för tolkuppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)}. {GoToRequestPlain(request.RequestId)}",
+                $"Bytet av tolk har godkänts för tolkuppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)}. {GoToRequestButton(request.RequestId)}",
                 true
             );
             }
@@ -1358,7 +1363,7 @@ Sammanställning:
             var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestAnswerApproved, NotificationChannel.Email);
             if (email != null)
             {
-                var body = $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på bokningsförfrågan {orderNumber}.";
+                var body = $"{request.Order.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på bokningsförfrågan {orderNumber}{RequestReferenceNumberInfo(request)}.";
                 CreateEmail(email.ContactInformation, $"Tolkuppdrag med boknings-ID {orderNumber} verifierat",
                         body + GoToRequestPlain(request.RequestId),
                         body + GoToRequestButton(request.RequestId),
@@ -1537,6 +1542,7 @@ Sammanställning:
             {
                 CreatedAt = request.CreatedAt,
                 OrderNumber = order.OrderNumber,
+                BrokerReferenceNumber = request.BrokerReferenceNumber,
                 CustomerInformation = new CustomerInformationModel
                 {
                     Name = order.CustomerOrganisation.Name,

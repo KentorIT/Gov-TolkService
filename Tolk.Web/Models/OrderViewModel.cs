@@ -48,6 +48,8 @@ namespace Tolk.Web.Models
 
         public AssignmentType AssignmentType { get; set; }
 
+        public string BrokerReferenceNumber { get; set; }
+
         [Display(Name = "Rätt att granska rekvisition", Description = "Välj vid behov en annan person som skall ges rätt att granska rekvisition, t ex person som deltar vid tolktillfället. Denna uppgift kan du även komplettera eller ändra senare.")]
         public int? ContactPersonId { get; set; }
 
@@ -251,7 +253,7 @@ namespace Tolk.Web.Models
 
         public int? RequisitionId { get; set; }
 
-        internal static OrderViewModel GetModelFromOrder(Order order, Request request, bool isBroker = false)
+        internal static OrderViewModel GetModelFromOrder(Order order, Request request, bool displayBrokerReferenceNumber, bool isBroker = false)
         {
             var model = new OrderViewModel
             {
@@ -292,6 +294,7 @@ namespace Tolk.Web.Models
                 UnitName = order.UnitName,
                 IsCreatorInterpreterUser = order.CreatorIsInterpreterUser,
                 MealbreakIncluded = order.MealBreakIncluded ?? false,
+                BrokerReferenceNumber = displayBrokerReferenceNumber ? request.BrokerReferenceNumber : null
             };
             if (request != null)
             {

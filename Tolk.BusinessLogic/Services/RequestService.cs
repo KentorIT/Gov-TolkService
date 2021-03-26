@@ -59,7 +59,8 @@ namespace Tolk.BusinessLogic.Services
             List<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts,
             string expectedTravelCostInfo,
-            DateTimeOffset? latestAnswerTimeForCustomer
+            DateTimeOffset? latestAnswerTimeForCustomer, 
+            string brokerReferenceNumber
         )
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Accept), nameof(RequestService));
@@ -69,7 +70,7 @@ namespace Tolk.BusinessLogic.Services
             request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(Accept));
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel), latestAnswerTimeForCustomer: latestAnswerTimeForCustomer);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel), latestAnswerTimeForCustomer: latestAnswerTimeForCustomer, brokerReferenceNumber);
             //Create notification
             switch (request.Status)
             {
@@ -216,7 +217,8 @@ namespace Tolk.BusinessLogic.Services
             InterpreterLocation interpreterLocation,
             decimal? expectedTravelCosts,
             string expectedTravelCostInfo,
-            DateTimeOffset? latestAnswerTimeForCustomer
+            DateTimeOffset? latestAnswerTimeForCustomer,
+            string brokerReferenceNumber
         )
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptReplacement), nameof(RequestService));
@@ -229,7 +231,8 @@ namespace Tolk.BusinessLogic.Services
                 expectedTravelCostInfo,
                 interpreterLocation,
                 _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, expectedTravelCosts),
-                latestAnswerTimeForCustomer
+                latestAnswerTimeForCustomer, 
+                brokerReferenceNumber
             );
             _notificationService.RequestReplamentOrderAccepted(request);
         }
@@ -300,7 +303,8 @@ namespace Tolk.BusinessLogic.Services
             IEnumerable<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts,
             string expectedTravelCostInfo,
-            DateTimeOffset? latestAnswerTimeForCustomer
+            DateTimeOffset? latestAnswerTimeForCustomer, 
+            string brokerReferenceNumber
         )
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(ChangeInterpreter), nameof(RequestService));
@@ -340,6 +344,7 @@ namespace Tolk.BusinessLogic.Services
                 noNeedForUserAccept,
                 request,
                 expectedTravelCostInfo,
+                brokerReferenceNumber,
                 verificationResult,
                 latestAnswerTimeForCustomer
             );
@@ -551,17 +556,17 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, string brokerReferenceNumber, bool overrideRequireAccept = false)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
             //Get prices
             var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
-            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, verificationResult, overrideRequireAccept);
+            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult, overrideRequireAccept);
         }
 
         private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
         {
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, overrideRequireAccept);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, string.Empty, overrideRequireAccept);
         }
 
         private static IEnumerable<OrderRequirementRequestAnswer> ReplaceIds(List<OrderRequirement> requirements, IEnumerable<OrderRequirementRequestAnswer> requirementAnswers)

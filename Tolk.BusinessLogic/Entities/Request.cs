@@ -99,6 +99,9 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool? CompletedNotificationIsHandled { get; set; }
 
+        [MaxLength(100)]
+        public string BrokerReferenceNumber { get; set; }
+
         #endregion
 
         #region navigation
@@ -219,6 +222,7 @@ namespace Tolk.BusinessLogic.Entities
             PriceInformation priceInformation,
             string expectedTravelCostInfo,
             DateTimeOffset? latestAnswerTimeForCustomer,
+            string brokerReferenceNumber,
             VerificationResult? verificationResult = null,
             bool overrideRequireAccept = false
             )
@@ -248,6 +252,7 @@ namespace Tolk.BusinessLogic.Entities
             Attachments = attachedFiles;
             PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
+            BrokerReferenceNumber = brokerReferenceNumber;
             ExpectedTravelCostInfo = expectedTravelCostInfo;
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
 
@@ -395,7 +400,8 @@ namespace Tolk.BusinessLogic.Entities
             string expectedTravelCostInfo,
             InterpreterLocation interpreterLocation,
             PriceInformation priceInformation,
-            DateTimeOffset? latestAnswerTimeForCustomer)
+            DateTimeOffset? latestAnswerTimeForCustomer,
+            string brokerReferenceNumber)
         {
             if (priceInformation == null)
             {
@@ -416,6 +422,7 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingAnsweredBy = impersonatorId;
             InterpreterLocation = (int?)interpreterLocation;
             ExpectedTravelCostInfo = expectedTravelCostInfo;
+            BrokerReferenceNumber = brokerReferenceNumber;
             PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
             if (RequiresAccept)
             {
@@ -443,8 +450,10 @@ namespace Tolk.BusinessLogic.Entities
             bool isAutoAccepted,
             Request oldRequest,
             string expectedTravelCostInfo,
+            string brokerReferenceNumber,
             VerificationResult? verificationResult = null,
-            DateTimeOffset? latestAnswerTimeForCustomer = null)
+            DateTimeOffset? latestAnswerTimeForCustomer = null
+            )
         {
             if (Status != RequestStatus.AcceptedNewInterpreterAppointed)
             {
@@ -479,6 +488,7 @@ namespace Tolk.BusinessLogic.Entities
             ExpectedTravelCostInfo = expectedTravelCostInfo;
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
+            BrokerReferenceNumber = brokerReferenceNumber;
 
             if (!isAutoAccepted)
             {
