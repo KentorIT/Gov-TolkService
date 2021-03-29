@@ -13,6 +13,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighetens ärendenummer")]
         public string CustomerReferenceNumber { get; set; }
 
+        [Display(Name = "Förmedlingens bokningsnummer")]
+        public string BrokerReferenceNumber { get; set; }
+
         [Display(Name = "Län")]
         public int? RegionId { get; set; }
 
@@ -35,14 +38,15 @@ namespace Tolk.Web.Models
 
         internal IQueryable<RequestListRow> Apply(IQueryable<RequestListRow> items)
         {
-#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
             items = !string.IsNullOrWhiteSpace(OrderNumber)
               ? items.Where(i => i.EntityNumber.Contains(OrderNumber))
               : items;
             items = !string.IsNullOrWhiteSpace(CustomerReferenceNumber)
                 ? items.Where(i => i.CustomerReferenceNumber != null && i.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
                 : items;
-#pragma warning restore CA1307 // 
+            items = !string.IsNullOrWhiteSpace(BrokerReferenceNumber)
+                ? items.Where(i => i.BrokerReferenceNumber != null && i.BrokerReferenceNumber.Contains(BrokerReferenceNumber))
+                : items;
             items = RegionId.HasValue
                 ? items.Where(i => i.RegionId == RegionId)
                 : items;

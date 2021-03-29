@@ -26,5 +26,6 @@ namespace Tolk.BusinessLogic.Entities
         public string CustomerName { get; set; }
         public int CustomerOrganisationId { get; set; }
         public string CustomerReferenceNumber { get; set; }
+        public string BrokerReferenceNumber { get; set; }
     }
 }
