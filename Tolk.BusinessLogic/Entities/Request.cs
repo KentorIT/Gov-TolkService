@@ -99,9 +99,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool? CompletedNotificationIsHandled { get; set; }
 
-        [MaxLength(100)]
-        public string BrokerReferenceNumber { get; set; }
-
         #endregion
 
         #region navigation

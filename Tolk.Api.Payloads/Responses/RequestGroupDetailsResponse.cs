@@ -28,5 +28,6 @@ namespace Tolk.Api.Payloads.Responses
         public IEnumerable<AttachmentInformationModel> Attachments { get; set; }
         public IEnumerable<RequirementModel> Requirements { get; set; }
         public IEnumerable<RequestDetailsResponse> Occasions { get; set; }
+        public string BrokerReferenceNumber { get; set; }
     }
 }

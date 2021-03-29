@@ -11,5 +11,6 @@ namespace Tolk.Api.Payloads.ApiPayloads
         public InterpreterGroupAnswerModel InterpreterAnswer { get; set; }
         public InterpreterGroupAnswerModel ExtraInterpreterAnswer { get; set; }
         public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
+        public string BrokerReferenceNumber { get; set; }
     }
 }

@@ -94,7 +94,8 @@ namespace Tolk.BusinessLogic.Services
             InterpreterAnswerDto interpreter,
             InterpreterAnswerDto extraInterpreter,
             List<RequestGroupAttachment> attachedFiles,
-            DateTimeOffset? latestAnswerTimeForCustomer
+            DateTimeOffset? latestAnswerTimeForCustomer,
+            string brokerReferenceNumber
         )
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
@@ -167,7 +168,7 @@ namespace Tolk.BusinessLogic.Services
             }
 
             // add the attachments to the group...
-            requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer, latestAnswerTimeForCustomer);
+            requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer, latestAnswerTimeForCustomer, brokerReferenceNumber);
 
             if (partialAnswer)
             {

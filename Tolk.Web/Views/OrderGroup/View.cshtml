@@ -33,12 +33,22 @@
             <div class="col-sm-3">
                 <display-entry asp-for="CreatedAt" />
             </div>
-            @if (!string.IsNullOrWhiteSpace(Model.CustomerInformationModel.ReferenceNumber))
+            @if (!string.IsNullOrWhiteSpace(Model.CustomerInformationModel.ReferenceNumber) || !string.IsNullOrWhiteSpace(Model.ActiveRequestGroup.BrokerReferenceNumber))
             {
                 <div class="col-sm-12">
-                    <span class="gray-border-left">
-                        Myndighetens ärendenummer: @Model.CustomerInformationModel.ReferenceNumber
-                    </span>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.CustomerInformationModel.ReferenceNumber))
+                    {
+                        <div class="gray-border-left">
+                            Myndighetens ärendenummer: @Model.CustomerInformationModel.ReferenceNumber
+                        </div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Model.ActiveRequestGroup.BrokerReferenceNumber))
+                    {
+                        <div class="gray-border-left">
+                            Förmedlingens bokningsnummer: @Model.ActiveRequestGroup.BrokerReferenceNumber
+                        </div>
+                    }
                 </div>
             }
         </div>

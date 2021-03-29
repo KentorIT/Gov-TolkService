@@ -105,7 +105,8 @@ namespace Tolk.Web.Api.Controllers
                         extraInterpreterAnswer,
                         //Does not handle attachments yet.
                         new List<RequestGroupAttachment>(),
-                        model.LatestAnswerTimeForCustomer
+                        model.LatestAnswerTimeForCustomer,
+                        model.BrokerReferenceNumber
                     );
                     await _dbContext.SaveChangesAsync();
                     //End of service

@@ -93,6 +93,10 @@ namespace Tolk.Web.Models
 
         public CustomerInformationModel CustomerInformationModel { get; set; }
 
+
+        [Display(Name = "Förmedlingens bokningsnummer", Description = "Här kan ni som förmedling ange ett eget bokningsnummer att koppla till den sammanhållna bokningen.")]
+        public string BrokerReferenceNumber { get; set; }
+
         public OccasionListModel OccasionList { get; set; }
 
         [Display(Name = "Vill du ange en sista tid för att besvara tillsättning för myndighet", Description = "Ange om du vill sätta en tid för när myndigheten senast ska besvara tillsättningen. Om du anger en tid och myndigheten inte svarar inom angiven tid avslutas förfrågan.")]

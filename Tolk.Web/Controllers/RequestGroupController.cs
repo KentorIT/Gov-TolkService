@@ -76,7 +76,7 @@ namespace Tolk.Web.Controllers
                 await _orderService.AddOrdersWithListsForGroup(orderGroup);
                 await _requestService.AddListsForRequestGroup(requestGroup);
                 requestGroup.Requests.ForEach(r => r.Order = orderGroup.Orders.Where(o => o.OrderId == r.OrderId).SingleOrDefault());
-                var model = RequestGroupViewModel.GetModelFromRequestGroup(requestGroup, false);
+                var model = RequestGroupViewModel.GetModelFromRequestGroup(requestGroup, true, false);
                 await _listToModelService.AddInformationFromListsToModel(model);
                 model.CustomerInformationModel.IsCustomer = false;
                 model.CustomerInformationModel.UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == requestGroup.OrderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
@@ -182,7 +182,8 @@ namespace Tolk.Web.Controllers
                             interpreterModel,
                             extrainterpreterModel,
                             model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList(),
-                            (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null
+                            (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
+                            model.BrokerReferenceNumber
                         );
                         await _dbContext.SaveChangesAsync();
                         return RedirectToAction("Index", "Home", new { message = "Svar har skickats på sammanhållen bokning" });

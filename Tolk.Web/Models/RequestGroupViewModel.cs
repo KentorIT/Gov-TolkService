@@ -88,7 +88,7 @@ namespace Tolk.Web.Models
         #region methods
 
 
-        internal static RequestGroupViewModel GetModelFromRequestGroup(RequestGroup requestGroup, bool isCustomer = true)
+        internal static RequestGroupViewModel GetModelFromRequestGroup(RequestGroup requestGroup, bool displayBrokerReferenceNumber, bool isCustomer = true)
         {
             OrderGroup orderGroup = requestGroup.OrderGroup;
             Order order = requestGroup.FirstRequestForFirstInterpreter.Order;
@@ -202,6 +202,7 @@ namespace Tolk.Web.Models
                 Status = requestGroup.Status,
                 ExtraInterpreterStatus = requestExtraInterpreter?.Status,
                 OrderStatus = orderGroup.Status,
+                BrokerReferenceNumber = displayBrokerReferenceNumber ? requestGroup.BrokerReferenceNumber : null
             };
         }
 

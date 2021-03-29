@@ -203,7 +203,7 @@ namespace Tolk.BusinessLogic.Entities
             OrderGroup.Status = OrderStatus.CancelledByCreator;
         }
 
-        public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool hasTravelCosts, bool partialAnswer, DateTimeOffset? latestAnswerTimeForCustomer)
+        public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool hasTravelCosts, bool partialAnswer, DateTimeOffset? latestAnswerTimeForCustomer, string brokerReferenceNumber)
         {
             if (!IsToBeProcessedByBroker)
             {
@@ -222,6 +222,7 @@ namespace Tolk.BusinessLogic.Entities
                 partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.Accepted :
                 partialAnswer ? RequestStatus.PartiallyApproved : RequestStatus.Approved, false);
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
+            BrokerReferenceNumber = brokerReferenceNumber;
         }
 
         public void AddView(int userId, int? impersonatorId, DateTimeOffset swedenNow)

@@ -713,6 +713,7 @@ namespace BrokerMock.Controllers
                 OrderGroupNumber = orderGroupNumber,
                 CallingUser = "regular-user@formedling1.se",
                 InterpreterLocation = location,
+                BrokerReferenceNumber = "2346",
                 InterpreterAnswer = new InterpreterGroupAnswerModel
                 {
                     Accepted = true,

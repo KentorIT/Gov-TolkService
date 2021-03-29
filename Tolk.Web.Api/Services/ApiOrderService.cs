@@ -243,7 +243,8 @@ namespace Tolk.Web.Api.Services
                     RequirementId = r.OrderGroupRequirementId,
                     RequirementType = r.RequirementType.GetCustomName()
                 }),
-                Occasions = occasions
+                Occasions = occasions,
+                BrokerReferenceNumber = requestGroup.BrokerReferenceNumber
             };
         }
 

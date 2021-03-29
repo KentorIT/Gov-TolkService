@@ -104,7 +104,7 @@ namespace Tolk.BusinessLogic.Services
             if (email != null)
             {
                 var occasionText = requestGroup.OrderGroup.IsSingleOccasion ? "Tillfället skulle ha startat " : "Första tillfället skulle ha startat ";
-                var body = $"Sammanhållen bokningsförfrågan med boknings-ID {orderNumber} från {requestGroup.OrderGroup.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{requestGroup.CancelMessage}\n" +
+                var body = $"Sammanhållen bokningsförfrågan med boknings-ID {orderNumber}{RequestReferenceNumberInfo(requestGroup)} från {requestGroup.OrderGroup.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{requestGroup.CancelMessage}\n" +
                      $"{occasionText + requestGroup.OrderGroup.FirstOrder.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}.";
 
                 CreateEmail(email.ContactInformation, $"Avbokad sammanhållen bokningsförfrågan boknings-ID {orderNumber}",
@@ -532,8 +532,8 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             {
                 CreateEmail(email.ContactInformation,
                     $"Svar på sammanhållen bokningsförfrågan med boknings-ID {orderGroupNumber} har underkänts",
-                    $"Ert svar på sammanhållen bokningsförfrågan {orderGroupNumber} underkändes med följande meddelande:\n{requestGroup.DenyMessage}. {GoToRequestGroupPlain(requestGroup.RequestGroupId)}",
-                    $"Ert svar på sammanhållen bokningsförfrågan {orderGroupNumber} underkändes med följande meddelande:<br />{requestGroup.DenyMessage}. {GoToRequestGroupButton(requestGroup.RequestGroupId)}",
+                    $"Ert svar på sammanhållen bokningsförfrågan {orderGroupNumber}{RequestReferenceNumberInfo(requestGroup)} underkändes med följande meddelande:\n{requestGroup.DenyMessage}. {GoToRequestGroupPlain(requestGroup.RequestGroupId)}",
+                    $"Ert svar på sammanhållen bokningsförfrågan {orderGroupNumber}{RequestReferenceNumberInfo(requestGroup)} underkändes med följande meddelande:<br />{requestGroup.DenyMessage}. {GoToRequestGroupButton(requestGroup.RequestGroupId)}",
                     true
                 );
             }
@@ -588,7 +588,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestLostDueToNoAnswerFromCustomer, NotificationChannel.Email);
             if (email != null)
             {
-                var mailText = GetRequestExpiredDueToNoAnswerFromCustomerText(request.Order, request.LatestAnswerTimeForCustomer.HasValue);
+                var mailText = GetRequestExpiredDueToNoAnswerFromCustomerText(request.Order, request);
                 CreateEmail(email.ContactInformation,
                     request.LatestAnswerTimeForCustomer.HasValue ? $"Bokningsförfrågan {orderNumber} avslutad, myndigheten svarade inte på tillsättningen i tid" : $"Bokningsförfrågan {orderNumber} avslutad, myndigheten svarade inte på tillsättningen",
                     mailText + GoToRequestPlain(request.RequestId),
@@ -610,9 +610,9 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             }
         }
 
-        private static string GetRequestExpiredDueToNoAnswerFromCustomerText(Order order, bool latestAnswerTimeSetForCustomer) => !latestAnswerTimeSetForCustomer ?
-                    $"{order.CustomerOrganisation.Name} med organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inte besvarat tillsättningen på bokningsförfrågan {order.OrderNumber} innan uppdraget startade, därför har nu bokningsförfrågan avslutats." :
-                    $"{order.CustomerOrganisation.Name} med organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inte besvarat tillsättningen på bokningsförfrågan {order.OrderNumber} inom den tid er förmedling har angivit som sista svarstid. Bokningsförfrågan har nu avslutats.";
+        private string GetRequestExpiredDueToNoAnswerFromCustomerText(Order order, Request request) => !request.LatestAnswerTimeForCustomer.HasValue ?
+                    $"{order.CustomerOrganisation.Name} med organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inte besvarat tillsättningen på bokningsförfrågan {order.OrderNumber}{RequestReferenceNumberInfo(request)} innan uppdraget startade, därför har nu bokningsförfrågan avslutats." :
+                    $"{order.CustomerOrganisation.Name} med organisationsnummer {order.CustomerOrganisation.OrganisationNumber} har inte besvarat tillsättningen på bokningsförfrågan {order.OrderNumber}{RequestReferenceNumberInfo(request)} inom den tid er förmedling har angivit som sista svarstid. Bokningsförfrågan har nu avslutats.";
 
         public void RequestGroupExpiredDueToInactivity(RequestGroup requestGroup)
         {
@@ -649,10 +649,10 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupLostDueToNoAnswerFromCustomer, NotificationChannel.Email);
             if (email != null)
             {
-                var emailText = GetRequestGroupExpiredDueToNoAnswerFromCustomerText(requestGroup.OrderGroup, requestGroup.LatestAnswerTimeForCustomer.HasValue);
+                var emailText = GetRequestGroupExpiredDueToNoAnswerFromCustomerText(requestGroup.OrderGroup, requestGroup);
                 CreateEmail(email.ContactInformation,
                     requestGroup.LatestAnswerTimeForCustomer.HasValue ? $"Sammanhållen bokningsförfrågan {orderGroupNumber} avslutad, myndigheten svarade inte på tillsättningen i tid" :
-                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} avslutad, myndigheten svarade inte på tillsättningen",
+                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} är avslutad, myndigheten svarade inte på tillsättningen",
                     emailText + GoToRequestGroupPlain(requestGroup.RequestGroupId),
                     emailText + GoToRequestGroupButton(requestGroup.RequestGroupId),
                     true);
@@ -672,9 +672,9 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             }
         }
 
-        private static string GetRequestGroupExpiredDueToNoAnswerFromCustomerText(OrderGroup ordergroup, bool latestAnswerTimeSetForCustomer) => !latestAnswerTimeSetForCustomer ?
-            $"{ordergroup.CustomerOrganisation.Name} med organisationsnummer {ordergroup.CustomerOrganisation.OrganisationNumber} har inte besvarat tillsättningen på den sammanhållna bokningsförfrågan {ordergroup.OrderGroupNumber} innan det första uppdraget startade, därför har nu den sammanhållna bokningsförfrågan avslutats." :
-            $"{ordergroup.CustomerOrganisation.Name} med organisationsnummer {ordergroup.CustomerOrganisation.OrganisationNumber} har inte besvarat tillsättningen på den sammanhållna bokningsförfrågan {ordergroup.OrderGroupNumber} inom den tid er förmedling har angivit som sista svarstid. Den sammanhållna bokningsförfrågan har nu avslutats.";
+        private string GetRequestGroupExpiredDueToNoAnswerFromCustomerText(OrderGroup ordergroup, RequestGroup requestGroup) => !requestGroup.LatestAnswerTimeForCustomer.HasValue ?
+            $"{ordergroup.CustomerOrganisation.Name} med organisationsnummer {ordergroup.CustomerOrganisation.OrganisationNumber}{RequestReferenceNumberInfo(requestGroup)} har inte besvarat tillsättningen på den sammanhållna bokningsförfrågan {ordergroup.OrderGroupNumber} innan det första uppdraget startade, därför har nu den sammanhållna bokningsförfrågan avslutats." :
+            $"{ordergroup.CustomerOrganisation.Name} med organisationsnummer {ordergroup.CustomerOrganisation.OrganisationNumber}{RequestReferenceNumberInfo(requestGroup)} har inte besvarat tillsättningen på den sammanhållna bokningsförfrågan {ordergroup.OrderGroupNumber} inom den tid er förmedling har angivit som sista svarstid. Den sammanhållna bokningsförfrågan har nu avslutats.";
 
         public void ComplaintCreated(Complaint complaint)
         {
@@ -933,9 +933,9 @@ Sammanställning:
             return string.IsNullOrWhiteSpace(order.CustomerReferenceNumber) ? string.Empty : $"Myndighetens ärendenummer: {order.CustomerReferenceNumber}\n";
         }
 
-        private string RequestReferenceNumberInfo(Request request)
+        private string RequestReferenceNumberInfo(RequestBase request)
         {
-            return string.IsNullOrWhiteSpace(request.BrokerReferenceNumber) ? string.Empty : $" (förmedlingens bokningsnummer: {request.BrokerReferenceNumber})";
+            return string.IsNullOrWhiteSpace(request.BrokerReferenceNumber) ? string.Empty : $" (ert bokningsnummer: {request.BrokerReferenceNumber})";
         }
 
         private string InterpreterCompetenceInfo(int? competenceInfo)
@@ -1404,7 +1404,7 @@ Sammanställning:
             var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupAnswerApproved, NotificationChannel.Email);
             if (email != null)
             {
-                var body = $"{requestGroup.OrderGroup.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på den sammanhållna bokningsförfrågan {orderGroupNumber}.";
+                var body = $"{requestGroup.OrderGroup.CustomerOrganisation.Name} har godkänt tillsättningen av tolk på den sammanhållna bokningsförfrågan {orderGroupNumber}{RequestReferenceNumberInfo(requestGroup)}.";
                 CreateEmail(email.ContactInformation, $"Sammanhållen bokning med boknings-ID {orderGroupNumber} verifierat",
                         body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
                         body + GoToRequestGroupButton(requestGroup.RequestGroupId),

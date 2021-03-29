@@ -92,6 +92,9 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(QuarantineId))]
         public Quarantine Quarantine { get; set; }
 
+        [MaxLength(100)]
+        public string BrokerReferenceNumber { get; set; }
+
         #region Status checks
 
         public bool IsAcceptedOrApproved
