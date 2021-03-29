@@ -699,8 +699,7 @@ namespace Tolk.Web.Controllers
                     DefaulListAction = "View",
                     DefaulListController = "RequestGroup",
                     DefaultItemId = (int)rg.RequestGroupId,
-                    InfoDate = rg.RequestGroupStatus == RequestStatus.ResponseNotAnsweredByCreator ? (rg.LatestAnswerTimeForCustomer.HasValue ? rg.LatestAnswerTimeForCustomer.Value.DateTime :
-                        rg.StartAt.DateTime) : (rg.RequestGroupStatus != RequestStatus.DeniedByCreator && rg.LastRequestCreatedUpdatedAt.HasValue) ? rg.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(rg).Value,
+                    InfoDate = GetInfoDateForGroupForBroker(rg),
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)rg.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     ExtraCompetenceLevel = (CompetenceAndSpecialistLevel?)rg.ExtraCompetencelevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = rg.CustomerName,
@@ -929,6 +928,13 @@ namespace Tolk.Web.Controllers
         private static DateTime? GetInfoDateForBroker(BrokerStartListRow r)
         {
             return (r.RequestStatus == RequestStatus.CancelledByCreator || r.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved) ? r.CancelledAt?.DateTime : r.RequestStatus == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.EntityDate.DateTime;
+        }
+
+        private static DateTime? GetInfoDateForGroupForBroker(BrokerStartListRow r)
+        {
+            return r.RequestGroupStatus == RequestStatus.ResponseNotAnsweredByCreator ? (r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime :
+                        r.StartAt.DateTime) : (r.RequestGroupStatus != RequestStatus.DeniedByCreator && r.LastRequestCreatedUpdatedAt.HasValue) ? r.LastRequestCreatedUpdatedAt.Value.DateTime :
+                        (r.RequestGroupStatus == RequestStatus.CancelledByCreator || r.RequestGroupStatus == RequestStatus.CancelledByCreatorWhenApproved) ? r.CancelledAt?.DateTime : r.RequestGroupStatus == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.EntityDate.DateTime;
         }
 
         private static StartListItemStatus GetStartListStatusForBroker(RequestStatus requestStatus, int replacingOrderId, bool isGroup = false)

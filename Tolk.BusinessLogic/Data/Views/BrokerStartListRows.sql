@@ -98,10 +98,10 @@ DISTINCT
    ,(SELECT TOP 1 rXComp.CompetenceLevel FROM dbo.Requests rXComp
    INNER JOIN dbo.Orders oXComp ON rXComp.OrderId = oXComp.OrderId
    WHERE rXComp.RequestGroupId = rg.RequestGroupId AND oXComp.IsExtraInterpreterForOrderId IS NOT NULL) ExtraCompetencelevel
-   ,rg.LatestAnswerTimeForCustomer
    ,ru.UpdatedAt LastRequestCreatedUpdatedAt
+   ,rg.LatestAnswerTimeForCustomer
    ,rg.AnswerDate AnsweredAt
-   ,NULL AnswerProcessedAt
+   ,rg.AnswerProcessedAt AnswerProcessedAt
    ,rg.CancelledAt
    ,rg.ExpiresAt RequestExpiresAt
    ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId) NoOfChildren
@@ -156,8 +156,8 @@ DISTINCT
    ,NULL ReplacingOrderId 
    ,rs.CompetenceLevel Competencelevel
    ,NULL ExtraCompetencelevel
-   ,NULL LatestAnswerTimeForCustomer
    ,NULL LastRequestCreatedUpdatedAt
+   ,NULL LatestAnswerTimeForCustomer
    ,r.ProcessedAt AnsweredAt
    ,NULL AnswerProcessedAt
    ,NULL CancelledAt
@@ -210,8 +210,8 @@ DISTINCT
    ,NULL ReplacingOrderId 
    ,r.CompetenceLevel Competencelevel
    ,NULL ExtraCompetencelevel
-   ,NULL LatestAnswerTimeForCustomer
    ,NULL LastRequestCreatedUpdatedAt
+   ,NULL LatestAnswerTimeForCustomer
    ,NULL AnsweredAt
    ,NULL AnswerProcessedAt
    ,NULL CancelledAt
