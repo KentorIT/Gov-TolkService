@@ -5,4 +5,4 @@
 
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "This is a swedish system, with english error messages", Scope = "module")]
 [assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2007:Consider calling ConfigureAwait on the awaited task", Justification = "Initial decision is to not do this", Scope = "module")]
-[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Initial decision is to not do this", Scope = "namespaceanddescendants", Target = "Tolk.Web.Controllers")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1062:Validate arguments of public methods", Justification = "Initial decision is to not do this", Scope = "namespaceanddescendants", Target = "~N:Tolk.Web.Controllers")]
