@@ -7,7 +7,7 @@ namespace Tolk.Web.Api.Authorization
 {
     public class AddRequiredHeaderParameter : IOperationProcessor
     {
-        string _name;
+        readonly string _name;
         public AddRequiredHeaderParameter(string name)
         {
             _name = name;

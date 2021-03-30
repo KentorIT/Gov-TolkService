@@ -15,7 +15,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<Ranking> Rankings { get; private set; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "This is a byte array, used by Ef")]
         public static Region[] Regions { get; } = new[]
         {
                 new Region { RegionId = 1, Name = "Stockholm" },

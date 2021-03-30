@@ -18,7 +18,6 @@ namespace Tolk.Web.Models
 
         internal IQueryable<InterpreterBroker> Apply(IQueryable<InterpreterBroker> items)
         {
-#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
             items = !string.IsNullOrWhiteSpace(OfficialInterpreterId)
                 ? items.Where(i => i.OfficialInterpreterId.Contains(OfficialInterpreterId))
                 : items;
@@ -28,7 +27,6 @@ namespace Tolk.Web.Models
             items = !string.IsNullOrWhiteSpace(Email)
               ? items.Where(i => i.Email.Contains(Email))
               : items;
-#pragma warning restore CA1307 // 
             return items;
         }
     }

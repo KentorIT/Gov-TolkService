@@ -7,8 +7,8 @@ namespace Tolk.Web.Services
 {
     public class LocalizableValidationMetadataProvider : IValidationMetadataProvider
     {
-        private IStringLocalizer _stringLocalizer;
-        private Type _injectableType;
+        private readonly IStringLocalizer _stringLocalizer;
+        private readonly Type _injectableType;
 
         public LocalizableValidationMetadataProvider(IStringLocalizer stringLocalizer, Type injectableType)
         {
@@ -36,8 +36,7 @@ namespace Tolk.Web.Services
 
             foreach (var attribute in context.ValidationMetadata.ValidatorMetadata)
             {
-                var tAttr = attribute as ValidationAttribute;
-                if (tAttr != null)
+                if (attribute is ValidationAttribute tAttr)
                 {
                     // at first, assume the text to be generic error
                     var errorName = tAttr.GetType().Name;

@@ -9,7 +9,6 @@ namespace Tolk.BusinessLogic.Utilities
     {
         private const string VIKey = "@sdfSDFHsdfgSYs¤";
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5379:Do Not Use Weak Key Derivation Function Algorithm", Justification = "Does not need fullfledged encryption, and might already be in use...")]
         public static string Encrypt(string plainText, string passwordHash, string saltKey)
         {
             byte[] plainTextBytes = Encoding.UTF8.GetBytes(plainText);
@@ -39,7 +38,6 @@ namespace Tolk.BusinessLogic.Utilities
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5379:Do Not Use Weak Key Derivation Function Algorithm", Justification = "Does not need fullfledged encryption, and might already be in use...")]
         public static string Decrypt(string encryptedText, string PasswordHash, string SaltKey)
         {
             byte[] cipherTextBytes = Convert.FromBase64String(encryptedText);

@@ -15,10 +15,7 @@ namespace Tolk.Web.Models
 
         internal IQueryable<CustomerUnit> Apply(IQueryable<CustomerUnit> units)
         {
-#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
             units = !string.IsNullOrWhiteSpace(Name) ? units.Where(u => u.Name.Contains(Name)) : units;
-#pragma warning restore CA1307 // 
-
             if (Status.HasValue)
             {
                 units = Status.Value == ActiveStatus.Active ? units.Where(u => u.IsActive) : units.Where(u => !u.IsActive);

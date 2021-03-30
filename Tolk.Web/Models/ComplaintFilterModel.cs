@@ -47,9 +47,7 @@ namespace Tolk.Web.Models
 
         internal IQueryable<Complaint> Apply(IQueryable<Complaint> items)
         {
-#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
             items = !string.IsNullOrWhiteSpace(OrderNumber) ? items.Where(i => i.Request.Order.OrderNumber.Contains(OrderNumber)) : items;
-#pragma warning restore CA1307 // 
             items = Status.HasValue ? items.Where(c => c.Status == Status) : items;
             items = CustomerContactId.HasValue ? items.Where(c => c.CreatedBy == CustomerContactId) : items;
             items = BrokerContactId.HasValue ? items.Where(c => c.AnsweredBy == BrokerContactId) : items;

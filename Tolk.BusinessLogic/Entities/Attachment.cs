@@ -15,7 +15,6 @@ namespace Tolk.BusinessLogic.Entities
         public string FileName { get; set; }
 
         [Required]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "This is a byte array, used by Ef")]
         public byte[] Blob { get; set; }
 
         public int CreatedBy { get; set; }

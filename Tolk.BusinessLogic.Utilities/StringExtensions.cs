@@ -75,7 +75,7 @@ namespace Tolk.BusinessLogic.Utilities
         {
             if (data == null || data.Length == 0)
             {
-                return default(T);
+                return default;
             }
             BinaryFormatter bf = new BinaryFormatter();
             using (MemoryStream ms = new MemoryStream(data))

@@ -229,7 +229,6 @@ namespace Tolk.Web.Services
             };
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Is an api mock...")]
         public TellusLanguagesCompetenceInfoResponse GetLanguagesInfo()
         {
             List<TellusLanguagesInfoModel> tellusLanguagesInfo = new List<TellusLanguagesInfoModel> {

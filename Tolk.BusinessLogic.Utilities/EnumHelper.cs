@@ -104,12 +104,12 @@ namespace Tolk.BusinessLogic.Utilities
         /// </summary>
         public static bool IsObsolete<TEnum>(TEnum value)
         {
-            return (value == null ? true : GetAttributeProperty<ObsoleteAttribute, TEnum>(value) != null);
+            return (value == null || GetAttributeProperty<ObsoleteAttribute, TEnum>(value) != null);
         }
 
         public static bool UseInApi<TEnum>(TEnum value)
         {
-            return (value == null ? false : GetAttributeProperty<CustomNameAttribute, TEnum>(value)?.UseInApi ?? false);
+            return (value != null && (GetAttributeProperty<CustomNameAttribute, TEnum>(value)?.UseInApi ?? false));
         }
 
         /// <summary>

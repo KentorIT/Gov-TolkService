@@ -60,14 +60,12 @@ namespace Tolk.Web.Models
 
         internal IQueryable<OrderListRow> Apply(IQueryable<OrderListRow> orders)
         {
-#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
             orders = !string.IsNullOrWhiteSpace(OrderNumber)
               ? orders.Where(o => o.EntityNumber.Contains(OrderNumber))
               : orders;
             orders = !string.IsNullOrWhiteSpace(CustomerReferenceNumber)
                 ? orders.Where(o => o.CustomerReferenceNumber != null && o.CustomerReferenceNumber.Contains(CustomerReferenceNumber))
                 : orders;
-#pragma warning restore CA1307 // 
             orders = RegionId.HasValue
                 ? orders.Where(o => o.RegionId == RegionId)
                 : orders;

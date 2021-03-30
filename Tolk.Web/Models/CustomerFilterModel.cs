@@ -31,14 +31,12 @@ namespace Tolk.Web.Models
             items = ParentId.HasValue
                ? items.Where(c => c.ParentCustomerOrganisationId == ParentId)
                : items;
-#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
             items = !string.IsNullOrWhiteSpace(OrganisationNumber)
                 ? items.Where(c => c.OrganisationNumber.Contains(OrganisationNumber))
                 : items;
             items = !string.IsNullOrWhiteSpace(Name)
                 ? items.Where(c => c.Name.Contains(Name))
                 : items;
-#pragma warning restore CA1307 // 
             return items;
         }
 

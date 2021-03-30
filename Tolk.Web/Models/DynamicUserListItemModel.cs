@@ -37,12 +37,10 @@ namespace Tolk.Web.Models
             var filteredData = data;
             if (!string.IsNullOrWhiteSpace(filters.SearchString))
             {
-#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
                 filteredData = filteredData.Where(u =>
                     u.NameFirst.Contains(filters.SearchString) ||
                     u.NameFamily.Contains(filters.SearchString) ||
                     u.Email.Contains(filters.SearchString));
-#pragma warning restore CA1307 // 
             }
             if (filters.UserType.HasValue)
             {

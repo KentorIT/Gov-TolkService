@@ -260,7 +260,6 @@ namespace Tolk.Web.Services
             return list;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Prettier code, really")]
         public IEnumerable<EventLogEntryModel> GetEventLogForComplaint(Complaint complaint, string customerName, string brokerName = null)
         {
             if (complaint == null)

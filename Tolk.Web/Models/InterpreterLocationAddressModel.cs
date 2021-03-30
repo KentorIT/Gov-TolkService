@@ -78,7 +78,7 @@ namespace Tolk.Web.Models
         [SubItem]
         public string Address => InterpreterLocation.HasValue ? !IsOffsite ? $"{LocationStreet}, {LocationCity}" : string.Empty : string.Empty;
 
-        private bool IsOffsite => InterpreterLocation.HasValue ? InterpreterLocation.Value == E.InterpreterLocation.OffSitePhone || InterpreterLocation.Value == E.InterpreterLocation.OffSiteVideo : false;
+        private bool IsOffsite => InterpreterLocation.HasValue && (InterpreterLocation.Value == E.InterpreterLocation.OffSitePhone || InterpreterLocation.Value == E.InterpreterLocation.OffSiteVideo);
 
         internal  OrderInterpreterLocation GetInterpreterLocation(E.InterpreterLocation location, int rank)
         {

@@ -35,32 +35,23 @@ namespace Tolk.Web.Models
 
         internal IQueryable<AspNetUser> Apply(IQueryable<AspNetUser> users, IEnumerable<RoleMap> roles)
         {
-#pragma warning disable CA1307 // if a StringComparison is provided, the filter has to be evaluated on server...
             users = !string.IsNullOrWhiteSpace(Email) ? users.Where(u => u.Email.Contains(Email))
                : users;
             users = !string.IsNullOrWhiteSpace(Name)
                ? users.Where(u => u.NameFirst.Contains(Name) || u.NameFamily.Contains(Name) || (u.NameFirst + u.NameFamily).Contains(Name.Replace(" ", "")))
-#pragma warning restore CA1307 // 
                : users;
             if (!string.IsNullOrWhiteSpace(OrganisationIdentifier))
             {
                 var org = OrganisationIdentifier.Split("_");
                 var id = org.First().ToSwedishInt();
                 var type = Enum.Parse<OrganisationType>(org.Last());
-                switch (type)
+                users = type switch
                 {
-                    case OrganisationType.GovernmentBody:
-                        users = users.Where(u => u.CustomerOrganisationId == id);
-                        break;
-                    case OrganisationType.Broker:
-                        users = users.Where(u => u.BrokerId == id);
-                        break;
-                    case OrganisationType.Owner:
-                        users = users.Where(u => !u.BrokerId.HasValue && !u.CustomerOrganisationId.HasValue && !u.InterpreterId.HasValue);
-                        break;
-                    default:
-                        throw new NotSupportedException($"{type.GetDescription()} is not a supported {nameof(OrganisationType)} when searching users.");
-                }
+                    OrganisationType.GovernmentBody => users.Where(u => u.CustomerOrganisationId == id),
+                    OrganisationType.Broker => users.Where(u => u.BrokerId == id),
+                    OrganisationType.Owner => users.Where(u => !u.BrokerId.HasValue && !u.CustomerOrganisationId.HasValue && !u.InterpreterId.HasValue),
+                    _ => throw new NotSupportedException($"{type.GetDescription()} is not a supported {nameof(OrganisationType)} when searching users."),
+                };
             }
             if (Roles.HasValue)
             {
