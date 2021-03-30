@@ -132,8 +132,8 @@ namespace Tolk.Web.Models
         [Placeholder("Ange i SEK")]
         public decimal? ExpectedTravelCosts { get; set; }
 
-        [Display(Name = "Kommentar till bedömd resekostnad", Description = "Här kan du kommentera den bedömda resekostnaden som angivits genom att skriva in t ex antal km för bilersättning, eventuella biljettkostnader, spilltid mm")]
-        [Placeholder("Ange t ex bedömt antal km, biljettkostnad, spilltid mm")]
+        [Display(Name = "Kommentar till bedömd resekostnad", Description = "Här kan du kommentera den bedömda resekostnaden som angivits genom att skriva in t ex antal km för bilersättning, eventuella biljettkostnader m.m.")]
+        [Placeholder("Ange t ex bedömt antal km, biljettkostnad m.m.")]
         [StringLength(1000)]
         [DataType(DataType.MultilineText)]
         public string ExpectedTravelCostInfo { get; set; }

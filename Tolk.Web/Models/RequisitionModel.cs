@@ -90,7 +90,7 @@ namespace Tolk.Web.Models
         public DateTimeOffset ExpectedEndedAt { get; set; }
 
         [Range(31, 600, ErrorMessage = "Kontrollera värdet för total tidsspillan")]
-        [Display(Name = "Eventuell total tidsspillan (utanför förväntad start- och sluttid)", Description = "Avser tid i minuter för total tidsspillan som restid, väntetider mm som överstiger 30 minuter och som inträffat utanför förväntad start- och sluttid")]
+        [Display(Name = "Eventuell total tidsspillan (utanför förväntad start- och sluttid)", Description = "Avser tid i minuter för total tidsspillan som restid, väntetider m.m. som överstiger 30 minuter och som inträffat utanför förväntad start- och sluttid")]
         [Placeholder("Minuter totalt")]
         public int? TimeWasteTotalTime { get; set; }
 

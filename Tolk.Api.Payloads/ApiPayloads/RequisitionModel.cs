@@ -26,7 +26,7 @@ namespace Tolk.Api.Payloads.ApiPayloads
         [Description("Den faktiska sluttiden för uppdraget")]
         public DateTimeOffset AcctualEndedAt { get; set; }
 
-        [Description("Avser tid i minuter för total tidsspillan som restid, väntetider mm som överstiger 30 minuter och som inträffat utanför förväntad start- och sluttid")]
+        [Description("Avser tid i minuter för total tidsspillan som restid, väntetider m.m. som överstiger 30 minuter och som inträffat utanför förväntad start- och sluttid")]
         public int? WasteTime { get; set; }
 
         [Description("Avser tid i minuter av den totala tidsspillan som angetts och som inträffat utanför vardagar 07:00-18:00")]
