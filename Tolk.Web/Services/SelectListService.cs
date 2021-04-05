@@ -383,34 +383,6 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<ExtendedSelectListItem> ImpersonationList
-        {
-            get
-            {
-                var currentUser = _httpContextAccessor.HttpContext.User;
-                var impersonatedUserId = !string.IsNullOrEmpty(currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId)) ? currentUser.FindFirstValue(ClaimTypes.NameIdentifier) : null;
-                yield return new ExtendedSelectListItem()
-                {
-                    Text = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserName) ?? $"{currentUser.FindFirstValue(TolkClaimTypes.PersonalName)} (Inloggad)",
-                    Value = currentUser.FindFirstValue(TolkClaimTypes.ImpersonatingUserId) ?? currentUser.FindFirstValue(ClaimTypes.NameIdentifier),
-                    Selected = impersonatedUserId == null
-                };
-                IEnumerable<ExtendedSelectListItem> items = _dbContext.Users
-                        .Where(u => u.IsActive && !u.IsApiUser &&
-                        (u.InterpreterId.HasValue || u.BrokerId.HasValue || u.CustomerOrganisationId.HasValue))
-                        .Select(u => new ExtendedSelectListItem
-                        {
-                            Text = !string.IsNullOrWhiteSpace(u.FullName) ? $"{u.FullName} ({u.CustomerOrganisation.Name ?? u.Broker.Name ?? (u.InterpreterId != null ? "Tolk" : "N/A")})" : u.UserName,
-                            Value = u.Id.ToSwedishString(),
-                            Selected = impersonatedUserId == u.Id.ToSwedishString(),
-                        }).ToList();
-                foreach (var item in items)
-                {
-                    yield return item;
-                }
-            }
-        }
-
         public IEnumerable<SelectListItem> OtherContactPersons
         {
             get

@@ -68,7 +68,7 @@
                             </span>
                             @if (!string.IsNullOrEmpty(Options.Value.Env.Name))
                             {
-                                <span class="environment-banner" style="@envBackColor; @Options.Value.Env.Foreground;">@Options.Value.Env.Name</span>
+                                <span class="environment-banner" style="@envBackColor @Options.Value.Env.Foreground">@Options.Value.Env.Name</span>
                             }
                         </a>
                     </div>
@@ -179,7 +179,7 @@
                     <ul class="nav navbar-nav navbar-right hidden-xs">
                         @if (!string.IsNullOrEmpty(Options.Value.Env.Name))
                         {
-                            <li class="environment-stripe" style="@envBackColor;">
+                            <li class="environment-stripe" style="@envBackColor">
                             </li>
                         }
                     </ul>
@@ -321,7 +321,8 @@
                             <div class="col-md-6">
                                 <form id="impersonation-form" asp-area="" asp-controller="Account" asp-action="Impersonate" method="post">
                                     <div class="form-group">
-                                        <select name="UserId" id="impersonation-select" asp-items="SelectListService.ImpersonationList" class="form-control" data-ays-ignore="true"></select>
+                                        <select name="UserId" id="impersonation-select" class="form-control dynamic-load" data-initial-selection-url="Administration/GetCurrentUser" data-search-url="Administration/ListUsersToImpersonate" data-ays-ignore="true">
+                                        </select>
                                     </div>
                                 </form>
                             </div>

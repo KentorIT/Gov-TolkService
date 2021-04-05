@@ -310,7 +310,7 @@ $(function () {
         e.stopPropagation();
     });
 
-    $("select").each(function () {
+    $("select:not(.dynamic-load)").each(function () {
         var allowClear = $(this).parents().hasClass("allow-clear");
         $(this).selectWoo({ minimumResultsForSearch: 10, allowClear: allowClear, language: "sv" })
             .on("select2:select select2:unselect unselect", function (e) {
@@ -323,6 +323,46 @@ $(function () {
                     $(this).parent().prop("title", $(this).text());
                 });
             });
+    });
+    $("select.dynamic-load").each(function () {
+        let headers = { "RequestVerificationToken": getAntiForgeryToken() };
+        var $selectBox = $(this);
+        var callback = function(){
+            var allowClear = $selectBox.parents().hasClass("allow-clear");
+            $selectBox.selectWoo({
+                allowClear: allowClear,
+                language: "sv",
+                ajax: {
+                    url: tolkBaseUrl + $selectBox.data("search-url"),
+                    delay: 250,
+                    headers: headers,
+                    type: 'GET',
+                    dataType: 'json',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1
+                        }
+                        return query;
+                    }
+                }
+            });
+        };
+        if ($selectBox.data("initial-selection-url") !== undefined) {
+            $.ajax({
+                url: tolkBaseUrl + $selectBox.data("initial-selection-url"),
+                type: 'Get',
+                headers: headers,
+                dataType: 'json',
+                data: { __RequestVerificationToken: getAntiForgeryToken() },
+                success: function (data) {
+                    $selectBox.append(new Option(data.text, data.id, true, true));
+                    callback();
+                }
+            });
+        } else {
+            callback();
+        }
     });
 
     $("body").on("click", "table.clickable-rows-with-action > tbody > tr > td", function () {
@@ -445,5 +485,5 @@ $.fn.extend({
             .addClass("field-validation-valid")
             .removeClass("field-validation-error").html("");
         $(this).modal({ backdrop: "static" });
-    }
+    },
 });
