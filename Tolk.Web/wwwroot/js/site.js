@@ -273,6 +273,7 @@ $(function () {
                             }
                         },
                         ajax: {
+                            headers: { "RequestVerificationToken": getAntiForgeryToken() },
                             url: $table.data("ajax-path"),
                             type: 'POST',
                             data: function (data) {

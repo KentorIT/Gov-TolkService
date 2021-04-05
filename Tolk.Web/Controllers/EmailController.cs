@@ -33,6 +33,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListEmails(IDataTablesRequest request)
         {
             var model = new EmailFilterModel();

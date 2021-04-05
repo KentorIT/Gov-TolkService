@@ -59,6 +59,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListComplaints(IDataTablesRequest request)
         {
             var model = new ComplaintFilterModel();

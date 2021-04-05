@@ -150,6 +150,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListUsers(IDataTablesRequest request)
         {
             //Get filters
@@ -170,6 +171,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListUnits(IDataTablesRequest request)
         {
             //Get filters

@@ -80,6 +80,12 @@ namespace Tolk.Web.Controllers
                     }
                 }
             }
+            return await AuthenticatedUser(message, errorMessage);
+        }
+
+        [ValidateAntiForgeryToken]
+        private async Task<IActionResult> AuthenticatedUser(string message, string errorMessage)
+        {
             return View(new StartViewModel
             {
                 PageTitle = (User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator)) ? $"Startsida för {Constants.SystemName}" : "Aktiva bokningar",

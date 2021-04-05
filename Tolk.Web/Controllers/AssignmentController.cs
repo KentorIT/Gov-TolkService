@@ -35,6 +35,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListAssignments(IDataTablesRequest request)
         {
             var model = new AssignmentFilterModel();

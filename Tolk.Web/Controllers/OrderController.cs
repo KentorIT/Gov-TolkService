@@ -870,6 +870,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListOrders(IDataTablesRequest request)
         {
             var model = new OrderFilterModel();

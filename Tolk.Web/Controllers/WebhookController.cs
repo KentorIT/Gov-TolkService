@@ -41,6 +41,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListWebhooks(IDataTablesRequest request)
         {
             var model = new WebHookFilterModel();
