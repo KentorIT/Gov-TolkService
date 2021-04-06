@@ -31,6 +31,17 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<AspNetUser> Users { get; set; }
 
-        #endregion
+        [MaxLength(100)]
+        public string ContactPhoneNumber { get; set; }
+
+        [MaxLength(255)]
+        public string ContactEmailAddress { get; set; }
+
+        public string BrokerContactInformation => $"{Name}{ContactEmailAddressToDisplay}{ContactPhoneNumberToDisplay}";
+
+        private string ContactEmailAddressToDisplay => string.IsNullOrWhiteSpace(ContactEmailAddress) ? string.Empty : $"\n{ContactEmailAddress}";
+        private string ContactPhoneNumberToDisplay => string.IsNullOrWhiteSpace(ContactPhoneNumber) ? string.Empty : $"\nTel: {ContactPhoneNumber}";
     }
+
+    #endregion
 }

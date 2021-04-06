@@ -527,13 +527,16 @@ namespace Tolk.Web.Controllers
                 return View(new OrganisationSettingsModel
                 {
                     Message = message,
-                    UserName = apiUser.UserName,
-                    Email = apiUser.Email,
+                    ApiUserName = apiUser.UserName,
+                    EmailRequests = apiUser.Email,
                     CertificateSerialNumber = claims.SingleOrDefault(c => c.ClaimType == "CertificateSerialNumber")?.ClaimValue,
                     UseApiKeyAuthentication = claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
                     UseCertificateAuthentication = claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
                     CallbackApiKey = claims.Any(c => c.ClaimType == "CallbackApiKey") ? EncryptHelper.Decrypt(claims.Single(c => c.ClaimType == "CallbackApiKey").ClaimValue, _options.PublicOrigin, apiUser.UserName) : null,
                     OrganisationNumber = apiUser.Broker?.OrganizationNumber,
+                    ContactPhone = apiUser.Broker?.ContactPhoneNumber,
+                    ContactEmail = apiUser.Broker?.ContactEmailAddress,
+                    BrokerName = apiUser.Broker?.Name,
                     NotificationSettings = notificationSettings.Select(s => new NotificationSettingsDetailsModel
                     {
                         Type = s.NotificationType,
@@ -725,13 +728,16 @@ namespace Tolk.Web.Controllers
                 var claims = await _dbContext.UserClaims.GetClaimsForUser(apiUser.Id);
                 return View(new OrganisationSettingsModel
                 {
-                    UserName = apiUser.UserName,
-                    Email = apiUser.Email,
+                    ApiUserName = apiUser.UserName,
+                    EmailRequests = apiUser.Email,
                     CertificateSerialNumber = claims.SingleOrDefault(c => c.ClaimType == "CertificateSerialNumber")?.ClaimValue,
                     UseApiKeyAuthentication = claims.Any(c => c.ClaimType == "UseApiKeyAuthentication"),
                     UseCertificateAuthentication = claims.Any(c => c.ClaimType == "UseCertificateAuthentication"),
                     CallbackApiKey = claims.Any(c => c.ClaimType == "CallbackApiKey") ? EncryptHelper.Decrypt(claims.SingleOrDefault(c => c.ClaimType == "CallbackApiKey").ClaimValue, _options.PublicOrigin, apiUser.UserName) : null,
-                    OrganisationNumber = apiUser.Broker?.OrganizationNumber
+                    OrganisationNumber = apiUser.Broker?.OrganizationNumber,
+                    ContactPhone = apiUser.Broker?.ContactPhoneNumber,
+                    ContactEmail = apiUser.Broker?.ContactEmailAddress,
+                    BrokerName = apiUser.Broker?.Name,
                 });
             }
             return Forbid();
@@ -752,13 +758,15 @@ namespace Tolk.Web.Controllers
                     await _userService.LogOnUpdateAsync(apiUser.Id, User.GetUserId(), User.TryGetImpersonatorId());
                     if (apiUser.BrokerId.HasValue)
                     {
-                        if (apiUser.NormalizedEmail != model.Email.ToSwedishUpper())
+                        if (apiUser.NormalizedEmail != model.EmailRequests.ToSwedishUpper())
                         {
-                            apiUser.Email = model.Email;
-                            apiUser.NormalizedEmail = model.Email.ToSwedishUpper();
-                            apiUser.Broker.EmailAddress = model.Email;
+                            apiUser.Email = model.EmailRequests;
+                            apiUser.NormalizedEmail = model.EmailRequests.ToSwedishUpper();
+                            apiUser.Broker.EmailAddress = model.EmailRequests;
                         }
                         apiUser.Broker.OrganizationNumber = model.OrganisationNumber;
+                        apiUser.Broker.ContactEmailAddress = model.ContactEmail;
+                        apiUser.Broker.ContactPhoneNumber = model.ContactPhone;
                     }
                     var brokerUser = await _userManager.FindByNameAsync(apiUser.UserName);
                     //Clear all Claims, and resave them...

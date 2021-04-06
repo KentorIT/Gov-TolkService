@@ -8,13 +8,24 @@ namespace Tolk.Web.Models
         public string Message { get; set; }
 
         [Display(Name = "Användarnamnet kopplat till inloggning med API-nyckel")]
-        public string UserName { get; set; }
+        public string ApiUserName { get; set; }
 
-        [Display(Name = "E-postadress")]
+        [Display(Name = "E-postadress bokningar", Description = "Till denna e-postadress skickas Tolktjänstens automatiska notifieringar (t ex inkomna bokningar, avbokningar m.m.) såvida ingen annan specifik e-postadress finns angiven under Notifieringsinställningar")]
         [Required]
         [EmailAddress]
         [RegularExpression(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$", ErrorMessage = "Felaktig e-postadress")]
-        public string Email { get; set; }
+        public string EmailRequests { get; set; }
+
+        [Display(Name = "E-postadress", Description = "E-postadressen visas på bokningar så att myndigheten kan ta kontakt vid eventuella frågor")]
+        [EmailAddress]
+        [RegularExpression(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$", ErrorMessage = "Felaktig e-postadress")]
+        public string ContactEmail{ get; set; }
+
+        [Display(Name = "Namn")]
+        public string  BrokerName { get; set; }
+
+        [Display(Name = "Telefon", Description = "Telefonnumret visas på bokningar så att myndigheten kan ta kontakt vid eventuella frågor")]
+        public string ContactPhone { get; set; }
 
         [Display(Name = "Autentisera med certifikat")]
         public bool UseCertificateAuthentication { get; set; }

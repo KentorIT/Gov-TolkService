@@ -56,16 +56,6 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
-        public string AnswerProcessedBy { get; set; }
-
-        public string AnswerProcessedAt { get; set; }
-
-        [Display(Name = "Förmedling")]
-        public string BrokerName { get; set; }
-
-        [Display(Name = "Förmedlings organisationsnummer")]
-        public string BrokerOrganizationNumber { get; set; }
-
         [Display(Name = "Orsak till avböjande")]
         [DataType(DataType.MultilineText)]
         [Required]
@@ -207,8 +197,6 @@ namespace Tolk.Web.Models
             {
                 Status = request.Status,
                 AnsweredBy = request.AnsweringUser?.CompleteContactInformation,
-                BrokerName = request.Ranking?.Broker?.Name,
-                BrokerOrganizationNumber = request.Ranking?.Broker?.OrganizationNumber,
                 DenyMessage = request.DenyMessage,
                 CancelMessage = request.CancelMessage,
                 RequestGroupId = request.RequestGroupId,

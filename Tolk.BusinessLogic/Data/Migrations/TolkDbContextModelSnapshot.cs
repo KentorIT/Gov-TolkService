@@ -378,6 +378,14 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int>("BrokerId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ContactEmailAddress")
+                        .HasColumnType("nvarchar(255)")
+                        .HasMaxLength(255);
+
+                    b.Property<string>("ContactPhoneNumber")
+                        .HasColumnType("nvarchar(100)")
+                        .HasMaxLength(100);
+
                     b.Property<string>("EmailAddress")
                         .HasColumnType("nvarchar(255)")
                         .HasMaxLength(255);

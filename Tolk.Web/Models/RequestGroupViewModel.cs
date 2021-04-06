@@ -37,7 +37,8 @@ namespace Tolk.Web.Models
         public bool DisplayExpectedTravelCostInfo { get; set; }
 
         [Display(Name = "Förmedling")]
-        public string BrokerName { get; set; }
+        [DataType(DataType.MultilineText)]
+        public string Broker { get; set; }
 
         [Display(Name = "Förmedlings organisationsnummer")]
         public string BrokerOrganizationNumber { get; set; }
@@ -111,7 +112,7 @@ namespace Tolk.Web.Models
                 RequestGroupId = requestGroup.RequestGroupId,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
                 AnsweredBy = requestGroup.AnsweringUser?.CompleteContactInformation,
-                BrokerName = requestGroup.Ranking.Broker.Name,
+                Broker = requestGroup.Ranking.Broker.BrokerContactInformation,
                 BrokerOrganizationNumber = requestGroup.Ranking?.Broker.OrganizationNumber,
                 DenyMessage = requestGroup.DenyMessage,
                 CancelMessage = requestGroup.CancelMessage,

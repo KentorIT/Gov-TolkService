@@ -8,17 +8,30 @@
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     <form method="post">
-        <h2>Allmänna inställningar</h2>
+        <h2>Allmänn information</h2>
         <div class="row">
             <div class="col-sm-12">
                 <div class="col-sm-4">
-                    <display-entry asp-for="UserName" />
-                </div>
-                <div class="col-sm-4">
-                    <form-entry asp-for="Email" />
+                    <display-entry asp-for="BrokerName" />
                 </div>
                 <div class="col-sm-4">
                     <form-entry asp-for="OrganisationNumber" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="EmailRequests" />
+                </div>
+            </div>
+        </div>
+        <h2>Kontaktinformation</h2>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="col-sm-4">
+                    <form-entry asp-for="ContactEmail" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="ContactPhone" />
+                </div>
+                <div class="col-sm-4">
                 </div>
             </div>
         </div>
@@ -26,16 +39,15 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="col-sm-4">
+                    <display-entry asp-for="ApiUserName" />
+                </div>
+                <div class="col-sm-4">
                     <form-entry asp-for="UseApiKeyAuthentication" />
+                    <form-entry asp-for="CallbackApiKey" />
                 </div>
                 <div class="col-sm-4">
                     <form-entry asp-for="UseCertificateAuthentication" />
-                </div>
-                <div class="col-sm-4">
                     <form-entry asp-for="CertificateSerialNumber" />
-                </div>
-                <div class="col-sm-4">
-                    <form-entry asp-for="CallbackApiKey" />
                 </div>
             </div>
         </div>

@@ -46,7 +46,8 @@ namespace Tolk.Web.Models
         public string AnswerProcessedAt { get; set; }
 
         [Display(Name = "Förmedling")]
-        public string BrokerName { get; set; }
+        [DataType(DataType.MultilineText)]
+        public string Broker { get; set; }
 
         [Display(Name = "Förmedlings organisationsnummer")]
         public string BrokerOrganizationNumber { get; set; }
@@ -151,7 +152,7 @@ namespace Tolk.Web.Models
             {
                 Status = request.Status,
                 AnsweredBy = request.AnsweringUser?.CompleteContactInformation,
-                BrokerName = request.Ranking?.Broker?.Name,
+                Broker = request.Ranking?.Broker != null ? request.Ranking.Broker.BrokerContactInformation : string.Empty,
                 BrokerOrganizationNumber = request.Ranking?.Broker?.OrganizationNumber,
                 DenyMessage = request.DenyMessage,
                 CancelMessage = request.CancelMessage,
