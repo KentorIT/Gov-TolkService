@@ -52,7 +52,7 @@ namespace Tolk.Web.Models
 
         public bool AllowUpdateExpiry { get; set; } = false;
 
-        [Display(Name = "Sista svarstid", Description = "Eftersom uppdraget sker i närtid, måste sista svarstid anges.")]
+        [Display(Name = "Sista svarstid", Description = "Eftersom att uppdraget sker i närtid måste sista svarstid anges. Observera dock att det i vissa, och särskilt akuta fall, kan vara bättre att ringa förmedlingarna för att få svar direkt.")]
         [ClientRequired(ErrorMessage = "Ange sista svarstid")]
         public DateTimeOffset? LatestAnswerBy { get; set; }
 
