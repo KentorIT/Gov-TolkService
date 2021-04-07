@@ -48,22 +48,26 @@ namespace Tolk.BusinessLogic.Services
             if (user.InterpreterId.HasValue)
             {
                 (subject, body) = CreateInterpreterInvite();
+                if (subject == null || body == null)
+                {
+                    throw new NotImplementedException();
+                }
             }
             else
             {
                 // Not interpreter => must belong to organization.
-                (subject, body) = CreateOrganizationUserActivation();
-            }
-
-            if (subject == null || body == null)
-            {
-                throw new NotImplementedException();
+                (subject, htmlBody) = CreateOrganizationUserActivation(true);
+                (subject, plainBody) = CreateOrganizationUserActivation(false);
+                if (subject == null || htmlBody == null || plainBody == null)
+                {
+                    throw new NotImplementedException();
+                }
             }
 
             var link = await GenerateActivationLinkAsync(user);
 
-            plainBody = body.FormatSwedish(link);
-            htmlBody = HtmlHelper.ToHtmlBreak(body).FormatSwedish(HtmlHelper.GetButtonDefaultLargeTag(link.AsUri(), "Registrera användarkonto"));
+            plainBody = plainBody.FormatSwedish(link);
+            htmlBody = HtmlHelper.ToHtmlBreak(htmlBody).FormatSwedish(HtmlHelper.GetButtonDefaultLargeTag(link.AsUri(), "Registrera användarkonto"), link);
             _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody);
             await _dbContext.SaveChangesAsync();
             _logger.LogInformation("Sent account confirmation link to {userId} ({email})", user.Id, user.Email);
@@ -100,17 +104,14 @@ Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
             return (subject, body);
         }
 
-        private (string, string) CreateOrganizationUserActivation()
+        private (string, string) CreateOrganizationUserActivation(bool isHtml)
         {
             var body =
 $@"Hej!
 
 Välkommen till {Constants.SystemName}!
 
-För att aktivera ditt konto, vänligen klicka på nedanstående länk eller klistra
-in den i din webbläsare.
-
-{{0}}
+{GetLinkInfo(isHtml)}
 
 Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}.
 
@@ -120,6 +121,18 @@ Mer information om avropstjänsten hittar du på: {_options.ExternalLinks.Curren
 
             return (subject, body);
         }
+
+        private string GetLinkInfo(bool isHtml) => isHtml ?
+            $@"För att aktivera ditt konto, vänligen klicka på nedanstående länk: 
+
+{{0}}
+
+Om det inte fungerar att klicka på länken så klistra in länken nedan i en webbläsare:
+
+{{1}}" :
+            $@"För att aktivera ditt konto, vänligen klicka på nedanstående länk eller klistra in den i din webbläsare.
+
+{{0}}";
 
         private async Task<string> GenerateActivationLinkAsync(AspNetUser user)
         {
@@ -237,7 +250,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         }
         public async Task LogDefaultSettingsUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
-            AspNetUser currentUserInformation =  await _dbContext.Users.GetUserById(userId);
+            AspNetUser currentUserInformation = await _dbContext.Users.GetUserById(userId);
             currentUserInformation.DefaultSettings = await _dbContext.UserDefaultSettings.GetDefaultSettingsForUser(userId).ToListAsync();
             currentUserInformation.DefaultSettingOrderRequirements = await _dbContext.UserDefaultSettingOrderRequirements.GetDefaultSettingOrderRequirementsForUser(userId).ToListAsync();
             await _dbContext.AddAsync(new UserAuditLogEntry

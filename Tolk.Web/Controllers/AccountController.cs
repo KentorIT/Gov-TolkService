@@ -970,9 +970,13 @@ supporten på {_options.Support.FirstLineEmail}.";
             var bodyHtml =
         $@"<h2>Återställning av lösenord för {Constants.SystemName}</h2>
 
-<div>Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.</div>
+<div>Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka på länken nedan:<br /><br /></div>
 
-<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink.AsUri(), "Återställ lösenord")}</div>
+<div>{HtmlHelper.GetButtonDefaultLargeTag(resetLink.AsUri(), "Återställ lösenord")}<br /><br /></div>
+
+<div>Om det inte fungerar att klicka på länken så klistra in länken nedan i en webbläsare:<br /><br /></div>
+
+<div>{resetLink}<br /><br /></div>
 
 <div>{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
 Du kommer fortfarande få byta lösenord, men du behöver kontakta tolkar.avropa@kammarkollegiet.se för att få mer information om aktivering av konto.")}
