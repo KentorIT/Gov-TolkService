@@ -504,7 +504,6 @@ namespace Tolk.Web.Controllers
             request.Order = await _dbContext.Orders.GetFullOrderByRequestId(request.RequestId);
             request.Order.Requirements = await _dbContext.OrderRequirements.GetRequirementsForOrder(request.OrderId).ToListAsync();
             var model = RequestModel.GetModelFromRequest(request);
-            model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.OrderViewModel.RequestedCompetenceLevels);
             if (request.InterpreterLocation != null)
             {
                 model.InterpreterLocationAnswer = model.OrderViewModel.InterpreterLocationAnswer = (InterpreterLocation)request.InterpreterLocation.Value;
@@ -522,6 +521,7 @@ namespace Tolk.Web.Controllers
             };
             model.OrderViewModel.UseAttachments = true;
             await _listToModelService.AddInformationFromListsToModel(model.OrderViewModel);
+            model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.OrderViewModel.RequestedCompetenceLevels);
             model.AttachmentListModel = model.OrderViewModel.RequestAttachmentListModel;
             model.OrderViewModel.CustomerUseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
             model.BrokerReferenceNumber = request.BrokerReferenceNumber;
@@ -557,6 +557,7 @@ namespace Tolk.Web.Controllers
             model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
             model.ActiveRequest.AttachmentListModel = model.RequestAttachmentListModel;
             model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
+            model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.RequestedCompetenceLevels);
             model.EventLog = new EventLogModel
             {
                 Header = "Bokningshändelser",
