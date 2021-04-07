@@ -11,7 +11,7 @@
 @inject IAuthorizationService AuthorizationService
 @inject Tolk.BusinessLogic.Services.ISwedishClock Clock
 @{
-    string envBackColor = !string.IsNullOrEmpty(Options.Value.Env.Name) ? Options.Value.Env.Background : string.Empty;
+    string envBackColor = !string.IsNullOrEmpty(Options.Value.Env.Name) ? $"{Options.Value.Env.Background};" : string.Empty;
     string name = string.Empty;
     string infoTextUser = string.Empty;
     bool userHasPassword = (!User.IsInRole(Roles.Impersonator) && (await AuthorizationService.AuthorizeAsync(User, Policies.HasPassword)).Succeeded) || User.IsInRole(Roles.Impersonator);
