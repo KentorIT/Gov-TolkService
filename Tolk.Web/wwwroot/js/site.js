@@ -326,7 +326,7 @@ $(function () {
             });
     });
     $("select.dynamic-load").each(function () {
-        let headers = { "RequestVerificationToken": getAntiForgeryToken() };
+        var headers = { "RequestVerificationToken": getAntiForgeryToken() };
         var $selectBox = $(this);
         var callback = function(){
             var allowClear = $selectBox.parents().hasClass("allow-clear");
