@@ -3,7 +3,8 @@ param(
 	[string]$StartupProject = "..\Tolk.Web\Tolk.Web.csproj",
 	[string]$Project = "..\Tolk.BusinessLogic\Tolk.BusinessLogic.csproj",
 	[string]$OutputFolder = ".\bin",
-	$dotnet = "dotnet"
+	$dotnet = "dotnet",
+	[bool]$CreateDowngradeScripts = $false
 	)
 
 $n = 0
@@ -16,18 +17,20 @@ $prm = "ef", "migrations",  "script", "-o", ($OutputFolder + "\TolkMigrate.sql")
 
 & $dotnet $prm
 
-$prm = "ef", "migrations",  "list", "--startup-project", $StartupProject, "-p", $Project, "--no-build"
+If ($CreateDowngradeScripts -eq $true) {
+	$prm = "ef", "migrations",  "list", "--startup-project", $StartupProject, "-p", $Project, "--no-build"
 
-$items = & $dotnet $prm | select
+	$items = & $dotnet $prm | select
 
-foreach ($item in $items) {
-	If ($IsStarted -eq $true)
-	{
-		$prm = "ef", "migrations",  "script", $item ,  $Previous, "-o", ($OutputFolder + "\" + $Previous + ".sql"), "--startup-project", $StartupProject, "-p", $Project , "-i", "--no-build"
-		& $dotnet $prm
-	} ElseIf ($item -eq $InitialMigration)
-	{
-		$IsStarted = $true
+	foreach ($item in $items) {
+		If ($IsStarted -eq $true)
+		{
+			$prm = "ef", "migrations",  "script", $item ,  $Previous, "-o", ($OutputFolder + "\" + $Previous + ".sql"), "--startup-project", $StartupProject, "-p", $Project , "-i", "--no-build"
+			& $dotnet $prm
+		} ElseIf ($item -eq $InitialMigration)
+		{
+			$IsStarted = $true
+		}
+		$Previous = $item
 	}
-	$Previous = $item
 }
