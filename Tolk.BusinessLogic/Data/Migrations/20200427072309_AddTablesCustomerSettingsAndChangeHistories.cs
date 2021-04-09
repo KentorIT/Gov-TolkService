@@ -92,7 +92,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 column: "CustomerChangeLogEntryId");
 
 
-            migrationBuilder.Sql(@"
+            migrationBuilder.Sql(@"Exec('
             INSERT INTO CustomerSettings(CustomerOrganisationId, CustomerSettingType, Value)
             SELECT CustomerOrganisationId, 1, UseOrderGroups FROM CustomerOrganisations
             
@@ -101,7 +101,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             --all customers should have possibilty to use attachments from the beginning
             INSERT INTO CustomerSettings (CustomerOrganisationId, CustomerSettingType, Value)
-            SELECT CustomerOrganisationId, 3, 1  FROM CustomerOrganisations"
+            SELECT CustomerOrganisationId, 3, 1  FROM CustomerOrganisations')"
             );
 
         }
