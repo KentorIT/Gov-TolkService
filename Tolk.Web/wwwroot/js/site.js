@@ -366,7 +366,7 @@ $(function () {
         }
     });
 
-    $("body").on("click", "table.clickable-rows-with-action > tbody > tr > td", function () {
+    $("body").on("click", "table.clickable-rows-with-action > tbody > tr > td:not(.dataTables_empty)", function () {
         var $row = $(this).closest("tr");
         window.location.href = $row.data("click-action-url");
     });
