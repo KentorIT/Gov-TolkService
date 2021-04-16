@@ -94,7 +94,7 @@ namespace Tolk.Web.Models
         public CustomerInformationModel CustomerInformationModel { get; set; }
 
 
-        [Display(Name = "Förmedlingens bokningsnummer", Description = "Här kan ni som förmedling ange ett eget bokningsnummer att koppla till den sammanhållna bokningen.")]
+        [Display(Name = "Förmedlingens bokningsnummer", Description = "Här kan ni som förmedling ange ett eller flera egna bokningsnummer att koppla till den sammanhållna bokningen.")]
         public string BrokerReferenceNumber { get; set; }
 
         public OccasionListModel OccasionList { get; set; }
