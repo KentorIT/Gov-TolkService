@@ -20,6 +20,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<NotificationService> _logger;
         private readonly ISwedishClock _clock;
         private readonly CacheService _cacheService;
+        private readonly PriceCalculationService _priceCalculationService;
         private readonly ITolkBaseOptions _tolkBaseOptions;
         private readonly string _senderPrepend;
 
@@ -28,6 +29,7 @@ namespace Tolk.BusinessLogic.Services
             ILogger<NotificationService> logger,
             ISwedishClock clock,
             CacheService cacheService,
+            PriceCalculationService priceCalculationService,
             ITolkBaseOptions tolkBaseOptions
         )
         {
@@ -35,6 +37,7 @@ namespace Tolk.BusinessLogic.Services
             _logger = logger;
             _clock = clock;
             _cacheService = cacheService;
+            _priceCalculationService = priceCalculationService;
             _tolkBaseOptions = tolkBaseOptions;
             _senderPrepend = !string.IsNullOrWhiteSpace(_tolkBaseOptions?.Env.DisplayName) ? $"{_tolkBaseOptions?.Env.DisplayName} " : string.Empty;
         }
@@ -1538,6 +1541,10 @@ Sammanställning:
         private async Task<RequestModel> GetRequestModel(Request request)
         {
             var order = await _dbContext.Orders.GetFullOrderById(request.OrderId);
+            var priceRows = _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)order.PriceCalculatedFromCompetenceLevel, null).PriceRows.ToList();
+            var calculationCharges = _dbContext.PriceCalculationCharges.GetPriceCalculationChargesByIds(priceRows.Where(p => p.PriceCalculationChargeId.HasValue).Select(p => p.PriceCalculationChargeId.Value).ToList());
+            priceRows.Where(p => p.PriceCalculationChargeId.HasValue).ToList().ForEach(p => p.PriceCalculationCharge = new PriceCalculationCharge { ChargePercentage = calculationCharges.Where(c => c.PriceCalculationChargeId == p.PriceCalculationChargeId).FirstOrDefault().ChargePercentage } );
+
             return new RequestModel
             {
                 CreatedAt = request.CreatedAt,
@@ -1601,7 +1608,7 @@ Sammanställning:
                     AttachmentId = a.AttachmentId,
                     FileName = a.FileName
                 }).ToListAsync(),
-                PriceInformation = (await _dbContext.OrderPriceRows.GetPriceRowsForOrder(order.OrderId).ToListAsync()).GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee)
+                PriceInformation = priceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee)
             };
         }
 

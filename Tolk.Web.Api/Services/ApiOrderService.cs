@@ -25,13 +25,15 @@ namespace Tolk.Web.Api.Services
         private readonly ISwedishClock _timeService;
         private readonly ILogger _logger;
         private readonly CacheService _cacheService;
+        private readonly PriceCalculationService _priceCalculationService;
 
         public ApiOrderService(
             TolkDbContext dbContext,
             ApiUserService apiUserService,
             ISwedishClock timeService,
             ILogger<ApiOrderService> logger,
-            CacheService cacheService
+            CacheService cacheService,
+            PriceCalculationService priceCalculationService
         )
         {
             _dbContext = dbContext;
@@ -39,6 +41,7 @@ namespace Tolk.Web.Api.Services
             _timeService = timeService;
             _logger = logger;
             _cacheService = cacheService;
+            _priceCalculationService = priceCalculationService;
         }
 
         public async Task<Order> GetOrderAsync(string orderNumber, int brokerId)
@@ -75,7 +78,9 @@ namespace Tolk.Web.Api.Services
             request.Order.Requirements = await _dbContext.OrderRequirements.GetRequirementsForOrder(request.OrderId).ToListAsync();
             request.Order.InterpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToListAsync();
             request.Order.CompetenceRequirements = await _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.OrderId).ToListAsync();
-            request.Order.PriceRows = await _dbContext.OrderPriceRows.GetPriceRowsForOrder(request.OrderId).ToListAsync();
+            var priceRows = _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.Order.PriceCalculatedFromCompetenceLevel, null).PriceRows.ToList();
+            var calculationCharges = _dbContext.PriceCalculationCharges.GetPriceCalculationChargesByIds(priceRows.Where(p => p.PriceCalculationChargeId.HasValue).Select(p => p.PriceCalculationChargeId.Value).ToList());
+            priceRows.Where(p => p.PriceCalculationChargeId.HasValue).ToList().ForEach(p => p.PriceCalculationCharge = new PriceCalculationCharge { ChargePercentage = calculationCharges.Where(c => c.PriceCalculationChargeId == p.PriceCalculationChargeId).FirstOrDefault().ChargePercentage });
 
             var attachments = getAttachments ? GetAttachments(request) : Enumerable.Empty<AttachmentInformationModel>();
 
@@ -139,7 +144,7 @@ namespace Tolk.Web.Api.Services
                     RequirementId = r.OrderRequirementId,
                     RequirementType = r.RequirementType.GetCustomName()
                 }),
-                CalculatedPriceInformationFromRequest = request.Order.PriceRows.GetPriceInformationModel(request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee),
+                CalculatedPriceInformationFromRequest = priceRows.GetPriceInformationModel(request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee),
                 CalculatedPriceInformationFromAnswer = request.PriceRows.Any() ?
                     request.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)request.CompetenceLevel).GetCustomName(), request.Ranking.BrokerFee)
                     : null,

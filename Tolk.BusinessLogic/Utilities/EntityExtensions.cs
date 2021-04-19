@@ -792,16 +792,20 @@ namespace Tolk.BusinessLogic.Utilities
                         Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
                         CalculationBase = p.Count() == 1 ? p.Key == PriceRowType.BrokerFee ? brokerFee : p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
                         CalculatedFrom = p.Key == PriceRowType.BrokerFee ? "Note that this is rounded to SEK, no decimals, when calculated" : EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
-                        PriceListRows = p.Where(l => l.PriceListRowId != null).Select(l => new PriceRowListModel
+                        PriceListRows = p.Where(l => l.PriceRowType == PriceRowType.InterpreterCompensation || l.PriceRowType == PriceRowType.BrokerFee).Select(l => new PriceRowListModel
                         {
-                            PriceListRowType = l.PriceListRow.PriceListRowType.GetCustomName(),
-                            Description = l.PriceListRow.PriceListRowType.GetDescription(),
+                            PriceListRowType = l.PriceRowType == PriceRowType.BrokerFee ? PriceListRowType.BasePrice.GetCustomName() : l.PriceListRow.PriceListRowType.GetCustomName(),
+                            Description = l.PriceRowType == PriceRowType.BrokerFee ? PriceListRowType.BasePrice.GetDescription() : l.PriceListRow.PriceListRowType.GetDescription(),
                             Price = l.Price,
                             Quantity = l.Quantity
                         })
+
                     })
             };
         }
+
+        public static IQueryable<PriceCalculationCharge> GetPriceCalculationChargesByIds(this IQueryable<PriceCalculationCharge> priceCalculationCharges, List<int> priceCalculationChargesIds)
+          => priceCalculationCharges.Where(x => priceCalculationChargesIds.Contains(x.PriceCalculationChargeId));
 
         private static int? TryGetNullableInt(this string value)
         {
