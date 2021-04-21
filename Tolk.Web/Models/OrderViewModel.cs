@@ -293,11 +293,11 @@ namespace Tolk.Web.Models
                 Description = order.Description,
                 UnitName = order.UnitName,
                 IsCreatorInterpreterUser = order.CreatorIsInterpreterUser,
-                MealbreakIncluded = order.MealBreakIncluded ?? false,
-                BrokerReferenceNumber = displayBrokerReferenceNumber ? request.BrokerReferenceNumber : null
+                MealbreakIncluded = order.MealBreakIncluded ?? false
             };
             if (request != null)
             {
+                model.BrokerReferenceNumber = displayBrokerReferenceNumber ? request.BrokerReferenceNumber : null;
                 model.RequestCanBeCancelled = request.CanCancel;
                 model.RequestCanBeReplaced = request.CanCreateReplacementOrderOnCancel;
                 model.RequestCanBePrinted = request.CanPrint;
