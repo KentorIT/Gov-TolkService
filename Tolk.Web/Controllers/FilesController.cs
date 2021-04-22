@@ -50,7 +50,7 @@ namespace Tolk.Web.Controllers
             var uploadedLength = files.Sum(f => f.Length);
             if (uploadedLength < _options.CombinedMaxSizeAttachments && groupKey.HasValue)
             {
-                uploadedLength += _dbContext.TemporaryAttachmentGroups.Where(t => t.TemporaryAttachmentGroupKey == groupKey).Sum(t => t.Attachment.Blob.Length);
+                uploadedLength += _dbContext.TemporaryAttachmentGroups.GetTemporaryAttachmentGroupsByGroupKey(groupKey.Value).ToList().Sum(t => t.Attachment.Blob.Length);
             }
             if (uploadedLength > _options.CombinedMaxSizeAttachments)
             {

@@ -265,6 +265,9 @@ namespace Tolk.BusinessLogic.Utilities
             => attachments.Where(a => a.RequestGroups.Any(g => g.RequestGroupId == (requestGroupId ?? -1)) ||
                     a.Requests.Any(r => r.RequestId == id));
 
+        public static IQueryable<TemporaryAttachmentGroup> GetTemporaryAttachmentGroupsByGroupKey(this IQueryable<TemporaryAttachmentGroup> temporaryAttachmentGroups, Guid groupKey)
+            => temporaryAttachmentGroups.Include(t => t.Attachment).Where(t => t.TemporaryAttachmentGroupKey == groupKey);
+
         public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForRequest(this IQueryable<OrderRequirementRequestAnswer> answers, int id)
            => answers.Include(a => a.OrderRequirement).Where(a => a.RequestId == id);
 
