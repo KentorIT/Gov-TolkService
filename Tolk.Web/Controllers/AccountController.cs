@@ -632,10 +632,10 @@ namespace Tolk.Web.Controllers
                     var domain = model.Email.Split('@')[1];
 
                     var organisation = await _dbContext.CustomerOrganisations.GetParentOrganisationsByDomain(domain);
-                    organisation.SubCustomerOrganisations = await _dbContext.CustomerOrganisations.GetSubOrganisationsByParent(organisation.CustomerOrganisationId).ToListAsync();
 
                     if (organisation != null)
                     {
+                        organisation.SubCustomerOrganisations = await _dbContext.CustomerOrganisations.GetSubOrganisationsByParent(organisation.CustomerOrganisationId).ToListAsync();
                         //if organization has SubCustomerOrganisations check that one is choosed, else display the list 
                         if (organisation.SubCustomerOrganisations.Any() && string.IsNullOrEmpty(model.OrganisationIdentifier))
                         {
