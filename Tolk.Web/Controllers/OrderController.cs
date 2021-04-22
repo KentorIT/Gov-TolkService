@@ -605,7 +605,7 @@ namespace Tolk.Web.Controllers
 
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded)
             {
-                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id, false);
+                var request = await _dbContext.Requests.GetActiveRequestIncludeProcessingUserByOrderId(id, false);
                 if (!(request?.CanPrint ?? false))
                 {
                     return RedirectToAction(nameof(View), new { id, errorMessage = "Bokningen har fel status för att skriva ut en bokningsbekräftelse" });

@@ -634,12 +634,19 @@ namespace Tolk.BusinessLogic.Utilities
                    r.Ranking.BrokerId == brokerId && r.ReplacingRequest == null);
 
         public static async Task<Request> GetActiveRequestByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
-        {
-            var request = await requests
-                .Include(r => r.Order)
-                .Include(r => r.AnsweringUser)
-                .Include(r => r.Interpreter)
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                    => await requests.GetActiveRequestsWithBaseIncludes()
+                        .SingleOrDefaultAsync(r =>
+                                            r.OrderId == orderId &&
+                                            r.Status != RequestStatus.InterpreterReplaced &&
+                                            r.Status != RequestStatus.DeniedByTimeLimit &&
+                                            r.Status != RequestStatus.DeniedByCreator &&
+                                            r.Status != RequestStatus.DeclinedByBroker &&
+                                            r.Status != RequestStatus.LostDueToQuarantine &&
+                                            (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
+
+        public static async Task<Request> GetActiveRequestIncludeProcessingUserByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
+            => await requests.GetActiveRequestsWithBaseIncludes()
+                .Include(r => r.ProcessingUser)
                 .SingleOrDefaultAsync(r =>
                                     r.OrderId == orderId &&
                                     r.Status != RequestStatus.InterpreterReplaced &&
@@ -648,8 +655,6 @@ namespace Tolk.BusinessLogic.Utilities
                                     r.Status != RequestStatus.DeclinedByBroker &&
                                     r.Status != RequestStatus.LostDueToQuarantine &&
                                     (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
-            return request;
-        }
 
         public static async Task<RequestGroup> GetLastRequestGroupForOrderGroup(this IQueryable<RequestGroup> requestGroups, int orderGroupId)
         {
@@ -837,6 +842,13 @@ namespace Tolk.BusinessLogic.Utilities
             => requests.GetRequestsWithBaseIncludes()
             .Include(r => r.Order.Language)
             .Include(r => r.Order.Region);
+
+        private static IQueryable<Request> GetActiveRequestsWithBaseIncludes(this IQueryable<Request> requests)
+           => requests
+               .Include(r => r.Order)
+               .Include(r => r.AnsweringUser)
+               .Include(r => r.Interpreter)
+               .Include(r => r.Ranking).ThenInclude(r => r.Broker);
 
         private static IQueryable<RequestGroup> GetRequestGroupsWithBaseIncludes(this IQueryable<RequestGroup> requestGroups)
             => requestGroups
