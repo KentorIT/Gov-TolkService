@@ -248,7 +248,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());
                 Order order = await _dbContext.Orders.GetOrderByOrderNumber(model.OrderNumber);
-                if (order.CustomerOrganisationId != apiUser.CustomerOrganisationId)
+                if (order == null || order.CustomerOrganisationId != apiUser.CustomerOrganisationId)
                 {
                     return ReturnError(ErrorCodes.OrderNotFound, method);
                 }
@@ -300,7 +300,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());
                 Order order = await _dbContext.Orders.GetOrderByOrderNumber(model.OrderNumber);
-                if (order.CustomerOrganisationId != apiUser.CustomerOrganisationId)
+                if (order != null && order.CustomerOrganisationId != apiUser.CustomerOrganisationId)
                 {
                     return ReturnError(ErrorCodes.OrderNotFound, method);
                 }
@@ -352,7 +352,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());
                 Order order = await _dbContext.Orders.GetOrderByOrderNumber(model.OrderNumber);
-                if (order.CustomerOrganisationId != apiUser.CustomerOrganisationId)
+                if (order == null || order.CustomerOrganisationId != apiUser.CustomerOrganisationId)
                 {
                     return ReturnError(ErrorCodes.OrderNotFound, method);
                 }

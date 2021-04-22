@@ -92,7 +92,7 @@ namespace Tolk.Web.Controllers
         {
             var order = await _dbContext.Orders.GetFullOrderById(id);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
+            if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);
 
@@ -152,7 +152,7 @@ namespace Tolk.Web.Controllers
         {
             Order order = await _dbContext.Orders.GetFullOrderById(replacingOrderId);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
+            if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
             {
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(replacingOrderId);
                 if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
@@ -175,7 +175,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 Order order = await _dbContext.Orders.GetFullOrderById(model.ReplacingOrderId);
-                if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
+                if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
                 {
                     var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                     if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
@@ -201,7 +201,7 @@ namespace Tolk.Web.Controllers
         {
             var order = await _dbContext.Orders.GetFullOrderById(id);
 
-            if (_options.EnableOrderUpdate && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+            if (order != null && _options.EnableOrderUpdate && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
             {
                 var selectedInterpreterLocation = (InterpreterLocation)(await _dbContext.Requests.GetActiveRequestByOrderId(id)).InterpreterLocation.Value;
                 UpdateOrderModel model = UpdateOrderModel.GetModelFromOrder(order);
@@ -253,7 +253,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 var order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
-                if (_options.EnableOrderUpdate && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
+                if (order != null && _options.EnableOrderUpdate && (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded)
                 {
                     try
                     {
@@ -603,7 +603,7 @@ namespace Tolk.Web.Controllers
         {
             var order = await _dbContext.Orders.GetFullOrderById(id);
 
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded)
+            if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded)
             {
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(id, false);
                 if (!(request?.CanPrint ?? false))
@@ -819,9 +819,9 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
         {
             var order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
-            var oldContactPerson = order.ContactPersonUser;
-            if ((await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded)
+            if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded)
             {
+                var oldContactPerson = order.ContactPersonUser;
                 if (model.ContactPersonId == order.ContactPersonId)
                 {
                     return RedirectToAction(nameof(View), new { id = order.OrderId });
