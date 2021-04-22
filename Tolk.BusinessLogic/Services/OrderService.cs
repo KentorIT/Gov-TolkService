@@ -339,6 +339,11 @@ namespace Tolk.BusinessLogic.Services
             replacementOrder.CreatedAt = _clock.SwedenNow;
             replacementOrder.CreatedBy = userId;
             replacementOrder.ImpersonatingCreator = impersonatorId;
+
+            //Generate new price rows from current times, might be subject to change!!!
+            CreatePriceInformation(replacementOrder);
+            await _tolkDbContext.SaveChangesAsync();
+
             replacementOrder.Requirements = await _tolkDbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId).Select(a => new OrderRequirement
             {
                 Description = a.OrderRequirement.Description,
@@ -354,11 +359,7 @@ namespace Tolk.BusinessLogic.Services
                     }
                 }
             }).ToListAsync();
-
-            //Generate new price rows from current times, might be subject to change!!!
-            CreatePriceInformation(replacementOrder);
             await _tolkDbContext.SaveChangesAsync();
-
             await _notificationService.OrderReplacementCreated(request.RequestId, replacingRequest.RequestId);
             _logger.LogInformation("Order {orderId} replaced by customer {userId}.", order.OrderId, userId);
         }
