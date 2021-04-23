@@ -642,11 +642,14 @@ namespace Tolk.BusinessLogic.Services
                 }
 
                 // Find orphaned attachments
-                var attachmentsToDelete = await _tolkDbContext.Attachments.Where(a => !_tolkDbContext.TemporaryAttachmentGroups.Select(ta => ta.AttachmentId).Contains(a.AttachmentId))
-                                                                    .Where(a => !_tolkDbContext.OrderAttachments.Select(oa => oa.AttachmentId).Contains(a.AttachmentId))
-                                                                    .Where(a => !_tolkDbContext.RequestAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId))
-                                                                    .Where(a => !_tolkDbContext.OrderAttachmentHistoryEntries.Select(oah => oah.AttachmentId).Contains(a.AttachmentId))
-                                                                    .Where(a => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId)).ToListAsync();
+                var attachmentsToDelete = await _tolkDbContext.Attachments
+                    .Where(a => !_tolkDbContext.TemporaryAttachmentGroups.Select(ta => ta.AttachmentId).Contains(a.AttachmentId))
+                    .Where(a => !_tolkDbContext.OrderAttachments.Select(oa => oa.AttachmentId).Contains(a.AttachmentId))
+                    .Where(a => !_tolkDbContext.RequestAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId))
+                    .Where(a => !_tolkDbContext.OrderAttachmentHistoryEntries.Select(oah => oah.AttachmentId).Contains(a.AttachmentId))
+                    .Where(a => !_tolkDbContext.OrderGroupAttachments.Select(oga => oga.AttachmentId).Contains(a.AttachmentId))
+                    .Where(a => !_tolkDbContext.RequestGroupAttachments.Select(rga => rga.AttachmentId).Contains(a.AttachmentId))
+                    .Where(a => !_tolkDbContext.RequisitionAttachments.Select(ra => ra.AttachmentId).Contains(a.AttachmentId)).ToListAsync();
                 if (attachmentsToDelete.Any())
                 {
                     _logger.LogInformation("Cleaning {0} attachments", attachmentsToDelete.Count);
