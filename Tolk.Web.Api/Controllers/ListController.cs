@@ -194,10 +194,10 @@ namespace Tolk.Web.Api.Controllers
 
         [HttpGet]
         [Authorize(Policies.Broker)]
-        [ProducesResponseType(200, Type = typeof(IEnumerable<ListItemResponse>))]
+        [ProducesResponseType(200, Type = typeof(BrokerInterpretersResponse))]
         [Description("Returnerar en lista på de tolkar som är registerade för den anropande förmedlingen")]
         [OpenApiTag("List")]
-        public async Task<ActionResult<IEnumerable<ListItemResponse>>> BrokerInterpreters()
+        public async Task<ActionResult<BrokerInterpretersResponse>> BrokerInterpreters()
         {
             return Ok(new BrokerInterpretersResponse
             {
