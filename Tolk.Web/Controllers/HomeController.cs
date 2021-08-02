@@ -92,31 +92,44 @@ namespace Tolk.Web.Controllers
                 Message = message,
                 ErrorMessage = errorMessage,
                 ConfirmationMessages = GetConfirmationMessages(),
-                SystemMessages = SystemMessagesForUser,
+                SystemMessages = await GetSystemMessagesForUser(),
                 StartLists = await GetStartLists(),
                 IsBroker = User.TryGetBrokerId().HasValue,
                 IsCustomer = User.TryGetCustomerOrganisationId().HasValue
             });
         }
 
-        private IEnumerable<SystemMessage> SystemMessagesForUser
+        private async Task<IEnumerable<SystemMessage>> GetSystemMessagesForUser()
         {
-            get
-            {
-                bool displayBrokerMessages = User.TryGetBrokerId().HasValue || User.IsInRole(Roles.SystemAdministrator);
-                bool displayCustomerMessages = User.TryGetCustomerOrganisationId().HasValue || User.IsInRole(Roles.SystemAdministrator);
-                bool displayCentralAdministratorMessages = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.SystemAdministrator);
+            bool displaySystemAdministratorMessages = User.IsInRole(Roles.SystemAdministrator);
+            bool displayBrokerMessages = displaySystemAdministratorMessages || User.TryGetBrokerId().HasValue;
+            bool displayCustomerMessages = displaySystemAdministratorMessages || User.TryGetCustomerOrganisationId().HasValue;
+            bool displayCentralAdministratorMessages = displaySystemAdministratorMessages || User.IsInRole(Roles.CentralAdministrator);
 
-                return _dbContext.SystemMessages
-                    .Where(s => s.ActiveFrom < _clock.SwedenNow
-                    && s.ActiveTo.Date >= _clock.SwedenNow.Date
-                    && (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.All
-                    || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.BrokerUsers && displayBrokerMessages)
-                    || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CustomerUsers && displayCustomerMessages)
-                    || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CentralAdministrators && displayCentralAdministratorMessages)))
-                    .ToList().OrderByDescending(s => s.SystemMessageType)
-                .ThenByDescending(s => s.LastUpdatedCreatedAt);
+            var messages = _dbContext.SystemMessages
+                .Where(s => s.ActiveFrom < _clock.SwedenNow
+                && s.ActiveTo.Date >= _clock.SwedenNow.Date
+                && (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.All
+                || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.BrokerUsers && displayBrokerMessages)
+                || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CustomerUsers && displayCustomerMessages)
+                || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CentralAdministrators && displayCentralAdministratorMessages)))
+                .ToList();
+            if (displaySystemAdministratorMessages)
+            {
+                var statusMessages = await _verificationService.VerifySystemStatus();
+                if (!statusMessages.Success)
+                {
+                    messages = messages.Union(statusMessages.Items.Where(i => !i.Success).Select(i => new SystemMessage
+                    {
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        SystemMessageType = SystemMessageType.Warning,
+                        SystemMessageHeader = "Statusvarning",
+                        SystemMessageText = $"Systemtestet \"{i.Test}\" fungerade inte. Se dokumentation för mer information!"
+                    })).ToList();
+                }
             }
+            return messages.OrderByDescending(s => s.SystemMessageType)
+            .ThenByDescending(s => s.LastUpdatedCreatedAt);
         }
 
         private async Task<IEnumerable<StartList>> GetStartLists()
