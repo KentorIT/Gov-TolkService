@@ -101,6 +101,7 @@ namespace Tolk.Web.Controllers
 
         private async Task<IEnumerable<SystemMessage>> GetSystemMessagesForUser()
         {
+            bool displayApplicationAdministratorMessages = User.IsInRole(Roles.ApplicationAdministrator);
             bool displaySystemAdministratorMessages = User.IsInRole(Roles.SystemAdministrator);
             bool displayBrokerMessages = displaySystemAdministratorMessages || User.TryGetBrokerId().HasValue;
             bool displayCustomerMessages = displaySystemAdministratorMessages || User.TryGetCustomerOrganisationId().HasValue;
@@ -114,7 +115,7 @@ namespace Tolk.Web.Controllers
                 || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CustomerUsers && displayCustomerMessages)
                 || (s.SystemMessageUserTypeGroup == SystemMessageUserTypeGroup.CentralAdministrators && displayCentralAdministratorMessages)))
                 .ToList();
-            if (displaySystemAdministratorMessages)
+            if (displayApplicationAdministratorMessages)
             {
                 var statusMessages = await _verificationService.VerifySystemStatus();
                 if (!statusMessages.Success)
@@ -129,7 +130,7 @@ namespace Tolk.Web.Controllers
                 }
             }
             return messages.OrderByDescending(s => s.SystemMessageType)
-            .ThenByDescending(s => s.LastUpdatedCreatedAt);
+                .ThenByDescending(s => s.LastUpdatedCreatedAt);
         }
 
         private async Task<IEnumerable<StartList>> GetStartLists()
