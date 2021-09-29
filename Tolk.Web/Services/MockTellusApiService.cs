@@ -157,6 +157,7 @@ namespace Tolk.Web.Services
                 }
             }
         };
+
         private readonly List<MockTellusLanguageModel> _languageModels = new List<MockTellusLanguageModel>
         {
             new MockTellusLanguageModel
@@ -189,9 +190,8 @@ namespace Tolk.Web.Services
                 Value ="tyska",
                 RemoveOnTest = true
             }
-
-
         };
+
         public MockTellusApiService(TolkDbContext dbContext)
         {
             _dbContext = dbContext;
@@ -215,7 +215,8 @@ namespace Tolk.Web.Services
                 {
                     Id = l.TellusName,
                     Value = l.Name.ToLower()
-                }).ToList().Where(l => _languageModels.Any(t => t.RemoveOnTest && t.Id == l.Id));
+                }).ToList().Where(l => !_languageModels.Any(t => t.RemoveOnTest && t.Id == l.Id));
+
             return new TellusLanguagesResponse
             {
                 Result = tellusLanguages

@@ -4,8 +4,11 @@
 }
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
-
-    @if (Model.FoundChanges)
+    @if (!Model.ResultIsValid)
+    {
+        <display-entry asp-for="ErrorMessage" />
+    }
+    else if (Model.FoundChanges)
     {
         <div class="row">
             <div class="col-sm-12">

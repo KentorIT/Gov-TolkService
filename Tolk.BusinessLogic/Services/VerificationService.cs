@@ -84,6 +84,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     NewLanguages = Enumerable.Empty<TellusLanguageModel>(),
                     RemovedLanguages = Enumerable.Empty<TellusLanguageModel>(),
+                    ErrorMessage = "Verifieringen av språklistan mot Tellus är inte aktiverad, ändra konfigurering för att aktivera."
                 };
             }
             try
@@ -92,14 +93,20 @@ namespace Tolk.BusinessLogic.Services
 
                 if (result.Status != 200)
                 {
-                    _logger.LogWarning($"Verifieringen av språklistan mot Tellus misslyckades, med status {result.Status}");
+                    var message = $"Verifieringen av språklistan mot Tellus misslyckades, med status {result.Status}";
+                    _logger.LogWarning(message);
                     if (notify)
                     {
                         _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
                             $"Verifieringen av språklistan mot Tellus misslyckades!",
-                            "Det borde stå vad som gick fel här, om vi vet det...");
+                            message);
                     }
-                    return null;
+                    return new ValidateTellusLanguageListResult
+                    {
+                        NewLanguages = Enumerable.Empty<TellusLanguageModel>(),
+                        RemovedLanguages = Enumerable.Empty<TellusLanguageModel>(),
+                        ErrorMessage = message
+                    };
                 }
                 var tellusLanguages = result.Result.Where(t => !_tolkBaseOptions.Tellus.UnusedIsoCodesList.Contains(t.Id)).ToList();
                 var currentLanguages = await _dbContext.Languages.ToListAsync();
@@ -144,6 +151,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     NewLanguages = Enumerable.Empty<TellusLanguageModel>(),
                     RemovedLanguages = Enumerable.Empty<TellusLanguageModel>(),
+                    ErrorMessage = "Verifieringen av språklistan mot Tellus misslyckades."
                 };
             }
         }
@@ -242,7 +250,14 @@ namespace Tolk.BusinessLogic.Services
         {
             var response = await client.GetAsync(_tolkBaseOptions.Tellus.LanguagesUri);
             string content = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<TellusLanguagesResponse>(content);
+            try
+            {
+               return JsonConvert.DeserializeObject<TellusLanguagesResponse>(content);
+            }
+            catch
+            {
+                return null;
+            }
         }
         private async Task<UptimeRobotMonitorResponse> GetMonitorsFromUptimeRobot()
         {
@@ -339,7 +354,7 @@ namespace Tolk.BusinessLogic.Services
                 new StatusVerificationItem
                 {
                     Test = "Koppla mot tellus språklista",
-                    Success = (await GetLaguagesFromTellus()).Status == 200
+                    Success = (await GetLaguagesFromTellus())?.Status == 200
                 }
             };
             if (_tolkBaseOptions.StatusChecker.CheckUptimeRobot)
