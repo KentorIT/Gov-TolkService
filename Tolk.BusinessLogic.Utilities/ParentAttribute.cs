@@ -5,7 +5,7 @@ namespace Tolk.BusinessLogic.Utilities
     /// <summary>
     /// Used to set other sort order on enum fields, if the numbering is not to be used.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
     public sealed class ParentAttribute : Attribute
     {
         /// <summary>

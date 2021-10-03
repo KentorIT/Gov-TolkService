@@ -499,6 +499,9 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<OrderAgreementPayload>()
+                .HasKey(o => new { o.OrderId, o.Index });
+
             //Views
             builder.Entity<OrderListRow>().HasNoKey().ToView(nameof(OrderListRows));
             builder.Entity<RequestListRow>().HasNoKey().ToView(nameof(RequestListRows));
@@ -654,6 +657,7 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<CustomerStartListRow> CustomerStartListRows { get; set; }
 
         public DbSet<BrokerStartListRow> BrokerStartListRows { get; set; }
+        public DbSet<OrderAgreementPayload> OrderAgreementPayloads { get; set; }
 
         private static bool isUserStoreInitialized = false;
 

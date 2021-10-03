@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211003072611_OrderAgreementPayload_AddedcreatedByAndAt")]
+    partial class OrderAgreementPayload_AddedcreatedByAndAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1078,7 +1080,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("CreatedBy")
+                    b.Property<int>("CreatedBy")
                         .HasColumnType("int");
 
                     b.Property<int?>("ImpersonatingCreatedBy")
@@ -1097,8 +1099,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasKey("OrderId", "Index");
 
                     b.HasIndex("CreatedBy");
-
-                    b.HasIndex("ImpersonatingCreatedBy");
 
                     b.HasIndex("RequestId")
                         .IsUnique()
@@ -3378,11 +3378,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
                         .WithMany()
-                        .HasForeignKey("CreatedBy");
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
-                        .WithMany()
-                        .HasForeignKey("ImpersonatingCreatedBy");
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("OrderAgreementPayloads")

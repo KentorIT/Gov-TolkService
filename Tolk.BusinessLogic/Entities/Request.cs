@@ -122,6 +122,8 @@ namespace Tolk.BusinessLogic.Entities
         [InverseProperty(nameof(ReplacingRequest))]
         public Request ReplacedByRequest { get; set; }
 
+        public OrderAgreementPayload OrderAgreementPayload { get; set; }
+
         #endregion
 
         #region Status Checks

@@ -210,6 +210,8 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
+        public List<OrderAgreementPayload> OrderAgreementPayloads { get; set; }
+
         #endregion
 
         #region methods

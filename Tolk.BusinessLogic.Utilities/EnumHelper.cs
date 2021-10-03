@@ -63,6 +63,10 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return GetAttributeProperty<CustomNameAttribute, TEnum>(value)?.CustomName ?? value.ToString();
         }
+        public static double GetVat<TEnum>(this TEnum value) where TEnum : struct
+        {
+            return GetAttributeProperty<VatAttribute, TEnum>(value)?.Vat ?? 0;
+        }
 
         public static TEnum? GetEnumByCustomName<TEnum>(string value) where TEnum : struct
         {
@@ -95,7 +99,7 @@ namespace Tolk.BusinessLogic.Utilities
 
             var attributes = type.GetMember(value.ToString()).Single().GetCustomAttributes(false);
 
-            var property = attributes.OfType<ParentAttribute>().SingleOrDefault();
+            var property = attributes.OfType<ParentAttribute>().Where(a => a.Parent is TEnumParent).SingleOrDefault();
             return property != null ? (TEnumParent)property.Parent : default;
         }
 

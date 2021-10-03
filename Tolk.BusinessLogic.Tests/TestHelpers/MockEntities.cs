@@ -10,12 +10,12 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
     {
         public static CustomerOrganisation[] MockCustomers => new[]
             {
-                new CustomerOrganisation{CustomerOrganisationId = 1, Name = "Myndighet A" },
-                new CustomerOrganisation{CustomerOrganisationId = 2, Name = "Myndighet B" },
-                new CustomerOrganisation{CustomerOrganisationId = 3, Name = "Myndighet C" },
-                new CustomerOrganisation{CustomerOrganisationId = 4, Name = "Myndighet D" },
-                new CustomerOrganisation{CustomerOrganisationId = 5, Name = "Myndighet E" },
-                new CustomerOrganisation{CustomerOrganisationId = 6, Name = "Myndighet F" },
+                new CustomerOrganisation{CustomerOrganisationId = 1, Name = "Myndighet A", PeppolId = "7340019810003" },
+                new CustomerOrganisation{CustomerOrganisationId = 2, Name = "Myndighet B", PeppolId = "7340019810003" },
+                new CustomerOrganisation{CustomerOrganisationId = 3, Name = "Myndighet C", PeppolId = "7340019810003" },
+                new CustomerOrganisation{CustomerOrganisationId = 4, Name = "Myndighet D", PeppolId = "7340019810003" },
+                new CustomerOrganisation{CustomerOrganisationId = 5, Name = "Myndighet E", PeppolId = "7340019810003" },
+                new CustomerOrganisation{CustomerOrganisationId = 6, Name = "Myndighet F", PeppolId = "7340019810003" },
             };
 
         public static AspNetUser[] MockCustomerUsers(CustomerOrganisation[] mockCustomers) => new[]
@@ -135,6 +135,16 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             {
                 new CustomerUnit { CustomerUnitId = 1, CustomerOrganisationId = 4 },
                 new CustomerUnit { CustomerUnitId = 2, CustomerOrganisationId = 4 },
+            };
+        public static RequisitionPriceRow[] MockRequisitionPriceRows => new[]
+            {
+                new RequisitionPriceRow { RequisitionId = 1, StartAt = new DateTime(2020,1,1,12,0,0), EndAt = new DateTime(2020,1,1,13,0,0), Price = 1000, PriceRowType = PriceRowType.InterpreterCompensation },
+                new RequisitionPriceRow { RequisitionId = 1, Price = 10, PriceRowType = PriceRowType.AdministrativeCharge },
+                new RequisitionPriceRow { RequisitionId = 1, Price = 20, PriceRowType = PriceRowType.SocialInsuranceCharge },
+                new RequisitionPriceRow { RequisitionId = 1, Price = (decimal)0.25, PriceRowType = PriceRowType.RoundedPrice },
+                new RequisitionPriceRow { RequisitionId = 1, Price = 100, PriceRowType = PriceRowType.BrokerFee},
+                new RequisitionPriceRow { RequisitionId = 1, Price = 250, PriceRowType = PriceRowType.Outlay },
+                new RequisitionPriceRow { RequisitionId = 1, Price = 175, PriceRowType = PriceRowType.TravelCost },
             };
 
         public static Order[] MockOrders(Language[] mockLanguages, Ranking[] mockRankings, AspNetUser[] mockCustomerUsers)
@@ -593,7 +603,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             foreach (Requisition r in requisitions)
             {
                 r.Request.Requisitions ??= new List<Requisition>();
-                
+
                 r.Request.Requisitions.Add(r);
             }
 

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211003072002_OrderAgreementPayload")]
+    partial class OrderAgreementPayload
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1075,15 +1077,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int>("Index")
                         .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ImpersonatingCreatedBy")
-                        .HasColumnType("int");
-
                     b.Property<string>("Payload")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1095,10 +1088,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("OrderId", "Index");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("ImpersonatingCreatedBy");
 
                     b.HasIndex("RequestId")
                         .IsUnique()
@@ -3376,14 +3365,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAgreementPayload", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedBy");
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
-                        .WithMany()
-                        .HasForeignKey("ImpersonatingCreatedBy");
-
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("OrderAgreementPayloads")
                         .HasForeignKey("OrderId")

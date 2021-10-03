@@ -692,6 +692,12 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.ContactPersonUser)
                 .SingleOrDefaultAsync(o => o.RequisitionId == id);
 
+        public static async Task<Requisition> GetRequisitionForAgreement(this IQueryable<Requisition> requisitions, int id)
+            => await requisitions
+                .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.Broker)
+                .SingleOrDefaultAsync(o => o.RequisitionId == id);
+
         public static async Task<Requisition> GetActiveRequisitionWithBrokerAndOrderNumber(this IQueryable<Requisition> requisitions, string orderNumber, int brokerId)
             => await requisitions
                 .Include(r => r.Request)

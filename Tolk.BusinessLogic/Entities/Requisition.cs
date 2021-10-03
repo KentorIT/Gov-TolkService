@@ -96,6 +96,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<RequisitionStatusConfirmation> RequisitionStatusConfirmations { get; set; }
 
+        public OrderAgreementPayload OrderAgreementPayload { get; set; }
+
         #region methods
 
         public void Review(DateTimeOffset approveTime, int userId, int? impersonatorId)
