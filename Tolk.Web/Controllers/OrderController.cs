@@ -141,12 +141,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-        private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart)
-        {
-            var noOfDays = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(_clock.SwedenNow.DateTime, orderStart.DateTime);
-            return noOfDays > -1 && noOfDays < 2;
-        }
-
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)
         {
@@ -508,61 +502,6 @@ namespace Tolk.Web.Controllers
             return PartialView(nameof(Confirm), updatedModel);
         }
 
-        private static string CheckReasonableDurationTimeOrderGroup(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
-        {
-            string message = string.Empty;
-            foreach (OrderOccasionDisplayModel orderOccasion in orderOccasionDisplayModels)
-            {
-                message = CheckReasonableDurationTime(orderOccasion.OccasionStartDateTime, orderOccasion.OccasionEndDateTime, true);
-                if (!string.IsNullOrEmpty(message))
-                {
-                    return message;
-                }
-            }
-            return message;
-        }
-
-        private static string CheckReasonableDurationTime(DateTime start, DateTime end, bool isOrderGroup = false)
-        {
-            int minutes = (int)(end - start).TotalMinutes;
-            return minutes > 600 ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle är längre än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-                "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-                minutes < 60 ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle är kortare än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-                "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-                string.Empty;
-        }
-
-        private string CheckOrderOccasionFarAway(DateTime orderStart, bool isOrderGroup = false)
-        {
-            return orderStart.AddYears(-2) > _clock.SwedenNow.DateTime ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle ligger långt fram i tiden (startdatum: {orderStart.ToSwedishString("yyyy-MM-dd")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-                "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-                string.Empty;
-        }
-
-        private string CheckOrderGroupCloseInTime(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
-        {
-            if (orderOccasionDisplayModels.Count() == 2 && orderOccasionDisplayModels.Any(o => o.ExtraInterpreter))
-                return string.Empty;
-            var firstOrderStart = orderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).First().OccasionStartDateTime;
-            return firstOrderStart < _clock.SwedenNow.AddDays(7) ?
-                $"Observera att tiden för minst ett tillfälle ligger nära i tiden (startdatum: {firstOrderStart.ToSwedishString("yyyy-MM-dd")}), så det finns risk att förmedlingen inte hinner tillsätta tolk till samtliga tillfällen och då måste tacka nej till hela bokningen." : string.Empty;
-        }
-
-        private static string CheckOrderCompetenceRequirements(Order o, Language l)
-        {
-            return (!o.SpecificCompetenceLevelRequired || !o.LanguageHasAuthorizedInterpreter || l.HasAllCompetences) ?
-            string.Empty :
-                    ((!l.HasLegal && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.CourtSpecialist)) ||
-                    (!l.HasHealthcare && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.HealthCareSpecialist)) ||
-                    (!l.HasAuthorized && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.AuthorizedInterpreter)) ||
-                    (!l.HasEducated && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.EducatedInterpreter))) ?
-                    "Observera att du har ställt krav på minst en kompetensnivå där det för närvarande saknas tolkar för det valda språket i Kammarkollegiets tolkregister. Det finns risk för att förmedlingen inte kan tillsätta någon tolk."
-                    : string.Empty;
-        }
-
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> SentGroup(int id)
         {
@@ -641,26 +580,6 @@ namespace Tolk.Web.Controllers
                 return View(model);
             }
             return Forbid();
-        }
-
-        private static string GetRequestAnswerDialect(string dialect, List<RequestRequirementAnswerModel> requirementAnswers)
-        {
-            if (!string.IsNullOrEmpty(dialect) && requirementAnswers != null && requirementAnswers.Any(or => or.RequirementType == RequirementType.Dialect))
-            {
-                var reqDialect = requirementAnswers.Single(or => or.RequirementType == RequirementType.Dialect);
-                return reqDialect.CanMeetRequirement ? $"(dialekt: {reqDialect.Description})" : string.Empty;
-            }
-            return string.Empty;
-        }
-
-        private string GetInterpreterLocationInfoAnswer(int id, InterpreterLocation locationAnswer)
-        {
-            var location = _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(id).SingleOrDefault(i => i.InterpreterLocation == locationAnswer);
-            if (location != null)
-            {
-                return (location.InterpreterLocation == InterpreterLocation.OffSitePhone || location.InterpreterLocation == InterpreterLocation.OffSiteVideo) ? $"Kontaktinformation: {location.OffSiteContactInformation}" : $"Adress: {location.FullAddress}";
-            }
-            return string.Empty;
         }
 
         [ValidateAntiForgeryToken]
@@ -912,6 +831,87 @@ namespace Tolk.Web.Controllers
             definition.Single(d => d.Name == nameof(OrderListItemModel.CustomerName)).Visible = User.IsInRole(Roles.SystemAdministrator);
             definition.Single(d => d.Name == nameof(OrderListItemModel.CreatorName)).Visible = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
             return Json(definition);
+        }
+
+        private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart)
+        {
+            var noOfDays = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(_clock.SwedenNow.DateTime, orderStart.DateTime);
+            return noOfDays > -1 && noOfDays < 2;
+        }
+
+        private static string CheckReasonableDurationTimeOrderGroup(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
+        {
+            string message = string.Empty;
+            foreach (OrderOccasionDisplayModel orderOccasion in orderOccasionDisplayModels)
+            {
+                message = CheckReasonableDurationTime(orderOccasion.OccasionStartDateTime, orderOccasion.OccasionEndDateTime, true);
+                if (!string.IsNullOrEmpty(message))
+                {
+                    return message;
+                }
+            }
+            return message;
+        }
+
+        private static string CheckReasonableDurationTime(DateTime start, DateTime end, bool isOrderGroup = false)
+        {
+            int minutes = (int)(end - start).TotalMinutes;
+            return minutes > 600 ? isOrderGroup ?
+                $"Observera att tiden för minst ett tillfälle är längre än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                minutes < 60 ? isOrderGroup ?
+                $"Observera att tiden för minst ett tillfälle är kortare än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                string.Empty;
+        }
+
+        private string CheckOrderOccasionFarAway(DateTime orderStart, bool isOrderGroup = false)
+        {
+            return orderStart.AddYears(-2) > _clock.SwedenNow.DateTime ? isOrderGroup ?
+                $"Observera att tiden för minst ett tillfälle ligger långt fram i tiden (startdatum: {orderStart.ToSwedishString("yyyy-MM-dd")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                string.Empty;
+        }
+
+        private string CheckOrderGroupCloseInTime(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
+        {
+            if (orderOccasionDisplayModels.Count() == 2 && orderOccasionDisplayModels.Any(o => o.ExtraInterpreter))
+                return string.Empty;
+            var firstOrderStart = orderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).First().OccasionStartDateTime;
+            return firstOrderStart < _clock.SwedenNow.AddDays(7) ?
+                $"Observera att tiden för minst ett tillfälle ligger nära i tiden (startdatum: {firstOrderStart.ToSwedishString("yyyy-MM-dd")}), så det finns risk att förmedlingen inte hinner tillsätta tolk till samtliga tillfällen och då måste tacka nej till hela bokningen." : string.Empty;
+        }
+
+        private static string CheckOrderCompetenceRequirements(Order o, Language l)
+        {
+            return (!o.SpecificCompetenceLevelRequired || !o.LanguageHasAuthorizedInterpreter || l.HasAllCompetences) ?
+            string.Empty :
+                    ((!l.HasLegal && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.CourtSpecialist)) ||
+                    (!l.HasHealthcare && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.HealthCareSpecialist)) ||
+                    (!l.HasAuthorized && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.AuthorizedInterpreter)) ||
+                    (!l.HasEducated && o.CompetenceRequirements.Any(oc => oc.CompetenceLevel == CompetenceAndSpecialistLevel.EducatedInterpreter))) ?
+                    "Observera att du har ställt krav på minst en kompetensnivå där det för närvarande saknas tolkar för det valda språket i Kammarkollegiets tolkregister. Det finns risk för att förmedlingen inte kan tillsätta någon tolk."
+                    : string.Empty;
+        }
+
+        private static string GetRequestAnswerDialect(string dialect, List<RequestRequirementAnswerModel> requirementAnswers)
+        {
+            if (!string.IsNullOrEmpty(dialect) && requirementAnswers != null && requirementAnswers.Any(or => or.RequirementType == RequirementType.Dialect))
+            {
+                var reqDialect = requirementAnswers.Single(or => or.RequirementType == RequirementType.Dialect);
+                return reqDialect.CanMeetRequirement ? $"(dialekt: {reqDialect.Description})" : string.Empty;
+            }
+            return string.Empty;
+        }
+
+        private string GetInterpreterLocationInfoAnswer(int id, InterpreterLocation locationAnswer)
+        {
+            var location = _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(id).SingleOrDefault(i => i.InterpreterLocation == locationAnswer);
+            if (location != null)
+            {
+                return (location.InterpreterLocation == InterpreterLocation.OffSitePhone || location.InterpreterLocation == InterpreterLocation.OffSiteVideo) ? $"Kontaktinformation: {location.OffSiteContactInformation}" : $"Adress: {location.FullAddress}";
+            }
+            return string.Empty;
         }
 
         private async Task<List<Order>> GetOrdersForGroup(OrderModel model)
