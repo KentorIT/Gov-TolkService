@@ -2457,5 +2457,99 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 "12345")
             );
         }
+
+        [Theory]
+        [InlineData(RequestStatus.Accepted, false)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, false)]
+        [InlineData(RequestStatus.Approved, true)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer, false)]
+        [InlineData(RequestStatus.CancelledByBroker, false)]
+        [InlineData(RequestStatus.CancelledByCreator, false)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, false)]
+        [InlineData(RequestStatus.Created, false)]
+        [InlineData(RequestStatus.DeclinedByBroker, false)]
+        [InlineData(RequestStatus.Delivered, true)]
+        [InlineData(RequestStatus.DeniedByCreator, false)]
+        [InlineData(RequestStatus.DeniedByTimeLimit, false)]
+        [InlineData(RequestStatus.InterpreterReplaced, false)]
+        [InlineData(RequestStatus.LostDueToQuarantine, false)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer, false)]
+        //[InlineData(RequestStatus.PartiallyAccepted, false)]
+        [InlineData(RequestStatus.PartiallyApproved, false)]
+        [InlineData(RequestStatus.Received, false)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator, false)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker, false)]
+        public void AllowOrderAgreementCreation_NoRequisitions(RequestStatus status, bool expected)
+        {
+            var request = new Request()
+            {
+                Status = status,
+                OrderAgreementPayloads = new List<OrderAgreementPayload>(),
+                Requisitions = new List<Requisition>()
+            };
+            Assert.Equal(expected, request.AllowOrderAgreementCreation());
+        }
+
+        [Theory]
+        [InlineData(RequestStatus.Delivered, RequisitionStatus.Approved, true)]
+        [InlineData(RequestStatus.Delivered, RequisitionStatus.AutomaticGeneratedFromCancelledOrder, false)]
+        [InlineData(RequestStatus.CancelledByCreator, RequisitionStatus.AutomaticGeneratedFromCancelledOrder, true)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved, RequisitionStatus.AutomaticGeneratedFromCancelledOrder, true)]
+        [InlineData(RequestStatus.Delivered, RequisitionStatus.Commented, false)]
+        [InlineData(RequestStatus.Delivered, RequisitionStatus.Created, true)]
+        [InlineData(RequestStatus.Delivered, RequisitionStatus.DeniedByCustomer, false)]
+        [InlineData(RequestStatus.Delivered, RequisitionStatus.Reviewed, true)]
+        public void AllowOrderAgreementCreation_OneRequisition(RequestStatus requestStatus, RequisitionStatus status, bool expected)
+        {
+            var request = new Request()
+            {
+                Status = requestStatus,
+                OrderAgreementPayloads = new List<OrderAgreementPayload>(),
+                Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = status} }
+            };
+            Assert.Equal(expected, request.AllowOrderAgreementCreation());
+        }
+
+        [Fact]
+        public void AllowOrderAgreementCreation_AlreadyCreatedFromRequest()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Delivered,
+                OrderAgreementPayloads = new List<OrderAgreementPayload>() { new OrderAgreementPayload { } },
+                Requisitions = new List<Requisition>()
+            };
+            Assert.False(request.AllowOrderAgreementCreation());
+        }
+
+        [Fact]
+        public void AllowOrderAgreementCreation_AlreadyCreatedFromRequisition()
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Delivered,
+                OrderAgreementPayloads = new List<OrderAgreementPayload>() { new OrderAgreementPayload { RequisitionId = 1 } },
+                Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = RequisitionStatus.Reviewed } }
+            };
+            Assert.False(request.AllowOrderAgreementCreation());
+        }
+
+        [Theory]
+        [InlineData(RequisitionStatus.Approved, true)]
+        [InlineData(RequisitionStatus.AutomaticGeneratedFromCancelledOrder, false)]
+        [InlineData(RequisitionStatus.Commented, false)]
+        [InlineData(RequisitionStatus.Created, true)]
+        [InlineData(RequisitionStatus.DeniedByCustomer, false)]
+        [InlineData(RequisitionStatus.Reviewed, true)]
+        public void AllowOrderAgreementCreation_FromSecondRequisition(RequisitionStatus status, bool expected)
+        {
+            var request = new Request()
+            {
+                Status = RequestStatus.Delivered,
+                OrderAgreementPayloads = new List<OrderAgreementPayload>() { new OrderAgreementPayload { RequisitionId = 1 } },
+                Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = RequisitionStatus.DeniedByCustomer }, new Requisition { RequisitionId = 2, Status = status } }
+            };
+            Assert.Equal(expected, request.AllowOrderAgreementCreation());
+        }
     }
 }

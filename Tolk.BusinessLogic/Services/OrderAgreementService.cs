@@ -32,12 +32,27 @@ namespace Tolk.BusinessLogic.Services
 
             var requisition = await _tolkDbContext.Requisitions.GetRequisitionForAgreement(requisitionId);
             var model = new OrderAgreementModel(requisition, _clock.SwedenNow, _tolkDbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisitionId).ToList(), previousOrderAgreementIndex);
+            SerializeModel(model, writer);
+            _logger.LogInformation("Finished serializing order agreement from {requisitionId}.", requisitionId);
+        }
+
+        public async Task CreateOrderAgreementFromRequest(int requestId, StreamWriter writer)
+        {
+            _logger.LogInformation("Start serializing order agreement from {requestId}.", requestId);
+
+            var request = await _tolkDbContext.Requests.GetRequestForAgreement(requestId);
+            var model = new OrderAgreementModel(request, _clock.SwedenNow, _tolkDbContext.RequestPriceRows.GetPriceRowsForRequest(requestId).ToList());
+            SerializeModel(model, writer);
+            _logger.LogInformation("Finished serializing order agreement from {requestId}.", requestId);
+        }
+
+        private static void SerializeModel(OrderAgreementModel model, StreamWriter writer)
+        {
             XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
             ns.Add(nameof(Constants.cac), Constants.cac);
             ns.Add(nameof(Constants.cbc), Constants.cbc);
             XmlSerializer xser = new XmlSerializer(typeof(OrderAgreementModel), Constants.defaultNamespace);
             xser.Serialize(writer, model, ns);
-            _logger.LogInformation("Finished serializing order agreement from {requisitionId}.", requisitionId);
         }
     }
 }

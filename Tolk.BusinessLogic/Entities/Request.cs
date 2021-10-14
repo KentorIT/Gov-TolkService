@@ -102,20 +102,25 @@ namespace Tolk.BusinessLogic.Entities
         public bool AllowOrderAgreementCreation()
         {
             //If invalid status, return false;
-            if (!IsApprovedOrDelivered)
+            if (!IsApprovedOrDelivered && !IsCancelledByCreator)
             {
                 return false;
             }
 
-            if (OrderAgreementPayloads.Count == 0 && Requisitions.Count == 0)
+            if (IsApprovedOrDelivered && OrderAgreementPayloads.Count == 0 && Requisitions.Count == 0)
             {
                 //The Order Agreement should be created on this request
                 return true;
             }
+            if ((IsCancelledByCreator && !Requisitions.Any(r => r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder)) ||
+                (!IsCancelledByCreator && Requisitions.Any(r => r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder)))
+            {
+                return false;
+            }
             var requisition = Requisitions.Where(r => r.Status == RequisitionStatus.Approved ||
-                r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ||
-                r.Status == RequisitionStatus.Created ||
-                r.Status == RequisitionStatus.Reviewed).SingleOrDefault();
+            r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ||
+            r.Status == RequisitionStatus.Created ||
+            r.Status == RequisitionStatus.Reviewed).SingleOrDefault();
             if (requisition == null || OrderAgreementPayloads.Any(p => p.RequisitionId == requisition.RequisitionId))
             {
                 return false;
@@ -179,6 +184,8 @@ namespace Tolk.BusinessLogic.Entities
         public bool HasCorrectStatusForCreateComplaint => IsApprovedOrDelivered || Status == RequestStatus.CancelledByBroker;
 
         public bool IsApprovedOrDelivered => (Status == RequestStatus.Approved || Status == RequestStatus.Delivered);
+
+        public bool IsCancelledByCreator => Status == RequestStatus.CancelledByCreatorWhenApproved || Status == RequestStatus.CancelledByCreator;
 
         public bool TerminateOnDenial => Status == RequestStatus.AcceptedNewInterpreterAppointed && RequestGroupId.HasValue;
 

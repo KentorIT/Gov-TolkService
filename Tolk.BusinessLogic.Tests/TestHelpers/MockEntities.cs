@@ -146,6 +146,14 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new RequisitionPriceRow { RequisitionId = 1, Price = 250, PriceRowType = PriceRowType.Outlay },
                 new RequisitionPriceRow { RequisitionId = 1, Price = 175, PriceRowType = PriceRowType.TravelCost },
             };
+        public static RequestPriceRow[] MockRequestPriceRows => new[]
+            {
+                new RequestPriceRow { RequestId = 1, StartAt = new DateTime(2020,1,1,12,0,0), EndAt = new DateTime(2020,1,1,13,0,0), Price = 1000, PriceRowType = PriceRowType.InterpreterCompensation },
+                new RequestPriceRow { RequestId = 1, Price = 10, PriceRowType = PriceRowType.AdministrativeCharge },
+                new RequestPriceRow { RequestId = 1, Price = 20, PriceRowType = PriceRowType.SocialInsuranceCharge },
+                new RequestPriceRow { RequestId = 1, Price = (decimal)0.25, PriceRowType = PriceRowType.RoundedPrice },
+                new RequestPriceRow { RequestId = 1, Price = 100, PriceRowType = PriceRowType.BrokerFee},
+            };
 
         public static Order[] MockOrders(Language[] mockLanguages, Ranking[] mockRankings, AspNetUser[] mockCustomerUsers)
         {

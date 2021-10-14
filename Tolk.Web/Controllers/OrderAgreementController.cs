@@ -115,7 +115,6 @@ namespace Tolk.Web.Controllers
                         r.Status == RequisitionStatus.Reviewed).SingleOrDefaultAsync())?.RequisitionId;
                     var previousIndex = request.OrderAgreementPayloads.Max(p => p.Index as int?);
                     int index = 1;
-                    index++;
                     if (requisitionId.HasValue)
                     {
                         await _orderAgreementService.CreateOrderAgreementFromRequisition(requisitionId.Value, writer, previousIndex);
@@ -123,17 +122,13 @@ namespace Tolk.Web.Controllers
                     }
                     else
                     {
-                        //Create it from request instead.
-                        //Should return error messages in all faulty cases
-                        return Forbid();
+                        await _orderAgreementService.CreateOrderAgreementFromRequest(request.RequestId, writer);
                     }
                     memoryStream.Position = 0;
                     byte[] byteArray = new byte[memoryStream.Length];
                     memoryStream.Read(byteArray, 0, (int)memoryStream.Length);
                     memoryStream.Close();
                     //Save it to db
-                    //TODO: ought to be added to the request's list instead...
-
                     request.OrderAgreementPayloads.Add(new OrderAgreementPayload
                     {
                         CreatedBy = User.GetUserId(),

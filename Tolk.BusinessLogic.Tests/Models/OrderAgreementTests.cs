@@ -14,11 +14,11 @@ namespace Tolk.BusinessLogic.Tests.Models
     {
         private readonly Order MockOrder;
         private readonly Requisition MockRequisition;
+        private readonly Request MockRequest;
 
         public OrderAgreementTests()
         {
             var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
-
             MockOrder = new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018, 05, 07, 13, 00, 00, new TimeSpan(02, 00, 00)))
             {
                 OrderId = 8,
@@ -27,19 +27,51 @@ namespace Tolk.BusinessLogic.Tests.Models
                 Status = OrderStatus.Requested,
                 Requests = new List<Request>()
             };
+            MockRequest = new Request
+            {
+                Status = RequestStatus.Approved,
+                Order = new Order(MockOrder)
+                {
+                    Status = OrderStatus.RequestResponded,
+                },
+                Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1 },
+            };
             MockRequisition = new Requisition
             {
                 Status = RequisitionStatus.Created,
-                Request = new Request
-                {
-                    Status = RequestStatus.Approved,
-                    Order = new Order(MockOrder)
-                    {
-                        Status = OrderStatus.RequestResponded,
-                    },
-                    Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1 },
-                }
+                Request = MockRequest
             };
+        }
+
+        [Fact]
+        public void CreateOrderAgreementFromRequest_Valid()
+        {
+            var request = MockRequest;
+            var now = DateTime.UtcNow;
+
+            var agreement = new OrderAgreementModel(request, now, MockEntities.MockRequestPriceRows);
+            Assert.Equal(request.Order.OrderNumber, agreement.SalesOrderID);
+            Assert.Equal($"{Constants.IdPrefix}{request.Order.OrderNumber}-1", agreement.ID.Value);
+            Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
+            Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
+            Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
+            Assert.Equal(now.ToString("yyyy-MM-dd"), agreement.IssueDate);
+            Assert.Equal(now.ToString("hh:mm:ss"), agreement.IssueTime);
+            Assert.Equal(Constants.ContractNumber, agreement.Contract.ID.Value);
+            Assert.Equal(request.Order.InvoiceReference, agreement.CustomerReference);
+            Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
+            Assert.Equal(OrderAgreementModel.OwnerPeppolId.Value, agreement.BuyerCustomerParty.Party.EndpointID.Value);
+            Assert.Equal(request.Order.CustomerOrganisation.PeppolId, agreement.BuyerCustomerParty.Party.PartyIdentification.ID.Value);
+            Assert.Equal(OrderAgreementModel.OwnerPeppolId.Value, agreement.SellerSupplierParty.Party.EndpointID.Value);
+            Assert.Equal(request.Ranking.Broker.OrganizationNumber, agreement.SellerSupplierParty.Party.PartyIdentification.ID.Value);
+            decimal sum = MockEntities.MockRequestPriceRows.Sum(pr => pr.Price);
+            Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.Price.PriceAmount.AmountSum));
+            Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.LineExtensionAmount.AmountSum));
+            Assert.Equal(sum, agreement.LegalMonetaryTotal.LineExtensionAmount.AmountSum);
+            Assert.Equal(sum, agreement.LegalMonetaryTotal.TaxExclusiveAmount.AmountSum);
+            //HARDCODED TEST FOR 25% VAT!!!!!
+            Assert.Equal(sum * (decimal)0.25, agreement.TaxTotal.TaxAmount.AmountSum);
+            Assert.Equal(sum * (decimal)1.25, agreement.LegalMonetaryTotal.TaxInclusiveAmount.AmountSum);
         }
 
         [Fact]
