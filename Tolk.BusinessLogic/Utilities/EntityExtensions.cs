@@ -283,6 +283,9 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.ProcessedUser)
                 .Where(r => r.RequestId == id);
 
+        public static IQueryable<OrderAgreementPayload> GetOrderAgreementPayloadsForRequest(this IQueryable<OrderAgreementPayload> payloads, int id)
+            => payloads.Where(r => r.RequestId == id);
+
         public static IQueryable<Requisition> GetRequisitionsForOrder(this IQueryable<Requisition> requisitions, int id, int? brokerId = null)
         {
             var list = requisitions
@@ -450,6 +453,17 @@ namespace Tolk.BusinessLogic.Utilities
 
         #region single entities by id
 
+        public static async Task<OrderAgreementPayload> GetByOrderId(this IQueryable<OrderAgreementPayload> payloads, int orderId, int index)
+            => await payloads
+                .Include(p => p.Request).ThenInclude(r => r.Order)
+                .Include(p => p.CreatedByUser)
+                .Where(p => p.Request.OrderId == orderId && p.Index == index).SingleOrDefaultAsync();
+        public static async Task<OrderAgreementPayload> GetByRequestId(this IQueryable<OrderAgreementPayload> payloads, int requestId, int index)
+            => await payloads
+                .Include(p => p.Request).ThenInclude(r => r.Order)
+                .Include(p => p.CreatedByUser)
+                .Where(p => p.RequestId == requestId && p.Index == index).SingleOrDefaultAsync();
+
         public static async Task<InterpreterBroker> GetInterpreterBrokerById(this IQueryable<InterpreterBroker> interpreterBrokers, int id)
             => await interpreterBrokers.Include(ib => ib.Interpreter).SingleAsync(i => i.InterpreterBrokerId == id);
 
@@ -532,6 +546,9 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<Order> GetOrderByOrderNumber(this IQueryable<Order> orders, string orderNumber)
             => await orders.SingleOrDefaultAsync(o => o.OrderNumber == orderNumber);
+
+        public static async Task<Request> GetRequestForOrderAgreementCreation(this IQueryable<Request> requests, int orderId)
+            => await requests.Include(r => r.Order).GetLastRequestForOrder(orderId);
 
         public static async Task<Order> GetFullOrderByRequestId(this IQueryable<Order> orders, int id)
             => await orders.GetOrdersWithInclude().SingleAsync(o => o.Requests.Any(r => r.RequestId == id));

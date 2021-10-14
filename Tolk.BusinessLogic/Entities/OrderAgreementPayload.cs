@@ -8,16 +8,14 @@ namespace Tolk.BusinessLogic.Entities
 {
     public class OrderAgreementPayload
     {
-        public int OrderId { get; set; }
+        public int RequestId { get; set; }
 
         public int Index { get; set; }
 
         [Required]
-        public string Payload { get; private set; }
+        public byte[] Payload { get; set; }
 
         public int? RequisitionId { get; set; }
-
-        public int? RequestId { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
 
@@ -28,14 +26,11 @@ namespace Tolk.BusinessLogic.Entities
 
         #region Foreign keys
 
-        [ForeignKey(nameof(OrderId))]
-        public Order Order { get; set; }
-
         [ForeignKey(nameof(RequisitionId))]
         public Requisition BasedOnRequisition { get; set; }
 
         [ForeignKey(nameof(RequestId))]
-        public Request BasedOnReqest { get; set; }
+        public Request Request { get; set; }
 
         [ForeignKey(nameof(CreatedBy))]
         public AspNetUser CreatedByUser { get; set; }

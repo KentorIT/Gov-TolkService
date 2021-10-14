@@ -1,0 +1,24 @@
+﻿@model OrderAgreementModel
+@{
+    ViewData["Title"] = "Order agreement";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-3">
+            <display-entry asp-for="OrderNumber" />
+        </div>
+        <div class="col-sm-3">
+            <display-entry asp-for="Index" />
+        </div>
+        <div class="col-sm-3">
+            <display-entry asp-for="CreatedAt" />
+        </div>
+        <div class="col-sm-3">
+            <display-entry asp-for="CreatedBy" />
+        </div>
+        <div class="col-sm-12">
+            <a asp-area="" asp-controller="OrderAgreement" asp-action="GetPayload" asp-all-route-data="@(new Dictionary<string, string>{{ "requestId", Model.RequestId.ToString()}, {"index", Model.Index.ToString() } })">Ladda ner filen</a><br />
+        </div>
+    </div>
+</section>

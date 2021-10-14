@@ -10,8 +10,8 @@ using Tolk.BusinessLogic.Data;
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    [Migration("20211003073419_OrderAgreementPayload_CreatorNotRequired")]
-    partial class OrderAgreementPayload_CreatorNotRequired
+    [Migration("20211013120050_OrderAgreementPayload")]
+    partial class OrderAgreementPayload
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -1071,7 +1071,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAgreementPayload", b =>
                 {
-                    b.Property<int>("OrderId")
+                    b.Property<int>("RequestId")
                         .HasColumnType("int");
 
                     b.Property<int>("Index")
@@ -1086,25 +1086,18 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int?>("ImpersonatingCreatedBy")
                         .HasColumnType("int");
 
-                    b.Property<string>("Payload")
+                    b.Property<byte[]>("Payload")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("RequestId")
-                        .HasColumnType("int");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<int?>("RequisitionId")
                         .HasColumnType("int");
 
-                    b.HasKey("OrderId", "Index");
+                    b.HasKey("RequestId", "Index");
 
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("ImpersonatingCreatedBy");
-
-                    b.HasIndex("RequestId")
-                        .IsUnique()
-                        .HasFilter("[RequestId] IS NOT NULL");
 
                     b.HasIndex("RequisitionId")
                         .IsUnique()
@@ -3386,15 +3379,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .WithMany()
                         .HasForeignKey("ImpersonatingCreatedBy");
 
-                    b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
+                    b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
                         .WithMany("OrderAgreementPayloads")
-                        .HasForeignKey("OrderId")
+                        .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.Request", "BasedOnReqest")
-                        .WithOne("OrderAgreementPayload")
-                        .HasForeignKey("Tolk.BusinessLogic.Entities.OrderAgreementPayload", "RequestId");
 
                     b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "BasedOnRequisition")
                         .WithOne("OrderAgreementPayload")

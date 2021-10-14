@@ -197,21 +197,6 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<OrderStatusConfirmation> OrderStatusConfirmations { get; set; }
 
-        public Request ActiveRequest
-        {
-            get
-            {
-                return Requests.SingleOrDefault(r =>
-                        r.Status == RequestStatus.Created ||
-                        r.Status == RequestStatus.Received ||
-                        r.Status == RequestStatus.Accepted ||
-                        r.Status == RequestStatus.Approved ||
-                        r.Status == RequestStatus.AcceptedNewInterpreterAppointed);
-            }
-        }
-
-        public List<OrderAgreementPayload> OrderAgreementPayloads { get; set; }
-
         #endregion
 
         #region methods

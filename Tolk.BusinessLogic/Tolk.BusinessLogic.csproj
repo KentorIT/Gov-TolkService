@@ -47,6 +47,18 @@
     <Compile Remove="Data\Migrations\20200325170835_AddTableUserDefaultSettingOrderRequirementHistoryEntry.Designer.cs" />
     <Compile Remove="Data\Migrations\20200427194405_AddColumnToCustomerChangeLogEntry.cs" />
     <Compile Remove="Data\Migrations\20200427194405_AddColumnToCustomerChangeLogEntry.Designer.cs" />
+    <Compile Remove="Data\Migrations\20211003072002_OrderAgreementPayload.cs" />
+    <Compile Remove="Data\Migrations\20211003072002_OrderAgreementPayload.Designer.cs" />
+    <Compile Remove="Data\Migrations\20211003072611_OrderAgreementPayload_AddedcreatedByAndAt.cs" />
+    <Compile Remove="Data\Migrations\20211003072611_OrderAgreementPayload_AddedcreatedByAndAt.Designer.cs" />
+    <Compile Remove="Data\Migrations\20211003072840_OrderAgreementPayload_FKToImpersonator.cs" />
+    <Compile Remove="Data\Migrations\20211003072840_OrderAgreementPayload_FKToImpersonator.Designer.cs" />
+    <Compile Remove="Data\Migrations\20211003073419_OrderAgreementPayload_CreatorNotRequired.cs" />
+    <Compile Remove="Data\Migrations\20211003073419_OrderAgreementPayload_CreatorNotRequired.Designer.cs" />
+    <Compile Remove="Data\Migrations\20211012054510_MakeOAPayloadByteArray.cs" />
+    <Compile Remove="Data\Migrations\20211012054510_MakeOAPayloadByteArray.Designer.cs" />
+    <Compile Remove="Data\Migrations\20211012055018_ORderAgreementPayload.cs" />
+    <Compile Remove="Data\Migrations\20211012055018_ORderAgreementPayload.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

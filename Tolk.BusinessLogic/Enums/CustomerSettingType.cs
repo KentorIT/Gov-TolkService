@@ -11,6 +11,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tolken fakturerar själv tolkarvode")]
         UseSelfInvoicingInterpreter = 2,
         [Description("Dölj fält Bifoga filer")]
-        HideAttachmentField = 3
+        HideAttachmentField = 3,
+        [Description("Hanterar order agreements")]
+        UseOrderAgreements = 4
     }
 }

@@ -99,6 +99,31 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool? CompletedNotificationIsHandled { get; set; }
 
+        public bool AllowOrderAgreementCreation()
+        {
+            //If invalid status, return false;
+            if (!IsApprovedOrDelivered)
+            {
+                return false;
+            }
+
+            if (OrderAgreementPayloads.Count == 0 && Requisitions.Count == 0)
+            {
+                //The Order Agreement should be created on this request
+                return true;
+            }
+            var requisition = Requisitions.Where(r => r.Status == RequisitionStatus.Approved ||
+                r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ||
+                r.Status == RequisitionStatus.Created ||
+                r.Status == RequisitionStatus.Reviewed).SingleOrDefault();
+            if (requisition == null || OrderAgreementPayloads.Any(p => p.RequisitionId == requisition.RequisitionId))
+            {
+                return false;
+            }
+            //The order agreement shold be created on the found requisition.
+            return true;
+        }
+
         #endregion
 
         #region navigation
@@ -122,7 +147,7 @@ namespace Tolk.BusinessLogic.Entities
         [InverseProperty(nameof(ReplacingRequest))]
         public Request ReplacedByRequest { get; set; }
 
-        public OrderAgreementPayload OrderAgreementPayload { get; set; }
+        public List<OrderAgreementPayload> OrderAgreementPayloads { get; set; }
 
         #endregion
 

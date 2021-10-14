@@ -500,7 +500,7 @@ namespace Tolk.BusinessLogic.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<OrderAgreementPayload>()
-                .HasKey(o => new { o.OrderId, o.Index });
+                .HasKey(o => new { o.RequestId, o.Index });
 
             //Views
             builder.Entity<OrderListRow>().HasNoKey().ToView(nameof(OrderListRows));

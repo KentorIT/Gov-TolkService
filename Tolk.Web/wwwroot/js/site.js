@@ -260,13 +260,15 @@ $(function () {
                                 if ($overrideClickLinkUrlColumn.length > 0 && data[$overrideClickLinkUrlColumn[0].data] !== null && data[$overrideClickLinkUrlColumn[0].data] !== "") {
                                     $action = data[$overrideClickLinkUrlColumn[0].data];
                                 }
+                                if ($idColumn.length > 0) {
+                                    if ($action.indexOf("?") > -1) {
+                                        $action = $action.replace("?", "/" + data[$idColumn[0].data] + "?");
 
-                                if ($action.indexOf("?") > -1) {
-                                    $(row).data("click-action-url", $action.replace("?", "/" + data[$idColumn[0].data] + "?"));
-
-                                } else {
-                                    $(row).data("click-action-url", $action + "/" + data[$idColumn[0].data]);
+                                    } else {
+                                        $action = $action + "/" + data[$idColumn[0].data];
+                                    }
                                 }
+                                $(row).data("click-action-url", $action);
                             }
                             if ($leftcssDefinitionColumn.length > 0) {
                                 $(row).find("td").eq(0).addClass(data[$leftcssDefinitionColumn[0].data]);
@@ -328,7 +330,7 @@ $(function () {
     $("select.dynamic-load").each(function () {
         var headers = { "RequestVerificationToken": getAntiForgeryToken() };
         var $selectBox = $(this);
-        var callback = function(){
+        var callback = function () {
             var allowClear = $selectBox.parents().hasClass("allow-clear");
             $selectBox.selectWoo({
                 allowClear: allowClear,

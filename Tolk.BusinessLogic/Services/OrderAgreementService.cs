@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Models.OrderAgreement;
 using Tolk.BusinessLogic.Utilities;
 
@@ -25,12 +26,12 @@ namespace Tolk.BusinessLogic.Services
             _clock = clock;
         }
 
-        public async Task CreateOrderAgreementFromRequisition(int requisitionId, StreamWriter writer)
+        public async Task CreateOrderAgreementFromRequisition(int requisitionId, StreamWriter writer, int? previousOrderAgreementIndex = null)
         {
             _logger.LogInformation("Start serializing order agreement from {requisitionId}.", requisitionId);
 
             var requisition = await _tolkDbContext.Requisitions.GetRequisitionForAgreement(requisitionId);
-            var model = new OrderAgreementModel(requisition, _clock.SwedenNow, _tolkDbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisitionId).ToList());
+            var model = new OrderAgreementModel(requisition, _clock.SwedenNow, _tolkDbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisitionId).ToList(), previousOrderAgreementIndex);
             XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
             ns.Add(nameof(Constants.cac), Constants.cac);
             ns.Add(nameof(Constants.cbc), Constants.cbc);

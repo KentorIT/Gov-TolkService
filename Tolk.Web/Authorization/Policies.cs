@@ -20,6 +20,7 @@ namespace Tolk.Web.Authorization
         public const string EditDefaultSettings = nameof(EditDefaultSettings);
         public const string EditContact = nameof(EditContact);
         public const string CreateRequisition = nameof(CreateRequisition);
+        public const string CreateOrderAgreement = nameof(CreateOrderAgreement);
         public const string CreateComplaint = nameof(CreateComplaint);
         public const string View = nameof(View);
         public const string Delete = nameof(Delete);
@@ -49,6 +50,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Connect, builder => builder.RequireAssertion(ConnectHandler));
                 opt.AddPolicy(EditDefaultSettings, builder => builder.RequireAssertion(EditDefaultSettingsHandler));
                 opt.AddPolicy(CreateRequisition, builder => builder.RequireAssertion(CreateRequisitionHandler));
+                opt.AddPolicy(CreateOrderAgreement, builder => builder.RequireAssertion(CreateOrderAgreementHandler));
                 opt.AddPolicy(CreateComplaint, builder => builder.RequireAssertion(CreateComplaintHandler));
                 opt.AddPolicy(View, builder => builder.RequireAssertion(ViewHandler));
                 opt.AddPolicy(ViewDefaultSettings, builder => builder.RequireAssertion(ViewDefaultSettingsHandler));
@@ -256,6 +258,19 @@ namespace Tolk.Web.Authorization
             }
         };
 
+        private static readonly Func<AuthorizationHandlerContext, bool> CreateOrderAgreementHandler = (context) =>
+        {
+            var user = context.User;
+            switch (context.Resource)
+            {
+                case Request request:
+                    return user.IsInRole(Roles.SystemAdministrator) || 
+                        (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && user.IsInRole(Roles.CentralAdministrator) && request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId());
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
         private static readonly Func<AuthorizationHandlerContext, bool> CreateComplaintHandler = (context) =>
         {
             var user = context.User;
@@ -392,6 +407,10 @@ namespace Tolk.Web.Authorization
                     return user.IsInRole(Roles.ApplicationAdministrator);
                 case OutboundWebHookCall webHookCall:
                     return user.IsInRole(Roles.ApplicationAdministrator) || webHookCall.RecipientUser.BrokerId == user.TryGetBrokerId();
+                case OrderAgreementPayload payload:
+                    return user.IsInRole(Roles.SystemAdministrator) ||
+                        (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && user.IsInRole(Roles.CentralAdministrator) && payload.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId());
+                    ;
                 default:
                     throw new NotImplementedException();
             }
