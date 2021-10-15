@@ -6,10 +6,10 @@
     <h1>@ViewData["Title"]</h1>
     <div class="row">
         <div class="col-sm-3">
-            <display-entry asp-for="OrderNumber" />
+            <display-entry asp-for="IdentificationNumber" />
         </div>
         <div class="col-sm-3">
-            <display-entry asp-for="Index" />
+            <display-entry asp-for="OrderNumber" />
         </div>
         <div class="col-sm-3">
             <display-entry asp-for="CreatedAt" />
@@ -17,8 +17,18 @@
         <div class="col-sm-3">
             <display-entry asp-for="CreatedBy" />
         </div>
-        <div class="col-sm-12">
-            <a asp-area="" asp-controller="OrderAgreement" asp-action="GetPayload" asp-all-route-data="@(new Dictionary<string, string>{{ "requestId", Model.RequestId.ToString()}, {"index", Model.Index.ToString() } })">Ladda ner filen</a><br />
+    </div>
+    <div class="row">
+        <div class="col-sm-3">
+            <display-entry asp-for="IsLatest" />
+        </div>
+        <div class="col-sm-3">
+            <display-entry asp-for="BasedOn" />
         </div>
     </div>
+    <div class="row">
+            <div class="col-sm-12">
+                <a asp-area="" asp-controller="OrderAgreement" asp-action="GetPayload" asp-all-route-data="@(new Dictionary<string, string>{{ "id", Model.OrderAgreementPayloadId.ToString() } })">Ladda ner filen</a><br />
+            </div>
+        </div>
 </section>

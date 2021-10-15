@@ -87,12 +87,13 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = new OrderAgreementService(tolkdbContext, _logger, _clock);
             using var memoryStream = new MemoryStream();
             using var writer = new StreamWriter(memoryStream, Encoding.UTF8);
-            await service.CreateOrderAgreementFromRequisition(1, writer);
+            var idNumber = await service.CreateOrderAgreementFromRequisition(1, writer);
             memoryStream.Position = 0;
             StreamReader sr = new StreamReader(memoryStream);
             var root = XElement.Load(sr);
             var elements = from el in root.Elements() where el.Name.LocalName == "OrderLine" select el;
             Assert.Equal(4, elements.Count());
+            Assert.Equal(idNumber, (from el in root.Elements() where el.Name.LocalName == "ID" select el).First().Value);
         }
 
         [Fact]
@@ -102,12 +103,13 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = new OrderAgreementService(tolkdbContext, _logger, _clock);
             using var memoryStream = new MemoryStream();
             using var writer = new StreamWriter(memoryStream, Encoding.UTF8);
-            await service.CreateOrderAgreementFromRequest(1, writer);
+            var idNumber = await service.CreateOrderAgreementFromRequest(1, writer);
             memoryStream.Position = 0;
             StreamReader sr = new StreamReader(memoryStream);
             var root = XElement.Load(sr);
             var elements = from el in root.Elements() where el.Name.LocalName == "OrderLine" select el;
             Assert.Equal(4, elements.Count());
+            Assert.Equal(idNumber, (from el in root.Elements() where el.Name.LocalName == "ID" select el).First().Value);
         }
     }
 }

@@ -14,6 +14,10 @@ namespace Tolk.BusinessLogic.Utilities
     {
         #region lists
 
+        public static IQueryable<OrderAgreementPayload> ListOrderAgreements(this IQueryable<OrderAgreementPayload> entities, int? customerOrganisationId)
+            => customerOrganisationId.HasValue ? entities.Where(o => o.Request.Order.CustomerOrganisationId == customerOrganisationId) : entities;
+        
+
         public static IQueryable<OrderGroup> CustomerOrderGroups(this IQueryable<OrderGroup> orderGroups, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false)
         {
             var filteredOrderGroups = orderGroups.Where(o => o.CustomerOrganisationId == customerOrganisationId);
@@ -458,11 +462,12 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(p => p.Request).ThenInclude(r => r.Order)
                 .Include(p => p.CreatedByUser)
                 .Where(p => p.Request.OrderId == orderId && p.Index == index).SingleOrDefaultAsync();
-        public static async Task<OrderAgreementPayload> GetByRequestId(this IQueryable<OrderAgreementPayload> payloads, int requestId, int index)
+
+        public static async Task<OrderAgreementPayload> GetById(this IQueryable<OrderAgreementPayload> payloads, int id)
             => await payloads
                 .Include(p => p.Request).ThenInclude(r => r.Order)
                 .Include(p => p.CreatedByUser)
-                .Where(p => p.RequestId == requestId && p.Index == index).SingleOrDefaultAsync();
+                .Where(p => p.OrderAgreementPayloadId == id).SingleOrDefaultAsync();
 
         public static async Task<InterpreterBroker> GetInterpreterBrokerById(this IQueryable<InterpreterBroker> interpreterBrokers, int id)
             => await interpreterBrokers.Include(ib => ib.Interpreter).SingleAsync(i => i.InterpreterBrokerId == id);

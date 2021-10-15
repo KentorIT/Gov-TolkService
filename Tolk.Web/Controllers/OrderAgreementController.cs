@@ -67,14 +67,14 @@ namespace Tolk.Web.Controllers
 
             return View(new OrderAgreementListModel
             {
-                FilterModel = new OrderAgreementFilterModel()
+                FilterModel = new OrderAgreementFilterModel { IsAdmin = User.IsInRole(Roles.SystemAdministrator) }
             });
         }
 
         [HttpGet]
-        public async Task<IActionResult> View(int requestId, int index)
+        public async Task<IActionResult> View(int id)
         {
-            var orderAgreementPayload = await _dbContext.OrderAgreementPayloads.GetByRequestId(requestId, index);
+            var orderAgreementPayload = await _dbContext.OrderAgreementPayloads.GetById(id);
             if (orderAgreementPayload != null &&
                 _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == orderAgreementPayload.Request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderAgreements)) &&
                 (await _authorizationService.AuthorizeAsync(User, orderAgreementPayload, Policies.View)).Succeeded)
@@ -115,32 +115,40 @@ namespace Tolk.Web.Controllers
                         r.Status == RequisitionStatus.Reviewed).SingleOrDefaultAsync())?.RequisitionId;
                     var previousIndex = request.OrderAgreementPayloads.Max(p => p.Index as int?);
                     int index = 1;
+                    string payloadIdentifier = "";
                     if (requisitionId.HasValue)
                     {
-                        await _orderAgreementService.CreateOrderAgreementFromRequisition(requisitionId.Value, writer, previousIndex);
+                        payloadIdentifier = await _orderAgreementService.CreateOrderAgreementFromRequisition(requisitionId.Value, writer, previousIndex);
                         index = previousIndex.HasValue ? previousIndex.Value + 1 : 1;
                     }
                     else
                     {
-                        await _orderAgreementService.CreateOrderAgreementFromRequest(request.RequestId, writer);
+                        payloadIdentifier = await _orderAgreementService.CreateOrderAgreementFromRequest(request.RequestId, writer);
                     }
                     memoryStream.Position = 0;
                     byte[] byteArray = new byte[memoryStream.Length];
                     memoryStream.Read(byteArray, 0, (int)memoryStream.Length);
                     memoryStream.Close();
                     //Save it to db
-                    request.OrderAgreementPayloads.Add(new OrderAgreementPayload
+                    var payload = new OrderAgreementPayload
                     {
                         CreatedBy = User.GetUserId(),
                         ImpersonatingCreatedBy = User.TryGetImpersonatorId(),
                         Payload = byteArray,
                         RequisitionId = requisitionId,
                         CreatedAt = _clock.SwedenNow,
-                        Index = index
-                    });
+                        Index = index,
+                        IdentificationNumber = payloadIdentifier
+                    };
+                    request.OrderAgreementPayloads.Add(payload);
+                    if (previousIndex.HasValue)
+                    {
+                        var previous = request.OrderAgreementPayloads.Single(p => p.Index == previousIndex);
+                        previous.ReplacedByPayload = payload;
+                    }
                     await _dbContext.SaveChangesAsync();
                     //return a identifier for the saved agreement, to be able to retrieve it.
-                    return RedirectToAction(nameof(View), new { requestId = request.RequestId, index });
+                    return RedirectToAction(nameof(View), new { id = payload.OrderAgreementPayloadId });
                 }
             }
             else
@@ -151,9 +159,9 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetPayload(int requestId, int index)
+        public async Task<ActionResult> GetPayload(int id)
         {
-            var orderAgreementPayload = await _dbContext.OrderAgreementPayloads.GetByRequestId(requestId, index);
+            var orderAgreementPayload = await _dbContext.OrderAgreementPayloads.GetById(id);
             if (orderAgreementPayload != null && (await _authorizationService.AuthorizeAsync(User, orderAgreementPayload, Policies.View)).Succeeded)
             {
                 return File(orderAgreementPayload.Payload, System.Net.Mime.MediaTypeNames.Application.Octet, "OrderAgreement.xml");
@@ -168,27 +176,29 @@ namespace Tolk.Web.Controllers
             var model = new OrderAgreementFilterModel();
             await TryUpdateModelAsync(model);
             model.IsAdmin = User.IsInRole(Roles.SystemAdministrator);
+            int? customerOrganisationId = !model.IsAdmin ? User.TryGetCustomerOrganisationId() : null;
 
-            if (!model.IsAdmin)
-            {
-                model.CustomerOrganisationId = User.TryGetCustomerOrganisationId();
-            }
-
-            var payloads = _dbContext.OrderAgreementPayloads.Select(e => e);
+            var payloads = _dbContext.OrderAgreementPayloads.ListOrderAgreements(customerOrganisationId);
             return AjaxDataTableHelper.GetData(request, payloads.Count(), model.Apply(payloads), x => x.Select(e =>
                     new OrderAgreementListItemModel
                     {
-                        RequestId = e.RequestId,
+                        OrderAgreementPayloadId = e.OrderAgreementPayloadId,
+                        IdentificationNumber = e.IdentificationNumber,
                         Index = e.Index,
                         CreatedAt = e.CreatedAt,
-                        OrderNumber = e.Request.Order.OrderNumber
+                        OrderNumber = e.Request.Order.OrderNumber,
+                        IsLatest = e.ReplacedById == null,
+                        CreatedBy = e.CreatedBy != null ? e.CreatedByUser.NameFamily + ", " + e.CreatedByUser.NameFirst : "Systemet",
+                        CustomerName = e.Request.Order.CustomerOrganisation.Name
                     }));
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public JsonResult ListColumnDefinition()
         {
-            return Json(AjaxDataTableHelper.GetColumnDefinitions<OrderAgreementListItemModel>());
+            var definition = AjaxDataTableHelper.GetColumnDefinitions<OrderAgreementListItemModel>().ToList();
+            definition.Single(d => d.Name == nameof(OrderAgreementListItemModel.CustomerName)).Visible = User.IsInRole(Roles.SystemAdministrator);
+            return Json(definition);
         }
     }
 }

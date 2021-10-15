@@ -8,6 +8,12 @@ namespace Tolk.BusinessLogic.Entities
 {
     public class OrderAgreementPayload
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int OrderAgreementPayloadId { get; set; }
+
+        [MaxLength(32)]
+        public string IdentificationNumber { get; set; }
+
         public int RequestId { get; set; }
 
         public int Index { get; set; }
@@ -23,6 +29,14 @@ namespace Tolk.BusinessLogic.Entities
         public int? CreatedBy { get; set; }
 
         public int? ImpersonatingCreatedBy { get; set; }
+
+        public int? ReplacedById { get; set; }
+
+        [ForeignKey(nameof(ReplacedById))]
+        public OrderAgreementPayload ReplacedByPayload { get; set; }
+
+        [InverseProperty(nameof(ReplacedByPayload))]
+        public OrderAgreementPayload ReplacingPayload { get; set; }
 
         #region Foreign keys
 

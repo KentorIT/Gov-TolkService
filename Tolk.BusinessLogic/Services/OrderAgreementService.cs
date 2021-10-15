@@ -26,7 +26,7 @@ namespace Tolk.BusinessLogic.Services
             _clock = clock;
         }
 
-        public async Task CreateOrderAgreementFromRequisition(int requisitionId, StreamWriter writer, int? previousOrderAgreementIndex = null)
+        public async Task<string> CreateOrderAgreementFromRequisition(int requisitionId, StreamWriter writer, int? previousOrderAgreementIndex = null)
         {
             _logger.LogInformation("Start serializing order agreement from {requisitionId}.", requisitionId);
 
@@ -34,9 +34,10 @@ namespace Tolk.BusinessLogic.Services
             var model = new OrderAgreementModel(requisition, _clock.SwedenNow, _tolkDbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisitionId).ToList(), previousOrderAgreementIndex);
             SerializeModel(model, writer);
             _logger.LogInformation("Finished serializing order agreement from {requisitionId}.", requisitionId);
+            return model.ID.Value;
         }
 
-        public async Task CreateOrderAgreementFromRequest(int requestId, StreamWriter writer)
+        public async Task<string> CreateOrderAgreementFromRequest(int requestId, StreamWriter writer)
         {
             _logger.LogInformation("Start serializing order agreement from {requestId}.", requestId);
 
@@ -44,6 +45,7 @@ namespace Tolk.BusinessLogic.Services
             var model = new OrderAgreementModel(request, _clock.SwedenNow, _tolkDbContext.RequestPriceRows.GetPriceRowsForRequest(requestId).ToList());
             SerializeModel(model, writer);
             _logger.LogInformation("Finished serializing order agreement from {requestId}.", requestId);
+            return model.ID.Value;
         }
 
         private static void SerializeModel(OrderAgreementModel model, StreamWriter writer)

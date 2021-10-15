@@ -10,9 +10,9 @@ namespace Tolk.Web.Models
 {
     public class OrderAgreementFilterModel
     {
-        [Display(Name = "BokningsID")]
-        [Placeholder("Ange del av BokningsID")]
-        public string SearchOrderNumber { get; set; }
+        [Display(Name = "Identifierare")]
+        [Placeholder("Ange del av Identifierare")]
+        public string SearchIdentifier { get; set; }
         [Display(Name = "Skapat datum")]
         public DateRange DateCreated { get; set; }
 
@@ -21,14 +21,19 @@ namespace Tolk.Web.Models
 
         public bool IsAdmin { get; set; }
 
+        [Display(Name = "Myndighet")]
         public int? CustomerOrganisationId { get; set; }
+
+        [Display(Name = "Är senaste")]
+        public TrueFalse? IsLatest { get; set; }
 
         internal IQueryable<OrderAgreementPayload> Apply(IQueryable<OrderAgreementPayload> payloads)
         {
             payloads = CustomerOrganisationId.HasValue ? payloads.Where(p => p.Request.Order.CustomerOrganisationId == CustomerOrganisationId) : payloads;
             payloads = DateCreated?.Start != null ? payloads.Where(p => p.CreatedAt.Date >= DateCreated.Start) : payloads;
             payloads = DateCreated?.End != null ? payloads.Where(p => p.CreatedAt.Date <= DateCreated.End) : payloads;
-            payloads = !string.IsNullOrWhiteSpace(SearchOrderNumber) ? payloads.Where(p => p.Request.Order.OrderNumber.Contains(SearchOrderNumber)) : payloads;
+            payloads = !string.IsNullOrWhiteSpace(SearchIdentifier) ? payloads.Where(p => p.IdentificationNumber.Contains(SearchIdentifier)) : payloads;
+            payloads = IsLatest.HasValue ? payloads.Where(e => e.ReplacedById.HasValue == (IsLatest == TrueFalse.No)) : payloads;
             return payloads;
         }
     }
