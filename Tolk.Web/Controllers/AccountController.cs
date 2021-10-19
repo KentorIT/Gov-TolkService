@@ -989,6 +989,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 $"Återställning lösenord {Constants.SystemName}",
                 bodyPlain,
                 bodyHtml,
+                NotificationType.PasswordReset, 
                 false,
                 false);
             _dbContext.SaveChanges();

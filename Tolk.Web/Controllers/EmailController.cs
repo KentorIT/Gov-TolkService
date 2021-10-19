@@ -79,6 +79,7 @@ namespace Tolk.Web.Controllers
                 oldEmail.Subject,
                 oldEmail.PlainBody,
                 oldEmail.HtmlBody,
+                oldEmail.NotificationType,
                 oldEmail.OutboundEmailId,
                 User.GetUserId()
             );

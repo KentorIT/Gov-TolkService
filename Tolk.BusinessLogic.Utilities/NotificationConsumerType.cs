@@ -1,10 +1,11 @@
-﻿namespace Tolk.BusinessLogic.Enums
+﻿namespace Tolk.BusinessLogic.Utilities
 {
     public enum NotificationConsumerType
     {
         Broker,
         Customer,
-        //User
+        User,
+        SecondLineSupport
         //Owner (KamK)
         //SystemsAdministrator
     }

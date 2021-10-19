@@ -68,7 +68,7 @@ namespace Tolk.BusinessLogic.Services
 
             plainBody = plainBody.FormatSwedish(link);
             htmlBody = HtmlHelper.ToHtmlBreak(htmlBody).FormatSwedish(HtmlHelper.GetButtonDefaultLargeTag(link.AsUri(), "Registrera användarkonto"), link);
-            _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody);
+            _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody, NotificationType.UserInvitation);
             await _dbContext.SaveChangesAsync();
             _logger.LogInformation("Sent account confirmation link to {userId} ({email})", user.Id, user.Email);
         }
@@ -189,6 +189,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 $"Ändring av e-postadress för {Constants.SystemName}",
                 bodyPlain,
                 bodyHtml,
+                NotificationType.ChangedEmailVerification,
                 false,
                 false);
             await _dbContext.SaveChangesAsync();
@@ -352,7 +353,13 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 }
             }
             _logger.LogWarning("There are at least 100 users starting with the string {userName}.", userNameStart);
-            _notificationService.CreateEmail(_options.Support.SecondLineEmail, $"Det har skapats mer än hundra användare med prefix {userNameStart}", "Detta kan vara ett tecken på att systemet är under attack...", addContractInfo: false);
+            _notificationService.CreateEmail(
+                _options.Support.SecondLineEmail, 
+                $"Det har skapats mer än hundra användare med prefix {userNameStart}", "Detta kan vara ett tecken på att systemet är under attack...", 
+                null, 
+                NotificationType.GeneraratedUserPrefixLimitWarning, 
+                addContractInfo: false
+            );
             for (int i = 1; i < 1000; ++i)
             {
                 var userName = $"{userNameStart}{i.ToSwedishString("D3")}";

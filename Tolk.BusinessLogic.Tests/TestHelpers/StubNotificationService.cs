@@ -17,9 +17,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void ComplaintTerminatedAsDisputeAccepted(Complaint complaint) { }
 
-        public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody = null, bool isBrokerMail = false, bool addContractInfo = true) { }
+        public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true) { }
 
-        public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, int replacingEmailId, int resentByUserId) { }
+        public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, int replacingEmailId, int resentByUserId) { }
 
         public void CustomerCreated(CustomerOrganisation customer) { }
 

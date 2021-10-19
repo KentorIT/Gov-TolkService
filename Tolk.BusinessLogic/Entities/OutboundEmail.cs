@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -13,6 +14,7 @@ namespace Tolk.BusinessLogic.Entities
             string plainBody,
             string htmlBody,
             DateTimeOffset createdAt,
+            NotificationType notificationType,
             int? replacingEmailId = null,
             int? resentByUserId = null)
             : base(createdAt)
@@ -23,6 +25,7 @@ namespace Tolk.BusinessLogic.Entities
             HtmlBody = htmlBody;
             ReplacingEmailId = replacingEmailId;
             ResentByUserId = resentByUserId;
+            NotificationType = notificationType;
         }
 
         public int OutboundEmailId { get; private set; }
@@ -42,6 +45,8 @@ namespace Tolk.BusinessLogic.Entities
         public int? ReplacingEmailId { get; set; }
 
         public int? ResentByUserId { get; set; }
+
+        public NotificationType NotificationType { get; private set; }
 
         [ForeignKey(nameof(ReplacingEmailId))]
         [InverseProperty(nameof(ReplacedByEmail))]

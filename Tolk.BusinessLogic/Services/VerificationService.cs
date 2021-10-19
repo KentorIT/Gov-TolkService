@@ -97,9 +97,13 @@ namespace Tolk.BusinessLogic.Services
                     _logger.LogWarning(message);
                     if (notify)
                     {
-                        _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
+                        _notificationService.CreateEmail(
+                            _tolkBaseOptions.Support.SecondLineEmail,
                             $"Verifieringen av språklistan mot Tellus misslyckades!",
-                            message);
+                            message,
+                            null,
+                            NotificationType.GetLaguagesFromTellusFailed
+                        );
                     }
                     return new ValidateTellusLanguageListResult
                     {
@@ -177,7 +181,10 @@ namespace Tolk.BusinessLogic.Services
                     {
                         _notificationService.CreateEmail(_tolkBaseOptions.Support.SecondLineEmail,
                             $"Hämtningen av språkkompetenser från Tellus misslyckades!",
-                            $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}Language/UpdateCompetences");
+                            $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}Language/UpdateCompetences",
+                            null,
+                            NotificationType.GetCompetencesFromTellusFailed
+                        );
                     }
                     _logger.LogWarning($"Hämtningen av språkkompetenser från Tellus misslyckades, med status {result.Status}");
                     return new UpdateLanguagesCompetenceResult
