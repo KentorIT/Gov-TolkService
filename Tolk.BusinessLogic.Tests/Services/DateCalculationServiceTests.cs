@@ -316,5 +316,18 @@ namespace Tolk.BusinessLogic.Tests.Services
             var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
             subject.GetFirstWorkDay(DateTime.Parse(date)).Should().Be(DateTime.Parse(expected), "that is the first workday after {0}", date);
         }
+
+        [Theory]
+        [InlineData("2021-10-04 10:00:00", "2021-09-30 10:00:00", 2)]
+        [InlineData("2021-10-15 10:00:00", "2021-10-13 10:00:00", 2)]
+        [InlineData("2021-10-12 10:00:00", "2021-10-08 10:00:00", 2)]
+        [InlineData("2021-10-13 10:00:00", "2021-10-11 10:00:00", 2)]
+        [InlineData("2021-10-07 10:00:00", "2021-10-05 10:00:00", 2)]//Normal work day
+        public void GetDateForANumberOfWorkdaysAgo(string date, string expected, int numberOfAddedDays)
+        {
+            using var tolkDbContext = CreateTolkDbContext(DbNameWithHolidays);
+            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
+            subject.GetDateForANumberOfWorkdaysAgo(DateTime.Parse(date), numberOfAddedDays).Should().Be(DateTime.Parse(expected));
+        }
     }
 }

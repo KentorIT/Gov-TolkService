@@ -58,6 +58,19 @@ namespace Tolk.BusinessLogic.Services
             return fullWeeks * 5 + rest;
         }
 
+        public DateTime GetDateForANumberOfWorkdaysAgo(DateTime start, int numberOfWorkdays)
+        {
+            int counter = 0;
+            DateTime resultingDate;
+            while (true)
+            {
+                resultingDate = start.AddDays(counter--);
+                if (numberOfWorkdays == GetNoOf24HsPeriodsWorkDaysBetween(resultingDate, start))
+                {
+                    return resultingDate;
+                }
+            }
+        }
 
         /// <summary>
         /// Returns -1 if firstDate > secondDate

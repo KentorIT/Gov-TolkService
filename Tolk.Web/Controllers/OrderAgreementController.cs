@@ -94,7 +94,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Create(int orderId)    
+        public async Task<IActionResult> Create(int orderId)
         {
             var request = await _dbContext.Requests.GetRequestForOrderAgreementCreation(orderId);
             if (!_cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderAgreements)))
@@ -102,13 +102,11 @@ namespace Tolk.Web.Controllers
                 return Forbid();
             }
             request.Requisitions = await _dbContext.Requisitions.GetRequisitionsForRequest(request.RequestId).ToListAsync();
-            request.OrderAgreementPayloads= await _dbContext.OrderAgreementPayloads.GetOrderAgreementPayloadsForRequest(request.RequestId).ToListAsync();
+            request.OrderAgreementPayloads = await _dbContext.OrderAgreementPayloads.GetOrderAgreementPayloadsForRequest(request.RequestId).ToListAsync();
             if (request != null && (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateOrderAgreement)).Succeeded)
             {
                 if (request.AllowOrderAgreementCreation())
                 {
-                    using var memoryStream = new MemoryStream();
-                    using var writer = new StreamWriter(memoryStream, Encoding.UTF8);
                     var requisitionId = (await _dbContext.Requisitions.GetRequisitionsForOrder(orderId).Where(r => r.Status == RequisitionStatus.Approved ||
                         r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ||
                         r.Status == RequisitionStatus.Created ||
@@ -116,6 +114,8 @@ namespace Tolk.Web.Controllers
                     var previousIndex = request.OrderAgreementPayloads.Max(p => p.Index as int?);
                     int index = 1;
                     string payloadIdentifier = "";
+                    using var memoryStream = new MemoryStream();
+                    using var writer = new StreamWriter(memoryStream, Encoding.UTF8);
                     if (requisitionId.HasValue)
                     {
                         payloadIdentifier = await _orderAgreementService.CreateOrderAgreementFromRequisition(requisitionId.Value, writer, previousIndex);

@@ -172,6 +172,7 @@ namespace Tolk.Web.Services
             await provider.GetRequiredService<RequestService>().DeleteRequestViews();
             await provider.GetRequiredService<RequestService>().DeleteRequestGroupViews();
             await provider.GetRequiredService<ErrorNotificationService>().CheckForFailuresToReport();
+            await provider.GetRequiredService<OrderAgreementService>().HandleOrderAgreementCreation();
             _logger.LogInformation($"Completed {nameof(RunContinousJobs)}");
         }
     }

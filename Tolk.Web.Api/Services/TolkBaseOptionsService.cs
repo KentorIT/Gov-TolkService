@@ -38,5 +38,7 @@ namespace Tolk.Web.Api.Services
         public bool EnableSetLatestAnswerTimeForCustomer => _options.EnableSetLatestAnswerTimeForCustomer;
 
         public bool EnableCustomerApi => _options.EnableCustomerApi;
+
+        public int WorkDaysGracePeriodBeforeOrderAgreementCreation => _options.WorkDaysGracePeriodBeforeOrderAgreementCreation;
     }
 }

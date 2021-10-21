@@ -8,6 +8,7 @@
         public SupportSettings Support { get; set; }
         public SmtpSettings Smtp { get; set; }
         public StatusCheckerSettings StatusChecker { get; set; }
+        public int WorkDaysGracePeriodBeforeOrderAgreementCreation { get; set; } = 2;
         public ExternalLinksSettings ExternalLinks { get; set; }
         public bool AllowDeclineExtraInterpreterOnRequestGroups { get; set; } = false;
         public bool RoundPriceDecimals { get; set; } = true;
