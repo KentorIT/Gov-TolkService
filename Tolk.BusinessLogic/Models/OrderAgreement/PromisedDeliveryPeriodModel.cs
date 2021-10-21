@@ -21,7 +21,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         [XmlElement(Namespace = Constants.cbc)]
         public string StartTime
         {
-            get => StartAt.ToString("hh:mm:ss");
+            get => StartAt.ToString("HH:mm:ss");
             set { }
         }
 
@@ -35,7 +35,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         [XmlElement(Namespace = Constants.cbc)]
         public string EndTime
         {
-            get => EndAt.ToString("hh:mm:ss");
+            get => EndAt.ToString("HH:mm:ss");
             set { }
         }
     }

@@ -56,7 +56,7 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
             Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
             Assert.Equal(now.ToString("yyyy-MM-dd"), agreement.IssueDate);
-            Assert.Equal(now.ToString("hh:mm:ss"), agreement.IssueTime);
+            Assert.Equal(now.ToString("HH:mm:ss"), agreement.IssueTime);
             Assert.Equal(Constants.ContractNumber, agreement.Contract.ID.Value);
             Assert.Equal(request.Order.InvoiceReference, agreement.CustomerReference);
             Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
@@ -87,7 +87,7 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
             Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
             Assert.Equal(now.ToString("yyyy-MM-dd"), agreement.IssueDate);
-            Assert.Equal(now.ToString("hh:mm:ss"), agreement.IssueTime);
+            Assert.Equal(now.ToString("HH:mm:ss"), agreement.IssueTime);
             Assert.Equal(Constants.ContractNumber, agreement.Contract.ID.Value);
             Assert.Equal(requisition.Request.Order.InvoiceReference, agreement.CustomerReference);
             Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
@@ -146,12 +146,12 @@ namespace Tolk.BusinessLogic.Tests.Models
             if (expectsProcessedAt)
             {
                 Assert.Equal(DateTime.Parse(processedDateTime).ToString("yyyy-MM-dd"), agreement.IssueDate);
-                Assert.Equal(DateTime.Parse(processedDateTime).ToString("hh:mm:ss"), agreement.IssueTime);
+                Assert.Equal(DateTime.Parse(processedDateTime).ToString("HH:mm:ss"), agreement.IssueTime);
             }
             else
             {
                 Assert.Equal(DateTime.Parse(generatedDateTime).ToString("yyyy-MM-dd"), agreement.IssueDate);
-                Assert.Equal(DateTime.Parse(generatedDateTime).ToString("hh:mm:ss"), agreement.IssueTime);
+                Assert.Equal(DateTime.Parse(generatedDateTime).ToString("HH:mm:ss"), agreement.IssueTime);
             }
         }
 

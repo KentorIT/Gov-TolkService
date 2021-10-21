@@ -116,7 +116,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         [XmlElement(Namespace = Constants.cbc)]
         public string IssueTime
         {
-            get => IssuedAt.ToString("hh:mm:ss");
+            get => IssuedAt.ToString("HH:mm:ss");
             set { }
         }
 
