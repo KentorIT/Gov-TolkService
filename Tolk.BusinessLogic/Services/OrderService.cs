@@ -742,7 +742,6 @@ namespace Tolk.BusinessLogic.Services
                 try
                 {
                     var startedRequest = await _tolkDbContext.Requests.GetRequestWithInterpreterById(requestId);
-                    var officialInterpreterId = startedRequest.Interpreter.OfficialInterpreterId;
                     if (startedRequest == null)
                     {
                         _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
@@ -750,6 +749,7 @@ namespace Tolk.BusinessLogic.Services
                     }
                     else
                     {
+                        var officialInterpreterId = startedRequest.Interpreter.OfficialInterpreterId;
                         if (_tolkBaseOptions.Tellus.IsActivated)
                         {
                             _logger.LogInformation("Processing started request {requestId} for Order {orderId}.",
