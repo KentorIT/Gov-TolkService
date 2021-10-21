@@ -7,6 +7,8 @@ namespace Tolk.Web.Models
     {
         public OrderAgreementFilterModel FilterModel { get; set; }
         public UserPageMode UserPageMode { get; set; }
+        public bool IsApplicationAdmin { get; set; }
+
 
         [NoDisplayName]
         [Placeholder("BokningsID att skapa order agreement för")]

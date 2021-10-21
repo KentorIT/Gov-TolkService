@@ -67,7 +67,10 @@ namespace Tolk.Web.Controllers
 
             return View(new OrderAgreementListModel
             {
-                FilterModel = new OrderAgreementFilterModel { IsAdmin = User.IsInRole(Roles.SystemAdministrator) }
+                IsApplicationAdmin = User.IsInRole(Roles.ApplicationAdministrator),
+                FilterModel = new OrderAgreementFilterModel { 
+                    IsAdmin = User.IsInRole(Roles.SystemAdministrator),
+                }
             });
         }
 
@@ -83,6 +86,7 @@ namespace Tolk.Web.Controllers
             }
             return Forbid();
         }
+        [Authorize(Roles = Roles.ApplicationAdministrator)]
         public async Task<IActionResult> CreateFromOrderNumber(string orderNumber)
         {
             var order = await _dbContext.Orders.GetOrderByOrderNumber(orderNumber);
@@ -94,6 +98,7 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = Roles.ApplicationAdministrator)]
         public async Task<IActionResult> Create(int orderId)
         {
             var request = await _dbContext.Requests.GetRequestForOrderAgreementCreation(orderId);
