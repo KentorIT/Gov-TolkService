@@ -1,10 +1,9 @@
 ﻿@model OrderViewModel
 @inject Tolk.BusinessLogic.Services.ISwedishClock Clock
+@using Tolk.BusinessLogic;
 @using Tolk.BusinessLogic.Utilities
-@{
-    ViewData["Title"] = "Bekräftelse tolkavrop " + Model.OrderNumber;
-    Layout = null;
-}
+@{ ViewData["Title"] = "Bekräftelse tolkavrop " + Model.OrderNumber;
+                Layout = null; }
 <!DOCTYPE html>
 <html lang="sv-se">
 <head>
@@ -26,8 +25,7 @@
                 asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
                 asp-fallback-test="window.jQuery"
                 crossorigin="anonymous"
-                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
-        </script>
+                integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk"></script>
         <script src="~/js/Order/Print.min.js" asp-append-version="true"></script>
     </environment>
 </head>
@@ -41,7 +39,7 @@
                             <img src="~/images/KamK_Logo.png" alt="Logo Kammarkollegiet" width="120" />
                         </td>
                         <td class="order-header-contract-info">
-                            Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16
+                            Avrop från ramavtal för tolkförmedlingstjänster @Constants.ContractNumber
                         </td>
                     </tr>
                 </table>
@@ -54,9 +52,8 @@
                                 @ViewData["Title"]
                                 @if (!string.IsNullOrEmpty(Model.OrderGroupNumber))
                                 {
-                                    <br />
-                                    <span class="order-print-groupnumber">Tillhör sammanhållen bokning @Model.OrderGroupNumber</span>
-                                }
+                    <br />
+                                    <span class="order-print-groupnumber">Tillhör sammanhållen bokning @Model.OrderGroupNumber</span>}
                             </h1>
                         </td>
                         <td class="align-top font-size-small pull-right">
@@ -108,17 +105,14 @@
                                 @Model.InterpreterLocationInfoAnswer<br /><br />
                                 @if (Model.ActiveRequest.DisplayExpectedTravelCostInfo)
                                 {
-                                    <span class="bold">Bedömd resekostnad: </span>@Model.ActiveRequest.ExpectedTravelCosts.ToString("#,0.00 SEK")<br />
+                    <span class="bold">Bedömd resekostnad: </span>@Model.ActiveRequest.ExpectedTravelCosts.ToString("#,0.00 SEK")<br />
                                     <span class="bold">Kommentar till bedömd resekostnad: </span>
-                                    @if (string.IsNullOrEmpty(Model.ActiveRequest.ExpectedTravelCostInfo))
-                                    {
-                                        <span>-</span>
-                                    }
-                                    else
-                                    {
-                                        <br />@Model.ActiveRequest.ExpectedTravelCostInfo
-                                    }
-                                }
+                                                    @if (string.IsNullOrEmpty(Model.ActiveRequest.ExpectedTravelCostInfo))
+                                                    {
+                                    <span>-</span> }
+                                                    else
+                                                    {
+                                    <br />@Model.ActiveRequest.ExpectedTravelCostInfo}}
                             </td>
                             <td class="order-print-column">
                                 <span class="bold">Tillsatt tolk: </span>@Model.ActiveRequest.Interpreter <br />
@@ -132,22 +126,20 @@
                                 {
                                     if (Model.ActiveRequest.IsInterpreterVerified.Value)
                                     {
-                                        <div>
-                                            Tolk verifierad mot Kammarkollegiets tolkregister:<br />
-                                            <span class="important-info">
-                                                @Model.ActiveRequest.InterpreterVerificationMessage
-                                            </span>
-                                        </div>
-                                    }
+                    <div>
+                        Tolk verifierad mot Kammarkollegiets tolkregister:<br />
+                        <span class="important-info">
+                            @Model.ActiveRequest.InterpreterVerificationMessage
+                        </span>
+                    </div> }
                                     else
                                     {
-                                        <div>
-                                            Tolk är inte verifierad mot Kammarkollegiets tolkregister:<br />
-                                            <span class="important-info">
-                                                @Model.ActiveRequest.InterpreterVerificationMessage
-                                            </span>
-                                        </div>
-                                    }
+                    <div>
+                        Tolk är inte verifierad mot Kammarkollegiets tolkregister:<br />
+                        <span class="important-info">
+                            @Model.ActiveRequest.InterpreterVerificationMessage
+                        </span>
+                    </div>}
                                 }
                             </td>
                         </tr>
@@ -158,32 +150,30 @@
                         </tr>
                         @if (Model.RequestAttachmentListModel?.DisplayFiles?.Count > 0)
                         {
-                            <tr>
-                                <td colspan="2" class="align-top">
-                                    <span class="bold">
-                                        @(Model.RequestAttachmentListModel.Title):
-                                    </span>
-                                    <table>
-                                        <tbody>
-                                            @foreach (var file in Model.RequestAttachmentListModel.DisplayFiles)
-                                            {
-                                                <tr>
-                                                    <td>
-                                                        @file.FileName
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
+            <tr>
+                <td colspan="2" class="align-top">
+                    <span class="bold">
+                        @(Model.RequestAttachmentListModel.Title):
+                    </span>
+                    <table>
+                        <tbody>
+                            @foreach (var file in Model.RequestAttachmentListModel.DisplayFiles)
+                            {
+            <tr>
+                <td>
+                    @file.FileName
+                </td>
+            </tr>}
+                        </tbody>
+                    </table>
 
-                                </td>
-                            </tr>
+                </td>
+            </tr>
                             <tr>
                                 <td colspan="2">
                                     <br />
                                 </td>
-                            </tr>
-                        }
+                            </tr>}
                         <tr>
                             <td class="order-print-column">
                                 <span class="bold">Beräknat pris enligt bokningsbekräftelse: </span>
@@ -192,11 +182,10 @@
                                     <tbody>
                                         @foreach (var item in Model.ActiveRequestPriceInformationModel.PriceInformationToDisplay.DisplayPriceRows.OrderBy(dp => dp.DisplayOrder))
                                         {
-                                            <tr>
-                                                <td>@item.DescriptionToUse</td>
-                                                <td class="price-column">@item.Price.ToString("#,0.00 SEK")</td>
-                                            </tr>
-                                        }
+                            <tr>
+                                <td>@item.DescriptionToUse</td>
+                                <td class="price-column">@item.Price.ToString("#,0.00 SEK")</td>
+                            </tr>}
                                         <tr>
                                             <td class="bold">Total summa:</td>
                                             <td class="price-column bold">@Model.ActiveRequestPriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")</td>
@@ -208,58 +197,48 @@
                             <td class="order-print-column">
                                 @if (Model.ActiveRequest.RequirementAnswers.Any(r => r.IsRequired))
                                 {
-                                    <div class="bold">Uppfyllda tillkommande krav:</div>
+                    <div class="bold">Uppfyllda tillkommande krav:</div>
                                     <ul>
                                         @foreach (var req in Model.ActiveRequest.RequirementAnswers.Where(r => r.IsRequired))
                                         {
-                                            <li>
-                                                @EnumHelper.GetDescription(req.RequirementType): @req.Description
-                                                @if (!string.IsNullOrEmpty(req.Answer))
-                                                {
-                                                    <br />
-                                                    <span class="requirement-answer">- Svar: @req.Answer</span>
-                                                }
-                                            </li>
-                                        }
-                                    </ul>
-                                }
+                        <li>
+                            @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                            @if (!string.IsNullOrEmpty(req.Answer))
+                            {
+        <br />
+                                <span class="requirement-answer">- Svar: @req.Answer</span>}
+                        </li>}
+                                    </ul>}
                                 @if (Model.ActiveRequest.RequirementAnswers.Any(r => !r.IsRequired))
                                 {
-                                    @if (Model.ActiveRequest.RequirementAnswers.Any(r => !r.IsRequired && r.CanMeetRequirement))
-                                    {
-                                        <div class="bold">Uppfyllda tillkommande önskemål:</div>
-                                        <ul>
-                                            @foreach (var req in Model.ActiveRequest.RequirementAnswers.Where(r => !r.IsRequired && r.CanMeetRequirement))
-                                            {
-                                                <li>
-                                                    @EnumHelper.GetDescription(req.RequirementType): @req.Description
-                                                    @if (!string.IsNullOrEmpty(req.Answer))
-                                                    {
-                                                        <br />
-                                                        <span class="requirement-answer">Svar: @req.Answer</span>
-                                                    }
-                                                </li>
-                                            }
-                                        </ul>
-                                    }
+                    @if (Model.ActiveRequest.RequirementAnswers.Any(r => !r.IsRequired && r.CanMeetRequirement))
+                    {
+    <div class="bold">Uppfyllda tillkommande önskemål:</div>
+                        <ul>
+                            @foreach (var req in Model.ActiveRequest.RequirementAnswers.Where(r => !r.IsRequired && r.CanMeetRequirement))
+                            {
+        <li>
+            @EnumHelper.GetDescription(req.RequirementType): @req.Description
+            @if (!string.IsNullOrEmpty(req.Answer))
+            {
+<br />
+                            <span class="requirement-answer">Svar: @req.Answer</span>}
+        </li>}
+                        </ul>}
                                     @if (Model.ActiveRequest.RequirementAnswers.Any(r => !r.IsRequired && !r.CanMeetRequirement))
                                     {
-                                        <div class="bold">Ej uppfyllda tillkommande önskemål:</div>
+                    <div class="bold">Ej uppfyllda tillkommande önskemål:</div>
                                         <ul>
                                             @foreach (var req in Model.ActiveRequest.RequirementAnswers.Where(r => !r.IsRequired && !r.CanMeetRequirement))
                                             {
-                                                <li>
-                                                    @EnumHelper.GetDescription(req.RequirementType): @req.Description
-                                                    @if (!string.IsNullOrEmpty(req.Answer))
-                                                    {
-                                                        <br />
-                                                        <span class="requirement-answer">Svar: @req.Answer</span>
-                                                    }
-                                                </li>
-                                            }
-                                        </ul>
-                                    }
-                                }
+                        <li>
+                            @EnumHelper.GetDescription(req.RequirementType): @req.Description
+                            @if (!string.IsNullOrEmpty(req.Answer))
+                            {
+    <br />
+                                <span class="requirement-answer">Svar: @req.Answer</span>}
+                        </li>}
+                                        </ul>}}
                             </td>
                         </tr>
                     </table>

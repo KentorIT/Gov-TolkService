@@ -1,6 +1,7 @@
 ﻿@model OrderGroupModel
 @inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic;
 @using Tolk.BusinessLogic.Utilities
 @using Tolk.BusinessLogic.Enums
 
@@ -12,7 +13,7 @@
     <section aria-label="Bokningshuvud">
         <div class="row">
             <div class="col-sm-12 order-header-contract-info">
-                Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16
+                Avrop från ramavtal för tolkförmedlingstjänster @Constants.ContractNumber
                 <div class="help-sign-big">
                     @HelpLinkService.HeaderAnchor()
                 </div>

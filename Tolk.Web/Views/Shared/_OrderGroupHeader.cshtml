@@ -1,13 +1,12 @@
 ﻿@model RequestGroupBaseModel
+@using Tolk.BusinessLogic;
 @using Tolk.Web.Services
 @inject HelpLinkService HelpLinkService
-@{
-    HelpLinkService.PageName = "formedling-detaljvy-av-sammanhallen-bokning/";
-}
+@{ HelpLinkService.PageName = "formedling-detaljvy-av-sammanhallen-bokning/"; }
 <section aria-label="Bokningshuvud">
     <div class="row">
         <div class="col-sm-12 order-header-contract-info">
-            Avrop från ramavtal för tolkförmedlingstjänster 23.3-9066-16
+            Avrop från ramavtal för tolkförmedlingstjänster @Constants.ContractNumber
             <div class="help-sign-big">
                 @HelpLinkService.HeaderAnchor()
             </div>
@@ -15,9 +14,8 @@
     </div>
     @if (!string.IsNullOrEmpty(Model.ViewedByUser))
     {
-        <span class="glyphicon glyphicon-user color-red" title="@Model.ViewedByUser"> </span><span class="normal-weight color-red"> @Model.ViewedByUser</span>
-        <br /><br />
-    }
+<span class="glyphicon glyphicon-user color-red" title="@Model.ViewedByUser"> </span><span class="normal-weight color-red"> @Model.ViewedByUser</span>
+                <br /><br />}
     <div class="row">
         <div class="col-sm-3">
             <div class="@Model.ColorClassName">
@@ -35,20 +33,17 @@
         </div>
         @if (!string.IsNullOrWhiteSpace(Model.CustomerInformationModel.ReferenceNumber) || !string.IsNullOrWhiteSpace(Model.BrokerReferenceNumber))
         {
-            <div class="col-sm-12">
-                @if (!string.IsNullOrWhiteSpace(Model.CustomerInformationModel.ReferenceNumber))
-                {
-                    <div class="gray-border-left">
-                        Myndighetens ärendenummer: @Model.CustomerInformationModel.ReferenceNumber
-                    </div>
-                }
-                @if (!string.IsNullOrWhiteSpace(Model.BrokerReferenceNumber))
-                {
-                    <div class="gray-border-left">
-                        Förmedlingens bokningsnummer: @Model.BrokerReferenceNumber
-                    </div>
-                }
-            </div>
-        }
+<div class="col-sm-12">
+    @if (!string.IsNullOrWhiteSpace(Model.CustomerInformationModel.ReferenceNumber))
+    {
+<div class="gray-border-left">
+    Myndighetens ärendenummer: @Model.CustomerInformationModel.ReferenceNumber
+</div>          }
+    @if (!string.IsNullOrWhiteSpace(Model.BrokerReferenceNumber))
+    {
+<div class="gray-border-left">
+    Förmedlingens bokningsnummer: @Model.BrokerReferenceNumber
+</div>          }
+</div>}
     </div>
 </section>

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
+using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
@@ -13,7 +14,6 @@ namespace Tolk.Web.Controllers
 {
     public class ContractController : Controller
     {
-        private const string ContractNumber = "23.3-9066-16";
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
         private readonly CacheService _cacheService;
@@ -79,7 +79,7 @@ namespace Tolk.Web.Controllers
                                 .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                     }).ToList()
                 }),
-                ContractNumber = ContractNumber
+                ContractNumber = Constants.ContractNumber
             });
         }
     }
