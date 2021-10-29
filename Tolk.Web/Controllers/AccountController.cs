@@ -137,10 +137,10 @@ namespace Tolk.Web.Controllers
                         return View(model);
                     }
                     await _userService.LogOnUpdateAsync(user.Id, impersonatingUpdatedById: User.TryGetImpersonatorId());
-                    user.NameFirst = model.NameFirst;
-                    user.NameFamily = model.NameFamily;
-                    user.PhoneNumber = model.PhoneWork;
-                    user.PhoneNumberCellphone = model.PhoneCellphone;
+                    user.NameFirst = model.NameFirst.Trim();
+                    user.NameFamily = model.NameFamily.Trim();
+                    user.PhoneNumber = model.PhoneWork?.Trim();
+                    user.PhoneNumberCellphone = model.PhoneCellphone?.Trim();
 
                     var result = await _userManager.UpdateAsync(user);
                     if (result.Succeeded)
@@ -491,7 +491,7 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
-                    var user = new AspNetUser(model.Email, _userService.GenerateUserName(model.FirstName, model.LastName, string.Empty), model.FirstName, model.LastName)
+                    var user = new AspNetUser(model.Email, _userService.GenerateUserName(model.FirstName.Trim(), model.LastName.Trim(), string.Empty), model.FirstName.Trim(), model.LastName.Trim())
                     {
                         EmailConfirmed = true
                     };
@@ -622,11 +622,24 @@ namespace Tolk.Web.Controllers
 
             if (ModelState.IsValid)
             {
+                bool serversideValid = true;
+                if (string.IsNullOrWhiteSpace(model.FirstName))
+                {
+                    serversideValid = false;
+                    ModelState.AddModelError(nameof(model.FirstName), $"Kan inte bara innehålla mellanslag");
+                }
+                if (string.IsNullOrWhiteSpace(model.LastName))
+                {
+                    serversideValid = false;
+                    ModelState.AddModelError(nameof(model.LastName), $"Kan inte bara innehålla mellanslag");
+                }
                 if (!_userService.IsUniqueEmail(model.Email))
                 {
+                    serversideValid = false;
                     ModelState.AddModelError(nameof(model.Email), $"Denna e-postadress används redan i tjänsten");
                 }
-                else
+
+                if (serversideValid)
                 {
                     using var trn = await _dbContext.Database.BeginTransactionAsync();
                     var domain = model.Email.Split('@')[1];
@@ -660,9 +673,9 @@ namespace Tolk.Web.Controllers
                                 }
                             }
                             var user = new AspNetUser(model.Email,
-                                _userService.GenerateUserName(model.FirstName, model.LastName, organisation.OrganisationPrefix),
-                                model.FirstName,
-                                model.LastName,
+                                _userService.GenerateUserName(model.FirstName.Trim(), model.LastName.Trim(), organisation.OrganisationPrefix),
+                                model.FirstName.Trim(),
+                                model.LastName.Trim(),
                                 organisation);
                             var result = await _userManager.CreateAsync(user);
 
@@ -685,9 +698,9 @@ namespace Tolk.Web.Controllers
                     if (broker != null)
                     {
                         var user = new AspNetUser(model.Email,
-                                _userService.GenerateUserName(model.FirstName, model.LastName, broker.OrganizationPrefix),
-                                model.FirstName,
-                                model.LastName,
+                                _userService.GenerateUserName(model.FirstName.Trim(), model.LastName.Trim(), broker.OrganizationPrefix),
+                                model.FirstName.Trim(),
+                                model.LastName.Trim(),
                                 broker);
                         var result = await _userManager.CreateAsync(user);
 
@@ -905,10 +918,10 @@ namespace Tolk.Web.Controllers
                         await _userManager.UpdateSecurityStampAsync(user);
                         await _signInManager.SignInAsync(user, true);
 
-                        user.NameFirst = model.NameFirst;
-                        user.NameFamily = model.NameFamily;
-                        user.PhoneNumber = model.PhoneWork;
-                        user.PhoneNumberCellphone = model.PhoneCellphone;
+                        user.NameFirst = model.NameFirst.Trim();
+                        user.NameFamily = model.NameFamily.Trim();
+                        user.PhoneNumber = model.PhoneWork?.Trim();
+                        user.PhoneNumberCellphone = model.PhoneCellphone?.Trim();
                         user.LastLoginAt = _clock.SwedenNow;
                         result = await _userManager.UpdateAsync(user);
                         await _userService.LogLoginAsync(user.Id);

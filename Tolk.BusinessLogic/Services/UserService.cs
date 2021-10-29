@@ -341,6 +341,8 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public string GenerateUserName(string firstName, string lastName, string prefix)
         {
+            NullCheckHelper.ArgumentCheckNull(firstName, nameof(GenerateUserName), nameof(UserService));
+            NullCheckHelper.ArgumentCheckNull(lastName, nameof(GenerateUserName), nameof(UserService));
             NullCheckHelper.ArgumentCheckNull(prefix, nameof(GenerateUserName), nameof(UserService));
             string userNameStart = $"{prefix.GetPrefix(prefix.Length)}{firstName.GetPrefix()}{lastName.GetPrefix()}";
             var users = _dbContext.Users.Where(u => EF.Functions.Like(u.NormalizedUserName, $"{userNameStart}%")).Select(u => u.NormalizedUserName).ToList();

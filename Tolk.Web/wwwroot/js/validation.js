@@ -4,7 +4,8 @@
 function isNullOrEmpty(val) {
     return val == null /* eslint-disable-line eqeqeq */
         || val == undefined /* eslint-disable-line eqeqeq */
-        || val == ''; /* eslint-disable-line eqeqeq */
+        || val == '' /* eslint-disable-line eqeqeq */
+        || val.trim().length === 0;
 }
 
 $.validator.addMethod('requiredif', function (value, element, params) {

@@ -248,63 +248,82 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await GetUserToHandle(model.Id.Value);
-                if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
+                bool serversideValid = true;
+                if (string.IsNullOrWhiteSpace(model.NameFirst))
                 {
-                    await _userService.LogOnUpdateAsync(model.Id.Value, User.GetUserId(), User.TryGetImpersonatorId());
-                    user.NameFirst = model.NameFirst;
-                    user.NameFamily = model.NameFamily;
-                    user.PhoneNumber = model.PhoneWork;
-                    user.PhoneNumberCellphone = model.PhoneCellphone;
-                    if (user.IsActive && !model.IsActive)
-                    {
-                        await _userManager.UpdateSecurityStampAsync(user);
-                    }
-                    user.IsActive = model.IsActive;
-                    if (user.CustomerOrganisationId.HasValue || user.BrokerId.HasValue)
-                    {
-                        await UpdateOrganisationAdministratorRoleAsync(model, user);
-                    }
-                    if (user.CustomerOrganisationId.HasValue)
-                    {
-                        await UpdateCentralOrderHandlerRoleAsync(model, user);
-                    }
-                    if (UseRolesForAdminUser(user))
-                    {
-                        await UpdateRolesForAdminUserAsync(model, user);
-                    }
-                    if (model.UnitUsers != null)
-                    {
-                        List<CustomerUnitUser> unitsToRemove = new List<CustomerUnitUser>();
-                        foreach (CustomerUnitUser cu in user.CustomerUnits)
-                        {
-                            var tempUnitUser = model.UnitUsers.Where(mu => mu.UserIsConnected).ToList().SingleOrDefault(c => c.CustomerUnitId == cu.CustomerUnitId);
-                            //if still connected update IsLocalAdmin
-                            if (tempUnitUser != null)
-                            {
-                                cu.IsLocalAdmin = tempUnitUser.IsLocalAdmin;
-                            }
-                            //else check if CustomerUnitId exixts in model list - if so remove it
-                            else if (model.UnitUsers.Select(mu => mu.CustomerUnitId).Contains(cu.CustomerUnitId))
-                            {
-                                unitsToRemove.Add(cu);
-                            }
-                        }
-                        //check if any new connected units that should be added
-                        foreach (UnitUserModel uum in model.UnitUsers.Where(mu => mu.UserIsConnected && !user.CustomerUnits.Select(cu => cu.CustomerUnitId).Contains(mu.CustomerUnitId)))
-                        {
-                            user.CustomerUnits.Add(new CustomerUnitUser { IsLocalAdmin = uum.IsLocalAdmin, CustomerUnitId = uum.CustomerUnitId });
-                        }
-                        if (unitsToRemove.Any())
-                        {
-                            _dbContext.CustomerUnitUsers.RemoveRange(unitsToRemove);
-                        }
-                    }
-                    await _userManager.UpdateAsync(user);
+                    serversideValid = false;
+                    ModelState.AddModelError(nameof(model.NameFirst), $"Kan inte bara innehålla mellanslag");
                 }
+                if (string.IsNullOrWhiteSpace(model.NameFamily))
+                {
+                    serversideValid = false;
+                    ModelState.AddModelError(nameof(model.NameFamily), $"Kan inte bara innehålla mellanslag");
+                }
+                if (serversideValid)
+                {
+                    var user = await GetUserToHandle(model.Id.Value);
+                    if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Edit)).Succeeded)
+                    {
+                        await _userService.LogOnUpdateAsync(model.Id.Value, User.GetUserId(), User.TryGetImpersonatorId());
+                        user.NameFirst = model.NameFirst.Trim();
+                        user.NameFamily = model.NameFamily.Trim();
+                        user.PhoneNumber = model.PhoneWork?.Trim();
+                        user.PhoneNumberCellphone = model.PhoneCellphone?.Trim();
+                        if (user.IsActive && !model.IsActive)
+                        {
+                            await _userManager.UpdateSecurityStampAsync(user);
+                        }
+                        user.IsActive = model.IsActive;
+                        if (user.CustomerOrganisationId.HasValue || user.BrokerId.HasValue)
+                        {
+                            await UpdateOrganisationAdministratorRoleAsync(model, user);
+                        }
+                        if (user.CustomerOrganisationId.HasValue)
+                        {
+                            await UpdateCentralOrderHandlerRoleAsync(model, user);
+                        }
+                        if (UseRolesForAdminUser(user))
+                        {
+                            await UpdateRolesForAdminUserAsync(model, user);
+                        }
+                        if (model.UnitUsers != null)
+                        {
+                            List<CustomerUnitUser> unitsToRemove = new List<CustomerUnitUser>();
+                            foreach (CustomerUnitUser cu in user.CustomerUnits)
+                            {
+                                var tempUnitUser = model.UnitUsers.Where(mu => mu.UserIsConnected).ToList().SingleOrDefault(c => c.CustomerUnitId == cu.CustomerUnitId);
+                                //if still connected update IsLocalAdmin
+                                if (tempUnitUser != null)
+                                {
+                                    cu.IsLocalAdmin = tempUnitUser.IsLocalAdmin;
+                                }
+                                //else check if CustomerUnitId exixts in model list - if so remove it
+                                else if (model.UnitUsers.Select(mu => mu.CustomerUnitId).Contains(cu.CustomerUnitId))
+                                {
+                                    unitsToRemove.Add(cu);
+                                }
+                            }
+                            //check if any new connected units that should be added
+                            foreach (UnitUserModel uum in model.UnitUsers.Where(mu => mu.UserIsConnected && !user.CustomerUnits.Select(cu => cu.CustomerUnitId).Contains(mu.CustomerUnitId)))
+                            {
+                                user.CustomerUnits.Add(new CustomerUnitUser { IsLocalAdmin = uum.IsLocalAdmin, CustomerUnitId = uum.CustomerUnitId });
+                            }
+                            if (unitsToRemove.Any())
+                            {
+                                _dbContext.CustomerUnitUsers.RemoveRange(unitsToRemove);
+                            }
+                        }
+                        await _userManager.UpdateAsync(user);
+                    }
+                }
+                return RedirectToAction(nameof(View), new { id = model.Id, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId });
             }
-            return RedirectToAction(nameof(View), new { id = model.Id, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId });
+            else
+            {
+                return View(model);
+            }
         }
+
 
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public ActionResult Create(string bc, string ba, string bi, int? customerId = null, int? customerUnitId = null)
@@ -363,6 +382,16 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 bool serversideValid = true;
+                if (string.IsNullOrWhiteSpace(model.NameFirst))
+                {
+                    serversideValid = false;
+                    ModelState.AddModelError(nameof(model.NameFirst), $"Kan inte bara innehålla mellanslag");
+                }
+                if (string.IsNullOrWhiteSpace(model.NameFamily))
+                {
+                    serversideValid = false;
+                    ModelState.AddModelError(nameof(model.NameFamily), $"Kan inte bara innehålla mellanslag");
+                }
                 if (!_userService.IsUniqueEmail(model.Email))
                 {
                     serversideValid = false;
@@ -460,9 +489,9 @@ namespace Tolk.Web.Controllers
                     }
 
                     var user = new AspNetUser(model.Email,
-                        _userService.GenerateUserName(model.NameFirst, model.NameFamily, organisationPrefix),
-                        model.NameFirst,
-                        model.NameFamily)
+                        _userService.GenerateUserName(model.NameFirst.Trim(), model.NameFamily.Trim(), organisationPrefix),
+                        model.NameFirst.Trim(),
+                        model.NameFamily.Trim())
                     {
                         CustomerOrganisationId = customerId,
                         BrokerId = brokerId,
