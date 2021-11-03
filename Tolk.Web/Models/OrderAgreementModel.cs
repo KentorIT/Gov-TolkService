@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Entities;
 using Tolk.Web.Attributes;
 

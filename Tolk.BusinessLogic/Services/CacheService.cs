@@ -108,7 +108,6 @@ namespace Tolk.BusinessLogic.Services
                             NotificationType = NotificationType.OrderAgreementCreated,
                             StartUsingNotificationAt = s.CustomerOrganisation.UseOrderAgreementsFromDate
                         })).ToList().AsReadOnly();
-                    ;
                     _cache.Set(CacheKeys.OrganisationSettings, organisationNotificationSettings.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
                 }
                 return organisationNotificationSettings;

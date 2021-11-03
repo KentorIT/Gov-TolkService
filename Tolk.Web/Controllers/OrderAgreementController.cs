@@ -1,13 +1,9 @@
-﻿using AutoMapper;
-using DataTables.AspNet.Core;
+﻿using DataTables.AspNet.Core;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,10 +15,8 @@ using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
-using Tolk.Web.Enums;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
-using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
