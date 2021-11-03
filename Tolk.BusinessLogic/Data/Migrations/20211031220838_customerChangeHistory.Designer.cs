@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211031220838_customerChangeHistory")]
+    partial class customerChangeHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -570,9 +572,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int>("TravelCostAgreementType")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("UseOrderAgreementsFromDate")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("CustomerOrganisationId");
 
                     b.HasIndex("ParentCustomerOrganisationId");
@@ -617,9 +616,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<int>("TravelCostAgreementType")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("UseOrderAgreementsFromDate")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("CustomerOrganisationHistoryEntryId");
 

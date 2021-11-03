@@ -15,5 +15,7 @@ namespace Tolk.BusinessLogic.Utilities
         public int RecipientUserId { get; set; }
 
         public int ReceivingOrganisationId { get; set; }
+
+        public DateTime? StartUsingNotificationAt { get; set; }
     }
 }

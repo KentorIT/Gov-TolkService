@@ -91,7 +91,7 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private enum OutputType { Text, DateTimeOffset, Bool, NullableBool, Enum, Currency, MultilineText, TimeSpan, TimeRange, RadioButtonGroup, CheckboxGroup }
+        private enum OutputType { Text, DateTimeOffset, Bool, NullableBool, Enum, Currency, MultilineText, TimeSpan, TimeRange, RadioButtonGroup, CheckboxGroup, Date }
 
         private void WriteDetails(TextWriter writer)
         {
@@ -107,6 +107,9 @@ namespace Tolk.Web.TagHelpers
                     break;
                 case OutputType.NullableBool:
                     text = ValuePrefix + (For.ModelExplorer.Model != null ? ((bool)For.ModelExplorer.Model) ? "Ja" : "Nej" : "-");
+                    break;
+                case OutputType.Date:
+                    text = ValuePrefix + (For.ModelExplorer.Model != null ? ((DateTime)For.ModelExplorer.Model).ToSwedishString("yyyy-MM-dd") : "-");
                     break;
                 case OutputType.DateTimeOffset:
                     text = ValuePrefix + ((DateTimeOffset?)For.ModelExplorer.Model)?.ToSwedishString("yyyy-MM-dd HH:mm");
@@ -157,6 +160,10 @@ namespace Tolk.Web.TagHelpers
             if (For.ModelExplorer.Model is Enum)
             {
                 return OutputType.Enum;
+            }
+            if (For.ModelExplorer.Metadata.DataTypeName == "Date")
+            {
+                return OutputType.Date;
             }
             if (For.ModelExplorer.ModelType == typeof(DateTimeOffset)
                 || For.ModelExplorer.ModelType == typeof(DateTimeOffset?))

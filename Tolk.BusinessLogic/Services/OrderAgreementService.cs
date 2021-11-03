@@ -73,6 +73,9 @@ namespace Tolk.BusinessLogic.Services
             {
                 return false;
             }
+            var startAtSettings = _cacheService.OrganisationNotificationSettings
+                .Where(n => n.NotificationType == NotificationType.OrderAgreementCreated)
+                .Select(n => new { n.ReceivingOrganisationId, n.StartUsingNotificationAt }).ToList();
             var orderAgreementCustomerIds = _cacheService.CustomerSettings
                 .Where(c => c.UsedCustomerSettingTypes.Contains(CustomerSettingType.UseOrderAgreements))
                 .Select(c => c.CustomerOrganisationId).ToList();
@@ -80,63 +83,70 @@ namespace Tolk.BusinessLogic.Services
             var occasionsEndedAtOrBefore = _dateCalculationService.GetDateForANumberOfWorkdaysAgo(_clock.SwedenNow.UtcDateTime, _options.WorkDaysGracePeriodBeforeOrderAgreementCreation);
             //1. find all nonhandled requests and requisitions for customers that is set as using order agreements
             // a. When requisition is AutomaticGeneratedFromCancelledOrder, Approved or Reviewed Date is irrelevant
-            
-            //MOVE GETTER TO EXTENSIONS
-            var baseInformationForOrderAgreementsToCreate = await _tolkDbContext.Requisitions.Where(r =>
-                (r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ||
-                r.Status == RequisitionStatus.Approved ||
-                r.Status == RequisitionStatus.Reviewed) &&
-                r.OrderAgreementPayload == null &&
-                orderAgreementCustomerIds.Contains(r.Request.Order.CustomerOrganisationId))
-                .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
-                .ToListAsync();
-
-            // b. x workdays after the occasion was ended
-            //   - If there is a requisition created, use that, but only if there is no order agreement created on the request before.
-            baseInformationForOrderAgreementsToCreate.AddRange(await _tolkDbContext.Requisitions.Where(r =>
-                (r.Status == RequisitionStatus.Created) &&
-                orderAgreementCustomerIds.Contains(r.Request.Order.CustomerOrganisationId) &&
-                r.OrderAgreementPayload == null &&
-                !r.Request.OrderAgreementPayloads.Any() &&
-                r.Request.Order.EndAt < occasionsEndedAtOrBefore
-                )
-                .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
-                .ToListAsync());
-
-            //   - If there is a no requisition created, use request.
-            baseInformationForOrderAgreementsToCreate.AddRange(await _tolkDbContext.Requests.Where(r =>
-                (r.Status == RequestStatus.Delivered || r.Status == RequestStatus.Approved) &&
-                orderAgreementCustomerIds.Contains(r.Order.CustomerOrganisationId) &&
-                !r.OrderAgreementPayloads.Any() &&
-                !r.Requisitions.Any() &&
-                r.Order.EndAt < occasionsEndedAtOrBefore
-                )
-                .Select(r => new OrderAgreementIdentifierModel { RequestId = r.RequestId })
-                .ToListAsync());
-
-            _logger.LogInformation("Found {count} requests to create order agreements for: {requestIds}",
-                baseInformationForOrderAgreementsToCreate.Count, string.Join(", ", baseInformationForOrderAgreementsToCreate.Select(r => r.RequestId)));
-
-            foreach (var entity in baseInformationForOrderAgreementsToCreate)
+            foreach (int customerOrganisationId in orderAgreementCustomerIds)
             {
-                try
-                {
-                    if (entity.RequisitionId.HasValue)
-                    {
-                        await CreateAndStoreOrderAgreementPayload(entity, CreateOrderAgreementFromRequisition);
-                    }
-                    else
-                    {
-                        await CreateAndStoreOrderAgreementPayload(entity, CreateOrderAgreementFromRequest);
-                    }
-                    await _tolkDbContext.SaveChangesAsync();
-                    _logger.LogInformation("Processing completed order agreement for {requestId}.", entity.RequestId);
+                var validUseFrom = startAtSettings.SingleOrDefault(s => s.ReceivingOrganisationId == customerOrganisationId)?.StartUsingNotificationAt ??
+                    new DateTime(1900,1,1);
+                //MOVE GETTER TO EXTENSIONS
+                var baseInformationForOrderAgreementsToCreate = await _tolkDbContext.Requisitions.Where(r =>
+                    (r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ||
+                    r.Status == RequisitionStatus.Approved ||
+                    r.Status == RequisitionStatus.Reviewed) &&
+                    r.OrderAgreementPayload == null &&
+                    r.Request.Order.CustomerOrganisationId == customerOrganisationId &&
+                    r.ProcessedAt > validUseFrom)
+                    .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
+                    .ToListAsync();
 
-                }
-                catch (Exception ex)
+                // b. x workdays after the occasion was ended
+                //   - If there is a requisition created, use that, but only if there is no order agreement created on the request before.
+                baseInformationForOrderAgreementsToCreate.AddRange(await _tolkDbContext.Requisitions.Where(r =>
+                    (r.Status == RequisitionStatus.Created) &&
+                    r.Request.Order.CustomerOrganisationId == customerOrganisationId &&
+                    r.OrderAgreementPayload == null &&
+                    !r.Request.OrderAgreementPayloads.Any() &&
+                    r.Request.Order.EndAt < occasionsEndedAtOrBefore &&
+                    r.Request.Order.EndAt > validUseFrom
+                    )
+                    .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
+                    .ToListAsync());
+
+                //   - If there is a no requisition created, use request.
+                baseInformationForOrderAgreementsToCreate.AddRange(await _tolkDbContext.Requests.Where(r =>
+                    (r.Status == RequestStatus.Delivered || r.Status == RequestStatus.Approved) &&
+                    r.Order.CustomerOrganisationId == customerOrganisationId &&
+                    !r.OrderAgreementPayloads.Any() &&
+                    !r.Requisitions.Any() &&
+                    r.Order.EndAt < occasionsEndedAtOrBefore &&
+                    r.Order.EndAt > validUseFrom
+                    )
+                    .Select(r => new OrderAgreementIdentifierModel { RequestId = r.RequestId })
+                    .ToListAsync());
+
+                _logger.LogInformation("For customer {customerOrganisationId}:  Found {count} requests to create order agreements for: {requestIds}",
+                    customerOrganisationId, baseInformationForOrderAgreementsToCreate.Count, string.Join(", ", baseInformationForOrderAgreementsToCreate.Select(r => r.RequestId)));
+
+                foreach (var entity in baseInformationForOrderAgreementsToCreate)
                 {
-                    _logger.LogError(ex, "Failure processing order agreement creation for {requestId}", entity.RequestId);
-                    await SendErrorMail(nameof(HandleOrderAgreementCreation), ex);
+                    try
+                    {
+                        if (entity.RequisitionId.HasValue)
+                        {
+                            await CreateAndStoreOrderAgreementPayload(entity, CreateOrderAgreementFromRequisition);
+                        }
+                        else
+                        {
+                            await CreateAndStoreOrderAgreementPayload(entity, CreateOrderAgreementFromRequest);
+                        }
+                        await _tolkDbContext.SaveChangesAsync();
+                        _logger.LogInformation("Processing completed order agreement for {requestId}.", entity.RequestId);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure processing order agreement creation for {requestId}", entity.RequestId);
+                        await SendErrorMail(nameof(HandleOrderAgreementCreation), ex);
+                    }
                 }
             }
             return true;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
@@ -43,6 +44,11 @@ namespace Tolk.Web.Models
         [Display(Name = "Peppol-ID")]
         public string PeppolId { get; set; }
 
+        [Display(Name = "Använd order agreements från och med", Description = "Sätt det datum som systemet skall börja skapa order agreements från. Om datumet är i framtiden så kommer de börja skapas från och med då, och är det innan dagens datum så kommer de beställningar som faller inom regelverket skapas direkt när denna inställning sparas.")]
+        [ClientRequired]
+        [DataType(DataType.Date)]
+        public DateTime? UseOrderAgreementsFromDate { get; set; }
+
         [Display(Name = "EmailDomän", Description = "Detta används när en användare som kopplar upp sig själv, för att kunna räkna ut med vilken organisation hen skall kopplas till.")]
         [Required]
         public string EmailDomain { get; set; }
@@ -56,6 +62,8 @@ namespace Tolk.Web.Models
         public CustomerUserFilterModel UserFilterModel { get; set; }
 
         public AdminUnitFilterModel UnitFilterModel { get; set; }
+
+        public bool ShowUseOrderAgreementsFromDate => CustomerSettings.Any(s => s.Value && s.CustomerSettingType == CustomerSettingType.UseOrderAgreements);
 
         [SubItem]
         public List<CustomerSettingModel> CustomerSettings { get; set; }
@@ -81,6 +89,7 @@ namespace Tolk.Web.Models
                 OrganisationNumber = customer.OrganisationNumber,
                 PeppolId = customer.PeppolId,
                 TravelCostAgreementType = customer.TravelCostAgreementType,
+                UseOrderAgreementsFromDate = customer.UseOrderAgreementsFromDate,
                 Message = message,
                 UserPageMode = new UserPageMode
                 {
@@ -100,6 +109,7 @@ namespace Tolk.Web.Models
             customer.EmailDomain = EmailDomain;
             customer.OrganisationNumber = OrganisationNumber;
             customer.PeppolId = PeppolId;
+            customer.UseOrderAgreementsFromDate = ShowUseOrderAgreementsFromDate ? UseOrderAgreementsFromDate : null;
             if (isNewCustomer)
             {
                 customer.PriceListType = PriceListType.Value;

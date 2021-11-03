@@ -46,9 +46,11 @@ namespace Tolk.BusinessLogic.Entities
 
         public List<CustomerSetting> CustomerSettings { get; set; } = new List<CustomerSetting>();
 
+        public DateTime? UseOrderAgreementsFromDate { get; set; }
+
         public List<CustomerChangeLogEntry> CustomerChangeLogEntries { get; set; } = new List<CustomerChangeLogEntry>();
 
-        public void UpdateCustomerSettings(DateTimeOffset changedAt, int userId, IEnumerable<CustomerSetting> updatedCustomerSettings)
+        public void UpdateCustomerSettingsAndHistory(DateTimeOffset changedAt, int userId, IEnumerable<CustomerSetting> updatedCustomerSettings)
         {
             var customerSettings = CustomerSettings.Select(c => new CustomerSettingHistoryEntry { CustomerSettingType = c.CustomerSettingType, Value = c.Value });
             CustomerChangeLogEntries.Add(new CustomerChangeLogEntry
@@ -56,7 +58,8 @@ namespace Tolk.BusinessLogic.Entities
                 LoggedAt = changedAt,
                 UpdatedByUserId = userId,
                 CustomerChangeLogType = CustomerChangeLogType.Settings,
-                CustomerSettingHistories = customerSettings.ToList()
+                CustomerSettingHistories = customerSettings.ToList(),
+                CustomerOrganisationHistoryEntry = new CustomerOrganisationHistoryEntry(this)
             });
             foreach (CustomerSetting cs in updatedCustomerSettings.ToList())
             {

@@ -30,6 +30,7 @@ namespace Tolk.Web.TagHelpers
 
         private const string ForAttributeName = "asp-for";
         private const string ItemsAttributeName = "asp-items";
+        private const string InputTypeDate = "date";
         private const string InputTypeSelect = "select";
         private const string InputTypeDateTimeOffset = "datetime";
         private const string InputTypeText = "text";
@@ -100,6 +101,7 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeHiddenTimeRangeHidden:
                 case InputTypeTextArea:
                 case InputTypeTimeRange:
+                case InputTypeDate:
                 case InputTypeSplitTimeRange:
                     if (Items != null)
                     {
@@ -115,6 +117,11 @@ namespace Tolk.Web.TagHelpers
         {
             if (InputType == null)
             {
+                if (For.ModelExplorer.Metadata.DataTypeName == "Date")
+                {
+                    InputType = InputTypeDate;
+                    return;
+                }
                 if (For.ModelExplorer.ModelType == typeof(DateTimeOffset)
                     || For.ModelExplorer.ModelType == typeof(DateTimeOffset?))
                 {
@@ -201,6 +208,9 @@ namespace Tolk.Web.TagHelpers
                         break;
                     case InputTypeDateTimeOffset:
                         WriteDateTimeOffsetBlock(writer);
+                        break;
+                    case InputTypeDate:
+                        WriteDateBlock(writer);
                         break;
                     case InputTypePassword:
                         WriteLabel(writer);
@@ -437,7 +447,12 @@ namespace Tolk.Web.TagHelpers
             WritePrefix(writer, PrefixAttribute.Position.Value);
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
-
+        private void WriteDateBlock(TextWriter writer)
+        {
+            WriteLabel(writer);
+            WriteDatePickerInput(For.ModelExplorer, For.Name, For.Model, writer);
+            WriteValidation(writer);
+        }
         private void WriteDateRangeBlock(TextWriter writer)
         {
             WriteLabelWithoutFor(writer, true);

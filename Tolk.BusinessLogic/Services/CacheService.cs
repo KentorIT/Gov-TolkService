@@ -98,7 +98,17 @@ namespace Tolk.BusinessLogic.Services
                             NotificationChannel = n.NotificationChannel,
                             NotificationType = n.NotificationType,
                             RecipientUserId = n.UserId
+                        })).ToList().Union(_dbContext.CustomerSettings
+                        .Where(s => s.CustomerSettingType == CustomerSettingType.UseOrderAgreements && s.Value)
+                        .Select(s => new OrganisationNotificationSettings
+                        {
+                            ReceivingOrganisationId = s.CustomerOrganisationId,
+                            NotificationConsumerType = NotificationConsumerType.Customer,
+                            NotificationChannel = NotificationChannel.Peppol,
+                            NotificationType = NotificationType.OrderAgreementCreated,
+                            StartUsingNotificationAt = s.CustomerOrganisation.UseOrderAgreementsFromDate
                         })).ToList().AsReadOnly();
+                    ;
                     _cache.Set(CacheKeys.OrganisationSettings, organisationNotificationSettings.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
                 }
                 return organisationNotificationSettings;

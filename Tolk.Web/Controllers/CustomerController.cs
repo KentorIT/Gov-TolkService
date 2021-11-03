@@ -108,11 +108,13 @@ namespace Tolk.Web.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    model.UpdateCustomer(customer);
                     var customerSettings = model.CustomerSettings.Select(cs => new CustomerSetting { CustomerSettingType = cs.CustomerSettingType, Value = cs.Value });
-                    customer.UpdateCustomerSettings(_clock.SwedenNow, User.GetUserId(), customerSettings);
+                    customer.UpdateCustomerSettingsAndHistory(_clock.SwedenNow, User.GetUserId(), customerSettings);
+                    
+                    model.UpdateCustomer(customer);
                     await _dbContext.SaveChangesAsync();
                     await _cacheService.Flush(CacheKeys.CustomerSettings);
+                    await _cacheService.Flush(CacheKeys.OrganisationSettings);
                     return RedirectToAction(nameof(View), new { Id = model.CustomerId, Message = "Myndighet har uppdaterats" });
                 }
                 return View(model);
