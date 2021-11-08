@@ -31,7 +31,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         {
             get => new AmountModel
             {
-                AmountSum = 0
+                AmountSum = GetRounding(TaxInclusiveAmount.AmountSum)
             };
             set { }
         }
@@ -39,11 +39,20 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         [XmlElement(Namespace = Constants.cbc)]
         public AmountModel PayableAmount
         {
-            get => TaxInclusiveAmount;
+            get => new AmountModel
+            {
+                AmountSum = TaxInclusiveAmount.AmountSum + PayableRoundingAmount.AmountSum
+            };
             set { }
         }
 
         [XmlIgnore]
         public decimal TaxSum { get; set; }
+
+        private decimal GetRounding(decimal value)
+        {
+            value -= Math.Floor(value);
+            return value > Convert.ToDecimal(0.5) ? 1 - value : -value;
+        }
     }
 }

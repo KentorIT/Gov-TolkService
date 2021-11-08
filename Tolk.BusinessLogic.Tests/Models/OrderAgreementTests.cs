@@ -63,14 +63,22 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(request.Order.CustomerOrganisation.PeppolId, agreement.BuyerCustomerParty.Party.PartyIdentification.ID.Value);
             Assert.Equal(OrderAgreementModel.OwnerPeppolId.Value, agreement.SellerSupplierParty.Party.EndpointID.Value);
             Assert.Equal(request.Ranking.Broker.OrganizationNumber, agreement.SellerSupplierParty.Party.PartyIdentification.ID.Value);
-            decimal sum = MockEntities.MockRequestPriceRows.Sum(pr => pr.Price);
+            decimal sum = MockEntities.MockRequestPriceRows.Where(pr => pr.PriceRowType != PriceRowType.RoundedPrice).Sum(pr => pr.Price);
+
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.Price.PriceAmount.AmountSum));
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.LineExtensionAmount.AmountSum));
             Assert.Equal(sum, agreement.LegalMonetaryTotal.LineExtensionAmount.AmountSum);
             Assert.Equal(sum, agreement.LegalMonetaryTotal.TaxExclusiveAmount.AmountSum);
-            //HARDCODED TEST FOR 25% VAT!!!!!
-            Assert.Equal(sum * (decimal)0.25, agreement.TaxTotal.TaxAmount.AmountSum);
-            Assert.Equal(sum * (decimal)1.25, agreement.LegalMonetaryTotal.TaxInclusiveAmount.AmountSum);
+
+            //HARDCODED TEST FOR 25% VAT and the rounded amounts
+            decimal taxAmount = sum * (decimal)0.25;
+            decimal totalTaxInclusiveAmount = sum * (decimal)1.25;
+            Assert.Equal(taxAmount, agreement.TaxTotal.TaxAmount.AmountSum);
+            Assert.Equal(totalTaxInclusiveAmount, agreement.LegalMonetaryTotal.TaxInclusiveAmount.AmountSum);
+            decimal rounding = GetRounding(totalTaxInclusiveAmount);
+            decimal roundedSum = totalTaxInclusiveAmount + rounding;
+            Assert.Equal(rounding, agreement.LegalMonetaryTotal.PayableRoundingAmount.AmountSum);
+            Assert.Equal(roundedSum, agreement.LegalMonetaryTotal.PayableAmount.AmountSum);
         }
 
         [Fact]
@@ -94,14 +102,21 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(requisition.Request.Order.CustomerOrganisation.PeppolId, agreement.BuyerCustomerParty.Party.PartyIdentification.ID.Value);
             Assert.Equal(OrderAgreementModel.OwnerPeppolId.Value, agreement.SellerSupplierParty.Party.EndpointID.Value);
             Assert.Equal(requisition.Request.Ranking.Broker.OrganizationNumber, agreement.SellerSupplierParty.Party.PartyIdentification.ID.Value);
-            decimal sum = MockEntities.MockRequisitionPriceRows.Sum(pr => pr.Price);
+            decimal sum = MockEntities.MockRequisitionPriceRows.Where(pr => pr.PriceRowType != PriceRowType.RoundedPrice).Sum(pr => pr.Price);
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.Price.PriceAmount.AmountSum));
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.LineExtensionAmount.AmountSum));
             Assert.Equal(sum, agreement.LegalMonetaryTotal.LineExtensionAmount.AmountSum);
             Assert.Equal(sum, agreement.LegalMonetaryTotal.TaxExclusiveAmount.AmountSum);
-            //HARDCODED TEST FOR 25% VAT!!!!!
-            Assert.Equal(sum * (decimal)0.25, agreement.TaxTotal.TaxAmount.AmountSum);
-            Assert.Equal(sum * (decimal)1.25, agreement.LegalMonetaryTotal.TaxInclusiveAmount.AmountSum);
+
+            //HARDCODED TEST FOR 25% VAT  and the rounded amounts
+            decimal taxAmount = sum * (decimal)0.25;
+            decimal totalTaxInclusiveAmount = sum * (decimal)1.25;
+            Assert.Equal(taxAmount, agreement.TaxTotal.TaxAmount.AmountSum);
+            Assert.Equal(totalTaxInclusiveAmount, agreement.LegalMonetaryTotal.TaxInclusiveAmount.AmountSum);
+            decimal rounding = GetRounding(totalTaxInclusiveAmount);
+            decimal roundedSum = totalTaxInclusiveAmount + rounding;
+            Assert.Equal(rounding, agreement.LegalMonetaryTotal.PayableRoundingAmount.AmountSum);
+            Assert.Equal(roundedSum, agreement.LegalMonetaryTotal.PayableAmount.AmountSum);
         }
 
         [Theory]
@@ -182,6 +197,12 @@ namespace Tolk.BusinessLogic.Tests.Models
         {
             var requisition = MockRequisition;
             Assert.Throws<InvalidOperationException>(() => new OrderAgreementModel(requisition, DateTime.UtcNow, MockEntities.MockRequisitionPriceRows, previousIndex));
+        }
+
+        private decimal GetRounding(decimal value)
+        {
+            value -= Math.Floor(value);
+            return value > Convert.ToDecimal(0.5) ? 1 - value : -value;
         }
     }
 }

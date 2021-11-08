@@ -34,7 +34,6 @@ namespace Tolk.BusinessLogic.Enums
 
         [CustomName("rounding")]
         [Description("Öresavrundning")]
-        [Parent(InvoiceableArticle.InterpreterCompensationIncludingSocialCharge)]
         RoundedPrice = 6,
 
         [CustomName("outlay")]

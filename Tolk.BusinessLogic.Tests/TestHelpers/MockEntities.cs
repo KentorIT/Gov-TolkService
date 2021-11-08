@@ -140,7 +140,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             {
                 new RequisitionPriceRow { RequisitionId = 1, StartAt = new DateTime(2020,1,1,12,0,0), EndAt = new DateTime(2020,1,1,13,0,0), Price = 1000, PriceRowType = PriceRowType.InterpreterCompensation },
                 new RequisitionPriceRow { RequisitionId = 1, Price = 10, PriceRowType = PriceRowType.AdministrativeCharge },
-                new RequisitionPriceRow { RequisitionId = 1, Price = 20, PriceRowType = PriceRowType.SocialInsuranceCharge },
+                new RequisitionPriceRow { RequisitionId = 1, Price = (decimal)20.34, PriceRowType = PriceRowType.SocialInsuranceCharge },
                 new RequisitionPriceRow { RequisitionId = 1, Price = (decimal)0.25, PriceRowType = PriceRowType.RoundedPrice },
                 new RequisitionPriceRow { RequisitionId = 1, Price = 100, PriceRowType = PriceRowType.BrokerFee},
                 new RequisitionPriceRow { RequisitionId = 1, Price = 250, PriceRowType = PriceRowType.Outlay },
@@ -150,7 +150,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             {
                 new RequestPriceRow { RequestId = 1, StartAt = new DateTime(2020,1,1,12,0,0), EndAt = new DateTime(2020,1,1,13,0,0), Price = 1000, PriceRowType = PriceRowType.InterpreterCompensation },
                 new RequestPriceRow { RequestId = 1, Price = 10, PriceRowType = PriceRowType.AdministrativeCharge },
-                new RequestPriceRow { RequestId = 1, Price = 20, PriceRowType = PriceRowType.SocialInsuranceCharge },
+                new RequestPriceRow { RequestId = 1, Price = (decimal)20.34, PriceRowType = PriceRowType.SocialInsuranceCharge },
                 new RequestPriceRow { RequestId = 1, Price = (decimal)0.25, PriceRowType = PriceRowType.RoundedPrice },
                 new RequestPriceRow { RequestId = 1, Price = 100, PriceRowType = PriceRowType.BrokerFee},
             };
