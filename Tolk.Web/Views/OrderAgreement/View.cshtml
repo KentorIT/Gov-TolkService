@@ -27,8 +27,13 @@
         </div>
     </div>
     <div class="row">
-            <div class="col-sm-12">
-                <a asp-area="" asp-controller="OrderAgreement" asp-action="GetPayload" asp-all-route-data="@(new Dictionary<string, string>{{ "id", Model.OrderAgreementPayloadId.ToString() } })">Ladda ner filen</a><br />
-            </div>
+        <div class="col-sm-12">
+            <a asp-area="" asp-controller="OrderAgreement" asp-action="GetPayload" asp-all-route-data="@(new Dictionary<string, string>{{ "id", Model.OrderAgreementPayloadId.ToString() } })">Ladda ner filen</a><br />
         </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+        </div>
+    </div>
 </section>
