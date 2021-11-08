@@ -150,7 +150,7 @@ namespace Tolk.BusinessLogic.Services
                 CreateEmail(previousContactUser.Email, subject,
                     body + GoToOrderPlain(order.OrderId),
                     HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(order.OrderId),
-                    NotificationType.RequisitionApprovalRightsAdded);
+                    NotificationType.RequisitionApprovalRightsRemoved);
             }
             if (!string.IsNullOrEmpty(currentContactUser?.Email))
             {
@@ -158,7 +158,7 @@ namespace Tolk.BusinessLogic.Services
                 CreateEmail(currentContactUser.Email, subject,
                     body + GoToOrderPlain(order.OrderId),
                     HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(order.OrderId),
-                    NotificationType.RequisitionApprovalRightsRemoved);
+                    NotificationType.RequisitionApprovalRightsAdded);
             }
         }
 
