@@ -259,7 +259,7 @@ namespace Tolk.BusinessLogic.Enums
         [NotificationConsumerType(NotificationConsumerType.Customer)]
         OrderTerminated = 35,
 
-        [Description("Bokningsförfrågan avslutad")]
+        [Description("Sammanhållen bokningsförfrågan avslutad")]
         [CustomName("order_group_terminated", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
@@ -280,7 +280,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Sammanhållen bokningsförfrågan fullständigt besvarad")]
         [CustomName("order_group_accepted", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
-        //NotificationConsumerType Customer
+        [NotificationConsumerType(NotificationConsumerType.Customer)]
         OrderGroupAccepted = 39,
 
         [Description("Reklamation har godtagits")]
