@@ -45,10 +45,22 @@ namespace Tolk.BusinessLogic.Tests.Models
         [Fact]
         public void CreateOrderAgreementFromRequest_Valid()
         {
+            CreateOrderAgreementFromRequests_Valid(false);
+        }
+
+        [Fact]
+        public void CreateOrderAgreementFromRequestTwoBrokerFees_Valid()
+        {
+            CreateOrderAgreementFromRequests_Valid(true);
+        }
+
+        private void CreateOrderAgreementFromRequests_Valid(bool useTwoBrookerFees)
+        {
+            var pricerows = useTwoBrookerFees ? MockEntities.MockRequestPriceRowsTwoBrokerFees : MockEntities.MockRequestPriceRows;
             var request = MockRequest;
             var now = DateTime.UtcNow;
 
-            var agreement = new OrderAgreementModel(request, now, MockEntities.MockRequestPriceRows);
+            var agreement = new OrderAgreementModel(request, now, pricerows);
             Assert.Equal(request.Order.OrderNumber, agreement.SalesOrderID);
             Assert.Equal($"{Constants.IdPrefix}{request.Order.OrderNumber}-1", agreement.ID.Value);
             Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
@@ -63,7 +75,7 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(request.Order.CustomerOrganisation.PeppolId, agreement.BuyerCustomerParty.Party.PartyIdentification.ID.Value);
             Assert.Equal(OrderAgreementModel.OwnerPeppolId.Value, agreement.SellerSupplierParty.Party.EndpointID.Value);
             Assert.Equal(request.Ranking.Broker.OrganizationNumber, agreement.SellerSupplierParty.Party.PartyIdentification.ID.Value);
-            decimal sum = MockEntities.MockRequestPriceRows.Where(pr => pr.PriceRowType != PriceRowType.RoundedPrice).Sum(pr => pr.Price);
+            decimal sum = pricerows.Where(pr => pr.PriceRowType != PriceRowType.RoundedPrice).Sum(pr => pr.TotalPrice);
 
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.Price.PriceAmount.AmountSum));
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.LineExtensionAmount.AmountSum));
@@ -102,7 +114,7 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(requisition.Request.Order.CustomerOrganisation.PeppolId, agreement.BuyerCustomerParty.Party.PartyIdentification.ID.Value);
             Assert.Equal(OrderAgreementModel.OwnerPeppolId.Value, agreement.SellerSupplierParty.Party.EndpointID.Value);
             Assert.Equal(requisition.Request.Ranking.Broker.OrganizationNumber, agreement.SellerSupplierParty.Party.PartyIdentification.ID.Value);
-            decimal sum = MockEntities.MockRequisitionPriceRows.Where(pr => pr.PriceRowType != PriceRowType.RoundedPrice).Sum(pr => pr.Price);
+            decimal sum = MockEntities.MockRequisitionPriceRows.Where(pr => pr.PriceRowType != PriceRowType.RoundedPrice).Sum(pr => pr.TotalPrice);
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.Price.PriceAmount.AmountSum));
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.LineExtensionAmount.AmountSum));
             Assert.Equal(sum, agreement.LegalMonetaryTotal.LineExtensionAmount.AmountSum);

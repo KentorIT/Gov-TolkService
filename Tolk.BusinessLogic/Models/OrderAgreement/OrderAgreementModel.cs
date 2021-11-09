@@ -233,7 +233,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
                             {
                                 AmountSum = prices
                                     .Where(pr => EnumHelper.Parent<PriceRowType, InvoiceableArticle>(pr.PriceRowType) == article)
-                                    .Sum(pr => pr.Price)
+                                    .Sum(pr => pr.TotalPrice)
                             }
                         }
                     }

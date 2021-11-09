@@ -138,21 +138,30 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             };
         public static RequisitionPriceRow[] MockRequisitionPriceRows => new[]
             {
-                new RequisitionPriceRow { RequisitionId = 1, StartAt = new DateTime(2020,1,1,12,0,0), EndAt = new DateTime(2020,1,1,13,0,0), Price = 1000, PriceRowType = PriceRowType.InterpreterCompensation },
-                new RequisitionPriceRow { RequisitionId = 1, Price = 10, PriceRowType = PriceRowType.AdministrativeCharge },
-                new RequisitionPriceRow { RequisitionId = 1, Price = (decimal)20.34, PriceRowType = PriceRowType.SocialInsuranceCharge },
-                new RequisitionPriceRow { RequisitionId = 1, Price = (decimal)0.25, PriceRowType = PriceRowType.RoundedPrice },
-                new RequisitionPriceRow { RequisitionId = 1, Price = 100, PriceRowType = PriceRowType.BrokerFee},
-                new RequisitionPriceRow { RequisitionId = 1, Price = 250, PriceRowType = PriceRowType.Outlay },
-                new RequisitionPriceRow { RequisitionId = 1, Price = 175, PriceRowType = PriceRowType.TravelCost },
+                new RequisitionPriceRow { RequisitionId = 1, StartAt = new DateTime(2020,1,1,12,0,0), EndAt = new DateTime(2020,1,1,13,0,0), Price = 1000, PriceRowType = PriceRowType.InterpreterCompensation, Quantity = 1 },
+                new RequisitionPriceRow { RequisitionId = 1, Price = 10, PriceRowType = PriceRowType.AdministrativeCharge, Quantity = 1 },
+                new RequisitionPriceRow { RequisitionId = 1, Price = (decimal)20.34, PriceRowType = PriceRowType.SocialInsuranceCharge, Quantity = 1 },
+                new RequisitionPriceRow { RequisitionId = 1, Price = (decimal)0.25, PriceRowType = PriceRowType.RoundedPrice, Quantity = 1 },
+                new RequisitionPriceRow { RequisitionId = 1, Price = 100, PriceRowType = PriceRowType.BrokerFee, Quantity = 1 },
+                new RequisitionPriceRow { RequisitionId = 1, Price = 250, PriceRowType = PriceRowType.Outlay, Quantity = 1 },
+                new RequisitionPriceRow { RequisitionId = 1, Price = 175, PriceRowType = PriceRowType.TravelCost, Quantity = 1  },
             };
         public static RequestPriceRow[] MockRequestPriceRows => new[]
             {
-                new RequestPriceRow { RequestId = 1, StartAt = new DateTime(2020,1,1,12,0,0), EndAt = new DateTime(2020,1,1,13,0,0), Price = 1000, PriceRowType = PriceRowType.InterpreterCompensation },
-                new RequestPriceRow { RequestId = 1, Price = 10, PriceRowType = PriceRowType.AdministrativeCharge },
-                new RequestPriceRow { RequestId = 1, Price = (decimal)20.34, PriceRowType = PriceRowType.SocialInsuranceCharge },
-                new RequestPriceRow { RequestId = 1, Price = (decimal)0.25, PriceRowType = PriceRowType.RoundedPrice },
-                new RequestPriceRow { RequestId = 1, Price = 100, PriceRowType = PriceRowType.BrokerFee},
+                new RequestPriceRow { RequestId = 1, StartAt = new DateTime(2020,1,1,12,0,0), EndAt = new DateTime(2020,1,1,13,0,0), Price = 1000, PriceRowType = PriceRowType.InterpreterCompensation, Quantity = 1 },
+                new RequestPriceRow { RequestId = 1, Price = 10, PriceRowType = PriceRowType.AdministrativeCharge, Quantity = 1 },
+                new RequestPriceRow { RequestId = 1, Price = (decimal)20.34, PriceRowType = PriceRowType.SocialInsuranceCharge, Quantity = 1 },
+                new RequestPriceRow { RequestId = 1, Price = (decimal)0.25, PriceRowType = PriceRowType.RoundedPrice, Quantity = 1 },
+                new RequestPriceRow { RequestId = 1, Price = 100, PriceRowType = PriceRowType.BrokerFee, Quantity = 1 },
+            };
+
+        public static RequestPriceRow[] MockRequestPriceRowsTwoBrokerFees => new[]
+            {
+                new RequestPriceRow { RequestId = 1, StartAt = new DateTime(2020,1,1,23,0,0), EndAt = new DateTime(2020,1,2,1,0,0), Price = 3000, PriceRowType = PriceRowType.InterpreterCompensation, Quantity = 1 },
+                new RequestPriceRow { RequestId = 1, Price = 10, PriceRowType = PriceRowType.AdministrativeCharge, Quantity = 1 },
+                new RequestPriceRow { RequestId = 1, Price = (decimal)20.34, PriceRowType = PriceRowType.SocialInsuranceCharge, Quantity = 1 },
+                new RequestPriceRow { RequestId = 1, Price = (decimal)0.25, PriceRowType = PriceRowType.RoundedPrice, Quantity = 1 },
+                new RequestPriceRow { RequestId = 1, Price = 100, PriceRowType = PriceRowType.BrokerFee, Quantity = 2 },
             };
 
         public static Order[] MockOrders(Language[] mockLanguages, Ranking[] mockRankings, AspNetUser[] mockCustomerUsers)
