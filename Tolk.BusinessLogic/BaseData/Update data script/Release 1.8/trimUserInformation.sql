@@ -1,21 +1,21 @@
 --use Tolk[]
 
 update AspnetUsers
-set PhoneNumber = trim(PhoneNumber)
+set PhoneNumber = ltrim(rtrim(PhoneNumber))
 from AspNetUsers
-Where len(trim(PhoneNumber)) < len(PhoneNumber)
+Where len(ltrim(rtrim(PhoneNumber))) < len(PhoneNumber)
 
 update AspnetUsers
-set PhoneNumberCellphone = trim(PhoneNumberCellphone)
+set PhoneNumberCellphone = ltrim(rtrim(PhoneNumberCellphone))
 from AspNetUsers
-Where len(trim(PhoneNumberCellphone)) < len(PhoneNumberCellphone)
+Where len(ltrim(rtrim(PhoneNumberCellphone))) < len(PhoneNumberCellphone)
 
 update AspnetUsers
-set namefamily = trim(namefamily)
+set namefamily = ltrim(rtrim(namefamily))
 from AspNetUsers
-Where len(trim(namefamily)) < len(namefamily)
+Where len(ltrim(rtrim(namefamily))) < len(namefamily)
 
 update AspnetUsers
-set namefirst = trim(namefirst)
+set namefirst = ltrim(rtrim(namefirst))
 from AspNetUsers
-Where len(trim(namefirst)) < len(namefirst)
+Where len(ltrim(rtrim(namefirst))) < len(namefirst)
