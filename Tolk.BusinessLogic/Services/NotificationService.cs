@@ -47,17 +47,21 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(request, nameof(OrderCancelledByCustomer), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
 
-            //customer send email with info about requisition created 
-            if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
+            //customer send email with info about requisition created
+            NotificationType notificationType = NotificationType.RequestCancelledByCustomerWhenApproved;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
-                string body = $"Rekvisition har skapats pga att myndigheten har avbokat uppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)}. Uppdraget avbokades med detta meddelande:\n{request.CancelMessage}\n" +
-                     (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, i de fall något ersättningsuppdrag inte kan ordnas av kund. Observera att ersättning kan tillkomma för eventuell tidsspillan som tolken skulle behövt ta ut för genomförande av aktuellt uppdrag. Även kostnader avseende resor och boende som ej är avbokningsbara, alternativt avbokningskostnader för resor och boende som avbokats kan tillkomma. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna."
-                     : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.");
-                CreateEmail(GetRecipientsFromOrder(request.Order, true), $"Rekvisition har skapats pga avbokat uppdrag boknings-ID {orderNumber}",
-                    body + GoToOrderPlain(request.Order.OrderId),
-                    HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
-                    NotificationType.RequestCancelledByCustomerWhenApproved,
-                    true);
+                if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
+                {
+                    string body = $"Rekvisition har skapats pga att myndigheten har avbokat uppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)}. Uppdraget avbokades med detta meddelande:\n{request.CancelMessage}\n" +
+                         (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, i de fall något ersättningsuppdrag inte kan ordnas av kund. Observera att ersättning kan tillkomma för eventuell tidsspillan som tolken skulle behövt ta ut för genomförande av aktuellt uppdrag. Även kostnader avseende resor och boende som ej är avbokningsbara, alternativt avbokningskostnader för resor och boende som avbokats kan tillkomma. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna."
+                         : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.");
+                    CreateEmail(GetRecipientsFromOrder(request.Order, true), $"Rekvisition har skapats pga avbokat uppdrag boknings-ID {orderNumber}",
+                        body + GoToOrderPlain(request.Order.OrderId),
+                        HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
+                        notificationType,
+                        true);
+                }
             }
             //broker
             var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Email);
@@ -143,22 +147,25 @@ namespace Tolk.BusinessLogic.Services
             string orderNumber = order.OrderNumber;
 
             string subject = $"Behörighet ändrad för tolkuppdrag boknings-ID {orderNumber}";
-
-            if (!string.IsNullOrEmpty(previousContactUser?.Email))
-            {
-                string body = $"Behörighet att granska rekvisition har ändrats. Du har inte längre denna behörighet för bokning {orderNumber}.";
-                CreateEmail(previousContactUser.Email, subject,
-                    body + GoToOrderPlain(order.OrderId),
-                    HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(order.OrderId),
-                    NotificationType.RequisitionApprovalRightsRemoved);
-            }
-            if (!string.IsNullOrEmpty(currentContactUser?.Email))
+            NotificationType notificationType = NotificationType.RequisitionApprovalRightsRemoved;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType) 
+                && !string.IsNullOrEmpty(previousContactUser?.Email))
+                {
+                    string body = $"Behörighet att granska rekvisition har ändrats. Du har inte längre denna behörighet för bokning {orderNumber}.";
+                    CreateEmail(previousContactUser.Email, subject,
+                        body + GoToOrderPlain(order.OrderId),
+                        HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(order.OrderId),
+                        notificationType);
+                }
+            notificationType = NotificationType.RequisitionApprovalRightsAdded;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType)
+            && !string.IsNullOrEmpty(currentContactUser?.Email))
             {
                 string body = $"Behörighet att granska rekvisition har ändrats. Du har nu behörighet att utföra detta för bokning {orderNumber}.";
                 CreateEmail(currentContactUser.Email, subject,
                     body + GoToOrderPlain(order.OrderId),
                     HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(order.OrderId),
-                    NotificationType.RequisitionApprovalRightsAdded);
+                    notificationType);
             }
         }
 
@@ -266,13 +273,17 @@ namespace Tolk.BusinessLogic.Services
         public void OrderGroupTerminated(OrderGroup terminatedOrderGroup)
         {
             NullCheckHelper.ArgumentCheckNull(terminatedOrderGroup, nameof(OrderGroupTerminated), nameof(NotificationService));
-            var body = GetOrderGroupTerminatedText(terminatedOrderGroup.Status, terminatedOrderGroup.OrderGroupNumber);
-            CreateEmail(GetRecipientsFromOrderGroup(terminatedOrderGroup),
-                $"Sammanhållen bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber} fick ingen bekräftad tolktillsättning",
-                body + GoToOrderGroupPlain(terminatedOrderGroup.OrderGroupId),
-                body + GoToOrderGroupButton(terminatedOrderGroup.OrderGroupId),
-                NotificationType.OrderGroupTerminated
-            );
+            NotificationType notificationType = NotificationType.OrderGroupTerminated;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                var body = GetOrderGroupTerminatedText(terminatedOrderGroup.Status, terminatedOrderGroup.OrderGroupNumber);
+                CreateEmail(GetRecipientsFromOrderGroup(terminatedOrderGroup),
+                    $"Sammanhållen bokningsförfrågan {terminatedOrderGroup.OrderGroupNumber} fick ingen bekräftad tolktillsättning",
+                    body + GoToOrderGroupPlain(terminatedOrderGroup.OrderGroupId),
+                    body + GoToOrderGroupButton(terminatedOrderGroup.OrderGroupId),
+                    notificationType
+                );
+            }
         }
 
         public async Task RequestCreated(Request request)
@@ -370,55 +381,64 @@ namespace Tolk.BusinessLogic.Services
         public void RequestCreatedWithoutExpiry(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCreatedWithoutExpiry), nameof(NotificationService));
-            string body = $@"Bokningsförfrågan {request.Order.OrderNumber} måste kompletteras med sista svarstid innan den kan skickas till nästa förmedling för tillsättning.
+            NotificationType notificationType = NotificationType.RequestCreatedWithoutExpiry;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                string body = $@"Bokningsförfrågan {request.Order.OrderNumber} måste kompletteras med sista svarstid innan den kan skickas till nästa förmedling för tillsättning.
 
 Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills dess sista svarstid är satt.";
 
-            CreateEmail(GetRecipientsFromOrder(request.Order),
-                $"Sista svarstid ej satt på bokningsförfrågan {request.Order.OrderNumber}",
-                $"{body} {GoToOrderPlain(request.OrderId)}",
-                $"{HtmlHelper.ToHtmlBreak(body)} {GoToOrderButton(request.OrderId)}",
-                NotificationType.RequestCreatedWithoutExpiry
-            );
-
-            _logger.LogInformation($"Email created for customer regarding missing expiry on request {request.RequestId} for order {request.OrderId}");
+                CreateEmail(GetRecipientsFromOrder(request.Order),
+                    $"Sista svarstid ej satt på bokningsförfrågan {request.Order.OrderNumber}",
+                    $"{body} {GoToOrderPlain(request.OrderId)}",
+                    $"{HtmlHelper.ToHtmlBreak(body)} {GoToOrderButton(request.OrderId)}",
+                    notificationType
+                );
+                _logger.LogInformation($"Email created for customer regarding missing expiry on request {request.RequestId} for order {request.OrderId}");
+            }
         }
 
         public void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup)
         {
             NullCheckHelper.ArgumentCheckNull(newRequestGroup, nameof(RequestGroupCreatedWithoutExpiry), nameof(NotificationService));
-            string orderGroupNumber = newRequestGroup.OrderGroup.OrderGroupNumber;
-            string body = $@"Sammanhållen bokningsförfrågan {orderGroupNumber} måste kompletteras med sista svarstid innan den kan skickas till nästa förmedling för tillsättning.
+            NotificationType notificationType = NotificationType.RequestgroupCreatedWithoutExpiry;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                string orderGroupNumber = newRequestGroup.OrderGroup.OrderGroupNumber;
+                string body = $@"Sammanhållen bokningsförfrågan {orderGroupNumber} måste kompletteras med sista svarstid innan den kan skickas till nästa förmedling för tillsättning.
 
 Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills dess sista svarstid är satt.";
 
-            CreateEmail(GetRecipientsFromOrderGroup(newRequestGroup.OrderGroup),
-                $"Sista svarstid ej satt på sammanhållen bokningsförfrågan {orderGroupNumber}",
-                $"{body} {GoToOrderGroupPlain(newRequestGroup.OrderGroup.OrderGroupId)}",
-                $"{HtmlHelper.ToHtmlBreak(body)} {GoToOrderGroupButton(newRequestGroup.OrderGroup.OrderGroupId)}",
-                NotificationType.RequestgroupCreatedWithoutExpiry
-            );
-
-            _logger.LogInformation($"Email created for customer regarding missing expiry on request group {newRequestGroup.RequestGroupId} for order group {newRequestGroup.OrderGroup.OrderGroupId}");
+                CreateEmail(GetRecipientsFromOrderGroup(newRequestGroup.OrderGroup),
+                    $"Sista svarstid ej satt på sammanhållen bokningsförfrågan {orderGroupNumber}",
+                    $"{body} {GoToOrderGroupPlain(newRequestGroup.OrderGroup.OrderGroupId)}",
+                    $"{HtmlHelper.ToHtmlBreak(body)} {GoToOrderGroupButton(newRequestGroup.OrderGroup.OrderGroupId)}",
+                    notificationType
+                );
+                _logger.LogInformation($"Email created for customer regarding missing expiry on request group {newRequestGroup.RequestGroupId} for order group {newRequestGroup.OrderGroup.OrderGroupId}");
+            }
         }
 
         public void RequestAnswerAutomaticallyApproved(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnswerAutomaticallyApproved), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
-            var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
+            NotificationType notificationType = NotificationType.OrderAccepted;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
                 OrderReferenceNumberInfo(request.Order) +
                 $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                 $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
                 InterpreterCompetenceInfo(request.CompetenceLevel) +
                 GetPossibleInfoNotValidatedInterpreter(request);
 
-            CreateEmail(GetRecipientsFromOrder(request.Order),
-                $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
-                body + GoToOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true),
-                NotificationType.OrderAccepted);
-
+                CreateEmail(GetRecipientsFromOrder(request.Order),
+                    $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
+                    body + GoToOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true),
+                    notificationType);
+            }
             NotifyCustomerOnAcceptedAnswer(request, orderNumber);
             NotifyBrokerOnAcceptedAnswer(request, orderNumber);
         }
@@ -427,24 +447,28 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAnswerAutomaticallyApproved), nameof(NotificationService));
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            Order order = requestGroup.OrderGroup.FirstOrder;
-
-            var body = $"Svar på  sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
-                OrderReferenceNumberInfo(order) +
-                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
-                $"\tTillfällen: \n" +
-                $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
-                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
-            if (requestGroup.HasExtraInterpreter)
+            NotificationType notificationType = NotificationType.OrderGroupAccepted;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
-                body += GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter, true);
+                Order order = requestGroup.OrderGroup.FirstOrder;
+
+                var body = $"Svar på  sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
+                    OrderReferenceNumberInfo(order) +
+                    $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                    $"\tTillfällen: \n" +
+                    $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
+                    GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
+                if (requestGroup.HasExtraInterpreter)
+                {
+                    body += GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter, true);
+                }
+                CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+                    $"Förmedling har accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
+                    body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
+                    notificationType
+                );
             }
-            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
-                $"Förmedling har accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
-                body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
-                NotificationType.OrderGroupAccepted
-            );
             NotifyBrokerOnAcceptedAnswer(requestGroup, orderGroupNumber);
         }
 
@@ -679,24 +703,32 @@ Angiven reklamationsbeskrivning:
 
         public void ComplaintConfirmed(Complaint complaint)
         {
-            NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintConfirmed), nameof(NotificationService));
-            string orderNumber = complaint.Request.Order.OrderNumber;
-            CreateEmail(complaint.ContactEmail, $"Reklamation kopplad till tolkuppdrag {orderNumber} har godtagits",
-                $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits {GoToOrderPlain(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
-                $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits {GoToOrderButton(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
-                NotificationType.ComplaintConfirmed
-            );
+            NotificationType notificationType = NotificationType.ComplaintConfirmed;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintConfirmed), nameof(NotificationService));
+                string orderNumber = complaint.Request.Order.OrderNumber;
+                CreateEmail(complaint.ContactEmail, $"Reklamation kopplad till tolkuppdrag {orderNumber} har godtagits",
+                    $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits {GoToOrderPlain(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
+                    $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har godtagits {GoToOrderButton(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
+                    notificationType
+                );
+            }
         }
 
         public void ComplaintDisputed(Complaint complaint)
         {
-            NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintDisputed), nameof(NotificationService));
-            string orderNumber = complaint.Request.Order.OrderNumber;
-            CreateEmail(complaint.ContactEmail, $"Reklamation kopplad till tolkuppdrag {orderNumber} har bestridits",
-                $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har bestridits med följande meddelande:\n{complaint.AnswerMessage} {GoToOrderPlain(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
-                $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har bestridits med följande meddelande:<br />{complaint.AnswerMessage} {GoToOrderButton(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
-                NotificationType.ComplaintDisputed
-            );
+            NotificationType notificationType = NotificationType.ComplaintDisputed;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                NullCheckHelper.ArgumentCheckNull(complaint, nameof(ComplaintDisputed), nameof(NotificationService));
+                string orderNumber = complaint.Request.Order.OrderNumber;
+                CreateEmail(complaint.ContactEmail, $"Reklamation kopplad till tolkuppdrag {orderNumber} har bestridits",
+                    $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har bestridits med följande meddelande:\n{complaint.AnswerMessage} {GoToOrderPlain(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
+                    $"Reklamation för tolkuppdrag med boknings-ID {orderNumber} har bestridits med följande meddelande:<br />{complaint.AnswerMessage} {GoToOrderButton(complaint.Request.Order.OrderId, HtmlHelper.ViewTab.Complaint)}",
+                    notificationType
+                );
+            }
         }
 
         public void ComplaintDisputePendingTrial(Complaint complaint)
@@ -763,14 +795,18 @@ Angiven reklamationsbeskrivning:
 
         public void RequisitionCreated(Requisition requisition)
         {
-            NullCheckHelper.ArgumentCheckNull(requisition, nameof(RequisitionCreated), nameof(NotificationService));
-            var order = requisition.Request.Order;
-            CreateEmail(GetRecipientsFromOrder(order, true),
-                $"En rekvisition har registrerats för tolkuppdrag {order.OrderNumber}",
-                $"En rekvisition har registrerats för tolkuppdrag med boknings-ID {order.OrderNumber}. {GoToOrderPlain(order.OrderId, HtmlHelper.ViewTab.Requisition)}",
-                $"En rekvisition har registrerats för tolkuppdrag med boknings-ID {order.OrderNumber}. {GoToOrderButton(order.OrderId, HtmlHelper.ViewTab.Requisition)}",
-                NotificationType.RequisitionCreated
-            );
+            NotificationType notificationType = NotificationType.RequisitionCreated;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                NullCheckHelper.ArgumentCheckNull(requisition, nameof(RequisitionCreated), nameof(NotificationService));
+                var order = requisition.Request.Order;
+                CreateEmail(GetRecipientsFromOrder(order, true),
+                    $"En rekvisition har registrerats för tolkuppdrag {order.OrderNumber}",
+                    $"En rekvisition har registrerats för tolkuppdrag med boknings-ID {order.OrderNumber}. {GoToOrderPlain(order.OrderId, HtmlHelper.ViewTab.Requisition)}",
+                    $"En rekvisition har registrerats för tolkuppdrag med boknings-ID {order.OrderNumber}. {GoToOrderButton(order.OrderId, HtmlHelper.ViewTab.Requisition)}",
+                    notificationType
+                );
+            }
         }
 
         public async Task RequisitionReviewed(Requisition requisition)
@@ -872,18 +908,22 @@ Sammanställning:
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAccepted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
-            var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}\n\n" +
+            NotificationType notificationType = NotificationType.OrderAnswered;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}\n\n" +
                     OrderReferenceNumberInfo(request.Order) +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                     $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
                     InterpreterCompetenceInfo(request.CompetenceLevel) +
                     GetPossibleInfoNotValidatedInterpreter(request);
 
-            CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
-                body + GoToOrderPlain(request.Order.OrderId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
-                NotificationType.OrderAnswered
-            );
+                CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat bokningsförfrågan {orderNumber}",
+                    body + GoToOrderPlain(request.Order.OrderId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
+                    notificationType
+                );
+            }
             var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderAnswered, NotificationChannel.Webhook, NotificationConsumerType.Customer);
             if (webhook != null)
             {
@@ -901,24 +941,28 @@ Sammanställning:
         public void RequestGroupAccepted(RequestGroup requestGroup)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAccepted), nameof(NotificationService));
-            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            Order order = requestGroup.OrderGroup.FirstOrder;
-            var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer)}\n\n" +
-                OrderReferenceNumberInfo(order) +
-                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
-                $"\tTillfällen: \n" +
-                $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
-                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
-            if (requestGroup.HasExtraInterpreter)
+            NotificationType notificationType = NotificationType.OrderGroupAccepted;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
-                body += GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter, true);
+                string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+                Order order = requestGroup.OrderGroup.FirstOrder;
+                var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer)}\n\n" +
+                    OrderReferenceNumberInfo(order) +
+                    $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                    $"\tTillfällen: \n" +
+                    $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
+                    GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
+                if (requestGroup.HasExtraInterpreter)
+                {
+                    body += GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForExtraInterpreter, true);
+                }
+                CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+                    $"Förmedling har accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
+                    body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
+                    notificationType
+                );
             }
-            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
-                $"Förmedling har accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
-                body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
-                NotificationType.OrderGroupAccepted
-            );
         }
 
         public void RequestGroupAnswerApproved(RequestGroup requestGroup)
@@ -931,12 +975,16 @@ Sammanställning:
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestDeclinedByBroker), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
-            var body = $"Svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har tackat nej till bokningsförfrågan med följande meddelande:\n{request.DenyMessage} \n\nBokningsförfrågan skickas nu automatiskt vidare till nästa förmedling enligt rangordningen förutsatt att det finns ytterligare förmedlingar att fråga. I de fall en bokningsförfrågan avslutas på grund av att ingen förmedling har kunnat tillsätta en tolk så skickas ett e-postmeddelande till er om detta.";
-            CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har tackat nej till bokningsförfrågan {orderNumber}",
-                body + GoToOrderPlain(request.Order.OrderId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
-                NotificationType.OrderDeclined
-            );
+            NotificationType notificationType = NotificationType.OrderDeclined;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                var body = $"Svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har tackat nej till bokningsförfrågan med följande meddelande:\n{request.DenyMessage} \n\nBokningsförfrågan skickas nu automatiskt vidare till nästa förmedling enligt rangordningen förutsatt att det finns ytterligare förmedlingar att fråga. I de fall en bokningsförfrågan avslutas på grund av att ingen förmedling har kunnat tillsätta en tolk så skickas ett e-postmeddelande till er om detta.";
+                CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har tackat nej till bokningsförfrågan {orderNumber}",
+                    body + GoToOrderPlain(request.Order.OrderId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
+                    notificationType
+                );
+            }
             var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderDeclined, NotificationChannel.Webhook, NotificationConsumerType.Customer);
             if (webhook != null)
             {
@@ -955,13 +1003,17 @@ Sammanställning:
         public void RequestGroupDeclinedByBroker(RequestGroup requestGroup)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupDeclinedByBroker), nameof(NotificationService));
-            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            var body = $"Svar på sammanhållna bokningsförfrågan {orderGroupNumber} har inkommit. Förmedling {requestGroup.Ranking.Broker.Name} har tackat nej till den sammanhållna bokningsförfrågan med följande meddelande:\n{requestGroup.DenyMessage} \n\nBokningsförfrågan skickas nu automatiskt vidare till nästa förmedling enligt rangordningen förutsatt att det finns ytterligare förmedlingar att fråga. I de fall en bokningsförfrågan avslutas på grund av att ingen förmedling har kunnat tillsätta en tolk så skickas ett e-postmeddelande till er om detta.";
-            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup), $"Förmedling har tackat nej till den sammanhållna bokningsförfrågan {orderGroupNumber}",
-                body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
-                NotificationType.OrderGroupDeclined
-            );
+            NotificationType notificationType = NotificationType.OrderGroupDeclined;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+                var body = $"Svar på sammanhållna bokningsförfrågan {orderGroupNumber} har inkommit. Förmedling {requestGroup.Ranking.Broker.Name} har tackat nej till den sammanhållna bokningsförfrågan med följande meddelande:\n{requestGroup.DenyMessage} \n\nBokningsförfrågan skickas nu automatiskt vidare till nästa förmedling enligt rangordningen förutsatt att det finns ytterligare förmedlingar att fråga. I de fall en bokningsförfrågan avslutas på grund av att ingen förmedling har kunnat tillsätta en tolk så skickas ett e-postmeddelande till er om detta.";
+                CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup), $"Förmedling har tackat nej till den sammanhållna bokningsförfrågan {orderGroupNumber}",
+                    body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
+                    notificationType
+                );
+            }
         }
 
         public void RequestCompleted(Request request)
@@ -999,12 +1051,16 @@ Sammanställning:
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCancelledByBroker), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
-            var body = $"Förmedling {request.Ranking.Broker.Name} har avbokat tolkuppdraget med boknings-ID {orderNumber} med meddelande:\n{request.CancelMessage}";
-            CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har avbokat tolkuppdraget med boknings-ID {orderNumber}",
-                body + GoToOrderPlain(request.Order.OrderId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
-                NotificationType.OrderCancelledByBroker
-            );
+            NotificationType notificationType = NotificationType.OrderCancelledByBroker;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                var body = $"Förmedling {request.Ranking.Broker.Name} har avbokat tolkuppdraget med boknings-ID {orderNumber} med meddelande:\n{request.CancelMessage}";
+                CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har avbokat tolkuppdraget med boknings-ID {orderNumber}",
+                    body + GoToOrderPlain(request.Order.OrderId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
+                    notificationType
+                );
+            }
             var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderCancelledByBroker, NotificationChannel.Webhook, NotificationConsumerType.Customer);
             if (webhook != null)
             {
@@ -1024,23 +1080,33 @@ Sammanställning:
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestReplamentOrderAccepted), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
+            NotificationType notificationType;
+
             switch (request.Status)
             {
                 case RequestStatus.Accepted:
-                    var body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats. {GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}";
-                    CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
-                        body + GoToOrderPlain(request.Order.OrderId),
-                        HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
-                        NotificationType.ReplamentOrderAccepted
-                    );
+                    notificationType = NotificationType.ReplamentOrderAccepted;
+                    if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+                    {
+                        var body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats. {GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}";
+                        CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
+                            body + GoToOrderPlain(request.Order.OrderId),
+                            HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
+                            notificationType
+                        );
+                    }
                     break;
                 case RequestStatus.Approved:
-                    var bodyAppr = $"Ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har accepteras. Inga förändrade krav finns, tolkuppdrag är klart för utförande.";
-                    CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
-                        bodyAppr + GoToOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true),
-                        HtmlHelper.ToHtmlBreak(bodyAppr) + GoToOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true),
-                        NotificationType.ReplamentOrderApproved
-                    );
+                    notificationType = NotificationType.ReplamentOrderApproved;
+                    if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+                    {
+                        var bodyAppr = $"Ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har accepteras. Inga förändrade krav finns, tolkuppdrag är klart för utförande.";
+                        CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
+                            bodyAppr + GoToOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true),
+                            HtmlHelper.ToHtmlBreak(bodyAppr) + GoToOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true),
+                            notificationType
+                        );
+                    }
                     NotifyCustomerOnAcceptedAnswer(request, orderNumber);
                     NotifyBrokerOnAcceptedAnswer(request, orderNumber);
                     break;
@@ -1052,34 +1118,42 @@ Sammanställning:
         public void RequestReplamentOrderDeclinedByBroker(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestReplamentOrderDeclinedByBroker), nameof(NotificationService));
-            string orderNumber = request.Order.OrderNumber;
+            NotificationType notificationType = NotificationType.ReplamentOrderDeclined;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                string orderNumber = request.Order.OrderNumber;
 
-            var body = $"Svar på ersättningsuppdrag {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} " +
-                $"har tackat nej till ersättningsuppdrag med följande meddelande:\n{request.DenyMessage}";
+                var body = $"Svar på ersättningsuppdrag {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} " +
+                    $"har tackat nej till ersättningsuppdrag med följande meddelande:\n{request.DenyMessage}";
 
-            CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har tackat nej till ersättningsuppdrag {orderNumber}",
-                $"{body} {GoToOrderPlain(request.Order.OrderId)}",
-                $"{HtmlHelper.ToHtmlBreak(body)} {GoToOrderButton(request.Order.OrderId)}",
-                NotificationType.ReplamentOrderDeclined
-            );
+                CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har tackat nej till ersättningsuppdrag {orderNumber}",
+                    $"{body} {GoToOrderPlain(request.Order.OrderId)}",
+                    $"{HtmlHelper.ToHtmlBreak(body)} {GoToOrderButton(request.Order.OrderId)}",
+                    notificationType
+                );
+            }
         }
 
         public void RequestChangedInterpreter(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestChangedInterpreter), nameof(NotificationService));
-            string orderNumber = request.Order.OrderNumber;
+            NotificationType notificationType = NotificationType.InterpreterChanged;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                string orderNumber = request.Order.OrderNumber;
 
-            var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
-                OrderReferenceNumberInfo(request.Order) +
-                $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
-                $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
-                $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" + GetRequireApprovementText(request.LatestAnswerTimeForCustomer)
-                + GetPossibleInfoNotValidatedInterpreter(request);
-            CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
-                $"{body} {GoToOrderPlain(request.Order.OrderId)}",
-                $"{HtmlHelper.ToHtmlBreak(body)} {GoToOrderButton(request.Order.OrderId)}",
-                NotificationType.InterpreterChanged
-            );
+                var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
+                    OrderReferenceNumberInfo(request.Order) +
+                    $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
+                    $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
+                    $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" + GetRequireApprovementText(request.LatestAnswerTimeForCustomer)
+                    + GetPossibleInfoNotValidatedInterpreter(request);
+                CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
+                    $"{body} {GoToOrderPlain(request.Order.OrderId)}",
+                    $"{HtmlHelper.ToHtmlBreak(body)} {GoToOrderButton(request.Order.OrderId)}",
+                    notificationType
+                );
+            }
         }
 
         public void RequestChangedInterpreterAccepted(Request request, InterpereterChangeAcceptOrigin changeOrigin = InterpereterChangeAcceptOrigin.User)
@@ -1114,18 +1188,22 @@ Sammanställning:
             switch (changeOrigin)
             {
                 case InterpereterChangeAcceptOrigin.NoNeedForUserAccept:
-                    var bodyNoAccept = $"Nytt svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
+                    NotificationType notificationType = NotificationType.RequestReplacedInterpreterAccepted;
+                    if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+                    {
+                        var bodyNoAccept = $"Nytt svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
                         OrderReferenceNumberInfo(request.Order) +
                         $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                         $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
                         $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" +
                         "Tolkbytet är godkänt av systemet." +
                         GetPossibleInfoNotValidatedInterpreter(request);
-                    CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
-                        $"{bodyNoAccept} {GoToOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true)}",
-                        $"{HtmlHelper.ToHtmlBreak(bodyNoAccept)} {GoToOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true)}",
-                        NotificationType.RequestReplacedInterpreterAccepted
-                    );
+                        CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
+                            $"{bodyNoAccept} {GoToOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true)}",
+                            $"{HtmlHelper.ToHtmlBreak(bodyNoAccept)} {GoToOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true)}",
+                            notificationType
+                        );
+                    }
                     break;
                 case InterpereterChangeAcceptOrigin.User:
                     //No mail to customer if it was the customer that accepted.
@@ -1138,68 +1216,84 @@ Sammanställning:
         public void RemindUnhandledRequest(Request request)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RemindUnhandledRequest), nameof(NotificationService));
-            string orderNumber = request.Order.OrderNumber;
-            string body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har "
-            + (request.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "ändrats med ny tolk. " : "accepterats. ")
-            + GetRequireApprovementText(request.LatestAnswerTimeForCustomer);
+            NotificationType notificationType = NotificationType.RemindUnhandledRequest;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                string orderNumber = request.Order.OrderNumber;
+                string body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har "
+                + (request.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "ändrats med ny tolk. " : "accepterats. ")
+                + GetRequireApprovementText(request.LatestAnswerTimeForCustomer);
 
-            CreateEmail(GetRecipientsFromOrder(request.Order), $"Bokningsförfrågan {orderNumber} väntar på hantering",
-                body + GoToOrderPlain(request.Order.OrderId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
-                NotificationType.RemindUnhandledRequest
-            );
+                CreateEmail(GetRecipientsFromOrder(request.Order), $"Bokningsförfrågan {orderNumber} väntar på hantering",
+                    body + GoToOrderPlain(request.Order.OrderId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
+                    notificationType
+                );
+            }
         }
 
         public void RemindUnhandledRequestGroup(RequestGroup requestGroup)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RemindUnhandledRequestGroup), nameof(NotificationService));
-            string orderNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            string body = $"Svar på sammanhållen bokningsförfrågan {orderNumber} från förmedling {requestGroup.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har accepterats."
-            + GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer);
+            NotificationType notificationType = NotificationType.RemindUnhandledRequestGroup;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                string orderNumber = requestGroup.OrderGroup.OrderGroupNumber;
+                string body = $"Svar på sammanhållen bokningsförfrågan {orderNumber} från förmedling {requestGroup.Ranking.Broker.Name} väntar på hantering. Bokningsförfrågan har accepterats."
+                + GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer);
 
-            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup), $"Sammanhållen bokningsförfrågan {orderNumber} väntar på hantering",
-                body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
-                NotificationType.RemindUnhandledRequestGroup
-            );
+                CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup), $"Sammanhållen bokningsförfrågan {orderNumber} väntar på hantering",
+                    body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
+                    notificationType
+                );
+            }
         }
 
         public void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(PartialRequestGroupAnswerAccepted), nameof(NotificationService));
-            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            Order order = requestGroup.OrderGroup.FirstOrder;
-            var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Del av bokningsförfrågan har accepterats.\n" +
-                $"Den extra tolk som avropades har gått vidare som en egen förfrågan till nästa förmedling. {GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer)}\n\n" +
-                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
-                $"\tTillfällen: \n" +
-                $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
-                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
-            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
-                $"Förmedling har delvis accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
-                body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
-                NotificationType.PartialRequestGroupAccepted
-            );
+            NotificationType notificationType = NotificationType.PartialRequestGroupAccepted;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+                Order order = requestGroup.OrderGroup.FirstOrder;
+                var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Del av bokningsförfrågan har accepterats.\n" +
+                    $"Den extra tolk som avropades har gått vidare som en egen förfrågan till nästa förmedling. {GetRequireApprovementText(requestGroup.LatestAnswerTimeForCustomer)}\n\n" +
+                    $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                    $"\tTillfällen: \n" +
+                    $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
+                    GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
+                CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+                    $"Förmedling har delvis accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
+                    body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
+                    notificationType
+                );
+            }
         }
 
         public void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup)
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(PartialRequestGroupAnswerAutomaticallyApproved), nameof(NotificationService));
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
-            Order order = requestGroup.OrderGroup.FirstOrder;
+            NotificationType notificationType = NotificationType.PartialRequestGroupAutomaticallyApproved;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                Order order = requestGroup.OrderGroup.FirstOrder;
 
-            var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Del av bokningsförfrågan har accepterats.\n\n" +
-                $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
-                $"\tTillfällen: \n" +
-                $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
-                GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
-            CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
-                $"Förmedling har delvis accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
-                body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
-                HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
-                NotificationType.PartialRequestGroupAutomaticallyApproved
-            );
+                var body = $"Svar på sammanhållen bokningsförfrågan {orderGroupNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit. Del av bokningsförfrågan har accepterats.\n\n" +
+                    $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                    $"\tTillfällen: \n" +
+                    $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
+                    GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
+                CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
+                    $"Förmedling har delvis accepterat sammanhållen bokningsförfrågan {orderGroupNumber}",
+                    body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
+                    notificationType
+                );
+            }
             NotifyBrokerOnAcceptedAnswer(requestGroup, orderGroupNumber);
         }
 
@@ -1517,6 +1611,10 @@ Sammanställning:
 
         private OrganisationNotificationSettings GetOrganisationNotificationSettings(int consumerId, NotificationType type, NotificationChannel channel, NotificationConsumerType consumerType = NotificationConsumerType.Broker)
         {
+            if (!NotficationTypeAvailable(type, consumerType, channel))
+            {
+                return null;
+            }
             if (!_cacheService.OrganisationNotificationSettings.Any(b => b.ReceivingOrganisationId == consumerId && b.NotificationConsumerType == consumerType) && channel == NotificationChannel.Email)
             {
                 return new OrganisationNotificationSettings
@@ -1854,6 +1952,10 @@ Sammanställning:
                 })
             };
         }
+
+        private  bool NotficationTypeExcludedForCustomer(NotificationType nt) => !string.IsNullOrWhiteSpace(_tolkBaseOptions.ExcludedNotificationTypesForCustomer) && _tolkBaseOptions.ExcludedNotificationTypesForCustomer.Split(",").Any(e => int.Parse(e) == (int)nt);
+
+        private static bool NotficationTypeAvailable(NotificationType nt, NotificationConsumerType consumer, NotificationChannel channel) => nt.GetAvailableNotificationChannels().Any(ch => ch == channel) && nt.GetAvailableNotificationConsumerTypes().Any(c => c == consumer);
 
         private async Task<Request> GetRequest(int id)
         {

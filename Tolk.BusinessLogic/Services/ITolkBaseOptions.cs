@@ -17,6 +17,6 @@ namespace Tolk.BusinessLogic.Services
         bool RoundPriceDecimals { get; }
         bool EnableSetLatestAnswerTimeForCustomer { get; }
         bool EnableCustomerApi { get; }
-
+        string ExcludedNotificationTypesForCustomer { get; }
     }
 }

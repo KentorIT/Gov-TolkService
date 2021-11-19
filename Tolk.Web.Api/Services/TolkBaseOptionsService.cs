@@ -40,5 +40,7 @@ namespace Tolk.Web.Api.Services
         public bool EnableCustomerApi => _options.EnableCustomerApi;
 
         public int WorkDaysGracePeriodBeforeOrderAgreementCreation => _options.WorkDaysGracePeriodBeforeOrderAgreementCreation;
+
+        public string ExcludedNotificationTypesForCustomer => _options.ExcludedNotificationTypesForCustomer;
     }
 }

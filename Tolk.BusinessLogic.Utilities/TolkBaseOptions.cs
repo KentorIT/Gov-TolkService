@@ -14,5 +14,6 @@
         public bool RoundPriceDecimals { get; set; } = true;
         public bool EnableSetLatestAnswerTimeForCustomer { get; set; } = false;
         public bool EnableCustomerApi { get; set; } = false;
+        public string ExcludedNotificationTypesForCustomer { get; set; } = string.Empty;
     }
 }

@@ -89,6 +89,16 @@ namespace Tolk.BusinessLogic.Utilities
                 .SingleOrDefault(v => GetAttributeProperty<TellusNameAttribute, TEnum>(v)?.Name == value);
         }
 
+        public static IEnumerable<NotificationChannel> GetAvailableNotificationChannels<TEnum>(TEnum value) where TEnum : struct
+        {
+            return GetAttributeProperties<AvailableNotificationChannelAttribute, TEnum>(value).Select(t => t.NotificationChannel);
+        }
+
+        public static IEnumerable<NotificationConsumerType> GetAvailableNotificationConsumerTypes<TEnum>(TEnum value) where TEnum : struct
+        {
+            return GetAttributeProperties<NotificationConsumerTypeAttribute, TEnum>(value).Select(n => n.NotificationConsumerType);
+        }
+
         /// <summary>
         /// Returns the set parent of type TEnumParent
         /// </summary>
@@ -156,6 +166,16 @@ namespace Tolk.BusinessLogic.Utilities
                 .GetCustomAttributes(false)
                 .OfType<TAttribute>().SingleOrDefault();
             return property;
+        }
+
+        public static IEnumerable<TAttribute> GetAttributeProperties<TAttribute, TEnum>(TEnum value)
+        {
+            var type = typeof(TEnum);
+            type = Nullable.GetUnderlyingType(type) ?? type;
+            return type.GetMember(value.ToString())
+                .Single()
+                .GetCustomAttributes(false)
+                .OfType<TAttribute>();
         }
 
         private static string GetEnumDescription(this IEnumerable<MemberInfo> member)

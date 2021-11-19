@@ -49,5 +49,13 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return EnumHelper.GetTellusName<T>(item);
         }
+        public static IEnumerable<NotificationChannel> GetAvailableNotificationChannels<T>(this T item) where T : struct
+        {
+            return EnumHelper.GetAvailableNotificationChannels<T>(item);
+        }
+        public static IEnumerable<NotificationConsumerType> GetAvailableNotificationConsumerTypes<T>(this T item) where T : struct
+        {
+            return EnumHelper.GetAvailableNotificationConsumerTypes<T>(item);
+        }
     }
 }
