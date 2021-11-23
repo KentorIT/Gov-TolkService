@@ -80,15 +80,14 @@ namespace Tolk.BusinessLogic.Services
 
             var occasionsEndedAtOrBefore = _dateCalculationService.GetDateForANumberOfWorkdaysAgo(_clock.SwedenNow.UtcDateTime, _options.WorkDaysGracePeriodBeforeOrderAgreementCreation);
             //1. find all nonhandled requests and requisitions for customers that is set as using order agreements
-            // a. When requisition is AutomaticGeneratedFromCancelledOrder, Approved or Reviewed Date is irrelevant
+            // a. When requisition is Approved or Reviewed date is irrelevant
             foreach (int customerOrganisationId in orderAgreementCustomerIds)
             {
                 var validUseFrom = startAtSettings.SingleOrDefault(s => s.ReceivingOrganisationId == customerOrganisationId)?.StartUsingNotificationAt ??
                     new DateTime(1900,1,1);
                 //MOVE GETTER TO EXTENSIONS
                 var baseInformationForOrderAgreementsToCreate = await _tolkDbContext.Requisitions.Where(r =>
-                    (r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ||
-                    r.Status == RequisitionStatus.Approved ||
+                    (r.Status == RequisitionStatus.Approved ||
                     r.Status == RequisitionStatus.Reviewed) &&
                     r.OrderAgreementPayload == null &&
                     r.Request.Order.CustomerOrganisationId == customerOrganisationId &&
@@ -96,19 +95,31 @@ namespace Tolk.BusinessLogic.Services
                     .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
                     .ToListAsync();
 
-                // b. x workdays after the occasion was ended
+                //b.When requisition is AutomaticGeneratedFromCancelledOrder
+                baseInformationForOrderAgreementsToCreate = await _tolkDbContext.Requisitions.Where(r =>
+                    r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder &&
+                    r.OrderAgreementPayload == null &&
+                    r.Request.Order.CustomerOrganisationId == customerOrganisationId &&
+                    r.CreatedAt > validUseFrom)
+                    .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
+                    .ToListAsync();
+
+                // c. x workdays after requisition created or after occasion was ended - to handle that OA should be created:
+                // * at last x workdays after occasion 
+                // * x days after requisition created (if ocassion is before validUseFrom but the requisition is after)
                 //   - If there is a requisition created, use that, but only if there is no order agreement created on the request before.
                 baseInformationForOrderAgreementsToCreate.AddRange(await _tolkDbContext.Requisitions.Where(r =>
                     (r.Status == RequisitionStatus.Created) &&
                     r.Request.Order.CustomerOrganisationId == customerOrganisationId &&
                     r.OrderAgreementPayload == null &&
                     !r.Request.OrderAgreementPayloads.Any() &&
-                    r.Request.Order.EndAt < occasionsEndedAtOrBefore &&
-                    r.Request.Order.EndAt > validUseFrom
+                    ((r.CreatedAt < occasionsEndedAtOrBefore && r.CreatedAt > validUseFrom) || 
+                    (r.Request.Order.EndAt < occasionsEndedAtOrBefore && r.Request.Order.EndAt > validUseFrom))
                     )
                     .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
                     .ToListAsync());
 
+                //d. x workdays after the occasion was ended
                 //   - If there is a no requisition created, use request.
                 baseInformationForOrderAgreementsToCreate.AddRange(await _tolkDbContext.Requests.Where(r =>
                     (r.Status == RequestStatus.Delivered || r.Status == RequestStatus.Approved) &&
