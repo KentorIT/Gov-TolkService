@@ -104,17 +104,15 @@ namespace Tolk.BusinessLogic.Services
                     .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
                     .ToListAsync();
 
-                // c. x workdays after requisition created or after occasion was ended - to handle that OA should be created:
-                // * at last x workdays after occasion 
-                // * x days after requisition created (if ocassion is before validUseFrom but the requisition is after)
+                // c. x workdays after the occasion was ended
                 //   - If there is a requisition created, use that, but only if there is no order agreement created on the request before.
                 baseInformationForOrderAgreementsToCreate.AddRange(await _tolkDbContext.Requisitions.Where(r =>
                     (r.Status == RequisitionStatus.Created) &&
                     r.Request.Order.CustomerOrganisationId == customerOrganisationId &&
                     r.OrderAgreementPayload == null &&
                     !r.Request.OrderAgreementPayloads.Any() &&
-                    ((r.CreatedAt < occasionsEndedAtOrBefore && r.CreatedAt > validUseFrom) || 
-                    (r.Request.Order.EndAt < occasionsEndedAtOrBefore && r.Request.Order.EndAt > validUseFrom))
+                    r.Request.Order.EndAt < occasionsEndedAtOrBefore &&
+                    r.Request.Order.EndAt > validUseFrom
                     )
                     .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
                     .ToListAsync());
