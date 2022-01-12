@@ -96,13 +96,13 @@ namespace Tolk.BusinessLogic.Services
                     .ToListAsync();
 
                 //b.When requisition is AutomaticGeneratedFromCancelledOrder
-                baseInformationForOrderAgreementsToCreate = await _tolkDbContext.Requisitions.Where(r =>
+                baseInformationForOrderAgreementsToCreate.AddRange(await _tolkDbContext.Requisitions.Where(r =>
                     r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder &&
                     r.OrderAgreementPayload == null &&
                     r.Request.Order.CustomerOrganisationId == customerOrganisationId &&
                     r.CreatedAt > validUseFrom)
                     .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
-                    .ToListAsync();
+                    .ToListAsync());
 
                 // c. x workdays after the occasion was ended
                 //   - If there is a requisition created, use that, but only if there is no order agreement created on the request before.
