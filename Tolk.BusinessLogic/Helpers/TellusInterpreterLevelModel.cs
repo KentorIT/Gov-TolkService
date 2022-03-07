@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Helpers
 
         public bool IsValidAt(DateTimeOffset startAt)
         {
-            return ValidFrom.GetValueOrDefault(DateTime.MinValue) < startAt.Date && ValidTo.GetValueOrDefault(DateTime.MinValue) > startAt.Date;
+            return ValidFrom.GetValueOrDefault(DateTime.MinValue) <= startAt.Date && ValidTo.GetValueOrDefault(DateTime.MinValue) >= startAt.Date;
         }
     }
 }
