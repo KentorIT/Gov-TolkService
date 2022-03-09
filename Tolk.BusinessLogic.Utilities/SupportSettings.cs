@@ -7,5 +7,6 @@
         public string UserAccountEmail { get; set; }
         public string SupportPhone { get; set; }
         public bool ReportWebHookFailures { get; set; }
+        public bool ReportPeppolMessageFailures { get; set; }
     }
 }

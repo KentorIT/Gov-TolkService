@@ -24,7 +24,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void CustomerCreated(CustomerOrganisation customer) { }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task NotifyOnFailure(int callId) { }
+        public async Task NotifyOnFailedWebHook(int callId) { }
+
+        public async Task NotifyOnFailedPeppolMessage(int messageId) { }
 
         public async Task OrderReplacementCreated(int replacedRequestId, int newRequestId) { }
 
@@ -106,5 +108,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void RequisitionCreated(Requisition requisition) { }
 
         public bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null) { return true; }
+
+        public bool ResendPeppolMessage(OutboundPeppolMessage failedMessage, int? resentUserId = null, int? resentImpersonatorUserId = null) { return true; }
     }
 }

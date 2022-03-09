@@ -86,21 +86,14 @@ namespace Tolk.BusinessLogic.Services
                 var validUseFrom = startAtSettings.SingleOrDefault(s => s.ReceivingOrganisationId == customerOrganisationId)?.StartUsingNotificationAt ??
                     new DateTime(1900,1,1);
                 //MOVE GETTER TO EXTENSIONS
-                var baseInformationForOrderAgreementsToCreate = await _tolkDbContext.Requisitions.Where(r =>
-                    (r.Status == RequisitionStatus.Approved ||
-                    r.Status == RequisitionStatus.Reviewed) &&
-                    r.OrderAgreementPayload == null &&
-                    r.Request.Order.CustomerOrganisationId == customerOrganisationId &&
-                    r.ProcessedAt > validUseFrom)
+                var baseInformationForOrderAgreementsToCreate = await _tolkDbContext.Requisitions
+                    .GetRequisitionsForOrderAgreementCreation(customerOrganisationId, validUseFrom)
                     .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
                     .ToListAsync();
 
                 //b.When requisition is AutomaticGeneratedFromCancelledOrder
-                baseInformationForOrderAgreementsToCreate.AddRange(await _tolkDbContext.Requisitions.Where(r =>
-                    r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder &&
-                    r.OrderAgreementPayload == null &&
-                    r.Request.Order.CustomerOrganisationId == customerOrganisationId &&
-                    r.CreatedAt > validUseFrom)
+                baseInformationForOrderAgreementsToCreate.AddRange(await _tolkDbContext.Requisitions
+                    .GetRequisitionsFromCancellation(customerOrganisationId, validUseFrom)
                     .Select(r => new OrderAgreementIdentifierModel { RequisitionId = r.RequisitionId, RequestId = r.RequestId })
                     .ToListAsync());
 

@@ -11,6 +11,7 @@ namespace Tolk.BusinessLogic.Services
             services.AddTransient<ITolkBaseOptions, TolkBaseOptionsService>();
             services.AddTransient<EmailService>();
             services.AddTransient<WebHookService>();
+            services.AddTransient<PeppolService>();
 
             services.AddScoped<ErrorNotificationService>();
             services.AddScoped<RankingService>();

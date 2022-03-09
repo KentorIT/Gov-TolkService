@@ -1,0 +1,80 @@
+﻿@model PeppolModel
+@{
+    ViewData["Title"] = $"Peppolmeddelande - detaljer (Id {Model.OutboundPeppolMessageId})";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="NotificationType" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="CreatedAt" />
+            <display-entry asp-for="DeliveredAt" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="CustomerName" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            @if (Model.ReplacedBy.HasValue)
+            {
+                <label>Ersatt av</label><br />
+                <span class="detail-text">Id @Model.ReplacedBy</span> <br /> <a class="do-not-check-dirty" href="@Url.Action("View", new { id = Model.ReplacedBy })"> Visa ersättande webhook </a><br />
+            }
+            @if (Model.Replaces.HasValue && Model.ReplacedBy.HasValue)
+            {
+                <br />
+            }
+            @if (Model.Replaces.HasValue)
+            {
+                <label>Ersätter</label><br />
+                <span class="detail-text">Id @Model.Replaces</span> <br /> <a class="do-not-check-dirty" href="@Url.Action("View", new { id = Model.Replaces })"> Visa omskickad webhook </a>
+            }
+        </div>
+        <div class="col-sm-4">
+            @if (Model.AllowResend)
+            {
+                <form method="post" asp-action="Resend">
+                    <input type="hidden" name="PeppolMessageId" value="@Model.OutboundPeppolMessageId" />
+                    <button class="btn btn-large btn-default">Skicka om</button>
+                </form>
+            }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <a asp-area="" asp-controller="Peppol" asp-action="GetPayload" asp-all-route-data="@(new Dictionary<string, string>{{ "id", Model.OutboundPeppolMessageId.ToString() } })">Ladda ner som fil</a><br />
+        </div>
+    </div>
+    @if (Model.FailedTries.Any())
+    {
+        <div class="row">
+            <div class="col-sm-12">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="webhook-view col-sm-2">Tidpunkt</th>
+                            <th class="webhook-view col-sm-10">Felmeddelande</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (FailedTryModel failedTry in Model.FailedTries)
+                        {
+                            <tr>
+                                <td class="webhook-view col-sm-2">@failedTry.FailedAt</td>
+                                <td class="webhook-view col-sm-10">@failedTry.ErrorMessage</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    <div class="row">
+        <div class="col-sm-12">
+            <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("List")"><span class="center-glyphicon glyphicon glyphicon-triangle-left"></span> Tillbaka</a>
+        </div>
+    </div>
+</section>

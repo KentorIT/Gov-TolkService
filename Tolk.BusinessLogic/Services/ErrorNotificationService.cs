@@ -24,14 +24,14 @@ namespace Tolk.BusinessLogic.Services
             _tolkDbContext = tolkDbContext;
         }
 
-        public async Task CheckForFailuresToReport()
+        public async Task CheckForFailedWebHookCallsToReport()
         {
             var callIds = await _tolkDbContext.OutboundWebHookCalls
             .Where(e => e.DeliveredAt == null && e.HasNotifiedFailure == false)
             .Select(e => e.OutboundWebHookCallId)
             .ToListAsync();
 
-            _logger.LogInformation("Found {count} emails to send: {emailIds}",
+            _logger.LogInformation("Found {count} failed web hooks to report: {callIds}",
                 callIds.Count, string.Join(", ", callIds));
 
             if (callIds.Any())
@@ -50,7 +50,7 @@ namespace Tolk.BusinessLogic.Services
                         else
                         {
                             _logger.LogInformation("Notifying failure on {callId} of type {notificationType}", callId, call.NotificationType);
-                            await _notificationService.NotifyOnFailure(callId);
+                            await _notificationService.NotifyOnFailedWebHook(callId);
                             call.HasNotifiedFailure = true;
                             await _tolkDbContext.SaveChangesAsync();
                         }
@@ -58,6 +58,44 @@ namespace Tolk.BusinessLogic.Services
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Failure Notifying failure on {callId}", callId);
+                    }
+                }
+            }
+        }
+        public async Task CheckForFailedPeppolMessagesToReport()
+        {
+            var messageIds = await _tolkDbContext.OutboundPeppolMessages
+            .Where(e => e.DeliveredAt == null && e.HasNotifiedFailure == false)
+            .Select(e => e.OutboundPeppolMessageId)
+            .ToListAsync();
+
+            _logger.LogInformation("Found {count} peppol messages to send: {messageIds}",
+                messageIds.Count, string.Join(", ", messageIds));
+
+            if (messageIds.Any())
+            {
+                foreach (var messageId in messageIds)
+                {
+                    try
+                    {
+                        var message = await _tolkDbContext.OutboundPeppolMessages
+                            .SingleOrDefaultAsync(e => e.OutboundPeppolMessageId == messageId && e.DeliveredAt == null && e.HasNotifiedFailure == false);
+
+                        if (message == null)
+                        {
+                            _logger.LogInformation("Message {messageId} was in list to be notifed as a failure, but now appears to have been handled.", messageId);
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Notifying failure on {messageId} of type {notificationType}", messageId, message.NotificationType);
+                            await _notificationService.NotifyOnFailedPeppolMessage(messageId);
+                            message.HasNotifiedFailure = true;
+                            await _tolkDbContext.SaveChangesAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failure notifying failure on {messageId}", messageId);
                     }
                 }
             }

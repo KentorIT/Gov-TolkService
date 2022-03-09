@@ -47,12 +47,14 @@ namespace Tolk.BusinessLogic.Services
         void RequisitionCreated(Requisition requisition);
         Task RequisitionReviewed(Requisition requisition);
         bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null);
+        bool ResendPeppolMessage(OutboundPeppolMessage failedMessage, int? resentUserId = null, int? resentImpersonatorUserId = null);
         Task RequestGroupCreated(RequestGroup requestGroup);
         void RequestGroupCreatedWithoutExpiry(RequestGroup newRequestGroup);
         void OrderGroupTerminated(OrderGroup terminatedOrderGroup);
         void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated);
         void RequestGroupExpiredDueToInactivity(RequestGroup expiredRequestGroup);
         void RequestGroupExpiredDueToNoAnswerFromCustomer(RequestGroup expiredRequestGroup);
-        Task NotifyOnFailure(int callId);
+        Task NotifyOnFailedWebHook(int callId);
+        Task NotifyOnFailedPeppolMessage(int messageId);
     }
 }

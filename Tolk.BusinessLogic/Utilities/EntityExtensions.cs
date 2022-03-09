@@ -156,6 +156,19 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return requests.CompletedRequests(now).Include(r => r.Order).Include(r => r.Ranking).SingleAsync(r => r.RequestId == id);
         }
+        public static IQueryable<Requisition> GetRequisitionsForOrderAgreementCreation(this IQueryable<Requisition> requisitions, int customerId, DateTime validUseFrom)
+            => requisitions.Where(r =>
+                    (r.Status == RequisitionStatus.Approved ||
+                    r.Status == RequisitionStatus.Reviewed) &&
+                    r.OrderAgreementPayload == null &&
+                    r.Request.Order.CustomerOrganisationId == customerId &&
+                    r.ProcessedAt > validUseFrom);
+        public static IQueryable<Requisition> GetRequisitionsFromCancellation(this IQueryable<Requisition> requisitions, int customerId, DateTime validUseFrom)
+            => requisitions.Where(r =>
+                    r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder &&
+                    r.OrderAgreementPayload == null &&
+                    r.Request.Order.CustomerOrganisationId == customerId &&
+                    r.CreatedAt > validUseFrom);
 
         #endregion
 
@@ -528,6 +541,12 @@ namespace Tolk.BusinessLogic.Utilities
                  .Include(wh => wh.ReplacingWebHook)
                  .SingleOrDefaultAsync(wh => wh.OutboundWebHookCallId == id);
 
+        public static async Task<OutboundPeppolMessage> GetPeppolMessageById(this IQueryable<OutboundPeppolMessage> peppolMessages, int id)
+            => await peppolMessages
+                 .Include(m => m.OrderAgreementPayload).ThenInclude(p => p.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                 .Include(wh => wh.ReplacingMessage)
+                 .SingleOrDefaultAsync(wh => wh.OutboundPeppolMessageId == id);
+
         public static async Task<CustomerOrganisation> GetCustomerById(this IQueryable<CustomerOrganisation> customers, int id)
            => await customers
                .Include(c => c.ParentCustomerOrganisation)
@@ -758,6 +777,11 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<OutboundWebHookCall> GetOutboundWebHookCall(this IQueryable<OutboundWebHookCall> outboundWebHookCalls, int id)
         => await outboundWebHookCalls.Include(c => c.RecipientUser).SingleOrDefaultAsync(c => c.OutboundWebHookCallId == id);
+        
+        public static async Task<OutboundPeppolMessage> GetOutboundPeppolMessage(this IQueryable<OutboundPeppolMessage> outboundPeppolMessages, int id)
+        => await outboundPeppolMessages
+            .Include(c => c.OrderAgreementPayload).ThenInclude(o => o.Request).ThenInclude(r => r.Order)
+            .SingleOrDefaultAsync(c => c.OutboundPeppolMessageId == id);
 
         #endregion
 
@@ -1147,6 +1171,9 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<FailedWebHookCall> GetFailedWebhookCallsByWebHookId(this IQueryable<FailedWebHookCall> failedWebhookCalls, int id)
              => failedWebhookCalls.Where(f => f.OutboundWebHookCallId == id);
+
+        public static IQueryable<FailedPeppolMessage> GetFailedPeppolMessagesByPeppolMessageId(this IQueryable<FailedPeppolMessage> failedPeppolMessages, int id)
+             => failedPeppolMessages.Where(f => f.OutboundPeppolMessageId == id);
 
         public static IQueryable<Ranking> GetActiveRankings(this IQueryable<Ranking> rankings, DateTime now)
         => rankings

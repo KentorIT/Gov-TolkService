@@ -36,6 +36,8 @@ namespace Tolk.BusinessLogic.Entities
         [InverseProperty(nameof(ReplacedByPayload))]
         public OrderAgreementPayload ReplacingPayload { get; set; }
 
+        public int? OutboundPeppolMessageId{ get; set; }
+
         #region Foreign keys
 
         [ForeignKey(nameof(RequisitionId))]
@@ -49,6 +51,9 @@ namespace Tolk.BusinessLogic.Entities
 
         [ForeignKey(nameof(ImpersonatingCreatedBy))]
         public AspNetUser CreatedByImpersonator { get; set; }
+
+        [ForeignKey(nameof(OutboundPeppolMessageId))]
+        public OutboundPeppolMessage OutboundPeppolMessage { get; set; }
 
         #endregion
     }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220228174310_OutboundPeppolMessages")]
+    partial class OutboundPeppolMessages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -763,29 +765,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("UserAuditLogEntryId");
 
                     b.ToTable("CustomerUnitUserHistoryEntries");
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedPeppolMessage", b =>
-                {
-                    b.Property<int>("FailedPeppolMessageId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("FailedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("OutboundPeppolMessageId")
-                        .HasColumnType("int");
-
-                    b.HasKey("FailedPeppolMessageId");
-
-                    b.HasIndex("OutboundPeppolMessageId");
-
-                    b.ToTable("FailedPeppolMessages");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>
@@ -1788,12 +1767,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<DateTimeOffset?>("DeliveredAt")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("FailedTries")
-                        .HasColumnType("int");
-
-                    b.Property<bool?>("HasNotifiedFailure")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Identifier")
                         .IsRequired()
@@ -3421,15 +3394,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
                         .WithMany("CustomerUnitUsersHistory")
                         .HasForeignKey("UserAuditLogEntryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedPeppolMessage", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.OutboundPeppolMessage", "OutboundPeppolMessage")
-                        .WithMany("FailedCalls")
-                        .HasForeignKey("OutboundPeppolMessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -90,6 +90,8 @@ namespace Tolk.Web.Services
                     .Select(c => c).ForEachAsync(c => c.IsHandling = false);
                 await context.OutboundWebHookCalls.Where(e => e.IsHandling == true)
                     .Select(c => c).ForEachAsync(c => c.IsHandling = false);
+                await context.OutboundPeppolMessages.Where(e => e.IsHandling == true)
+                    .Select(c => c).ForEachAsync(c => c.IsHandling = false);
                 await context.SaveChangesAsync();
             }
 
@@ -98,11 +100,13 @@ namespace Tolk.Web.Services
                 if (nextRunIsNotifications)
                 {
                     //Separate these, to get a better parallellism for the notifications
-                    // They fail to run together with the other Continous jobs , due to recurring deadlocks around the email table...
+                    // They fail to run together with the other Continous jobs, due to recurring deadlocks around the email table...
+
                     List<Task> tasksToRunNotifications = new List<Task>
                     {
                         Task.Factory.StartNew(() => _services.GetRequiredService<EmailService>().SendEmails(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current),
-                        Task.Factory.StartNew(() => _services.GetRequiredService<WebHookService>().CallWebHooks(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current)
+                        Task.Factory.StartNew(() => _services.GetRequiredService<WebHookService>().CallWebHooks(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current),
+                        Task.Factory.StartNew(() => _services.GetRequiredService<PeppolService>().SendOrderAgreements(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current)
                     };
                     await Task.Factory.ContinueWhenAny(tasksToRunNotifications.ToArray(), r => { });
                 }
@@ -128,7 +132,7 @@ namespace Tolk.Web.Services
                     {
                         tasksToRun = new Task[]
                         {
-                                RunContinousJobs(serviceScope.ServiceProvider),
+                            RunContinousJobs(serviceScope.ServiceProvider),
                         };
                     }
                     if (!Task.WaitAll(tasksToRun, allotedTimeAllTasks))
@@ -171,8 +175,9 @@ namespace Tolk.Web.Services
             await provider.GetRequiredService<OrderService>().HandleAllScheduledTasks();
             await provider.GetRequiredService<RequestService>().DeleteRequestViews();
             await provider.GetRequiredService<RequestService>().DeleteRequestGroupViews();
-            await provider.GetRequiredService<ErrorNotificationService>().CheckForFailuresToReport();
             await provider.GetRequiredService<OrderAgreementService>().HandleOrderAgreementCreation();
+            await provider.GetRequiredService<ErrorNotificationService>().CheckForFailedWebHookCallsToReport();
+            await provider.GetRequiredService<ErrorNotificationService>().CheckForFailedPeppolMessagesToReport();
             _logger.LogInformation($"Completed {nameof(RunContinousJobs)}");
         }
     }

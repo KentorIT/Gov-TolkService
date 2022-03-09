@@ -23,6 +23,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public bool RunEntityScheduler { get; set; } = true;
 
+        public PeppolSettings Peppol { get; set; }
+
         public TolkConnectionStrings ConnectionStrings { get; set; }
 
         public void Validate()

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Xml.Serialization;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Models.OrderAgreement
@@ -96,28 +97,29 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         public EndPointIDModel ID
         {
             get => new EndPointIDModel { Value = $"{Constants.IdPrefix}{OrderNumber}-{Index}" };
-            set { }
+            set => Index = int.Parse(value.Value.Split("-").Last());
         }
 
         [XmlElement(Namespace = Constants.cbc)]
         public string SalesOrderID
         {
             get => OrderNumber;
-            set { }
+            set => OrderNumber = value;
         }
 
         [XmlElement(Namespace = Constants.cbc)]
         public string IssueDate
         {
             get => IssuedAt.ToString("yyyy-MM-dd");
-            set { }
+            set => IssuedAt = IssuedAt.AddDate(value);
         }
+
 
         [XmlElement(Namespace = Constants.cbc)]
         public string IssueTime
         {
             get => IssuedAt.ToString("HH:mm:ss");
-            set { }
+            set => IssuedAt = IssuedAt.AddTime(value);
         }
 
         [XmlElement(Namespace = Constants.cbc)]
@@ -184,14 +186,16 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         [XmlElement(Namespace = Constants.cac)]
         public LegalMonetaryTotalModel LegalMonetaryTotal
         {
-            get => new LegalMonetaryTotalModel
+            get
             {
-                LineExtensionAmount = new AmountModel
+                var lineSum = OrderLines.Sum(ol => ol.LineItem.LineExtensionAmount.AmountSum);
+                return new LegalMonetaryTotalModel
                 {
-                    AmountSum = OrderLines.Sum(ol => ol.LineItem.LineExtensionAmount.AmountSum)
-                },
-                TaxSum = TaxTotal.TaxAmount.AmountSum
-            };
+                    LineExtensionAmount = new AmountModel { AmountSum = lineSum },
+                    TaxSum = TaxTotal.TaxAmount.AmountSum,
+                    PayableRoundingAmount = new AmountModel { AmountSum = GetRounding(lineSum + TaxTotal.TaxAmount.AmountSum) }
+                };
+            }
             set { }
         }
 
@@ -213,7 +217,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
                             new PromisedDeliveryPeriodModel
                             {
                                 StartAt = startAt,
-                                EndAt = endAt 
+                                EndAt = endAt
                             } :
                             null
                         },
@@ -265,6 +269,11 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
                     PartyLegalEntity = new PartyLegalEntityModel { RegistrationName = request.Ranking.Broker.Name }
                 }
             };
+        }
+        private decimal GetRounding(decimal value)
+        {
+            value -= Math.Floor(value);
+            return value > Convert.ToDecimal(0.5) ? 1 - value : -value;
         }
     }
 }

@@ -362,7 +362,22 @@ namespace Tolk.BusinessLogic.Services
                 {
                     Test = "Koppla mot tellus språklista",
                     Success = (await GetLaguagesFromTellus())?.Status == 200
-                }
+                },
+                //Find all orders that should get order agreements
+                new StatusVerificationItem
+                {
+                    Test = "Inga order agreements väntar på att få peppol-kuvert skapade",
+                    //TODO: Behöver inte hitta de som inte är max index!
+                    Success = !(await _dbContext.OrderAgreementPayloads.AnyAsync(o => 
+                    o.OutboundPeppolMessageId == null &&
+                    o.ReplacedById  == null &&
+                    o.CreatedAt < _clock.SwedenNow.AddMinutes(delay)))
+                },
+                new StatusVerificationItem
+                {
+                    Test = "Inga peppolmeddelanden väntar på att skickas",
+                    Success = !(await _dbContext.OutboundPeppolMessages.AnyAsync(o => !o.DeliveredAt.HasValue && o.CreatedAt < _clock.SwedenNow.AddMinutes(delay) && o.FailedTries < 5))
+                },
             };
             if (_tolkBaseOptions.StatusChecker.CheckUptimeRobot)
             {

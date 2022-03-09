@@ -238,6 +238,15 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<OutboundPeppolMessage>()
+                .HasOne(c => c.ResentByUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<OutboundPeppolMessage>()
+                .HasOne(c => c.ResentImpersonatorUser)
+                .WithMany()
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<TemporaryAttachmentGroup>()
                 .HasKey(t => new { t.TemporaryAttachmentGroupKey, t.AttachmentId });
@@ -557,6 +566,8 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<OutboundEmail> OutboundEmails { get; set; }
 
+        public DbSet<OutboundPeppolMessage> OutboundPeppolMessages { get; set; }
+
         public DbSet<Complaint> Complaints { get; set; }
 
         public DbSet<InterpreterBroker> InterpreterBrokers { get; set; }
@@ -612,6 +623,7 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<RequestGroupView> RequestGroupViews { get; set; }
 
         public DbSet<FailedWebHookCall> FailedWebHookCalls { get; set; }
+        public DbSet<FailedPeppolMessage> FailedPeppolMessages { get; set; }
 
         public DbSet<CustomerUnit> CustomerUnits { get; set; }
 

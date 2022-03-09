@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Xml.Serialization;
 using Tolk.BusinessLogic.Utilities;
 
@@ -17,7 +18,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         public string Value
         {
             get => AmountSum.ToEnglishString("#0.00");
-            set { }
+            set => AmountSum = decimal.Parse(value, CultureInfo.GetCultureInfo("en-US"));
         }
 
         [XmlIgnore]

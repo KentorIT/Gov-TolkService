@@ -32,5 +32,22 @@ namespace Tolk.BusinessLogic.Helpers
         {
             return dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalMilliseconds;
         }
+
+        public static DateTimeOffset AddDate(this DateTimeOffset baseDate, string value)
+        {
+            var date = DateTime.Parse(value);
+            return baseDate.AddYears(date.Year - 1)
+                .AddMonths(date.Month - 1)
+                .AddDays(date.Day - 1);
+        }
+
+        public static DateTimeOffset AddTime(this DateTimeOffset baseTime, string value)
+        {
+            var time = DateTime.Parse(value);
+            return baseTime.AddHours(time.Hour)
+                .AddMinutes(time.Minute)
+                .AddSeconds(time.Second);
+        }
+
     }
 }

@@ -1316,7 +1316,7 @@ Sammanställning:
             _dbContext.SaveChanges();
         }
 
-        public async Task NotifyOnFailure(int callId)
+        public async Task NotifyOnFailedWebHook(int callId)
         {
             OutboundWebHookCall call = await _dbContext.OutboundWebHookCalls.GetOutboundWebHookCall(callId);
             var recipientId = call.RecipientUser.BrokerId ?? call.RecipientUser.CustomerOrganisationId ?? call.RecipientUserId;
@@ -1360,6 +1360,22 @@ Sammanställning:
             }
         }
 
+        public async Task NotifyOnFailedPeppolMessage(int messageId)
+        {
+            OutboundPeppolMessage message = await _dbContext.OutboundPeppolMessages.GetOutboundPeppolMessage(messageId);
+            var recipientId = message.OrderAgreementPayload.Request.Order.CustomerOrganisationId;
+            if (_tolkBaseOptions.Support.ReportPeppolMessageFailures)
+            {
+                CreateEmail(
+                    _tolkBaseOptions.Support.SecondLineEmail,
+                    "Ett Peppolmeddelande har misslyckats fem gånger",
+                    $@"Peppolmeddelande misslyckades av typ: {message.NotificationType.GetDescription()}({message.NotificationType.GetCustomName()}) till CustomerOrganisationId: {recipientId}",
+                    null,
+                    NotificationType.ErrorNotification
+                );
+            }
+        }
+
         public bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null)
         {
             NullCheckHelper.ArgumentCheckNull(failedCall, nameof(ResendWebHook), nameof(NotificationService));
@@ -1389,6 +1405,26 @@ Sammanställning:
             _dbContext.OutboundWebHookCalls.Add(newCall);
             _dbContext.SaveChanges();
             failedCall.ResentHookId = newCall.OutboundWebHookCallId;
+            _dbContext.SaveChanges();
+
+            return true;
+        }
+
+        public bool ResendPeppolMessage(OutboundPeppolMessage failedMessage, int? resentUserId = null, int? resentImpersonatorUserId = null)
+        {
+            NullCheckHelper.ArgumentCheckNull(failedMessage, nameof(ResendPeppolMessage), nameof(NotificationService));
+
+            OutboundPeppolMessage newMessage = new OutboundPeppolMessage(
+                Guid.NewGuid().ToString(),
+                failedMessage.Recipient,
+                failedMessage.Payload,
+                _clock.SwedenNow,
+                failedMessage.NotificationType,
+                resentUserId,
+                resentImpersonatorUserId,
+                failedMessage.OutboundPeppolMessageId);
+
+            _dbContext.OutboundPeppolMessages.Add(newMessage);
             _dbContext.SaveChanges();
 
             return true;
