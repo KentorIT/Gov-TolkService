@@ -44,5 +44,9 @@ namespace Tolk.BusinessLogic.Utilities
 
         public string AllowExceedingTravelCost { get; set; }
 
+        public string OrderCreatorEmail { get; set; }
+
+        public string InvoiceReference { get; set; }
+
     }
 }

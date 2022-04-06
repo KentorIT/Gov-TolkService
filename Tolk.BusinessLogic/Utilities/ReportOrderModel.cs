@@ -35,6 +35,8 @@ namespace Tolk.BusinessLogic.Utilities
                     RequestStatus = r.Status,
                     ReferenceNumber = r.Order.CustomerReferenceNumber ?? string.Empty,
                     Department = r.Order.UnitName ?? string.Empty,
+                    InvoiceReference = r.Order.InvoiceReference,
+                    OrderCreatorEmail = r.Order.CreatedByUser.Email,
                     CustomerUnitName = r.Order.CustomerUnitId.HasValue ? r.Order.CustomerUnit.Name : string.Empty,
                     CustomerName = r.Order.CustomerOrganisation.Name,
                     LanguageHasAuthorizedInterpreter = r.Order.LanguageHasAuthorizedInterpreter,

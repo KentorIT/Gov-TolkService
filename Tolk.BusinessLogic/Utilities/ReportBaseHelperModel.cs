@@ -39,5 +39,9 @@ namespace Tolk.BusinessLogic.Utilities
         
         public int RequestId { get; set; }
 
+        public string OrderCreatorEmail { get; set; }
+
+        public string InvoiceReference { get; set; }
+
     }
 }

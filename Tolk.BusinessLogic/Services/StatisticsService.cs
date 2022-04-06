@@ -404,8 +404,12 @@ namespace Tolk.BusinessLogic.Services
 
         private static void CreateColumnsForOrderCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
         {
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Fakturareferens";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InvoiceReference);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Beställd av";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "E-postadress beställare";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderCreatorEmail);
         }
 
         private static void CreateColumnsForBroker(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isRequest = false)
@@ -530,6 +534,8 @@ namespace Tolk.BusinessLogic.Services
                         HasRequisition = reportOrder.HasRequisitions.Contains(o.RequestId),
                         HasComplaint = reportOrder.HasComplaints.Contains(o.RequestId),
                         CustomerName = o.CustomerName,
+                        OrderCreatorEmail = o.OrderCreatorEmail,
+                        InvoiceReference = o.InvoiceReference,
                         Price = reportOrder.Prices?.SingleOrDefault(r => r.RequestId == o.RequestId).Price ?? 0,
                         Dialect = reportOrder.Requirements.Where(r => r.OrderId == o.OrderId && r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.Description ?? string.Empty,
                         DialectIsRequirement = reportOrder.Requirements.Where(r => r.OrderId == o.OrderId && r.RequirementType == RequirementType.Dialect).FirstOrDefault()?.IsRequired ?? false,
