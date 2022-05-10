@@ -184,6 +184,21 @@ namespace BrokerMock.Controllers
                                 RequirementId = r.RequirementId
                             })
                         );
+                        if (extraInstructions.Contains("AGAIN"))
+                        {
+                            await ChangeInterpreter(
+                                payload.OrderNumber,
+                                interpreters.First(),
+                                payload.Locations.First().Key,
+                                payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                                payload.Requirements.Select(r => new RequirementAnswerModel
+                                {
+                                    Answer = "Igen",
+                                    CanMeetRequirement = true,
+                                    RequirementId = r.RequirementId
+                                })
+                            );
+                        }
                     }
                 }
                 //Get the headers:

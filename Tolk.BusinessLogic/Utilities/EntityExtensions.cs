@@ -641,7 +641,7 @@ namespace Tolk.BusinessLogic.Utilities
                    .Include(r => r.Order).ThenInclude(o => o.ExtraInterpreterOrder)
                    .Include(r => r.Order).ThenInclude(o => o.IsExtraInterpreterForOrder)
                    .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
-                   r.Ranking.BrokerId == brokerId && r.ReplacingRequest == null);
+                   r.Ranking.BrokerId == brokerId && r.ReplacedByRequest == null);
 
         public static async Task<Order> GetOrderWithBrokerAndOrderNumber(this IQueryable<Order> orders, string orderNumber, int brokerId)
            => await orders
@@ -655,7 +655,7 @@ namespace Tolk.BusinessLogic.Utilities
              => await requests.GetRequestsWithBaseIncludesAndRegionAndLanguage()
                 .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
                 .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
-                    r.Ranking.BrokerId == brokerId && r.ReplacingRequest == null);
+                    r.Ranking.BrokerId == brokerId && r.ReplacedByRequest == null);
 
         public static async Task<RequestGroup> GetRequestGroupForApiWithBrokerAndOrderNumber(this IQueryable<RequestGroup> requestGroups, string orderNumber, int brokerId)
            => await requestGroups.Include(r => r.OrderGroup)
@@ -675,7 +675,7 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<Request> GetSimpleActiveRequestForApiWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId)
            => await requests.GetRequestsWithBaseIncludesForApi()
                .SingleOrDefaultAsync(r => r.Order.OrderNumber == orderNumber &&
-                   r.Ranking.BrokerId == brokerId && r.ReplacingRequest == null);
+                   r.Ranking.BrokerId == brokerId && r.ReplacedByRequest == null);
 
         public static async Task<Request> GetActiveRequestByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
                     => await requests.GetActiveRequestsWithBaseIncludes()
