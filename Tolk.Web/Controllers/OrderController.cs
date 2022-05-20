@@ -416,8 +416,11 @@ namespace Tolk.Web.Controllers
                     return RedirectToAction(nameof(Sent), new { id = order.OrderId });
                 }
             }
+            _logger.LogError($"{nameof(Add)} - {nameof(InvalidModelStateErrors)}: {InvalidModelStateErrors}");
             return View(model);
         }
+
+        private string InvalidModelStateErrors => string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
 
         [ValidateAntiForgeryToken]
         [HttpPost]
