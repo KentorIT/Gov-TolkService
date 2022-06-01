@@ -32,7 +32,6 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static string FormatSwedish(this string format, params object[] args)
         {
-
             return string.Format(CultureInfo.GetCultureInfo("sv-SE"), format, args);
         }
 
@@ -98,5 +97,11 @@ namespace Tolk.BusinessLogic.Utilities
                 return ms.ToArray();
             }
         }
+
+        public static string ToNotHyphenatedFormat(this string value)
+        {
+            return value?.Replace("-", string.Empty);
+        }
+
     }
 }

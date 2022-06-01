@@ -9,8 +9,8 @@
 
         //Order Agreement constants
         public const string NotApplicableNotification = "N/A";
-        public const string PeppolSchemeId = "0088";
-        public const string OrganizationNumberSchemeId = "0007";
+        public const string PeppolIdByGLNSchemeId = "0088"; 
+        public const string PeppolIdByOrganizationNumberSchemeId = "0007";
         public const string IdPrefix = "KamK-ID ";
         public const string CustomizationId = "urn:fdc:peppol.eu:poacc:trns:order_agreement:3";
         public const string ProfileId = "urn:fdc:peppol.eu:poacc:bis:order_agreement:3";
