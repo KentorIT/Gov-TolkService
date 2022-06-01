@@ -251,8 +251,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
             {
                 Party = new PartyModel
                 {
-                    EndpointID = OwnerPeppolId,
-                    PartyIdentification = new PartyIdentificationModel { ID = new EndPointIDModel { SchemeId = Constants.PeppolSchemeId, Value = order.CustomerOrganisation.PeppolId } },
+                    EndpointID = new EndPointIDModel { SchemeId = Constants.PeppolSchemeId, Value = order.CustomerOrganisation.PeppolId },
                     PartyLegalEntity = new PartyLegalEntityModel { RegistrationName = order.CustomerOrganisation.Name }
                 }
             };
@@ -264,8 +263,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
             {
                 Party = new PartyModel
                 {
-                    EndpointID = OwnerPeppolId,
-                    PartyIdentification = new PartyIdentificationModel { ID = new EndPointIDModel { SchemeId = Constants.OrganizationNumberSchemeId, Value = request.Ranking.Broker.OrganizationNumber } },
+                    EndpointID = new EndPointIDModel { SchemeId = Constants.OrganizationNumberSchemeId, Value = request.Ranking.Broker.OrganizationNumber },
                     PartyLegalEntity = new PartyLegalEntityModel { RegistrationName = request.Ranking.Broker.Name }
                 }
             };

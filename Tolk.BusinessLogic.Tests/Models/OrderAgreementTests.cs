@@ -71,10 +71,8 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(Constants.ContractNumber, agreement.Contract.ID.Value);
             Assert.Equal(request.Order.InvoiceReference, agreement.CustomerReference);
             Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
-            Assert.Equal(OrderAgreementModel.OwnerPeppolId.Value, agreement.BuyerCustomerParty.Party.EndpointID.Value);
-            Assert.Equal(request.Order.CustomerOrganisation.PeppolId, agreement.BuyerCustomerParty.Party.PartyIdentification.ID.Value);
-            Assert.Equal(OrderAgreementModel.OwnerPeppolId.Value, agreement.SellerSupplierParty.Party.EndpointID.Value);
-            Assert.Equal(request.Ranking.Broker.OrganizationNumber, agreement.SellerSupplierParty.Party.PartyIdentification.ID.Value);
+            Assert.Equal(request.Order.CustomerOrganisation.PeppolId, agreement.BuyerCustomerParty.Party.EndpointID.Value);
+            Assert.Equal(request.Ranking.Broker.OrganizationNumber, agreement.SellerSupplierParty.Party.EndpointID.Value);
             decimal sum = pricerows.Where(pr => pr.PriceRowType != PriceRowType.RoundedPrice).Sum(pr => pr.TotalPrice);
 
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.Price.PriceAmount.AmountSum));
@@ -110,10 +108,8 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(Constants.ContractNumber, agreement.Contract.ID.Value);
             Assert.Equal(requisition.Request.Order.InvoiceReference, agreement.CustomerReference);
             Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
-            Assert.Equal(OrderAgreementModel.OwnerPeppolId.Value, agreement.BuyerCustomerParty.Party.EndpointID.Value);
-            Assert.Equal(requisition.Request.Order.CustomerOrganisation.PeppolId, agreement.BuyerCustomerParty.Party.PartyIdentification.ID.Value);
-            Assert.Equal(OrderAgreementModel.OwnerPeppolId.Value, agreement.SellerSupplierParty.Party.EndpointID.Value);
-            Assert.Equal(requisition.Request.Ranking.Broker.OrganizationNumber, agreement.SellerSupplierParty.Party.PartyIdentification.ID.Value);
+            Assert.Equal(requisition.Request.Order.CustomerOrganisation.PeppolId, agreement.BuyerCustomerParty.Party.EndpointID.Value);
+            Assert.Equal(requisition.Request.Ranking.Broker.OrganizationNumber, agreement.SellerSupplierParty.Party.EndpointID.Value);
             decimal sum = MockEntities.MockRequisitionPriceRows.Where(pr => pr.PriceRowType != PriceRowType.RoundedPrice).Sum(pr => pr.TotalPrice);
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.Price.PriceAmount.AmountSum));
             Assert.Equal(sum, agreement.OrderLines.Sum(ol => ol.LineItem.LineExtensionAmount.AmountSum));
