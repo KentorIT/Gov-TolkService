@@ -13,7 +13,6 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
     [XmlRoot("OrderResponse")]
     public class OrderAgreementModel
     {
-        public static readonly EndPointIDModel OwnerPeppolId = new EndPointIDModel { SchemeId = Constants.PeppolSchemeId, Value = "7350053850019" };
 
         private OrderAgreementModel() { }
         public OrderAgreementModel(Requisition requisition, DateTimeOffset generatedAt, IEnumerable<PriceRowBase> prices, int? previousOrderAgreementIndex = null)
@@ -251,8 +250,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
             {
                 Party = new PartyModel
                 {
-                    EndpointID = OwnerPeppolId,
-                    PartyIdentification = new PartyIdentificationModel { ID = new EndPointIDModel { SchemeId = Constants.PeppolSchemeId, Value = order.CustomerOrganisation.PeppolId } },
+                    EndpointID = new EndPointIDModel { SchemeId = Constants.PeppolIdByOrganizationNumberSchemeId, Value = order.CustomerOrganisation.OrganisationNumber.ToNotHyphenatedFormat() },
                     PartyLegalEntity = new PartyLegalEntityModel { RegistrationName = order.CustomerOrganisation.Name }
                 }
             };
@@ -264,8 +262,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
             {
                 Party = new PartyModel
                 {
-                    EndpointID = OwnerPeppolId,
-                    PartyIdentification = new PartyIdentificationModel { ID = new EndPointIDModel { SchemeId = Constants.OrganizationNumberSchemeId, Value = request.Ranking.Broker.OrganizationNumber } },
+                    EndpointID = new EndPointIDModel { SchemeId = Constants.PeppolIdByOrganizationNumberSchemeId, Value = request.Ranking.Broker.OrganizationNumber.ToNotHyphenatedFormat() },
                     PartyLegalEntity = new PartyLegalEntityModel { RegistrationName = request.Ranking.Broker.Name }
                 }
             };
