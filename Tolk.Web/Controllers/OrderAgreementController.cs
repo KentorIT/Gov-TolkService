@@ -73,7 +73,6 @@ namespace Tolk.Web.Controllers
         {
             var orderAgreementPayload = await _dbContext.OrderAgreementPayloads.GetById(id);
             if (orderAgreementPayload != null &&
-                _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == orderAgreementPayload.Request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderAgreements)) &&
                 (await _authorizationService.AuthorizeAsync(User, orderAgreementPayload, Policies.View)).Succeeded)
             {
                 return View(OrderAgreementModel.GetModelFromOrderAgreement(orderAgreementPayload));
