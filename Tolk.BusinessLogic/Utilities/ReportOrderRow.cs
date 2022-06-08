@@ -7,7 +7,11 @@
 
         public bool DialectIsRequirement { get; set; }
 
+        public string DialectIsRequirementAsString { get; set; }
+
         public bool FulfilledDialectRequirement { get; set; }
+
+        public string FulfilledDialectRequirementAsString { get; set; }
 
         public string OrderedInterpreterLocation1 { get; set; }
 
