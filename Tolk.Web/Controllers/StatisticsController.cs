@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,7 @@ using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.Web.Controllers
 {
@@ -18,13 +20,17 @@ namespace Tolk.Web.Controllers
     {
         private readonly ISwedishClock _clock;
         private readonly StatisticsService _statService;
+        private readonly TolkOptions _options;
 
         public StatisticsController(
             ISwedishClock clock,
-            StatisticsService statService)
+            StatisticsService statService,
+            IOptions<TolkOptions> options
+            )
         {
             _clock = clock;
             _statService = statService;
+            _options = options.Value;
         }
 
         public ActionResult List()
@@ -93,6 +99,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public ActionResult GenerateExcelResult(GenerateExcelModel model)
         {
+            var useStoredProcedures = _options.UseStoredProceduresForReports;
             DateTimeOffset start = model.StartDate.ToSwedishDateTime();
             DateTimeOffset end = model.EndDate.ToSwedishDateTime();
             var brokerId = User.TryGetBrokerId();
@@ -101,21 +108,51 @@ namespace Tolk.Web.Controllers
             switch (model.SelectedReportType)
             {
                 case ReportType.OrdersForCustomer:
+                    if (useStoredProcedures)
+                    {
+                        var orderRows = _statService.GetOrdersByStoredProcedure(start, end, false, null, User.GetUserId(), organisationId);
+                        return CreateExcelFile(orderRows, orderRows.First().CustomerName, model.SelectedReportType);
+                    }
                     var orders = _statService.GetOrders(start, end, organisationId, customerUnits);
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(orders, model.SelectedReportType), orders.OrderRequests.First().CustomerName, model.SelectedReportType);
                 case ReportType.DeliveredOrdersCustomer:
+                    if (useStoredProcedures)
+                    {
+                        var deliveredOrderRows = _statService.GetOrdersByStoredProcedure(start, end, true, null, User.GetUserId(), organisationId);
+                        return CreateExcelFile(deliveredOrderRows, deliveredOrderRows.First().CustomerName, model.SelectedReportType);
+                    }
                     var deliveredOrders = _statService.GetDeliveredOrders(start, end, organisationId, customerUnits);
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(deliveredOrders, model.SelectedReportType), deliveredOrders.OrderRequests.First().CustomerName, model.SelectedReportType);
                 case ReportType.DeliveredOrdersBrokers:
+                    if (useStoredProcedures)
+                    {
+                        var deliveredOrdersRowsBroker = _statService.GetOrdersByStoredProcedure(start, end, true, brokerId.Value, null, null);
+                        return CreateExcelFile(deliveredOrdersRowsBroker, deliveredOrdersRowsBroker.First().BrokerName, model.SelectedReportType);
+                    }
                     var deliveredOrdersBrokers = _statService.GetDeliveredRequestsForBroker(start, end, brokerId.Value);
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(deliveredOrdersBrokers, model.SelectedReportType), deliveredOrdersBrokers.OrderRequests.First().BrokerName, model.SelectedReportType);
                 case ReportType.RequestsForBrokers:
+                    if (useStoredProcedures)
+                    {
+                        var ordersRowsBroker = _statService.GetOrdersByStoredProcedure(start, end, false, brokerId.Value, null, null);
+                        return CreateExcelFile(ordersRowsBroker, ordersRowsBroker.First().BrokerName, model.SelectedReportType);
+                    }
                     var requestsForBrokers = _statService.GetRequestsForBroker(start, end, brokerId.Value);
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(requestsForBrokers, model.SelectedReportType), requestsForBrokers.OrderRequests.First().BrokerName, model.SelectedReportType);
                 case ReportType.OrdersForSystemAdministrator:
+                    if (useStoredProcedures)
+                    {
+                        var orderRowsForSystemAdministrator = _statService.GetOrdersByStoredProcedure(start, end, false, null, User.GetUserId(), null);
+                        return CreateExcelFile(orderRowsForSystemAdministrator, string.Empty, model.SelectedReportType);
+                    }
                     var ordersForSystemAdministrator = _statService.GetOrders(start, end, organisationId);
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(ordersForSystemAdministrator, model.SelectedReportType), string.Empty, model.SelectedReportType);
                 case ReportType.DeliveredOrdersSystemAdministrator:
+                    if (useStoredProcedures)
+                    {
+                        var deliveredOrderRowsForSystemAdministrator = _statService.GetOrdersByStoredProcedure(start, end, true, null, User.GetUserId(), null);
+                        return CreateExcelFile(deliveredOrderRowsForSystemAdministrator, string.Empty, model.SelectedReportType);
+                    }
                     var deliveredOrdersForSystemAdministrator = _statService.GetDeliveredOrders(start, end, organisationId);
                     return CreateExcelFile(StatisticsService.GetOrderExcelFileRows(deliveredOrdersForSystemAdministrator, model.SelectedReportType), string.Empty, model.SelectedReportType);
                 case ReportType.RequisitionsForSystemAdministrator:
@@ -143,7 +180,7 @@ namespace Tolk.Web.Controllers
         private ActionResult CreateExcelFile(IEnumerable<ReportRow> rows, string organisationName, ReportType reportType)
         {
             string fileName = $"{EnumHelper.GetDescription(reportType)}_{organisationName}_{_clock.SwedenNow.DateTime.ToSwedishString("yyyy-MM-dd HH:mm")}.xlsx";
-            return File(StatisticsService.CreateExcelFile(rows, reportType), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            return File(StatisticsService.CreateExcelFile(rows, reportType, _options.UseStoredProceduresForReports), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
         [Authorize(Roles = Roles.AdminRoles)]

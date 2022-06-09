@@ -1,6 +1,8 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Data;
+using System.Data.Common;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -266,11 +268,73 @@ namespace Tolk.BusinessLogic.Services
             return ReportComplaintModel.GetModelFromComplaints(complaints, brokerId.HasValue);
         }
 
+        public IEnumerable<ReportRow> GetOrdersByStoredProcedure(DateTimeOffset start, DateTimeOffset end, bool onlyDelivered, int? brokerId, int? userId, int? organisationId)
+        {
+            var connection = _dbContext.Database.GetDbConnection();
+            connection.Open();
+            var getOrders = connection.CreateCommand();
+            getOrders.CommandText = brokerId.HasValue ?
+                    $"EXEC GetOrderRequestsForExcelReport @dateFrom = '{start.Date}', @dateTo = '{end.Date}', @onlyDelivered = '{onlyDelivered}', @brokerId = '{brokerId}'" :
+                    organisationId == null ? $"EXEC GetOrdersForExcelReport @dateFrom = '{start.Date}', @dateTo = '{end.Date}', @userId = '{userId}', @onlyDelivered = '{onlyDelivered}'" : 
+                    $"EXEC GetOrdersForExcelReport @dateFrom = '{start.Date}', @dateTo = '{end.Date}',@userId = '{userId}', @onlyDelivered = '{onlyDelivered}', @customerId = '{organisationId}'";
+            using var reader = getOrders.ExecuteReader();
+            return ReadReportRows(reader, brokerId.HasValue);
+        }
+
+        private List<ReportOrderRow> ReadReportRows(DbDataReader reader, bool isBroker)
+        {
+            List<ReportOrderRow> orderRows = new List<ReportOrderRow>();
+            while (reader.Read())
+            {
+                ReportOrderRow row = new ReportOrderRow
+                {
+                    OrderNumber = reader.GetString(reader.GetOrdinal("BokningsId")),
+                    ReportDate = reader.GetString(reader.GetOrdinal("Rapportdatum")),
+                    Language = reader.GetString(reader.GetOrdinal("Språk")),
+                    Region = reader.GetString(reader.GetOrdinal("Län")),
+                    AssignmentType = reader.GetString(reader.GetOrdinal("Uppdragstyp")),
+                    InterpreterCompetenceLevelAsString = reader.GetString(reader.GetOrdinal("Tolkens kompetensnivå")),
+                    InterpreterId = reader.GetString(reader.GetOrdinal("Kammarkollegiets tolknr")),
+                    InterpreterLocation = reader.GetString(reader.GetOrdinal("Inställelsesätt")),
+                    AssignmentDate = reader.GetString(reader.GetOrdinal("Tid för uppdrag")),
+                    ReferenceNumber = reader.GetString(reader.GetOrdinal("Myndighetens ärendenummer")),
+                    AllowExceedingTravelCost = reader.GetString(reader.GetOrdinal("Accepterar restid")),
+                    Status = reader.GetString(reader.GetOrdinal("Status")),
+                    Dialect = reader.GetString(reader.GetOrdinal("Dialekt")),
+                    DialectIsRequirementAsString = reader.GetString(reader.GetOrdinal("Dialekt är krav")),
+                    FulfilledDialectRequirementAsString = reader.GetString(reader.GetOrdinal("Uppfyllt krav/önskemål om dialekt")),
+                    OrderedInterpreterLocation1 = reader.GetString(reader.GetOrdinal("Inställelsesätt 1:a hand")),
+                    OrderedInterpreterLocation2 = reader.GetString(reader.GetOrdinal("Inställelsesätt 2:a hand")),
+                    OrderedInterpreterLocation3 = reader.GetString(reader.GetOrdinal("Inställelsesätt 3:e hand")),
+                    CompetenceLevelDesired1 = reader.GetString(reader.GetOrdinal("Önskad kompetensnivå 1:a hand")),
+                    CompetenceLevelDesired2 = reader.GetString(reader.GetOrdinal("Önskad kompetensnivå 2:a hand")),
+                    CompetenceLevelRequired1 = reader.GetString(reader.GetOrdinal("Krav på kompetensnivå")),
+                    CompetenceLevelRequired2 = reader.GetString(reader.GetOrdinal("Ytterligare krav på kompetensnivå")),
+                    OrderRequirements = reader.GetInt32(reader.GetOrdinal("Antal övriga krav")),
+                    FulfilledOrderRequirements = reader.GetInt32(reader.GetOrdinal("Antal uppfyllda övriga krav")),
+                    OrderDesiredRequirements = reader.GetInt32(reader.GetOrdinal("Antal övriga önskemål")),
+                    FulfilledOrderDesiredRequirements = reader.GetInt32(reader.GetOrdinal("Antal uppfyllda övriga önskemål")),
+                    BrokerName = reader.GetString(reader.GetOrdinal("Förmedling")),
+                    ReportPersonToDisplay = reader.IsDBNull("Rapportperson") ? string.Empty : reader.GetString(reader.GetOrdinal("Rapportperson")),
+                    CustomerName = reader.GetString(reader.GetOrdinal("Myndighet")),
+                    HasRequisition = reader.GetBoolean(reader.GetOrdinal("Rekvisition finns")),
+                    HasComplaint = reader.GetBoolean(reader.GetOrdinal("Reklamation finns")),
+                    Price = reader.IsDBNull("Totalt pris") ? 0 : reader.GetDecimal(reader.GetOrdinal("Totalt pris")),
+                    CustomerUnitName = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("Enhet")),
+                    Department = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("Avdelning")),
+                    InvoiceReference = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("Fakturareferens")),
+                    OrderCreatorEmail = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("E-postadress"))
+                };
+                orderRows.Add(row);
+            }
+            return orderRows;
+        }
+
         #endregion
 
         #region Generate Excel
 
-        public static MemoryStream CreateExcelFile(IEnumerable<ReportRow> rows, ReportType reportType)
+        public static MemoryStream CreateExcelFile(IEnumerable<ReportRow> rows, ReportType reportType, bool useStoredProcedure)
         {
             using var workbook = new XLWorkbook();
             var rowsWorksheet = workbook.Worksheets.Add(EnumHelper.GetDescription(reportType));
@@ -286,7 +350,7 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Uppdragstyp";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentType);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolkens kompetensnivå";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterCompetenceLevel.GetDescription());
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterCompetenceLevelAsString?? r.InterpreterCompetenceLevel.GetDescription());
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Kammarkollegiets tolknr";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterId);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt";
@@ -333,7 +397,7 @@ namespace Tolk.BusinessLogic.Services
             }
             else if (rows.FirstOrDefault() is ReportOrderRow)
             {
-                CreateColumnsForOrder(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter);
+                CreateColumnsForOrder(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), useStoredProcedure, ref columnLetter);
             }
             switch (EnumHelper.Parent<ReportType, ReportGroup>(reportType))
             {
@@ -356,14 +420,14 @@ namespace Tolk.BusinessLogic.Services
             return memoryStream;
         }
 
-        private static void CreateColumnsForOrder(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
+        private static void CreateColumnsForOrder(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, bool useStoredProcedure, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Dialekt";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Dialect);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Dialekt är krav";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.DialectIsRequirement ? "Ja" : "Nej");
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = useStoredProcedure ? rows.Select(r => r.DialectIsRequirementAsString) : rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.DialectIsRequirement ? "Ja" : "Nej");
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Uppfyllt krav/önskemål om dialekt";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.FulfilledDialectRequirement ? "Ja" : "Nej");
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = useStoredProcedure ? rows.Select(r => r.FulfilledDialectRequirementAsString) : rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.FulfilledDialectRequirement ? "Ja" : "Nej");
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt 1:a hand";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderedInterpreterLocation1);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt 2:a hand";

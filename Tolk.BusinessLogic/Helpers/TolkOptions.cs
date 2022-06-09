@@ -22,6 +22,7 @@ namespace Tolk.BusinessLogic.Helpers
         public bool EnableOrderUpdate { get; set; }
 
         public bool RunEntityScheduler { get; set; } = true;
+        public bool UseStoredProceduresForReports { get; set; } = true;
 
         public PeppolSettings Peppol { get; set; }
 
