@@ -8,7 +8,7 @@
         public const int DeclineInterpreterId = -2;
 
         //Order Agreement constants
-        public const string NotApplicableNotification = "N/A";
+        public const string NotApplicableNotification = "NA";
         public const string PeppolIdByGLNSchemeId = "0088"; 
         public const string PeppolIdByOrganizationNumberSchemeId = "0007";
         public const string IdPrefix = "KamK-ID ";
