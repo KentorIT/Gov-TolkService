@@ -133,8 +133,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public static CustomerUnit[] MockUnits => new[]
             {
-                new CustomerUnit { CustomerUnitId = 1, CustomerOrganisationId = 4 },
-                new CustomerUnit { CustomerUnitId = 2, CustomerOrganisationId = 4 },
+                new CustomerUnit { CustomerUnitId = 1, CustomerOrganisationId = 4, Email = string.Empty, Name = string.Empty },
+                new CustomerUnit { CustomerUnitId = 2, CustomerOrganisationId = 4, Email = string.Empty, Name = string.Empty },
             };
         public static RequisitionPriceRow[] MockRequisitionPriceRows => new[]
             {
@@ -598,22 +598,26 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Requisition
                 {
                     Status = RequisitionStatus.Commented,
-                    Request = orders[0].Requests[1]
+                    Request = orders[0].Requests[1],
+                    Message = string.Empty
                 },
                 new Requisition
                 {
                     Status = RequisitionStatus.Reviewed,
-                    Request = orders[1].Requests[0]
+                    Request = orders[1].Requests[0],
+                    Message = string.Empty
                 },
                 new Requisition
                 {
                     Status = RequisitionStatus.Reviewed,
-                    Request = orders[3].Requests[0]
+                    Request = orders[3].Requests[0],
+                    Message = string.Empty
                 },
                 new Requisition
                 {
                     Status = RequisitionStatus.Created,
-                    Request = orders[5].Requests[1]
+                    Request = orders[5].Requests[1],
+                    Message = string.Empty
                 },
             };
 
@@ -634,23 +638,27 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 new Complaint
                 {
                     Status = ComplaintStatus.Created,
-                    Request = orders[0].Requests[1]
+                    Request = orders[0].Requests[1],
+                    ComplaintMessage = string.Empty
                 },
 
                 new Complaint
                 {
+                    ComplaintMessage = string.Empty,
                     Status = ComplaintStatus.Created,
                     Request = orders[1].Requests[0]
                 },
 
                 new Complaint
                 {
+                    ComplaintMessage = string.Empty,
                     Status = ComplaintStatus.Created,
                     Request = orders[3].Requests[0]
                 },
 
                 new Complaint
                 {
+                    ComplaintMessage = string.Empty,
                     Status = ComplaintStatus.Created,
                     Request = orders[5].Requests[1]
                 },
@@ -681,28 +689,28 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         }
 
         public static Holiday[] Holidays => new[] {
-            new Holiday() { Date = new DateTime(2018, 03, 29), DateType = DateType.DayBeforeBigHoliday},
-            new Holiday() { Date = new DateTime(2018, 03, 30), DateType = DateType.BigHolidayFullDay},
-            new Holiday() { Date = new DateTime(2018, 04, 01), DateType = DateType.BigHolidayFullDay},
-            new Holiday() { Date = new DateTime(2018, 04, 02), DateType = DateType.BigHolidayFullDay},
-            new Holiday() { Date = new DateTime(2018, 04, 03), DateType = DateType.DayAfterBigHoliday},
-            new Holiday() { Date = new DateTime(2018, 05, 01), DateType = DateType.Holiday},
-            new Holiday() { Date = new DateTime(2018, 05, 10), DateType = DateType.Holiday},
-            new Holiday() { Date = new DateTime(2018, 05, 18), DateType = DateType.DayBeforeBigHoliday},
-            new Holiday() { Date = new DateTime(2018, 05, 19), DateType = DateType.BigHolidayFullDay},
-            new Holiday() { Date = new DateTime(2018, 06, 06), DateType = DateType.Holiday},
-            new Holiday() { Date = new DateTime(2018, 12, 23), DateType = DateType.DayBeforeBigHoliday},
-            new Holiday() { Date = new DateTime(2018, 12, 24), DateType = DateType.BigHolidayFullDay},
-            new Holiday() { Date = new DateTime(2018, 12, 25), DateType = DateType.BigHolidayFullDay},
-            new Holiday() { Date = new DateTime(2018, 12, 26), DateType = DateType.BigHolidayFullDay},
-            new Holiday() { Date = new DateTime(2018, 12, 27), DateType = DateType.DayAfterBigHoliday},
-            new Holiday() { Date = new DateTime(2020, 06, 06), DateType = DateType.Holiday},
-            new Holiday() { Date = new DateTime(2019, 12, 23), DateType = DateType.DayBeforeBigHoliday},
-            new Holiday() { Date = new DateTime(2020, 12, 27), DateType = DateType.DayAfterBigHoliday},
-            new Holiday() { Date = new DateTime(2022, 06, 06), DateType = DateType.DayAfterBigHoliday},
-            new Holiday() { Date = new DateTime(2022, 06, 06), DateType = DateType.Holiday},
-            new Holiday() { Date = new DateTime(2025, 06, 06), DateType = DateType.DayBeforeBigHoliday},
-            new Holiday() { Date = new DateTime(2025, 06, 06), DateType = DateType.Holiday}
+            new Holiday() { Name = "", Date = new DateTime(2018, 03, 29), DateType = DateType.DayBeforeBigHoliday},
+            new Holiday() { Name = "", Date = new DateTime(2018, 03, 30), DateType = DateType.BigHolidayFullDay},
+            new Holiday() { Name = "", Date = new DateTime(2018, 04, 01), DateType = DateType.BigHolidayFullDay},
+            new Holiday() { Name = "", Date = new DateTime(2018, 04, 02), DateType = DateType.BigHolidayFullDay},
+            new Holiday() { Name = "", Date = new DateTime(2018, 04, 03), DateType = DateType.DayAfterBigHoliday},
+            new Holiday() { Name = "", Date = new DateTime(2018, 05, 01), DateType = DateType.Holiday},
+            new Holiday() { Name = "", Date = new DateTime(2018, 05, 10), DateType = DateType.Holiday},
+            new Holiday() { Name = "", Date = new DateTime(2018, 05, 18), DateType = DateType.DayBeforeBigHoliday},
+            new Holiday() { Name = "", Date = new DateTime(2018, 05, 19), DateType = DateType.BigHolidayFullDay},
+            new Holiday() { Name = "", Date = new DateTime(2018, 06, 06), DateType = DateType.Holiday},
+            new Holiday() { Name = "", Date = new DateTime(2018, 12, 23), DateType = DateType.DayBeforeBigHoliday},
+            new Holiday() { Name = "", Date = new DateTime(2018, 12, 24), DateType = DateType.BigHolidayFullDay},
+            new Holiday() { Name = "", Date = new DateTime(2018, 12, 25), DateType = DateType.BigHolidayFullDay},
+            new Holiday() { Name = "", Date = new DateTime(2018, 12, 26), DateType = DateType.BigHolidayFullDay},
+            new Holiday() { Name = "", Date = new DateTime(2018, 12, 27), DateType = DateType.DayAfterBigHoliday},
+            new Holiday() { Name = "", Date = new DateTime(2020, 06, 06), DateType = DateType.Holiday},
+            new Holiday() { Name = "", Date = new DateTime(2019, 12, 23), DateType = DateType.DayBeforeBigHoliday},
+            new Holiday() { Name = "", Date = new DateTime(2020, 12, 27), DateType = DateType.DayAfterBigHoliday},
+            new Holiday() { Name = "", Date = new DateTime(2022, 06, 06), DateType = DateType.DayAfterBigHoliday},
+            new Holiday() { Name = "", Date = new DateTime(2022, 06, 06), DateType = DateType.Holiday},
+            new Holiday() { Name = "", Date = new DateTime(2025, 06, 06), DateType = DateType.DayBeforeBigHoliday},
+            new Holiday() { Name = "", Date = new DateTime(2025, 06, 06), DateType = DateType.Holiday}
         };
 
         public static PriceCalculationCharge[] PriceCalculationCharges => new[] {

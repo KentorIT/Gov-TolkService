@@ -75,6 +75,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             };
             var mockRequisition = new Requisition
             {
+                Message = string.Empty,
                 RequisitionId = 1,
                 Status = RequisitionStatus.Created,
                 SessionStartedAt = new DateTime(2018, 12, 10, 10, 10, 10),

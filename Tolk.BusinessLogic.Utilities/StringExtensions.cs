@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Globalization;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 
 namespace Tolk.BusinessLogic.Utilities
 {
@@ -15,93 +15,44 @@ namespace Tolk.BusinessLogic.Utilities
             return newString;
         }
 
-        public static Uri AsUri(this string value)
-        {
-            return new Uri(value);
-        }
+        public static Uri AsUri(this string value) => new Uri(value);
 
-        public static bool ContainsSwedish(this string value, string searchFor)
-        {
-            return (value?.IndexOf(searchFor, StringComparison.InvariantCultureIgnoreCase) ?? -1) >= 0;
-        }
+        public static bool ContainsSwedish(this string value, string searchFor) =>
+            (value?.IndexOf(searchFor, StringComparison.InvariantCultureIgnoreCase) ?? -1) >= 0;
 
-        public static bool EqualsSwedish(this string value, string compareWith)
-        {
-            return value?.Equals(compareWith, StringComparison.InvariantCultureIgnoreCase) ?? false;
-        }
+        public static bool EqualsSwedish(this string value, string compareWith) => 
+            value?.Equals(compareWith, StringComparison.InvariantCultureIgnoreCase) ?? false;
 
-        public static string FormatSwedish(this string format, params object[] args)
-        {
-            return string.Format(CultureInfo.GetCultureInfo("sv-SE"), format, args);
-        }
+        public static string FormatSwedish(this string format, params object[] args) => 
+            string.Format(CultureInfo.GetCultureInfo("sv-SE"), format, args);
 
-        public static string ToSwedishLower(this string value)
-        {
-            return value?.ToLower(CultureInfo.GetCultureInfo("sv-SE"));
-        }
+        public static string ToSwedishLower(this string value) => 
+            value?.ToLower(CultureInfo.GetCultureInfo("sv-SE"));
 
-        public static string ToSwedishUpper(this string value)
-        {
-            return value?.ToUpper(CultureInfo.GetCultureInfo("sv-SE"));
-        }
+        public static string ToSwedishUpper(this string value) => 
+            value?.ToUpper(CultureInfo.GetCultureInfo("sv-SE"));
 
-        public static bool StartsWithSwedish(this string value, string searhFor)
-        {
-            return value?.StartsWith(searhFor, StringComparison.InvariantCultureIgnoreCase) ?? false;
-        }
+        public static bool StartsWithSwedish(this string value, string searhFor) => 
+            value?.StartsWith(searhFor, StringComparison.InvariantCultureIgnoreCase) ?? false;
 
-        public static int ToSwedishInt(this string value)
-        {
-            return Convert.ToInt32(value, CultureInfo.GetCultureInfo("sv-SE"));
-        }
+        public static int ToSwedishInt(this string value) => 
+            Convert.ToInt32(value, CultureInfo.GetCultureInfo("sv-SE"));
 
-        public static string ToSwedishString(this char value)
-        {
-            return value.ToString(CultureInfo.GetCultureInfo("sv-SE"));
-        }
+        public static string ToSwedishString(this char value) =>
+            value.ToString(CultureInfo.GetCultureInfo("sv-SE"));
 
-        public static TimeSpan ToSwedishTimeSpan(this string value)
-        {
-            return TimeSpan.Parse(value, CultureInfo.GetCultureInfo("sv-SE"));
-        }
+        public static TimeSpan ToSwedishTimeSpan(this string value) => TimeSpan.Parse(value, CultureInfo.GetCultureInfo("sv-SE"));
 
-        public static DateTime ToSwedishDateTime(this string value)
-        {
-            return Convert.ToDateTime(value, CultureInfo.GetCultureInfo("sv-SE"));
-        }
+        public static DateTime ToSwedishDateTime(this string value) =>
+            Convert.ToDateTime(value, CultureInfo.GetCultureInfo("sv-SE"));
 
-        public static T FromByteArray<T>(this byte[] data)
-        {
-            if (data == null || data.Length == 0)
-            {
-                return default;
-            }
-            BinaryFormatter bf = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream(data))
-            {
-                object obj = bf.Deserialize(ms);
-                return (T)obj;
-            }
-        }
+        public static T FromByteArray<T>(this byte[] data) =>
+            (data == null || data.Length == 0) ? default : (T)JsonConvert.DeserializeObject(Encoding.UTF8.GetString(data), typeof(T));
 
-        public static byte[] ToByteArray<T>(this T data)
-        {
-            if (data == null)
-            {
-                return null;
-            }
-            BinaryFormatter bf = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream())
-            {
-                bf.Serialize(ms, data);
-                return ms.ToArray();
-            }
-        }
+        public static byte[] ToByteArray<T>(this T data) =>
+            (data == null) ? null : Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(data));
 
-        public static string ToNotHyphenatedFormat(this string value)
-        {
-            return value?.Replace("-", string.Empty);
-        }
-
+        public static string ToNotHyphenatedFormat(this string value) =>
+            value?.Replace("-", string.Empty);
     }
 }

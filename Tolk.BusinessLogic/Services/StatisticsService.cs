@@ -137,7 +137,7 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<OrderStatisticsModel> GetOrderStatistics()
         {
-            IQueryable<Order> orders = _dbContext.Orders;
+            IQueryable<Order> orders = _dbContext.Orders.GetOrdersForStatistics();
 
             yield return GetOrderRegionStatistics(orders);
             yield return GetOrderLanguageStatistics(orders);
@@ -146,20 +146,20 @@ namespace Tolk.BusinessLogic.Services
 
         public static OrderStatisticsModel GetOrderRegionStatistics(IQueryable<Order> orders)
         {
-            return GetOrderStats("Mest beställda län", orders.GroupBy(o => o.Region.Name));
+            return GetOrderStats("Mest beställda län", orders.ToList().GroupBy(o => o.Region.Name));
         }
 
         public static OrderStatisticsModel GetOrderLanguageStatistics(IQueryable<Order> orders)
         {
-            return GetOrderStats("Mest beställda språk", orders.GroupBy(o => o.Language.Name));
+            return GetOrderStats("Mest beställda språk", orders.ToList().GroupBy(o => o.Language.Name));
         }
 
         public static OrderStatisticsModel GetOrderCustomerStatistics(IQueryable<Order> orders)
         {
-            return GetOrderStats("Myndigheter", orders.GroupBy(o => o.CustomerOrganisation.Name));
+            return GetOrderStats("Myndigheter", orders.ToList().GroupBy(o => o.CustomerOrganisation.Name));
         }
 
-        private static OrderStatisticsModel GetOrderStats(string name, IQueryable<IGrouping<string, Order>> orders)
+        private static OrderStatisticsModel GetOrderStats(string name, IEnumerable<IGrouping<string, Order>> orders)
         {
             return new OrderStatisticsModel
             {

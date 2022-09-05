@@ -85,7 +85,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
             var complaint = new Complaint
             {
-                Status = status
+                Status = status,
+                ComplaintMessage = string.Empty
             };
             Assert.Throws<InvalidOperationException>(() =>
                 service.Accept(complaint, 1, null));
@@ -98,7 +99,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
             var complaint = new Complaint
             {
-                Status = status
+                Status = status,
+                ComplaintMessage = string.Empty
             };
             service.Accept(complaint, 1, null);
         }
@@ -111,7 +113,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
             var complaint = new Complaint
             {
-                Status = status
+                Status = status,
+                ComplaintMessage = string.Empty
             };
             Assert.Throws<InvalidOperationException>(() =>
                 service.Dispute(complaint, 1, null, "Fulfel"));
@@ -124,7 +127,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
             var complaint = new Complaint
             {
-                Status = status
+                Status = status,
+                ComplaintMessage = string.Empty
             };
             service.Dispute(complaint, 1, null, "detta är fel");
         }
@@ -137,7 +141,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
             var complaint = new Complaint
             {
-                Status = status
+                Status = status,
+                ComplaintMessage = string.Empty
             };
             Assert.Throws<InvalidOperationException>(() =>
                 service.AcceptDispute(complaint, 1, null, "får inte acceptera"));
@@ -150,7 +155,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
             var complaint = new Complaint
             {
-                Status = status
+                Status = status,
+                ComplaintMessage = string.Empty
             };
             service.AcceptDispute(complaint, 1, null, "detta är ok");
         }
@@ -163,7 +169,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
             var complaint = new Complaint
             {
-                Status = status
+                Status = status,
+                ComplaintMessage = string.Empty
             };
             Assert.Throws<InvalidOperationException>(() =>
                 service.Refute(complaint, 1, null, "nej, med fel"));
@@ -176,7 +183,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
             var complaint = new Complaint
             {
-                Status = status
+                Status = status,
+                ComplaintMessage = string.Empty
             };
             service.Refute(complaint, 1, null, "detta är INTE ok");
         }

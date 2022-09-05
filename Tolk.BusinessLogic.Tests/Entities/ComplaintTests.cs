@@ -12,7 +12,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(ComplaintStatus.TerminatedAsDisputeAccepted)]
         public void AnswerDispute_Valid(ComplaintStatus statusToSet)
         {
-            var complaint = new Complaint { Status = ComplaintStatus.Disputed };
+            var complaint = new Complaint { Status = ComplaintStatus.Disputed, ComplaintMessage = string.Empty };
             var approveTime = DateTime.Parse("2019-01-31 14:06");
             var userId = 10;
             var impersonatorId = (int?)null;
@@ -84,7 +84,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(ComplaintStatus.TerminatedTrialDeniedComplaint, ComplaintStatus.DisputePendingTrial)]
         public void AnswerDispute_Invalid(ComplaintStatus currentStatus, ComplaintStatus statusToSet)
         {
-            var complaint = new Complaint { Status = currentStatus };
+            var complaint = new Complaint { Status = currentStatus, ComplaintMessage = string.Empty };
             Assert.Throws<InvalidOperationException>(() => complaint.AnswerDispute(DateTime.Now, 10, null, "Test", statusToSet));
         }
 
@@ -93,7 +93,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(ComplaintStatus.Disputed)]
         public void Answer_Valid(ComplaintStatus statusToSet)
         {
-            var complaint = new Complaint { Status = ComplaintStatus.Created };
+            var complaint = new Complaint { Status = ComplaintStatus.Created, ComplaintMessage = string.Empty };
             var approveTime = DateTime.Parse("2019-01-31 14:06");
             var userId = 10;
             var impersonatorId = (int?)null;

@@ -1214,7 +1214,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 existingRequisition = new Requisition
                 {
-                    Status = preexistingRequisition.Value,
+                    Status = preexistingRequisition.Value, 
+                    Message = string.Empty
                 };
             }
             var request = new Request
@@ -1235,7 +1236,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
             request.Status = requestStatus;
             var requisition = new Requisition()
             {
-                Status = RequisitionStatus.Created
+                Status = RequisitionStatus.Created,
+                Message = string.Empty
             };
             request.CreateRequisition(requisition);
 
@@ -1301,6 +1303,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 requisition = new Requisition
                 {
                     Status = existingRequisition.Value,
+                    Message = string.Empty
                 };
             }
             var request = new Request
@@ -1313,7 +1316,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 request.Requisitions.Add(requisition);
             }
 
-            Assert.Throws<InvalidOperationException>(() => request.CreateRequisition(new Requisition()));
+            Assert.Throws<InvalidOperationException>(() => request.CreateRequisition(new Requisition { Message = string.Empty}));
         }
 
         [Fact]
@@ -1643,14 +1646,14 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Status = RequestStatus.Approved,
                 Complaints = new List<Complaint>()
                 {
-                    new Complaint()
+                    new Complaint{ ComplaintMessage = string.Empty }
                 }
             };
             request.Order = new Order(MockOrder)
             {
                 StartAt = DateTimeOffset.Now.AddDays(-1)
             };
-            Assert.Throws<InvalidOperationException>(() => request.CreateComplaint(new Complaint(), DateTimeOffset.Now));
+            Assert.Throws<InvalidOperationException>(() => request.CreateComplaint(new Complaint { ComplaintMessage = string.Empty }, DateTimeOffset.Now));
         }
 
         [Theory]
@@ -2505,7 +2508,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 Status = requestStatus,
                 OrderAgreementPayloads = new List<OrderAgreementPayload>(),
-                Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = status} }
+                Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = status, Message = string.Empty } }
             };
             Assert.Equal(expected, request.AllowOrderAgreementCreation());
         }
@@ -2529,7 +2532,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 Status = RequestStatus.Delivered,
                 OrderAgreementPayloads = new List<OrderAgreementPayload>() { new OrderAgreementPayload { RequisitionId = 1 } },
-                Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = RequisitionStatus.Reviewed } }
+                Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = RequisitionStatus.Reviewed, Message = string.Empty } }
             };
             Assert.False(request.AllowOrderAgreementCreation());
         }
@@ -2547,7 +2550,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 Status = RequestStatus.Delivered,
                 OrderAgreementPayloads = new List<OrderAgreementPayload>() { new OrderAgreementPayload { RequisitionId = 1 } },
-                Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = RequisitionStatus.DeniedByCustomer }, new Requisition { RequisitionId = 2, Status = status } }
+                Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = RequisitionStatus.DeniedByCustomer, Message = string.Empty }, new Requisition { RequisitionId = 2, Status = status } }
             };
             Assert.Equal(expected, request.AllowOrderAgreementCreation());
         }
