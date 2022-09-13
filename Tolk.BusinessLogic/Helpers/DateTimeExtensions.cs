@@ -5,8 +5,11 @@ namespace Tolk.BusinessLogic.Helpers
 {
     public static class DateTimeExtensions
     {
+        //Try getting timezone by windows name standard first, and if that fails, try the linux way.
+        // used if running tests on non-windows machines
         private static readonly TimeZoneInfo timeZoneInfo =
-            TimeZoneInfo.GetSystemTimeZones().Single(tzi => tzi.Id == "W. Europe Standard Time");
+            TimeZoneInfo.FindSystemTimeZoneById("W. Europe Standard Time") ??
+            TimeZoneInfo.FindSystemTimeZoneById("Europe/Stockholm");
 
         /// <summary>
         /// Convert a raw user-inserted date time into a DateTimeOffset, observering
