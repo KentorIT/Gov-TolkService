@@ -56,8 +56,7 @@ jobs:
         dotnet tool install --global dotnet-ef
         dotnet ef migrations script -o "$GITHUB_WORKSPACE/artifacts/Tolk.Migration/TolkMigrate.sql" --startup-project "./Tolk.Web/Tolk.Web.csproj" -p "./Tolk.BusinessLogic/Tolk.BusinessLogic.csproj" -i
     - name: Display structure of files to upload
-      run: ls -R
-      working-directory: "$GITHUB_WORKSPACE/artifacts"
+      run: ls "$GITHUB_WORKSPACE/artifacts" -R
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -74,5 +73,4 @@ jobs:
         name: package-artifacts
         path: "$GITHUB_WORKSPACE/artifacts"
     - name: Display structure of downloaded files
-      run: ls -R
-      working-directory: "$GITHUB_WORKSPACE/artifacts"
+      run: ls "$GITHUB_WORKSPACE/artifacts" -R
