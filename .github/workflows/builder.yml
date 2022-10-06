@@ -28,15 +28,15 @@ jobs:
       with:
         path: ./VersionNumber.txt
     - name: Get version number          
-      id: vars
+      id: version
       shell: bash
       run: |
-        echo "::set-output name=version_number::${{ steps.package.outputs.content }}"
+        echo "::set-output name=number::${{ steps.package.outputs.content }}"
     - name: Create version number
       run: |
         echo "Sha: ${{ steps.vars.outputs.sha_short }}"
-        echo "Version number: ${{ steps.vars.outputs.version_number }}"
-        echo "Full version number: ${{ steps.vars.outputs.version_number }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
+        echo "Version number: ${{ steps.version.outputs.number }}"
+        echo "Full version number: ${{ steps.version.outputs.number }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
     - name: Build    
       run: dotnet build --no-restore
     - name: Test
