@@ -55,6 +55,7 @@ jobs:
       run: dotnet ef migrations script -o "$GITHUB_WORKSPACE/artifacts/Tolk.Migration/TolkMigrate.sql" --startup-project "./Tolk.Web/Tolk.Web.csproj" -p "./Tolk.BusinessLogic/Tolk.BusinessLogic.csproj" -i
   deploy:
     needs: build    
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Use artifacts
