@@ -19,7 +19,27 @@ jobs:
         dotnet-version: 6.0.x
     - name: Restore dependencies
       run: dotnet restore
+      
+    - name: Get commit hash
+        id: vars
+        shell: bash
+        run: |
+            echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+    - name: Read package.json
+    id: package
+    uses: juliangruber/read-file-action@v1
+    with:
+      path: ./VersionNumber.txt
+    - name: Get version number          
+    run: echo "::set-output name=version_number::${{ steps.package.outputs.content }}"
+
+    - name: Create version number
+    run: |
+      echo "Sha: ${{ steps.vars.outputs.sha_short }}"
+      echo "Version number: ${{ steps.vars.outputs.version_number }}"
+      echo "Full version number: ${{ steps.vars.outputs.version_number }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
     - name: Build
+    
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
