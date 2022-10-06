@@ -22,7 +22,7 @@ jobs:
       shell: bash
       run: |
         echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-    - name: Read package.json
+    - name: Read version number from file
       id: package
       uses: juliangruber/read-file-action@v1
       with:
@@ -41,3 +41,15 @@ jobs:
       run: dotnet build -c Release --no-restore --no-incremental -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Test
       run: dotnet test -c Release --no-build --verbosity normal
+    - name: Create artifacts folder
+      run: |
+        mkdir "$GITHUB_WORKSPACE/artifacts"
+        mkdir "$GITHUB_WORKSPACE/artifacts/Tolk.Web"
+        mkdir "$GITHUB_WORKSPACE/artifacts/Tolk.Api"
+        mkdir "$GITHUB_WORKSPACE/artifacts/Tolk.Migration"
+    - name: Create web artifact
+      run: dotnet publish ./Tolk.Web/Tolk.Web.csproj -c Release --no-build -o "$GITHUB_WORKSPACE/artifacts/Tolk.Web" -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
+    - name: Create api artifact
+      run: dotnet publish ./Tolk.Api/Tolk.Api.csproj -c Release --no-build -o "$GITHUB_WORKSPACE/artifacts/Tolk.Api" -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
+    - name: Create migration artifact
+      run: dotnet ef migrations script -o "$GITHUB_WORKSPACE/artifacts/Tolk.Migration/TolkMigrate.sql" --startup-project" ./Tolk.Web/Tolk.Web.csproj -p "./Tolk.BusinessLogic/Tolk.BusinessLogic.csproj" -i
