@@ -45,11 +45,11 @@ jobs:
       run: |
         mkdir "$GITHUB_WORKSPACE/artifacts"
         mkdir "$GITHUB_WORKSPACE/artifacts/Tolk.Web"
-        mkdir "$GITHUB_WORKSPACE/artifacts/Tolk.Api"
+        mkdir "$GITHUB_WORKSPACE/artifacts/Tolk.Web.Api"
         mkdir "$GITHUB_WORKSPACE/artifacts/Tolk.Migration"
     - name: Create web artifact
       run: dotnet publish ./Tolk.Web/Tolk.Web.csproj -c Release --no-build -o "$GITHUB_WORKSPACE/artifacts/Tolk.Web" -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Create api artifact
-      run: dotnet publish ./Tolk.Api/Tolk.Api.csproj -c Release --no-build -o "$GITHUB_WORKSPACE/artifacts/Tolk.Api" -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
+      run: dotnet publish ./Tolk.Web.Api/Tolk.Web.Api.csproj -c Release --no-build -o "$GITHUB_WORKSPACE/artifacts/Tolk.Web.Api" -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Create migration artifact
       run: dotnet ef migrations script -o "$GITHUB_WORKSPACE/artifacts/Tolk.Migration/TolkMigrate.sql" --startup-project" ./Tolk.Web/Tolk.Web.csproj -p "./Tolk.BusinessLogic/Tolk.BusinessLogic.csproj" -i
