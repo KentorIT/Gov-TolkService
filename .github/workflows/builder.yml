@@ -43,10 +43,10 @@ jobs:
       run: dotnet test -c Release --no-build --verbosity normal
     - name: Create artifacts folder
       run: |
-        mkdir ${{ github.workspace }}/artifacts"
-        mkdir ${{ github.workspace }}/artifacts/Tolk.Web"
-        mkdir ${{ github.workspace }}/artifacts/Tolk.Web.Api"
-        mkdir ${{ github.workspace }}/artifacts/Tolk.Migration"
+        mkdir ${{ github.workspace }}/artifacts
+        mkdir ${{ github.workspace }}/artifacts/Tolk.Web
+        mkdir ${{ github.workspace }}/artifacts/Tolk.Web.Api
+        mkdir ${{ github.workspace }}/artifacts/Tolk.Migration
     - name: Create web artifact
       run: dotnet publish ./Tolk.Web/Tolk.Web.csproj -c Release --no-build -o "${{ github.workspace }}/artifacts/Tolk.Web" -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Create api artifact
