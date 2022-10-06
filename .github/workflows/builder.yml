@@ -56,5 +56,6 @@ jobs:
   deploy:
     needs: build    
     steps:
+    - uses: actions/checkout@v3
     - name: Use artifacts
       run: dir "$GITHUB_WORKSPACE/artifacts"
