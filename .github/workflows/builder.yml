@@ -68,7 +68,7 @@ jobs:
     - name: Get Artifacts
       uses: actions/download-artifact@v3
       with:
-        name: my-artifact
+        name: package-artifacts
         path: "$GITHUB_WORKSPACE/artifacts"
     - name: Display structure of downloaded files
       run: ls -R
