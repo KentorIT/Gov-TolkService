@@ -28,7 +28,10 @@ jobs:
       with:
         path: ./VersionNumber.txt
     - name: Get version number          
-      run: echo "::set-output name=version_number::${{ steps.package.outputs.content }}"
+      id: vars
+      shell: bash
+      run: |
+        echo "::set-output name=version_number::${{ steps.package.outputs.content }}"
     - name: Create version number
       run: |
         echo "Sha: ${{ steps.vars.outputs.sha_short }}"
