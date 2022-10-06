@@ -8,9 +8,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -18,8 +16,7 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore
-      
+      run: dotnet restore    
     - name: Get commit hash
       id: vars
       shell: bash
@@ -32,12 +29,11 @@ jobs:
         path: ./VersionNumber.txt
     - name: Get version number          
       run: echo "::set-output name=version_number::${{ steps.package.outputs.content }}"
-
     - name: Create version number
-    run: |
-      echo "Sha: ${{ steps.vars.outputs.sha_short }}"
-      echo "Version number: ${{ steps.vars.outputs.version_number }}"
-      echo "Full version number: ${{ steps.vars.outputs.version_number }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
+      run: |
+        echo "Sha: ${{ steps.vars.outputs.sha_short }}"
+        echo "Version number: ${{ steps.vars.outputs.version_number }}"
+        echo "Full version number: ${{ steps.vars.outputs.version_number }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
     - name: Build    
       run: dotnet build --no-restore
     - name: Test
