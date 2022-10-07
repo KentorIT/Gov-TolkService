@@ -5,8 +5,8 @@ on:
     branches: 
       - Version-2.0
       - deploy
-  env:
-    VERSION_NUMBER: ""
+env:
+  VERSION_NUMBER: ""
 jobs:
   build:
     runs-on: ubuntu-latest
