@@ -2,9 +2,9 @@ name: .NET
 
 on:
   push:
-    branches: [ "Version-2.0" ]
-  pull_request:
-    branches: [ "Version-2.0" ]
+    branches: 
+      - Version-2.0
+      - deploy
 
 jobs:
   build:
@@ -61,7 +61,8 @@ jobs:
         name: package-artifacts
         path: ${{ github.workspace }}/artifacts/
   deploy:
-    needs: build    
+    needs: build
+    if: github.ref == 'refs/heads/deploy'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
