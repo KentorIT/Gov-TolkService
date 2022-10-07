@@ -57,6 +57,7 @@ jobs:
         dotnet ef migrations script -o "${{ github.workspace }}/artifacts/Tolk.Migration/TolkMigrate.sql" --startup-project "./Tolk.Web/Tolk.Web.csproj" -p "./Tolk.BusinessLogic/Tolk.BusinessLogic.csproj" -i
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
+      if: github.ref == 'refs/heads/deploy'
       with:
         name: package-artifacts
         path: ${{ github.workspace }}/artifacts/
