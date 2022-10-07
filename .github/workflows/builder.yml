@@ -38,8 +38,8 @@ jobs:
         echo "Sha: ${{ steps.vars.outputs.sha_short }}"
         echo "Version number: ${{ steps.version.outputs.number }}"
         echo "Full version number: ${{ steps.version.outputs.number }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
-        echo "::set-output name=env.VERSION_NUMBER::${{ steps.version.outputs.number }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}
-         echo "Full version number saved: ${{ env.VERSION_NUMBER }}"
+        echo ${{ steps.version.outputs.number }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }} >> $env:VERSION_NUMBER
+        echo "Full version number saved: ${{ env.VERSION_NUMBER }}"
     - name: Build    
       run: dotnet build -c Release --no-restore --no-incremental -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Test
