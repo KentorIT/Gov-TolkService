@@ -76,3 +76,17 @@ jobs:
     - name: Create artifacts folder
       run: |
         mkdir ${{ github.workspace }}/artifacts/packages
+    - name: Install Octopus CLI
+      uses: OctopusDeploy/install-octopus-cli-action@v1
+      with:
+        version: latest
+    - name: Package Tolk.Web
+      run: |
+        octo pack --id="Tolk.Web" --format="Zip" --version="${{ env.version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Web" --outFolder="${{ github.workspace }}/artifacts/packages/"
+    - name: Package Tolk.Web.Api
+      run: |
+        octo pack --id="Tolk.Web.Api" --format="Zip" --version="${{ env.version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Web.Api" --outFolder="${{ github.workspace }}/artifacts/packages/"
+    - name: Package Tolk.Web.Api
+      run: |
+        octo pack --id="Tolk.Migration" --format="Zip" --version="${{ env.version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Migration" --outFolder="${{ github.workspace }}/artifacts/packages/"
+
