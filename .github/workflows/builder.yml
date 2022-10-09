@@ -91,10 +91,10 @@ jobs:
         octo pack --id="Tolk.Migration" --format="Zip" --version="${{ env.version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Migration" --outFolder="${{ github.workspace }}/artifacts/packages/"
     - name: Push a package to Octopus Deploy
       uses: OctopusDeploy/push-package-action@v2
-        env:
-          OCTOPUS_API_KEY: ${{ secrets.OCTOPUSSERVERAPIKEY }}
-          OCTOPUS_HOST: ${{ secrets.OCTOPUSSERVERURL }}
-          OCTOPUS_SPACE: ${{ secrets.OCTOPUSSERVER_SPACE }}
+      env:
+        OCTOPUS_API_KEY: ${{ secrets.OCTOPUSSERVERAPIKEY }}
+        OCTOPUS_HOST: ${{ secrets.OCTOPUSSERVERURL }}
+        OCTOPUS_SPACE: ${{ secrets.OCTOPUSSERVER_SPACE }}
       with:
         packages: |
         ${{ github.workspace }}/artifacts/packages/Tolk.Web.${{ env.full_version_number }}.zip
