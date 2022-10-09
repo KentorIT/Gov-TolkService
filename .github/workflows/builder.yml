@@ -89,10 +89,14 @@ jobs:
     - name: Package Tolk.Web.Api
       run: |
         octo pack --id="Tolk.Migration" --format="Zip" --version="${{ env.version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Migration" --outFolder="${{ github.workspace }}/artifacts/packages/"
-¨   - name: Push OctoPetShop packages
-      uses: OctopusDeploy/push-package-action@v1
+    - name: Push a package to Octopus Deploy
+      uses: OctopusDeploy/push-package-action@v2
+        env:
+          OCTOPUS_API_KEY: ${{ secrets.OCTOPUSSERVERAPIKEY }}
+          OCTOPUS_HOST: ${{ secrets.OCTOPUSSERVERURL }}
+          OCTOPUS_SPACE: ${{ secrets.OCTOPUSSERVER_SPACE }}
       with:
-        api_key: ${{ secrets.OCTOPUSSERVERAPIKEY }}
-        server: ${{ secrets.OCTOPUSSERVERURL }}
-        packages: "${{ github.workspace }}/artifacts/packages/Tolk.Web.${{ env.full_version_number }}.zip,${{ github.workspace }}/artifacts/packages/Tolk.Web.Api.${{ env.full_version_number }}.zip,${{ github.workspace }}/artifacts/packages/Tolk.Migration.${{ env.full_version_number }}.zip"
-        space: ${{ secrets.OCTOPUSSERVER_SPACE }}
+        packages: |
+        ${{ github.workspace }}/artifacts/packages/Tolk.Web.${{ env.full_version_number }}.zip
+        ${{ github.workspace }}/artifacts/packages/Tolk.Web.Api.${{ env.full_version_number }}.zip
+        ${{ github.workspace }}/artifacts/packages/Tolk.Migration.${{ env.full_version_number }}.zip
