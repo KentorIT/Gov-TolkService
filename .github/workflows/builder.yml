@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      full_version_number: ${{ steps.create_version_number.outputs.full_version_number }}
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -27,7 +29,9 @@ jobs:
       with:
         path: ./VersionNumber.txt
     - name: Create version number
+      id: create_version_number
       run: |
+        echo "::set-output name=full_version_number::${{ steps.package.outputs.content }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
         echo "version_number=${{ steps.package.outputs.content }}.${{github.run_number}}" >> $GITHUB_ENV
         echo "full_version_number=${{ steps.package.outputs.content }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}" >> $GITHUB_ENV
     - name: Read Version number
@@ -67,7 +71,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Read release number
       run: |
-        echo "Full version number saved: ${{ env.full_version_number }}"
+        echo "Full version number saved: ${{ needs.build.output.full_version_number }}"
     - name: Get Artifacts
       uses: actions/download-artifact@v3
       with:
@@ -82,13 +86,13 @@ jobs:
         version: latest
     - name: Package Tolk.Web
       run: |
-        octo pack --id="Tolk.Web" --format="Zip" --version="${{ env.version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Web" --outFolder="${{ github.workspace }}/artifacts/packages/"
+        octo pack --id="Tolk.Web" --format="Zip" --version="${{ needs.build.output.full_version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Web" --outFolder="${{ github.workspace }}/artifacts/packages/"
     - name: Package Tolk.Web.Api
       run: |
-        octo pack --id="Tolk.Web.Api" --format="Zip" --version="${{ env.version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Web.Api" --outFolder="${{ github.workspace }}/artifacts/packages/"
+        octo pack --id="Tolk.Web.Api" --format="Zip" --version="${{ needs.build.output.full_version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Web.Api" --outFolder="${{ github.workspace }}/artifacts/packages/"
     - name: Package Tolk.Web.Api
       run: |
-        octo pack --id="Tolk.Migration" --format="Zip" --version="${{ env.version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Migration" --outFolder="${{ github.workspace }}/artifacts/packages/"
+        octo pack --id="Tolk.Migration" --format="Zip" --version="${{ needs.build.output.full_version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Migration" --outFolder="${{ github.workspace }}/artifacts/packages/"
     - name: Push a package to Octopus Deploy
       uses: OctopusDeploy/push-package-action@v2
       env:
@@ -97,6 +101,6 @@ jobs:
         OCTOPUS_SPACE: ${{ secrets.OCTOPUSSERVER_SPACE }}
       with:
         packages: |
-          ${{ github.workspace }}/artifacts/packages/Tolk.Web.${{ env.full_version_number }}.zip
-          ${{ github.workspace }}/artifacts/packages/Tolk.Web.Api.${{ env.full_version_number }}.zip
-          ${{ github.workspace }}/artifacts/packages/Tolk.Migration.${{ env.full_version_number }}.zip
+          ${{ github.workspace }}/artifacts/packages/Tolk.Web.${{ needs.build.output.full_version_number }}.zip
+          ${{ github.workspace }}/artifacts/packages/Tolk.Web.Api.${{ needs.build.output.full_version_number }}.zip
+          ${{ github.workspace }}/artifacts/packages/Tolk.Migration.${{ needs.build.output.full_version_number }}.zip
