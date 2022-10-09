@@ -97,6 +97,6 @@ jobs:
         OCTOPUS_SPACE: ${{ secrets.OCTOPUSSERVER_SPACE }}
       with:
         packages: |
-        ${{ github.workspace }}/artifacts/packages/Tolk.Web.${{ env.full_version_number }}.zip
-        ${{ github.workspace }}/artifacts/packages/Tolk.Web.Api.${{ env.full_version_number }}.zip
-        ${{ github.workspace }}/artifacts/packages/Tolk.Migration.${{ env.full_version_number }}.zip
+          ${{ github.workspace }}/artifacts/packages/Tolk.Web.${{ env.full_version_number }}.zip
+          ${{ github.workspace }}/artifacts/packages/Tolk.Web.Api.${{ env.full_version_number }}.zip
+          ${{ github.workspace }}/artifacts/packages/Tolk.Migration.${{ env.full_version_number }}.zip
