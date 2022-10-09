@@ -28,14 +28,14 @@ jobs:
         path: ./VersionNumber.txt
     - name: Create version number
       run: |
-        echo "Full version number: ${{ steps.package.outputs.content }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
+        echo "version_number=${{ steps.package.outputs.content }}.${{github.run_number}}" >> $GITHUB_ENV
         echo "full_version_number=${{ steps.package.outputs.content }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}" >> $GITHUB_ENV
-        echo "Full version number saved: ${{ env.full_version_number }}"
     - name: Read Version number
       run: |
         echo "Full version number saved: ${{ env.full_version_number }}"
+        echo "Version number saved: ${{ env.version_number }}"
     - name: Build    
-      run: dotnet build -c Release --no-restore --no-incremental -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
+      run: dotnet build -c Release --no-restore --no-incremental -p:VersionPrefix=${{ env.version_number }} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Test
       run: dotnet test -c Release --no-build --verbosity normal
     - name: Create artifacts folder
@@ -45,9 +45,9 @@ jobs:
         mkdir ${{ github.workspace }}/artifacts/Tolk.Web.Api
         mkdir ${{ github.workspace }}/artifacts/Tolk.Migration
     - name: Create web artifact
-      run: dotnet publish ./Tolk.Web/Tolk.Web.csproj -c Release --no-build -o "${{ github.workspace }}/artifacts/Tolk.Web" -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
+      run: dotnet publish ./Tolk.Web/Tolk.Web.csproj -c Release --no-build -o "${{ github.workspace }}/artifacts/Tolk.Web" -p:VersionPrefix=${{ env.version_number }} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Create api artifact
-      run: dotnet publish ./Tolk.Web.Api/Tolk.Web.Api.csproj -c Release --no-build -o "${{ github.workspace }}/artifacts/Tolk.Web.Api" -p:VersionPrefix=${{ steps.version.outputs.number }}.${{github.run_number}} --version-suffix=${{ steps.vars.outputs.sha_short }}
+      run: dotnet publish ./Tolk.Web.Api/Tolk.Web.Api.csproj -c Release --no-build -o "${{ github.workspace }}/artifacts/Tolk.Web.Api" -p:VersionPrefix=${{ env.version_number }} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Create migration artifact
       run: |
         dotnet tool install --global dotnet-ef
@@ -67,7 +67,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Read release number
       run: |
-        echo "Full version number saved: ${{ env.VERSION_NUMBER }}"
+        echo "Full version number saved: ${{ env.full_version_number }}"
     - name: Get Artifacts
       uses: actions/download-artifact@v3
       with:
