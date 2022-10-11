@@ -83,7 +83,7 @@ namespace Tolk.BusinessLogic.Services
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Failure sending e-mail {emailId}");
+                            _logger.LogError(ex, "Failure sending e-mail {emailId}", emailId);
                         }
                         finally
                         {
