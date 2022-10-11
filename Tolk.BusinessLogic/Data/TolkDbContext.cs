@@ -670,7 +670,10 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<CustomerStartListRow> CustomerStartListRows { get; set; }
 
         public DbSet<BrokerStartListRow> BrokerStartListRows { get; set; }
+        
         public DbSet<OrderAgreementPayload> OrderAgreementPayloads { get; set; }
+
+        public DbSet<FrameworkAgreement> FrameworkAgreements { get; set; }
 
         private static bool isUserStoreInitialized = false;
 

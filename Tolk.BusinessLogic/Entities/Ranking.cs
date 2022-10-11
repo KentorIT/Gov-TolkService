@@ -26,11 +26,16 @@ namespace Tolk.BusinessLogic.Entities
 
         public int RegionId { get; set; }
 
+        public int FrameworkAgreementId { get; set; }
+
         [ForeignKey(nameof(BrokerId))]
         public Broker Broker { get; set; }
 
         [ForeignKey(nameof(RegionId))]
         public Region Region { get; set; }
+
+        [ForeignKey(nameof(FrameworkAgreementId))]
+        public FrameworkAgreement FrameworkAgreement { get; set; }
 
         #endregion
 
