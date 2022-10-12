@@ -1762,9 +1762,9 @@ Sammanställning:
                     Key = order.CustomerOrganisation.OrganisationPrefix,
                     OrganisationNumber = order.CustomerOrganisation.OrganisationNumber,
                     PeppolId = order.CustomerOrganisation.PeppolId,
-                    ContactName = request.Order.CreatedByUser.FullName,
-                    ContactPhone = request.Order.ContactPhone,
-                    ContactEmail = request.Order.ContactEmail,
+                    ContactName = order.CreatedByUser.FullName,
+                    ContactPhone = order.ContactPhone,
+                    ContactEmail = order.ContactEmail,
                     InvoiceReference = order.InvoiceReference,
                     PriceListType = order.CustomerOrganisation.PriceListType.GetCustomName(),
                     TravelCostAgreementType = order.CustomerOrganisation.TravelCostAgreementType.GetCustomName(),
@@ -1777,7 +1777,7 @@ Sammanställning:
                 Region = order.RegionId.ToSwedishString("D2"),
                 Language = new LanguageModel
                 {
-                    Key = request.Order.Language?.ISO_639_Code,
+                    Key = order.Language?.ISO_639_Code,
                     Description = order.OtherLanguage ?? order.Language.Name,
                 },
                 ExpiresAt = request.ExpiresAt,
