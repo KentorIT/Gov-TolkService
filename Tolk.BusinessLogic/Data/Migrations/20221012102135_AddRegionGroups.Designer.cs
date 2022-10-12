@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
@@ -11,9 +12,10 @@ using Tolk.BusinessLogic.Data;
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221012102135_AddRegionGroups")]
+    partial class AddRegionGroups
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -421,39 +423,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasKey("BrokerId");
 
                     b.ToTable("Brokers");
-                });
-
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.BrokerFeeByServiceTypePriceListRow", b =>
-                {
-                    b.Property<int>("BrokerFeeByServiceTypePriceListRowId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BrokerFeeByServiceTypePriceListRowId"), 1L, 1);
-
-                    b.Property<int>("CompetenceLevel")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("FirstValidDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("InterpreterLocation")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("LastValidDate")
-                        .HasColumnType("date");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<int>("RegionGroupId")
-                        .HasColumnType("int");
-
-                    b.HasKey("BrokerFeeByServiceTypePriceListRowId");
-
-                    b.HasIndex("RegionGroupId");
-
-                    b.ToTable("BrokerFeeByServiceTypePriceListRows");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.BrokerStartListRow", b =>
@@ -1120,9 +1089,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<DateTime>("FirstValidDate")
                         .HasColumnType("date");
-
-                    b.Property<int>("FrameworkAgreementResponseRuleset")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("LastValidDate")
                         .HasColumnType("date");
@@ -3804,17 +3770,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Navigation("CreatedByUser");
                 });
 
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.BrokerFeeByServiceTypePriceListRow", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.RegionGroup", "RegionGroup")
-                        .WithMany("BrokerFeeByServiceTypePriceListRows")
-                        .HasForeignKey("RegionGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RegionGroup");
-                });
-
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Complaint", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "AnswerDisputingUser")
@@ -5592,8 +5547,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RegionGroup", b =>
                 {
-                    b.Navigation("BrokerFeeByServiceTypePriceListRows");
-
                     b.Navigation("Regions");
                 });
 

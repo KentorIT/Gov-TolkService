@@ -26,6 +26,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public BrokerFeeCalculationType BrokerFeeCalculationType { get; set; }
 
+        public FrameworkAgreementResponseRuleset FrameworkAgreementResponseRuleset { get; set; }
+
         #region navigation properites
 
         public List<Ranking> Rankings { get; private set; }
