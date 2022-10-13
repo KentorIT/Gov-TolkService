@@ -37,7 +37,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             IDistributedCache cache = Mock.Of<IDistributedCache>();
             TolkBaseOptionsService optionService = new TolkBaseOptionsService(Options.Create(new TolkOptions() { RoundPriceDecimals = true }));
-            _cache = new CacheService(cache, dbContext, optionService);
+            _cache = new CacheService(cache, dbContext, optionService, _clock);
             var emailService = new EmailService(Mock.Of<ILogger<EmailService>>(), Options.Create(new TolkOptions()), _clock);
             return new OrderAgreementService(dbContext, _logger, clock ?? _clock, _cache, new DateCalculationService(_cache), optionService, emailService);
         }

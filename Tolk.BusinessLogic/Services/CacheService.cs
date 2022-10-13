@@ -16,12 +16,14 @@ namespace Tolk.BusinessLogic.Services
         private readonly IDistributedCache _cache;
         private readonly TolkDbContext _dbContext;
         private readonly ITolkBaseOptions _options;
+        private readonly ISwedishClock _clock;
 
-        public CacheService(IDistributedCache cache, TolkDbContext dbContext, ITolkBaseOptions options)
+        public CacheService(IDistributedCache cache, TolkDbContext dbContext, ITolkBaseOptions options, ISwedishClock clock)
         {
             _cache = cache;
             _dbContext = dbContext;
             _options = options;
+            _clock = clock;
         }
 
         public async Task FlushAll()
@@ -30,11 +32,40 @@ namespace Tolk.BusinessLogic.Services
             await _cache.RemoveAsync(CacheKeys.OrganisationSettings);
             await _cache.RemoveAsync(CacheKeys.Holidays);
             await _cache.RemoveAsync(CacheKeys.CustomerSettings);
+            await _cache.RemoveAsync(CacheKeys.CurrentFrameworkAgreement);
         }
 
         public async Task Flush(string id)
         {
             await _cache.RemoveAsync(id);
+        }
+
+        public CurrentFrameworkAgreement CurrentFrameworkAgreement
+        {
+            get
+            {
+                var currentFrameworkAgreement = _cache.Get(CacheKeys.CurrentFrameworkAgreement).FromByteArray<CurrentFrameworkAgreement>();
+
+                if (currentFrameworkAgreement == null)
+                {
+                    var now = _clock.SwedenNow;
+                    currentFrameworkAgreement = _dbContext.FrameworkAgreements
+                        .Where(f => f.FirstValidDate < now.Date && f.LastValidDate >= now.Date)
+                        .Select(f => new CurrentFrameworkAgreement
+                        {
+                            AgreementNumber = f.AgreementNumber,
+                            LastValidDate = f.LastValidDate,
+                            FirstValidDate = f.FirstValidDate,
+                            Description = f.Description,
+                            BrokerFeeCalculationType = f.BrokerFeeCalculationType,
+                            FrameworkAgreementResponseRuleset = f.FrameworkAgreementResponseRuleset,
+                            IsActive = true
+                        }).SingleOrDefault() ?? new CurrentFrameworkAgreement { IsActive = false};
+
+                    _cache.Set(CacheKeys.CurrentFrameworkAgreement, currentFrameworkAgreement.ToByteArray());
+                }
+                return currentFrameworkAgreement;
+            }
         }
 
         public IEnumerable<PriceInformationBrokerFee> BrokerFeePriceList

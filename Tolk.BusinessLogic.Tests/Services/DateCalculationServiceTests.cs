@@ -16,6 +16,7 @@ namespace Tolk.BusinessLogic.Tests.Services
     public class DateCalculationServiceTests
     {
         private const string DbNameWithHolidays = "DateCalculationService_WithHolidays";
+        private readonly StubSwedishClock _clock;
 
         public DateCalculationServiceTests()
         {
@@ -23,6 +24,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             tolkDbContext.AddRange(MockEntities.Holidays.Where(newHoliday =>
             !tolkDbContext.Holidays.Select(existingHoliday => existingHoliday.Date).Contains(newHoliday.Date)));
             tolkDbContext.SaveChanges();
+            _clock = new StubSwedishClock("2018-12-12 00:00:00");
+
         }
 
         private TolkDbContext CreateTolkDbContext(string databaseName = "empty")
@@ -37,7 +40,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             IDistributedCache cache = Mock.Of<IDistributedCache>();
             TolkBaseOptionsService optionService = new TolkBaseOptionsService(Options.Create(new TolkOptions() { RoundPriceDecimals = true }));
-            return new CacheService(cache, dbContext, optionService);
+            return new CacheService(cache, dbContext, optionService, _clock);
         }
 
         [Fact]

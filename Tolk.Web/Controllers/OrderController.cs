@@ -351,6 +351,10 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Create()
         {
+            if (!_cacheService.CurrentFrameworkAgreement.IsActive)
+            {
+                return Forbid();
+            }
             var now = _clock.SwedenNow.DateTime;
             var firstWorkDay = _dateCalculationService.GetFirstWorkDay(now).Date;
             var panicTime = _dateCalculationService.GetFirstWorkDay(firstWorkDay).Date;
@@ -381,6 +385,10 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Add(OrderModel model)
         {
+            if (!_cacheService.CurrentFrameworkAgreement.IsActive)
+            {
+                return Forbid();
+            }
             if (model.SeveralOccasions)
             {
                 ModelState.Remove("SplitTimeRange.StartDate");
@@ -427,6 +435,10 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<ActionResult> Confirm(OrderModel model)
         {
+            if (!_cacheService.CurrentFrameworkAgreement.IsActive)
+            {
+                return PartialView("_ErrorMessage", "Det finns inget aktivt avtal!");
+            }
             Order order = await CreateNewOrder();
             PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
             OrderViewModel updatedModel = null;

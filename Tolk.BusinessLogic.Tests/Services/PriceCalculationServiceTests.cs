@@ -71,8 +71,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         private const double Price_LostTime_60M__Court_Comp1 = 191;
         private const double Price_IWH_LostTime_30M__Court_Comp1 = 77;
 
+        private readonly StubSwedishClock _clock;
+
         public PriceCalculationServiceTests()
         {
+            _clock = new StubSwedishClock("2018-12-12 00:00:00");
+
             using (var tolkDbContext = CreateTolkDbContext(DbNameWithPriceData))
             {
                 tolkDbContext.AddRange(MockEntities.PriceListRows.Where(newPrice =>
@@ -121,7 +125,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             IDistributedCache cache = new Mock<IDistributedCache>().Object;
             TolkBaseOptionsService optionService = new TolkBaseOptionsService(Options.Create(new TolkOptions() { RoundPriceDecimals = true }));
-            return new CacheService(cache, dbContext, optionService);
+            return new CacheService(cache, dbContext, optionService, _clock);
         }
 
         [Theory]

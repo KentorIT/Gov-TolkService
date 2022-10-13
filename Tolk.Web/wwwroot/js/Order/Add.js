@@ -683,7 +683,9 @@ $(function () {
                         $("#back").removeAttr("disabled");
                     },
                     error: function (t2) {
-                        alert(t2);
+                        $(".wizard .wizard-step").eq(currentStep).html("Det går inte att avropa tolk vid detta tillfälle");
+                        $('.form-entry-information').tooltip();
+                        $("#back").removeAttr("disabled");
                     }
                 });
             }
