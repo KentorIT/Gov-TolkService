@@ -8,6 +8,8 @@ namespace Tolk.BusinessLogic.Utilities
     [Serializable]
     public class CurrentFrameworkAgreement
     {
+        public int FrameworkAgreementId { get; set; }
+        
         public string AgreementNumber { get; set; }
 
         public string Description { get; set; }

@@ -253,7 +253,7 @@ namespace Tolk.Web.Models
 
         public int? RequisitionId { get; set; }
 
-        internal static OrderViewModel GetModelFromOrder(Order order, Request request, bool displayBrokerReferenceNumber, bool isBroker = false)
+        internal static OrderViewModel GetModelFromOrder(Order order, Request request, bool displayBrokerReferenceNumber, bool isBroker = false, bool isConnectedToCurrentFrameworkAgreement = true)
         {
             var model = new OrderViewModel
             {
@@ -299,7 +299,7 @@ namespace Tolk.Web.Models
             {
                 model.BrokerReferenceNumber = displayBrokerReferenceNumber ? request.BrokerReferenceNumber : null;
                 model.RequestCanBeCancelled = request.CanCancel;
-                model.RequestCanBeReplaced = request.CanCreateReplacementOrderOnCancel;
+                model.RequestCanBeReplaced = isConnectedToCurrentFrameworkAgreement && request.CanCreateReplacementOrderOnCancel;
                 model.RequestCanBePrinted = request.CanPrint;
                 model.RequestStatus = request.Status;
                 model.BrokerName = request.Ranking.Broker.Name;

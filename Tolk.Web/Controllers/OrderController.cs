@@ -95,8 +95,9 @@ namespace Tolk.Web.Controllers
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);
-
-                var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator));
+                var currentFrameworkAgreement = _cacheService.CurrentFrameworkAgreement;
+                var isConnectedToCurrentFrameworkAgreement = currentFrameworkAgreement.IsActive && currentFrameworkAgreement.FrameworkAgreementId == request?.Ranking.FrameworkAgreementId;
+                var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator), false, isConnectedToCurrentFrameworkAgreement);
 
                 model.UserCanEdit = (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.UserCanCancelOrder = (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
@@ -144,9 +145,10 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)
         {
+
             Order order = await _dbContext.Orders.GetFullOrderById(replacingOrderId);
 
-            if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
+            if (order != null && _cacheService.CurrentFrameworkAgreement.IsActive && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
             {
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(replacingOrderId);
                 if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
@@ -169,7 +171,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 Order order = await _dbContext.Orders.GetFullOrderById(model.ReplacingOrderId);
-                if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
+                if (order != null && _cacheService.CurrentFrameworkAgreement.IsActive && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
                 {
                     var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                     if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
@@ -629,7 +631,7 @@ namespace Tolk.Web.Controllers
             {
                 try
                 {
-                    if (model.AddReplacementOrder)
+                    if (_cacheService.CurrentFrameworkAgreement.IsActive && model.AddReplacementOrder)
                     {
                         var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                         if (request == null)

@@ -53,6 +53,7 @@ namespace Tolk.BusinessLogic.Services
                         .Where(f => f.FirstValidDate < now.Date && f.LastValidDate >= now.Date)
                         .Select(f => new CurrentFrameworkAgreement
                         {
+                            FrameworkAgreementId = f.FrameworkAgreementId,
                             AgreementNumber = f.AgreementNumber,
                             LastValidDate = f.LastValidDate,
                             FirstValidDate = f.FirstValidDate,
