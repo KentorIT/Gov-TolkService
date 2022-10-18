@@ -95,8 +95,7 @@ namespace Tolk.Web.Controllers
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);
-                var currentFrameworkAgreement = _cacheService.CurrentFrameworkAgreement;
-                var isConnectedToCurrentFrameworkAgreement = currentFrameworkAgreement.IsActive && currentFrameworkAgreement.FrameworkAgreementId == request?.Ranking.FrameworkAgreementId;
+                bool isConnectedToCurrentFrameworkAgreement = _cacheService.CurrentFrameworkAgreement.IsCurrentFrameworkAgreement(request?.Ranking.FrameworkAgreementId);
                 var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator), false, isConnectedToCurrentFrameworkAgreement);
 
                 model.UserCanEdit = (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
@@ -142,16 +141,19 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
+
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)
         {
 
             Order order = await _dbContext.Orders.GetFullOrderById(replacingOrderId);
 
-            if (order != null && _cacheService.CurrentFrameworkAgreement.IsActive && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
+            if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
             {
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(replacingOrderId);
-                if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
+                if (request.CanCreateReplacementOrderOnCancel && 
+                    _cacheService.CurrentFrameworkAgreement.IsCurrentFrameworkAgreement(request?.Ranking.FrameworkAgreementId) && 
+                    TimeIsValidForOrderReplacement(order.StartAt))
                 {
                     return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()))));
                 }
@@ -171,10 +173,12 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 Order order = await _dbContext.Orders.GetFullOrderById(model.ReplacingOrderId);
-                if (order != null && _cacheService.CurrentFrameworkAgreement.IsActive && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
+                if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
                 {
                     var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
-                    if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
+                    if (request.CanCreateReplacementOrderOnCancel &&
+                        _cacheService.CurrentFrameworkAgreement.IsCurrentFrameworkAgreement(request?.Ranking.FrameworkAgreementId) && 
+                        TimeIsValidForOrderReplacement(order.StartAt))
                     {
                         using var trn = await _dbContext.Database.BeginTransactionAsync();
                         // add a few lists, used when copying in constructor
@@ -437,9 +441,10 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<ActionResult> Confirm(OrderModel model)
         {
-            if (!_cacheService.CurrentFrameworkAgreement.IsActive)
+            var currentFrameworkAgreement = _cacheService.CurrentFrameworkAgreement;
+            if (!currentFrameworkAgreement.IsActive)
             {
-                return PartialView("_ErrorMessage", "Det finns inget aktivt avtal!");
+                return PartialView("_ErrorMessage", "Det finns inget aktivt ramavtal!");
             }
             Order order = await CreateNewOrder();
             PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
@@ -450,7 +455,7 @@ namespace Tolk.Web.Controllers
             updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
             if (model.IsMultipleOrders)
             {
-                updatedModel.OrderOccasionDisplayModels = await GetGroupOrders(model, pricelistType);
+                updatedModel.OrderOccasionDisplayModels = await GetGroupOrders(model, pricelistType, currentFrameworkAgreement.BrokerFeeCalculationType);
                 updatedModel.SeveralOccasions = true;
                 updatedModel.WarningOrderGroupCloseInTime = CheckOrderGroupCloseInTime(updatedModel.OrderOccasionDisplayModels);
                 warningOrderTimeInfo = CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels);
@@ -465,7 +470,7 @@ namespace Tolk.Web.Controllers
                 {
                     MealBreakIsNotDetucted = order.MealBreakIncluded ?? false,
                     Header = "Beräknat preliminärt pris",
-                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(order, pricelistType),
+                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(order, pricelistType, currentFrameworkAgreement.BrokerFeeCalculationType),
                     UseDisplayHideInfo = true,
                     Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
                 };
@@ -631,14 +636,16 @@ namespace Tolk.Web.Controllers
             {
                 try
                 {
-                    if (_cacheService.CurrentFrameworkAgreement.IsActive && model.AddReplacementOrder)
+                    if (model.AddReplacementOrder)
                     {
                         var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                         if (request == null)
                         {
                             return RedirectToAction(nameof(View), new { id = order.OrderId, errorMessage = "Uppdraget kunde inte avbokas" });
                         }
-                        if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
+                        if (request.CanCreateReplacementOrderOnCancel && 
+                            _cacheService.CurrentFrameworkAgreement.IsCurrentFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
+                            TimeIsValidForOrderReplacement(order.StartAt))
                         {
                             //Forward the message to replace
                             return RedirectToAction(nameof(Replace), new { replacingOrderId = model.OrderId, cancelMessage = model.CancelMessage });
@@ -956,7 +963,7 @@ namespace Tolk.Web.Controllers
             return orders;
         }
 
-        private async Task<IEnumerable<OrderOccasionDisplayModel>> GetGroupOrders(OrderModel model, PriceListType pricelistType)
+        private async Task<IEnumerable<OrderOccasionDisplayModel>> GetGroupOrders(OrderModel model, PriceListType pricelistType, BrokerFeeCalculationType brokerFeeCalculationType)
         {
             var occasions = new List<OrderOccasionDisplayModel>();
             foreach (var occasion in model.UniqueOrdersFromOccasions)
@@ -968,7 +975,7 @@ namespace Tolk.Web.Controllers
                 {
                     MealBreakIsNotDetucted = occasion.MealBreakIncluded ?? false,
                     Header = "Beräknat preliminärt pris",
-                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType),
+                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType, brokerFeeCalculationType),
                     UseDisplayHideInfo = true,
                     Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
                 };

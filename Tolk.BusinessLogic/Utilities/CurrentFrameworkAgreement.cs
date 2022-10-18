@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Services;
 
 namespace Tolk.BusinessLogic.Utilities
 {
@@ -23,5 +24,8 @@ namespace Tolk.BusinessLogic.Utilities
         public FrameworkAgreementResponseRuleset FrameworkAgreementResponseRuleset { get; set; }
 
         public bool IsActive { get; set; }
+        
+        public bool IsCurrentFrameworkAgreement(int? frameworkAgreementId)
+             => IsActive && FrameworkAgreementId == frameworkAgreementId;
     }
 }
