@@ -36,7 +36,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.AppOrSysAdmin)]
         public async Task<IActionResult> List()
         {
-            var brokerFeePrices = _cacheService.BrokerFeePriceList;
+            var brokerFeePrices = _cacheService.BrokerFeeByRegionAndBrokerPriceList;
 
             var rankings = await _dbContext.Rankings.GetActiveRankings(_clock.SwedenNow.DateTime).ToListAsync();
             var brokers = rankings.Select(r => r.Broker).Distinct().OrderBy(b => b.Name).ToList();

@@ -900,6 +900,7 @@ namespace Tolk.BusinessLogic.Utilities
             => requests
                 .Include(r => r.Interpreter)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Order.CreatedByUser)
@@ -915,7 +916,8 @@ namespace Tolk.BusinessLogic.Utilities
                .Include(r => r.Order)
                .Include(r => r.AnsweringUser)
                .Include(r => r.Interpreter)
-               .Include(r => r.Ranking).ThenInclude(r => r.Broker);
+               .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+               .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement);
 
         private static IQueryable<RequestGroup> GetRequestGroupsWithBaseIncludes(this IQueryable<RequestGroup> requestGroups)
             => requestGroups
@@ -1202,7 +1204,9 @@ namespace Tolk.BusinessLogic.Utilities
             .SingleOrDefaultAsync(r => r.OrderGroupId == id && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
 
         public static IQueryable<Ranking> GetActiveRankingsForRegion(this IQueryable<Ranking> rankings, int regionId, DateTime date)
-            => rankings.Where(r => r.RegionId == regionId && r.FirstValidDate <= date && r.LastValidDate >= date);
+            => rankings
+            .Include(r => r.FrameworkAgreement)
+            .Where(r => r.RegionId == regionId && r.FirstValidDate <= date && r.LastValidDate >= date);
 
         public static IQueryable<Quarantine> GetQuarantinesForRankings(this IQueryable<Quarantine> quarantines, IEnumerable<int> rankingIds)
             => quarantines.Where(q => rankingIds.Contains(q.RankingId));

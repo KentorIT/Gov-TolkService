@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.InkML;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,8 @@ namespace Tolk.BusinessLogic.Tests.Services
 {
     public class StatisticsServiceTests
     {
-        private readonly TolkDbContext _tolkDbContext;
+        private const string DbNameForStatistics = nameof(DbNameForStatistics);
         private readonly StubSwedishClock _clock;
-        private readonly StatisticsService _statService;
         private readonly DateTimeOffset dateIn_7_DaysRange = DateTimeOffset.Now.AddDays(-2);
         private readonly DateTimeOffset dateIn_14_DaysRange = DateTimeOffset.Now.AddDays(-9);
         private readonly DateTimeOffset breakDate = DateTimeOffset.Now.AddDays(-7);
@@ -24,9 +24,8 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         public StatisticsServiceTests()
         {
-            _tolkDbContext = CreateTolkDbContext();
             _clock = new StubSwedishClock(DateTimeOffset.Now.ToString());
-
+            using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
             var mockLanguages = MockEntities.MockLanguages;
             var mockRankings = MockEntities.MockRankings;
             var mockCustomers = MockEntities.MockCustomers;
@@ -34,21 +33,38 @@ namespace Tolk.BusinessLogic.Tests.Services
             var mockOrders = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers);
             var mockRequisitions = MockEntities.MockRequisitions(mockOrders);
             var mockComplaints = MockEntities.MockComplaints(mockOrders);
-            var regions = Region.Regions;
+
             //Initialize data if not already initialized
-            if (!_tolkDbContext.CustomerOrganisations.Any())
+            tolkDbContext.AddRange(Region.Regions.Where(newRow =>
+                !tolkDbContext.Regions.Select(existingRow => existingRow.RegionId).Contains(newRow.RegionId)));
+            tolkDbContext.AddRange(mockRankings.Where(newRow =>
+                !tolkDbContext.Rankings.Select(existingRow => existingRow.RankingId).Contains(newRow.RankingId)));
+            tolkDbContext.AddRange(mockCustomers.Where(newRow =>
+                !tolkDbContext.CustomerOrganisations.Select(existingRow => existingRow.CustomerOrganisationId).Contains(newRow.CustomerOrganisationId)));
+            tolkDbContext.AddRange(mockCustomerUsers.Where(newRow =>
+                !tolkDbContext.Users.Select(existingRow => existingRow.Id).Contains(newRow.Id)));
+            tolkDbContext.AddRange(mockLanguages.Where(newRow =>
+                !tolkDbContext.Languages.Select(existingRow => existingRow.LanguageId).Contains(newRow.LanguageId)));
+            tolkDbContext.AddRange(mockOrders.Where(newRow =>
+                !tolkDbContext.Orders.Select(existingRow => existingRow.OrderId).Contains(newRow.OrderId)));
+            tolkDbContext.AddRange(mockRequisitions.Where(newRow =>
+                !tolkDbContext.Requisitions.Select(existingRow => existingRow.RequisitionId).Contains(newRow.RequisitionId)));
+            tolkDbContext.AddRange(mockComplaints.Where(newRow =>
+                !tolkDbContext.Complaints.Select(existingRow => existingRow.ComplaintId).Contains(newRow.ComplaintId)));
+            var saved = false;
+            while (!saved)
             {
-                _tolkDbContext.AddRange(mockCustomers);
-                _tolkDbContext.AddRange(mockCustomerUsers);
-                _tolkDbContext.AddRange(mockLanguages);
-                _tolkDbContext.AddRange(mockRankings);
-                _tolkDbContext.AddRange(mockOrders);
-                _tolkDbContext.AddRange(mockRequisitions);
-                _tolkDbContext.AddRange(mockComplaints);
-                _tolkDbContext.AddRange(regions);
+                try
+                {
+                    tolkDbContext.SaveChanges();
+                    saved = true;
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    //The tests work anyway, so just keep going.
+                    saved = true;
+                }
             }
-            _tolkDbContext.SaveChanges();
-            _statService = new StatisticsService(_tolkDbContext, _clock);
         }
 
         private TolkDbContext CreateTolkDbContext(string databaseName = "empty")
@@ -84,6 +100,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyUserLoginStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
+            using var tolkDbContext = CreateTolkDbContext("Logins");
             List<UserLoginLogEntry> usersLogIn = new List<UserLoginLogEntry>();
             for (int i = 1; i <= weekBefore; i++)
             {
@@ -93,14 +110,14 @@ namespace Tolk.BusinessLogic.Tests.Services
             {
                 usersLogIn.Add(new UserLoginLogEntry { LoggedInAt = dateIn_7_DaysRange, UserId = i });
             }
-            _tolkDbContext.UserLoginLogEntries.AddRange(usersLogIn);
+            tolkDbContext.UserLoginLogEntries.AddRange(usersLogIn);
 
-            _tolkDbContext.SaveChanges();
-            WeeklyStatisticsModel ws = _statService.GetWeeklyUserLogins(breakDate);
+            tolkDbContext.SaveChanges();
+            WeeklyStatisticsModel ws = new StatisticsService(tolkDbContext, _clock).GetWeeklyUserLogins(breakDate);
             Assert.Equal(expectedPercentageDiff, ws.DiffPercentage);
             Assert.Equal(expectedChangeType, ws.ChangeType);
-            _tolkDbContext.UserLoginLogEntries.RemoveRange(usersLogIn);
-            _tolkDbContext.SaveChanges();
+            tolkDbContext.UserLoginLogEntries.RemoveRange(usersLogIn);
+            tolkDbContext.SaveChanges();
         }
 
         [Theory]
@@ -111,6 +128,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyNewUserStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
+            using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
 
             List<UserAuditLogEntry> userAudits = new List<UserAuditLogEntry>();
             for (int i = 1; i <= weekBefore; i++)
@@ -121,14 +139,14 @@ namespace Tolk.BusinessLogic.Tests.Services
             {
                 userAudits.Add(new UserAuditLogEntry { LoggedAt = dateIn_7_DaysRange, UserId = i, UserChangeType = UserChangeType.Created });
             }
-            _tolkDbContext.UserAuditLogEntries.AddRange(userAudits);
+            tolkDbContext.UserAuditLogEntries.AddRange(userAudits);
 
-            _tolkDbContext.SaveChanges();
-            WeeklyStatisticsModel ws = _statService.GetWeeklyNewUsers(breakDate);
+            tolkDbContext.SaveChanges();
+            WeeklyStatisticsModel ws = new StatisticsService(tolkDbContext, _clock).GetWeeklyNewUsers(breakDate);
             Assert.Equal(expectedPercentageDiff, ws.DiffPercentage);
             Assert.Equal(expectedChangeType, ws.ChangeType);
-            _tolkDbContext.UserAuditLogEntries.RemoveRange(userAudits);
-            _tolkDbContext.SaveChanges();
+            tolkDbContext.UserAuditLogEntries.RemoveRange(userAudits);
+            tolkDbContext.SaveChanges();
         }
 
 
@@ -140,7 +158,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyOrderStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
-            var orders = _tolkDbContext.Orders.ToList();
+            using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
+            var orders = tolkDbContext.Orders.ToList();
 
             //reset the date for all orders 
             foreach (Order o in orders)
@@ -155,8 +174,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             {
                 orders[i].CreatedAt = dateIn_7_DaysRange;
             }
-            _tolkDbContext.SaveChanges();
-            WeeklyStatisticsModel ws = _statService.GetWeeklyOrderStatistics(breakDate);
+            tolkDbContext.SaveChanges();
+            WeeklyStatisticsModel ws = new StatisticsService(tolkDbContext, _clock).GetWeeklyOrderStatistics(breakDate);
             Assert.Equal(expectedPercentageDiff, ws.DiffPercentage);
             Assert.Equal(expectedChangeType, ws.ChangeType);
         }
@@ -169,7 +188,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyDeliveredOrderStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
-            var orders = _tolkDbContext.Orders.ToList();
+            using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
+            var orders = tolkDbContext.Orders.ToList();
 
             //reset the date and set correct status for all orders 
             foreach (Order o in orders)
@@ -188,13 +208,11 @@ namespace Tolk.BusinessLogic.Tests.Services
                 orders[i].StartAt = dateIn_7_DaysRange;
                 orders[i].EndAt = dateIn_7_DaysRange.AddHours(2);
             }
-            _tolkDbContext.SaveChanges();
-            WeeklyStatisticsModel ws = _statService.GetWeeklyDeliveredOrderStatistics(breakDate);
+            tolkDbContext.SaveChanges();
+            WeeklyStatisticsModel ws = new StatisticsService(tolkDbContext, _clock).GetWeeklyDeliveredOrderStatistics(breakDate);
             Assert.Equal(expectedPercentageDiff, ws.DiffPercentage);
             Assert.Equal(expectedChangeType, ws.ChangeType);
         }
-
-
 
         [Theory]
         [InlineData(2, 1, 50, StatisticsChangeType.Decreasing)]
@@ -204,7 +222,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyRequisitionStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
-            var requisitions = _tolkDbContext.Requisitions.ToList();
+            using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
+            var requisitions = tolkDbContext.Requisitions.ToList();
 
             //reset the date for all requisitions 
             foreach (Requisition r in requisitions)
@@ -219,8 +238,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             {
                 requisitions[i].CreatedAt = dateIn_7_DaysRange;
             }
-            _tolkDbContext.SaveChanges();
-            WeeklyStatisticsModel ws = _statService.GetWeeklyRequisitionStatistics(breakDate);
+            tolkDbContext.SaveChanges();
+            WeeklyStatisticsModel ws = new StatisticsService(tolkDbContext, _clock).GetWeeklyRequisitionStatistics(breakDate);
             Assert.Equal(expectedPercentageDiff, ws.DiffPercentage);
             Assert.Equal(expectedChangeType, ws.ChangeType);
         }
@@ -233,7 +252,8 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(1, 0, 0, StatisticsChangeType.NANoDataLastWeek)]
         public void GetWeeklyComplaintStatistics(int weekBefore, int thisWeek, decimal expectedPercentageDiff, StatisticsChangeType expectedChangeType)
         {
-            var complaints = _tolkDbContext.Complaints.ToList();
+            using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
+            var complaints = tolkDbContext.Complaints.ToList();
 
             //reset the date for all complaints 
             foreach (Complaint c in complaints)
@@ -248,8 +268,10 @@ namespace Tolk.BusinessLogic.Tests.Services
             {
                 complaints[i].CreatedAt = dateIn_7_DaysRange;
             }
-            _tolkDbContext.SaveChanges();
-            WeeklyStatisticsModel ws = _statService.GetWeeklyComplaintStatistics(breakDate);
+            // Attempt to save changes to the database
+            tolkDbContext.SaveChanges();
+
+            WeeklyStatisticsModel ws = new StatisticsService(tolkDbContext, _clock).GetWeeklyComplaintStatistics(breakDate);
             Assert.Equal(expectedPercentageDiff, ws.DiffPercentage);
             Assert.Equal(expectedChangeType, ws.ChangeType);
         }
@@ -265,7 +287,7 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         public void GetOrderLanguageStatistics(int noOfTotalOrdersToCheck, int noOfTop1, int noOfTop2, int noOfTop3, int noOfTop4, int noOfTop5, int expectedNoOfListItems)
         {
-
+            using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
             if (noOfTotalOrdersToCheck != (noOfTop1 + noOfTop2 + noOfTop3 + noOfTop4 + noOfTop5))
                 Assert.True(false, "Incorrect InlineData, noOfTotalOrdersToCheck cant differ from the amount of each no of top value");
             if ((noOfTop1 < noOfTop2) || (noOfTop2 < noOfTop3) || (noOfTop3 < noOfTop4) || (noOfTop4 < noOfTop5))
@@ -273,7 +295,7 @@ namespace Tolk.BusinessLogic.Tests.Services
 
             int[] listValues = { noOfTop1, noOfTop2, noOfTop3, noOfTop4, noOfTop5 };
 
-            var orders = _tolkDbContext.Orders.ToList();
+            var orders = tolkDbContext.Orders.ToList();
 
             if (noOfTotalOrdersToCheck > orders.Count)
                 Assert.True(false, "Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
@@ -323,8 +345,8 @@ namespace Tolk.BusinessLogic.Tests.Services
                     orders[i].LanguageId = null;
                 }
             }
-            _tolkDbContext.SaveChanges();
-            OrderStatisticsModel os = StatisticsService.GetOrderLanguageStatistics(_tolkDbContext.Orders.Where(o => o.LanguageId > 0).Include(o => o.Language));
+            tolkDbContext.SaveChanges();
+            OrderStatisticsModel os = StatisticsService.GetOrderLanguageStatistics(tolkDbContext.Orders.Where(o => o.LanguageId > 0).Include(o => o.Language));
             Assert.Equal(expectedNoOfListItems, os.TotalListItems.Count());
             int count = 0;
             foreach (var item in os.TotalListItems)
@@ -347,7 +369,7 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         public void GetOrderRegionStatistics(int noOfTotalOrdersToCheck, int noOfTop1, int noOfTop2, int noOfTop3, int noOfTop4, int noOfTop5, int expectedNoOfListItems)
         {
-
+            using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
             if (noOfTotalOrdersToCheck != (noOfTop1 + noOfTop2 + noOfTop3 + noOfTop4 + noOfTop5))
                 Assert.True(false, "Incorrect InlineData, noOfTotalOrdersToCheck cant differ from the amount of each no of top value");
             if ((noOfTop1 < noOfTop2) || (noOfTop2 < noOfTop3) || (noOfTop3 < noOfTop4) || (noOfTop4 < noOfTop5))
@@ -355,7 +377,7 @@ namespace Tolk.BusinessLogic.Tests.Services
 
             int[] listValues = { noOfTop1, noOfTop2, noOfTop3, noOfTop4, noOfTop5 };
 
-            var orders = _tolkDbContext.Orders.ToList();
+            var orders = tolkDbContext.Orders.ToList();
 
             if (noOfTotalOrdersToCheck > orders.Count)
                 Assert.True(false, "Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
@@ -406,8 +428,8 @@ namespace Tolk.BusinessLogic.Tests.Services
                     orders[i].RegionId = regionNotIncludedInTest;
                 }
             }
-            _tolkDbContext.SaveChanges();
-            OrderStatisticsModel os = StatisticsService.GetOrderRegionStatistics(_tolkDbContext.Orders.Where(o => o.RegionId != regionNotIncludedInTest).Include(o => o.Region));
+            tolkDbContext.SaveChanges();
+            OrderStatisticsModel os = StatisticsService.GetOrderRegionStatistics(tolkDbContext.Orders.Where(o => o.RegionId != regionNotIncludedInTest).Include(o => o.Region));
             Assert.Equal(expectedNoOfListItems, os.TotalListItems.Count());
             int count = 0;
             foreach (var item in os.TotalListItems)
@@ -429,6 +451,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(9, 4, 3, 2, 0, 0, 3)]
         public void GetOrderCustomerStatistics(int noOfTotalOrdersToCheck, int noOfTop1, int noOfTop2, int noOfTop3, int noOfTop4, int noOfTop5, int expectedNoOfListItems)
         {
+            using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
             if (noOfTotalOrdersToCheck != (noOfTop1 + noOfTop2 + noOfTop3 + noOfTop4 + noOfTop5))
                 Assert.True(false, "Incorrect InlineData, noOfTotalOrdersToCheck cant differ from the amount of each no of top value");
             if ((noOfTop1 < noOfTop2) || (noOfTop2 < noOfTop3) || (noOfTop3 < noOfTop4) || (noOfTop4 < noOfTop5))
@@ -436,7 +459,7 @@ namespace Tolk.BusinessLogic.Tests.Services
 
             int[] listValues = { noOfTop1, noOfTop2, noOfTop3, noOfTop4, noOfTop5 };
 
-            var orders = _tolkDbContext.Orders.ToList();
+            var orders = tolkDbContext.Orders.ToList();
 
             if (noOfTotalOrdersToCheck > orders.Count)
                 Assert.True(false, "Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
@@ -487,8 +510,8 @@ namespace Tolk.BusinessLogic.Tests.Services
                     orders[i].CustomerOrganisationId = customerNotIncludedInTest;
                 }
             }
-            _tolkDbContext.SaveChanges();
-            OrderStatisticsModel os = StatisticsService.GetOrderCustomerStatistics(_tolkDbContext.Orders.
+            tolkDbContext.SaveChanges();
+            OrderStatisticsModel os = StatisticsService.GetOrderCustomerStatistics(tolkDbContext.Orders.
                 Where(o => o.CustomerOrganisationId != customerNotIncludedInTest).Include(o => o.CustomerOrganisation));
             Assert.Equal(expectedNoOfListItems, os.TotalListItems.Count());
             int count = 0;

@@ -166,7 +166,7 @@ namespace Tolk.BusinessLogic.Services
                 requestGroup = group.CreateRequestGroup(rankings, expiry, _clock.SwedenNow, latestAnswerBy.HasValue);
                 //This is the first time a request is created on this order, add the priceinformation too...
                 await _tolkDbContext.SaveChangesAsync();
-                CreatePriceInformation(group);
+                CreatePriceInformation(group, requestGroup.Ranking.FrameworkAgreement.BrokerFeeCalculationType);
             }
 
             // Save to get ids for the log message.
@@ -281,7 +281,7 @@ namespace Tolk.BusinessLogic.Services
                 request = order.CreateRequest(rankings, expiry, _clock.SwedenNow, latestAnswerBy.HasValue);
                 //This is the first time a request is created on this order, add the priceinformation too...
                 await _tolkDbContext.SaveChangesAsync();
-                CreatePriceInformation(order);
+                CreatePriceInformation(order, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType);
             }
 
             // Save to get ids for the log message.
@@ -341,7 +341,7 @@ namespace Tolk.BusinessLogic.Services
             replacementOrder.ImpersonatingCreator = impersonatorId;
 
             //Generate new price rows from current times, might be subject to change!!!
-            CreatePriceInformation(replacementOrder);
+            CreatePriceInformation(replacementOrder, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType);
             await _tolkDbContext.SaveChangesAsync();
 
             replacementOrder.Requirements = await _tolkDbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId).Select(a => new OrderRequirement
@@ -566,14 +566,23 @@ namespace Tolk.BusinessLogic.Services
             await _notificationService.RequestGroupCreated(requestGroup);
         }
 
-        public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl)
+        public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl, BrokerFeeCalculationType brokerFeeCalculationType)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(GetOrderPriceinformationForConfirmation), nameof(OrderService));
             CompetenceLevel cl = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel)));
             int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date)
                 .Where(r => !r.Quarantines.Any(q => q.CustomerOrganisationId == order.CustomerOrganisationId && q.ActiveFrom <= _clock.SwedenNow && q.ActiveTo >= _clock.SwedenNow))
                 .OrderBy(r => r.Rank).FirstOrDefault().RankingId;
-            return PriceCalculationService.GetPriceInformationToDisplay(_priceCalculationService.GetPrices(order.StartAt, order.EndAt, cl, pl, rankingId, order.CreatedAt).PriceRows);
+            return PriceCalculationService.GetPriceInformationToDisplay(
+                _priceCalculationService.GetPrices(
+                    order.StartAt, 
+                    order.EndAt, 
+                    cl, 
+                    pl, 
+                    rankingId, 
+                    order.CreatedAt,
+                    _priceCalculationService.GetCalculatedBrokerFee(order, brokerFeeCalculationType, cl, rankingId))
+                .PriceRows);
         }
 
         /// <summary>
@@ -822,22 +831,25 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void CreatePriceInformation(OrderGroup orderGroup)
+        private void CreatePriceInformation(OrderGroup orderGroup, BrokerFeeCalculationType brokerFeeCalculationType)
         {
-            orderGroup.Orders.ForEach(o => CreatePriceInformation(o));
+            orderGroup.Orders.ForEach(o => CreatePriceInformation(o, brokerFeeCalculationType));
         }
 
-        private void CreatePriceInformation(Order order)
+        private void CreatePriceInformation(Order order, BrokerFeeCalculationType brokerFeeCalculationType)
         {
             _logger.LogInformation("Create price rows for Order: {orderId}, Customer: {Name}",
                 order?.OrderId, order?.CustomerOrganisation?.Name);
+            var rankingId = order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId;
+            var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel)));
             var priceInformation = _priceCalculationService.GetPrices(
                 order.StartAt,
                 order.EndAt,
-                EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel))),
+                competenceLevel,
                 order.CustomerOrganisation.PriceListType,
                 order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId,
-                order.CreatedAt);
+                order.CreatedAt,
+                _priceCalculationService.GetCalculatedBrokerFee(order, brokerFeeCalculationType, competenceLevel, rankingId));
             order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
         }
 

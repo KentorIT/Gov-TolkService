@@ -42,9 +42,27 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public static Ranking[] MockRankings => new[]
             {
-                new Ranking { RankingId = 1, BrokerId = 1, Rank = 1, Quarantines = new List<Quarantine>() },
-                new Ranking { RankingId = 2, BrokerId = 2, Rank = 2, Quarantines = new List<Quarantine>() },
-            };
+                        new Ranking {
+                RankingId = 1,
+                Rank = 1,
+                FirstValidDate = new DateTime(2018, 01, 01),
+                LastValidDate = new DateTime(2099, 01, 01),
+                BrokerFee = (decimal)0.1,
+                BrokerId = 1,
+                RegionId = 1,
+                Quarantines = new List<Quarantine>()
+            },
+            new Ranking {
+                RankingId = 2,
+                Rank = 2,
+                FirstValidDate = new DateTime(2018, 01, 01),
+                LastValidDate = new DateTime(2099, 01, 01),
+                BrokerFee = (decimal)0.2,
+                BrokerId = 2,
+                RegionId = 2,
+                Quarantines = new List<Quarantine>()
+            }
+        };
 
         public static Ranking[] MockRankingsWithQuarantines => new[]
             {
@@ -597,24 +615,28 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             {
                 new Requisition
                 {
+                    RequisitionId = 1,
                     Status = RequisitionStatus.Commented,
                     Request = orders[0].Requests[1],
                     Message = string.Empty
                 },
                 new Requisition
                 {
+                    RequisitionId = 2,
                     Status = RequisitionStatus.Reviewed,
                     Request = orders[1].Requests[0],
                     Message = string.Empty
                 },
                 new Requisition
                 {
+                    RequisitionId = 3,
                     Status = RequisitionStatus.Reviewed,
                     Request = orders[3].Requests[0],
                     Message = string.Empty
                 },
                 new Requisition
                 {
+                    RequisitionId = 4,
                     Status = RequisitionStatus.Created,
                     Request = orders[5].Requests[1],
                     Message = string.Empty
@@ -637,6 +659,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             {
                 new Complaint
                 {
+                    ComplaintId = 1,
                     Status = ComplaintStatus.Created,
                     Request = orders[0].Requests[1],
                     ComplaintMessage = string.Empty
@@ -644,6 +667,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
                 new Complaint
                 {
+                    ComplaintId = 2,
                     ComplaintMessage = string.Empty,
                     Status = ComplaintStatus.Created,
                     Request = orders[1].Requests[0]
@@ -651,6 +675,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
                 new Complaint
                 {
+                    ComplaintId = 3,
                     ComplaintMessage = string.Empty,
                     Status = ComplaintStatus.Created,
                     Request = orders[3].Requests[0]
@@ -658,6 +683,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
                 new Complaint
                 {
+                    ComplaintId = 4,
                     ComplaintMessage = string.Empty,
                     Status = ComplaintStatus.Created,
                     Request = orders[5].Requests[1]
@@ -717,8 +743,304 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             new PriceCalculationCharge() { PriceCalculationChargeId = 1, ChargePercentage =  (decimal)31.42, ChargeTypeId = ChargeType.SocialInsuranceCharge, StartDate = new DateTime(2018,01,01), EndDate =  new DateTime(2099,01,01)},
             new PriceCalculationCharge() { PriceCalculationChargeId = 2, ChargePercentage =  (decimal)0.7, ChargeTypeId = ChargeType.AdministrativeCharge, StartDate = new DateTime(2018,01,01), EndDate =  new DateTime(2099,01,01)},
         };
+        public static BrokerFeeByServiceTypePriceListRow[] BrokerFeeByServiceTypePriceListRows
+        {
+            get
+            {
+                var list = new[] {
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 1,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.OtherInterpreter,
+                        InterpreterLocation = InterpreterLocation.OnSite,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 111
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 2,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.EducatedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OnSite,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 211
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 3,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.AuthorizedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OnSite,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 311
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 4,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.SpecializedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OnSite,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 411
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 5,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.OtherInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 141
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 6,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.EducatedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 241
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 7,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.AuthorizedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 341
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 8,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.SpecializedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 441
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 9,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.OtherInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSitePhone,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 121
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 10,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.EducatedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSitePhone,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 221
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 11,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.AuthorizedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSitePhone,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 321
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 12,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.SpecializedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSitePhone,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 421
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 13,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.OtherInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteVideo,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 131
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 14,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.EducatedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteVideo,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 231
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 15,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.AuthorizedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteVideo,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 331
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 16,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.SpecializedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteVideo,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 1 ),
+                        Price = 431
+                    },
+                                        new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 17,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.OtherInterpreter,
+                        InterpreterLocation = InterpreterLocation.OnSite,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 112
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 18,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.EducatedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OnSite,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 212
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 19,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.AuthorizedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OnSite,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 312
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 20,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.SpecializedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OnSite,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 412
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 21,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.OtherInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 142
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 22,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.EducatedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 242
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 23,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.AuthorizedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 342
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 24,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.SpecializedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteDesignatedLocation,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 442
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 25,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.OtherInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSitePhone,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 122
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 26,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.EducatedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSitePhone,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 222
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 27,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.AuthorizedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSitePhone,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 322
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 28,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.SpecializedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSitePhone,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 422
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 29,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.OtherInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteVideo,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 132
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 30,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.EducatedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteVideo,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 232
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 31,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.AuthorizedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteVideo,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 332
+                    },
+                    new BrokerFeeByServiceTypePriceListRow {
+                        BrokerFeeByServiceTypePriceListRowId = 32,
+                        FirstValidDate = new DateTime(2018, 01, 01),
+                        LastValidDate = new DateTime(2099, 12, 31),
+                        CompetenceLevel = CompetenceLevel.SpecializedInterpreter,
+                        InterpreterLocation = InterpreterLocation.OffSiteVideo,
+                        RegionGroup = RegionGroup.RegionGroups.Single(g => g.RegionGroupId == 2 ),
+                        Price = 432
+                    },
+                };
 
-        public static Ranking[] Rankings => new[] { new Ranking { RankingId = 1, Rank = 1, FirstValidDate = new DateTime(2018, 01, 01), LastValidDate = new DateTime(2099, 01, 01), BrokerFee = (decimal)0.1, BrokerId = 1, RegionId = 1 } };
+                return list;
+            }
+        }
 
         public static Ranking[] RankingsWithContractEnded => new[] {
             new Ranking { RankingId = 1, Rank = 1, FirstValidDate = new DateTime(2018, 01, 01), LastValidDate = new DateTime(2018, 06, 01), BrokerFee = (decimal)0.1, BrokerId = 1, RegionId = 1 },
