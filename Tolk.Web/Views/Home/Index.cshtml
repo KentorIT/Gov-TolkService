@@ -24,17 +24,7 @@
 }
 @if (!string.IsNullOrEmpty(@Model.ErrorMessage))
 {
-    <div class="row">
-        <div class="col-xs-12">
-            <br />
-            <div class="warning-info-home">
-                <span class="glyphicon glyphicon-exclamation-sign"></span>
-                <span class="info-message" role="alert">
-                    @Model.ErrorMessage
-                </span>
-            </div>
-        </div>
-    </div>
+    @await Html.PartialAsync("_ErrorMessage",@Model.ErrorMessage)
 }
 @if (Model.SystemMessages.Any())
 {

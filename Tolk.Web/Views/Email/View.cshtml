@@ -4,17 +4,7 @@
 }
 @if (!string.IsNullOrEmpty(@Model.ErrorMessage))
 {
-    <div class="row">
-        <div class="col-xs-12">
-            <br />
-            <div class="warning-info-home">
-                <span class="glyphicon glyphicon-exclamation-sign"></span>
-                <span role="alert" class="info-message">
-                    @Model.ErrorMessage
-                </span>
-            </div>
-        </div>
-    </div>
+    @await Html.PartialAsync("_ErrorMessage",@Model.ErrorMessage)
 }
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
