@@ -52,7 +52,7 @@ namespace Tolk.Web.Controllers
                         .Select(ra => new BrokerRankModel
                         {
                             RegionName = ra.Region.Name,
-                            BrokerFeePercentage = ra.BrokerFee,
+                            BrokerFeePercentage = ra.BrokerFee.Value,
                             Rank = ra.Rank,
                             BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
                                 p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.PriceToUse)
@@ -69,7 +69,7 @@ namespace Tolk.Web.Controllers
                     .OrderBy(ra => ra.Rank).Select(ra => new BrokerRankModel
                     {
                         BrokerName = ra.Broker.Name,
-                        BrokerFeePercentage = ra.BrokerFee,
+                        BrokerFeePercentage = ra.BrokerFee.Value,
                         Rank = ra.Rank,
                         BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
                                 p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)

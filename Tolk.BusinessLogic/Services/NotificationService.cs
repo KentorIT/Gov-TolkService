@@ -1814,7 +1814,7 @@ Sammanställning:
                     AttachmentId = a.AttachmentId,
                     FileName = a.FileName
                 }).ToListAsync(),
-                PriceInformation = priceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee)
+                PriceInformation = priceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName())
             };
         }
 
@@ -1983,7 +1983,7 @@ Sammanställning:
                     StartAt = o.StartAt,
                     EndAt = o.EndAt,
                     IsExtraInterpreterForOrderNumber = o.IsExtraInterpreterForOrder?.OrderNumber,
-                    PriceInformation = priceRows.Where(p => p.OrderId == o.OrderId).GetPriceInformationModel(o.PriceCalculatedFromCompetenceLevel.GetCustomName(), requestGroup.Ranking.BrokerFee),
+                    PriceInformation = priceRows.Where(p => p.OrderId == o.OrderId).GetPriceInformationModel(o.PriceCalculatedFromCompetenceLevel.GetCustomName()),
                     MealBreakIncluded = o.MealBreakIncluded
                 })
             };

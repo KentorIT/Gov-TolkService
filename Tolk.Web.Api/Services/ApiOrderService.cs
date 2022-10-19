@@ -144,9 +144,9 @@ namespace Tolk.Web.Api.Services
                     RequirementId = r.OrderRequirementId,
                     RequirementType = r.RequirementType.GetCustomName()
                 }),
-                CalculatedPriceInformationFromRequest = priceRows.GetPriceInformationModel(request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee),
+                CalculatedPriceInformationFromRequest = priceRows.GetPriceInformationModel(request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName()),
                 CalculatedPriceInformationFromAnswer = request.PriceRows.Any() ?
-                    request.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)request.CompetenceLevel).GetCustomName(), request.Ranking.BrokerFee)
+                    request.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)request.CompetenceLevel).GetCustomName())
                     : null,
                 Interpreter = request.Interpreter != null ? new InterpreterModel
                 {

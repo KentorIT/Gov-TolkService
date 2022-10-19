@@ -103,6 +103,9 @@ namespace Tolk.BusinessLogic.Tests.Services
                 tolkDbContext.AddRange(MockEntities.PriceCalculationCharges.Where(newCharge =>
                 !tolkDbContext.PriceCalculationCharges.Select(existCharge => existCharge.PriceCalculationChargeId).Contains(newCharge.PriceCalculationChargeId)));
 
+                tolkDbContext.AddRange(MockEntities.FrameworkAgreements.Where(newRow =>
+                !tolkDbContext.FrameworkAgreements.Select(existRow => existRow.FrameworkAgreementId).Contains(newRow.FrameworkAgreementId)));
+
                 tolkDbContext.AddRange(MockEntities.MockRankings.Where(newRank =>
                 !tolkDbContext.Rankings.Select(existRank => existRank.RankingId).Contains(newRank.RankingId)));
 

@@ -50,6 +50,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 BrokerFee = (decimal)0.1,
                 BrokerId = 1,
                 RegionId = 1,
+                FrameworkAgreementId = 1,
                 Quarantines = new List<Quarantine>()
             },
             new Ranking {
@@ -60,6 +61,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 BrokerFee = (decimal)0.2,
                 BrokerId = 2,
                 RegionId = 2,
+                FrameworkAgreementId = 1,
                 Quarantines = new List<Quarantine>()
             }
         };
@@ -1041,6 +1043,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 return list;
             }
         }
+        public static FrameworkAgreement[] FrameworkAgreements => new[] {
+            new FrameworkAgreement { FrameworkAgreementId = 1, AgreementNumber= "1234", Description = "", FirstValidDate = new DateTime(2016, 01, 01), LastValidDate = new DateTime(2099, 06, 01), BrokerFeeCalculationType = BrokerFeeCalculationType.ByRegionAndBroker, FrameworkAgreementResponseRuleset = FrameworkAgreementResponseRuleset.VersionOne },
+        };
 
         public static Ranking[] RankingsWithContractEnded => new[] {
             new Ranking { RankingId = 1, Rank = 1, FirstValidDate = new DateTime(2018, 01, 01), LastValidDate = new DateTime(2018, 06, 01), BrokerFee = (decimal)0.1, BrokerId = 1, RegionId = 1 },

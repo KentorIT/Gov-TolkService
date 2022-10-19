@@ -177,14 +177,14 @@ namespace Tolk.BusinessLogic.Services
         private List<PriceInformationBrokerFee> GetBrokerFeePriceList()
         {
             List<PriceListRow> prices = _dbContext.PriceListRows.Where(p => p.MaxMinutes == 60 && p.PriceListRowType == PriceListRowType.BasePrice && p.PriceListType == PriceListType.Court).ToList();
-            List<Ranking> ranks = _dbContext.Rankings.ToList();
+            List<Ranking> ranks = _dbContext.Rankings.Where(r => r.FrameworkAgreement.BrokerFeeCalculationType == BrokerFeeCalculationType.ByRegionAndBroker).ToList();
 
             List<PriceInformationBrokerFee> priceListBrokerFee = new List<PriceInformationBrokerFee>();
             foreach (var item in prices)
             {
                 priceListBrokerFee.AddRange(ranks.Select(r => new PriceInformationBrokerFee
                 {
-                    BrokerFee = r.BrokerFee,
+                    BrokerFee = r.BrokerFee.Value,
                     FirstValidDateRanking = r.FirstValidDate,
                     LastValidDateRanking = r.LastValidDate,
                     RankingId = r.RankingId,

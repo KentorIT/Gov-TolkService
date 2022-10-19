@@ -18,7 +18,7 @@ namespace Tolk.BusinessLogic.Entities
         public DateTime LastValidDate { get; set; }
 
         [Column(TypeName = "decimal(5, 2)")]
-        public decimal BrokerFee { get; set; }
+        public decimal? BrokerFee { get; set; }
 
         #region foreign keys
 
