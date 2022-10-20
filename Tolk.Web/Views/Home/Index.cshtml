@@ -10,17 +10,7 @@
 }
 @if (!string.IsNullOrEmpty(@Model.Message))
 {
-    <div class="row">
-        <div class="col-xs-12">
-            <br />
-            <div class="system-action-info">
-                <span class="glyphicon glyphicon-ok"></span>
-                <span class="info-message" role="status">
-                    @Model.Message
-                </span>
-            </div>
-        </div>
-    </div>
+    @await Html.PartialAsync("_InfoMessage",@Model.Message)
 }
 @if (!string.IsNullOrEmpty(@Model.ErrorMessage))
 {

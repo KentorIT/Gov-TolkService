@@ -10,17 +10,7 @@
     <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     @if (!string.IsNullOrEmpty(@Model.Message))
     {
-        <div class="row">
-            <div class="col-xs-12">
-                <br />
-                <div class="system-action-info">
-                    <span class="glyphicon glyphicon-ok"></span>
-                    <span role="status" class="info-message">
-                        @Model.Message
-                    </span>
-                </div>
-            </div>
-        </div>
+        @await Html.PartialAsync("_InfoMessage",@Model.Message)
     }
     <h2>Allmänn information</h2>
     <div class="row">
