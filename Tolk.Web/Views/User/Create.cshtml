@@ -129,8 +129,8 @@
         </div>
         <div class="row">
             @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-            {
-                <div class="col-sm-8 text-danger" role="alert">@Model.ErrorMessage</div>
+            {                
+                @await Html.PartialAsync("_ErrorMessage",@Model.ErrorMessage)                
             }
         </div>
         <div class="row">

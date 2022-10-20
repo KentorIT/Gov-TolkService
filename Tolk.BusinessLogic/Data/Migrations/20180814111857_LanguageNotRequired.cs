@@ -16,13 +16,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 nullable: true,
                 oldClrType: typeof(int));
 
-            migrationBuilder.AlterColumn<string>(
-                name: "OrderNumber",
-                table: "Orders",
-                nullable: false,
-                computedColumnSql: "CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))",
-                oldClrType: typeof(int),
-                oldComputedColumnSql: "CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))");
+            migrationBuilder.DropColumn(
+                name:"OrderNumber",
+                table:"Orders"
+                );
+
+            migrationBuilder.AddColumn<string>(
+                 name: "OrderNumber",
+                 table: "Orders",
+                 nullable: false,
+                 computedColumnSql: "CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))"
+                );
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Orders_Languages_LanguageId",
@@ -46,13 +50,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 oldClrType: typeof(int),
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<int>(
-                name: "OrderNumber",
-                table: "Orders",
-                nullable: false,
-                computedColumnSql: "CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))",
-                oldClrType: typeof(string),
-                oldComputedColumnSql: "CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))");
+            migrationBuilder.DropColumn(
+               name: "OrderNumber",
+               table: "Orders"
+               );
+
+            migrationBuilder.AddColumn<int>(
+               name: "OrderNumber",
+               table: "Orders",
+               nullable: false,
+               computedColumnSql: "CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))"
+              );            
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Orders_Languages_LanguageId",
