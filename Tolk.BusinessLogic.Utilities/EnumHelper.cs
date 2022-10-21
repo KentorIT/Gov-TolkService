@@ -211,5 +211,10 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return (T)Enum.Parse(typeof(T), value);
         }
+
+        public static ContractDefinitionAttribute GetContractDefinition<TEnum>(TEnum value)
+        {            
+            return GetAttributeProperty<ContractDefinitionAttribute, TEnum> (value);            
+        }
     }
 }

@@ -57,5 +57,10 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return EnumHelper.GetAvailableNotificationConsumerTypes<T>(item);
         }
+
+        public static ContractDefinitionAttribute GetContractDefinitionAttribute<T>(this T item) where T : struct
+        {          
+            return EnumHelper.GetContractDefinition<T>(item);
+        }
     }
 }

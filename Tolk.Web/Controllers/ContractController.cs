@@ -30,12 +30,25 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var currentContract = _cacheService.CurrentFrameworkAgreement;
+            if(currentContract != null && currentContract.FrameworkAgreementResponseRuleset.GetContractDefinitionAttribute() == null)
+            {
+                return Forbid();
+            }            
+            return View(currentContract.IsActive ? new DisplayContractModel
+            {
+                AgreementNumber = currentContract.AgreementNumber,
+                Description = currentContract.Description,
+                FirstValidDate = currentContract.FirstValidDate,
+                OriginalLastValidDate = currentContract.OriginalLastValidDate,
+                PossibleAgreementExtensionsInMonths = currentContract.PossibleAgreementExtensionsInMonths,
+                ContractDefinition = currentContract.FrameworkAgreementResponseRuleset.GetContractDefinitionAttribute().ContractDefinition
+            } : null);
         }
 
         [Authorize(Roles = Roles.AppOrSysAdmin)]
         public async Task<IActionResult> List()
-        {
+        {            
             var brokerFeePrices = _cacheService.BrokerFeeByRegionAndBrokerPriceList;
 
             var rankings = await _dbContext.Rankings.GetActiveRankings(_clock.SwedenNow.DateTime).ToListAsync();

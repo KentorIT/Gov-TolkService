@@ -18,6 +18,8 @@ namespace Tolk.BusinessLogic.Utilities
         public DateTime FirstValidDate { get; set; }
 
         public DateTime LastValidDate { get; set; }
+        public DateTime OriginalLastValidDate { get; set; }
+        public int PossibleAgreementExtensionsInMonths { get; set; }
 
         public BrokerFeeCalculationType BrokerFeeCalculationType { get; set; }
 
