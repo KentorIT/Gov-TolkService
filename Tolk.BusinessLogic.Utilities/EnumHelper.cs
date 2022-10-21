@@ -213,7 +213,7 @@ namespace Tolk.BusinessLogic.Utilities
         }
 
         public static ContractDefinitionAttribute GetContractDefinition<TEnum>(TEnum value)
-        {            
+        {
             return GetAttributeProperty<ContractDefinitionAttribute, TEnum> (value);            
         }
     }
