@@ -58,6 +58,8 @@ namespace Tolk.BusinessLogic.Services
                             AgreementNumber = f.AgreementNumber,
                             LastValidDate = f.LastValidDate,
                             FirstValidDate = f.FirstValidDate,
+                            OriginalLastValidDate  = f.OriginalLastValidDate,
+                            PossibleAgreementExtensionsInMonths = f.PossibleAgreementExtensionsInMonths,
                             Description = f.Description,
                             BrokerFeeCalculationType = f.BrokerFeeCalculationType,
                             FrameworkAgreementResponseRuleset = f.FrameworkAgreementResponseRuleset,
