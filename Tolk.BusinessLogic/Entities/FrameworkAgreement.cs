@@ -23,6 +23,9 @@ namespace Tolk.BusinessLogic.Entities
 
         [Column(TypeName = "date")]
         public DateTime LastValidDate { get; set; }
+        [Column(TypeName = "date")]
+        public DateTime OriginalLastValidDate { get; set; }
+        public int PossibleAgreementExtensionsInMonths { get; set; }
 
         public BrokerFeeCalculationType BrokerFeeCalculationType { get; set; }
 

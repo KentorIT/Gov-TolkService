@@ -1127,6 +1127,12 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTime>("LastValidDate")
                         .HasColumnType("date");
 
+                    b.Property<DateTime>("OriginalLastValidDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("PossibleAgreementExtensionsInMonths")
+                        .HasColumnType("int");
+
                     b.HasKey("FrameworkAgreementId");
 
                     b.ToTable("FrameworkAgreements");
