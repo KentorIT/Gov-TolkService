@@ -30,7 +30,17 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var currentContract = _cacheService.CurrentFrameworkAgreement;
+            var cont = currentContract.IsActive ? new DisplayContractModel
+            {
+                AgreementNumber = currentContract.AgreementNumber,
+                Description = currentContract.Description,
+                FirstValidDate = currentContract.FirstValidDate,
+                OriginalLastValidDate = currentContract.OriginalLastValidDate,
+                PossibleAgreementExtensionsInMonths = currentContract.PossibleAgreementExtensionsInMonths,
+                ContractDefinition = currentContract.FrameworkAgreementResponseRuleset.GetContractDefinitionAttribute().ContractDefinition
+            } : null;
+            return View(cont);
         }
 
         [Authorize(Roles = Roles.AppOrSysAdmin)]
