@@ -41,6 +41,8 @@ namespace Tolk.BusinessLogic.Services
         void RequestGroupAnswerDenied(RequestGroup requestGroup);
         void RequestExpiredDueToInactivity(Request request);
         void RequestExpiredDueToNoAnswerFromCustomer(Request request);
+        void RequestTerminatedDueToTerminatedFrameworkAgreement(Request request);
+        void RequestGroupTerminatedDueToTerminatedFrameworkAgreement(RequestGroup requestGroup);
         void RequestReplamentOrderAccepted(Request request);
         void RequestReplamentOrderDeclinedByBroker(Request request);
         void RequisitionCommented(Requisition requisition);

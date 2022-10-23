@@ -603,6 +603,23 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.CancelledByBroker;
         }
 
+        internal void TerminateDueToEndedFrameworkAgreement(DateTimeOffset terminatedAt, string terminationMessage, IEnumerable<RequestStatus> terminatableStatuses)
+        {
+            if (!terminatableStatuses.Contains(Status))
+            {
+                throw new InvalidOperationException($"Request {RequestId} is {Status}. Only requests under negotiation can be terminated due to ended framework agreement");
+            }
+            if (Order.StartAt < terminatedAt)
+            {
+                throw new InvalidOperationException($"Order {OrderId} has already passed its start time. Orders that have started can not be terminated due to ended framework agreement");
+            }
+
+            Status = RequestStatus.TerminatedDueToTerminatedFrameworkAgreement;
+            CancelledAt = terminatedAt;
+            CancelMessage = terminationMessage;
+            Order.Status = OrderStatus.TerminatedDueToTerminatedFrameworkAgreement;
+        }
+
         public void CreateRequisition(Requisition requisition)
         {
             if (Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created))

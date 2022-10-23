@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
@@ -59,7 +60,7 @@ namespace Tolk.BusinessLogic.Services
             List<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts,
             string expectedTravelCostInfo,
-            DateTimeOffset? latestAnswerTimeForCustomer, 
+            DateTimeOffset? latestAnswerTimeForCustomer,
             string brokerReferenceNumber
         )
         {
@@ -232,7 +233,7 @@ namespace Tolk.BusinessLogic.Services
                 expectedTravelCostInfo,
                 interpreterLocation,
                 _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, expectedTravelCosts),
-                latestAnswerTimeForCustomer, 
+                latestAnswerTimeForCustomer,
                 brokerReferenceNumber
             );
             _notificationService.RequestReplamentOrderAccepted(request);
@@ -304,7 +305,7 @@ namespace Tolk.BusinessLogic.Services
             IEnumerable<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts,
             string expectedTravelCostInfo,
-            DateTimeOffset? latestAnswerTimeForCustomer, 
+            DateTimeOffset? latestAnswerTimeForCustomer,
             string brokerReferenceNumber
         )
         {
@@ -451,9 +452,94 @@ namespace Tolk.BusinessLogic.Services
             await _tolkDbContext.SaveChangesAsync();
         }
 
+        public async Task ValidateFrameworkAgreement()
+        {
+            _logger.LogInformation("Start validating current framework agreement");
+            var today = _clock.SwedenNow.Date;
+            // Get the current framework agreement, if any
+            var frameworkAgreement = _tolkDbContext.FrameworkAgreements.GetFrameworkAgreementByDate(today);
+            // If there is no current, or if the new agreement started today, 
+            if (frameworkAgreement is null || frameworkAgreement.FirstValidDate == today)
+            {
+                //Get the agreement that ended yesterday
+                var previousFrameworkAgreement = _tolkDbContext.FrameworkAgreements.GetFrameworkAgreementByDate(today.AddDays(-1));
+                if (previousFrameworkAgreement != null)
+                {
+                    _logger.LogInformation($"The previous framework agreement '{previousFrameworkAgreement.AgreementNumber}' ended yesterday!");
+                    var openRequestStatuses = EnumHelper.GetEnumsWithParent<RequestStatus, NegotiationState>(NegotiationState.UnderNegotiation);
+
+                    var terminatedRequestGroupIds = _tolkDbContext.RequestGroups
+                        .GetRequestGroupsFromTerminatedFrameworkAgreement(previousFrameworkAgreement.FrameworkAgreementId, openRequestStatuses)
+                        .Select(r => r.RequestGroupId).ToList();
+                    _logger.LogInformation("Found {count} request groups to terminate due to ended framework agreement: {expiredRequestIds}",
+                        terminatedRequestGroupIds.Count, string.Join(", ", terminatedRequestGroupIds));
+
+                    foreach (var requestGroupId in terminatedRequestGroupIds)
+                    {
+                        try
+                        {
+                            var terminatedRequestGroup = _tolkDbContext.RequestGroups.GetTerminatedRequestGroup(previousFrameworkAgreement.FrameworkAgreementId, openRequestStatuses, requestGroupId);
+
+                            if (terminatedRequestGroup == null)
+                            {
+                                _logger.LogInformation("Request group {requestGroupId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                    requestGroupId);
+                            }
+                            else
+                            {
+                                terminatedRequestGroup.Requests = _tolkDbContext.Requests.GetRequestsForRequestGroup(terminatedRequestGroup.RequestGroupId).ToList();
+                                _logger.LogInformation("Processing terminated request group {requestId} for Order group {orderGroupId}.",
+                                    terminatedRequestGroup.RequestGroupId, terminatedRequestGroup.OrderGroupId);
+                                _notificationService.RequestGroupTerminatedDueToTerminatedFrameworkAgreement(terminatedRequestGroup);
+                                terminatedRequestGroup.TerminateDueToEndedFrameworkAgreement(_clock.SwedenNow, "Avtalet har upphört", openRequestStatuses);
+                                _tolkDbContext.SaveChanges();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failure processing request group {requestGroupId} on ended framework agreement", requestGroupId);
+                            await SendErrorMail(nameof(ValidateFrameworkAgreement), ex);
+                        }
+                    }
+
+                    var terminatedRequestIds = _tolkDbContext.Requests
+                        .GetRequestsFromTerminatedFrameworkAgreement(previousFrameworkAgreement.FrameworkAgreementId, openRequestStatuses)
+                        .Select(r => r.RequestId).ToList();
+                    _logger.LogInformation("Found {count} requests to terminate due to ended framework agreement: {expiredRequestIds}",
+                        terminatedRequestIds.Count, string.Join(", ", terminatedRequestIds));
+
+                    foreach (var requestId in terminatedRequestIds)
+                    {
+                        try
+                        {
+                            var terminatedRequest = _tolkDbContext.Requests.GetTerminatedRequest(previousFrameworkAgreement.FrameworkAgreementId, openRequestStatuses, requestId);
+                            if (terminatedRequest == null)
+                            {
+                                _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                    requestId);
+                            }
+                            else
+                            {
+                                _logger.LogInformation("Processing terminated request {requestId} for Order {orderId}.",
+                                    terminatedRequest.RequestId, terminatedRequest.OrderId);
+                                _notificationService.RequestTerminatedDueToTerminatedFrameworkAgreement(terminatedRequest);
+                                terminatedRequest.TerminateDueToEndedFrameworkAgreement(_clock.SwedenNow, "Avtalet har upphört", openRequestStatuses);
+                                _tolkDbContext.SaveChanges();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failure processing request {requestId} on ended framework agreement", requestId);
+                            await SendErrorMail(nameof(ValidateFrameworkAgreement), ex);
+                        }
+                    }
+                }
+            }
+        }
+
         public async Task SendEmailRemindersNonApprovedRequests()
         {
-            _logger.LogInformation("Start sending reminder emails for non answered responded rquests");
+            _logger.LogInformation("Start sending reminder emails for non answered responded requests");
             var notApprovedRequests = await _tolkDbContext.Requests.NonAnsweredRespondedRequestsToBeReminded(_clock.SwedenNow).ToListAsync();
             foreach (Request request in notApprovedRequests)
             {

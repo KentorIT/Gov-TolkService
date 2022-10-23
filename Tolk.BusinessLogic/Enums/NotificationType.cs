@@ -390,5 +390,19 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.User)]
         PasswordReset = 56,
+
+        [Description("Avslutat avrop på grund av ramavtalets slut")]
+        [CustomName("password_reset", false)]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [NotificationConsumerType(NotificationConsumerType.Broker)]
+        [NotificationConsumerType(NotificationConsumerType.Customer)]
+        OrderTerminatedDueToTerminatedFrameworkAgreement = 57,
+
+        [Description("Avslutat sammanhållen förfrågan på grund av ramavtalets slut")]
+        [CustomName("password_reset", false)]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [NotificationConsumerType(NotificationConsumerType.Broker)]
+        [NotificationConsumerType(NotificationConsumerType.Customer)]
+        OrderGroupTerminatedDueToTerminatedFrameworkAgreement = 58,
     }
 }

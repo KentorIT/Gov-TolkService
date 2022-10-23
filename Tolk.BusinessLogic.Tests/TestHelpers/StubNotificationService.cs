@@ -74,7 +74,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestCompleted(Request request) { }
 
-
         public void RequestCreatedWithoutExpiry(Request request) { }
 
         public void RequestDeclinedByBroker(Request request) { }
@@ -110,5 +109,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public bool ResendWebHook(OutboundWebHookCall failedCall, int? resentUserId = null, int? resentImpersonatorUserId = null) { return true; }
 
         public bool ResendPeppolMessage(OutboundPeppolMessage failedMessage, int? resentUserId = null, int? resentImpersonatorUserId = null) { return true; }
+
+        public void RequestTerminatedDueToTerminatedFrameworkAgreement(Request request) { }
+
+        public void RequestGroupTerminatedDueToTerminatedFrameworkAgreement(RequestGroup requestGroup) { }
     }
 }

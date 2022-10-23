@@ -60,6 +60,9 @@ namespace Tolk.BusinessLogic.Utilities
                     r.Status != RequestStatus.InterpreterReplaced);
         }
 
+        public static FrameworkAgreement GetFrameworkAgreementByDate(this IQueryable<FrameworkAgreement> agreements, DateTime today)
+            => agreements.Where(f => f.FirstValidDate <= today && f.LastValidDate >= today).SingleOrDefault();
+
         /// <summary>
         /// Expires due to:
         /// 1. ExpiresAt has passed 
@@ -79,6 +82,38 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return requests.ExpiredRequests(now).Include(r => r.Ranking).Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation).SingleAsync(r => r.RequestId == requestId);
         }
+
+        public static IQueryable<Request> GetRequestsFromTerminatedFrameworkAgreement(this IQueryable<Request> requests, int frameworkAgreementId, IEnumerable<RequestStatus> openRequestStatuses)
+            => requests
+            .Where(r => r.Ranking.FrameworkAgreementId == frameworkAgreementId &&
+                openRequestStatuses.Contains(r.Status));
+
+        public static Request GetTerminatedRequest(this IQueryable<Request> requests, int frameworkAgreementId, IEnumerable<RequestStatus> openRequestStatuses, int requestId)
+            => requests
+                .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit)
+                .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
+                .GetRequestsFromTerminatedFrameworkAgreement(frameworkAgreementId, openRequestStatuses)
+                .Where(r => r.RequestId == requestId)
+                .SingleOrDefault();
+
+        public static IQueryable<RequestGroup> GetRequestGroupsFromTerminatedFrameworkAgreement(this IQueryable<RequestGroup> groups, int frameworkAgreementId, IEnumerable<RequestStatus> openRequestStatuses)
+            => groups
+            .Where(r => r.Ranking.FrameworkAgreementId == frameworkAgreementId &&
+                openRequestStatuses.Contains(r.Status));
+
+        public static RequestGroup GetTerminatedRequestGroup(this IQueryable<RequestGroup> groups, int frameworkAgreementId, IEnumerable<RequestStatus> openRequestStatuses, int requestGroupId)
+            => groups
+                .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement)
+                 .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
+                .Include(r => r.OrderGroup)
+                .GetRequestGroupsFromTerminatedFrameworkAgreement(frameworkAgreementId, openRequestStatuses)
+                .Where(r => r.RequestGroupId == requestGroupId)
+                .SingleOrDefault();
 
         /// <summary>
         /// Expires due to:

@@ -1297,6 +1297,63 @@ Sammanställning:
             NotifyBrokerOnAcceptedAnswer(requestGroup, orderGroupNumber);
         }
 
+        public void RequestTerminatedDueToTerminatedFrameworkAgreement(Request request)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestTerminatedDueToTerminatedFrameworkAgreement), nameof(NotificationService));
+            string orderNumber = request.Order.OrderNumber;
+            NotificationType notificationType = NotificationType.OrderTerminatedDueToTerminatedFrameworkAgreement;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                var body = $"Bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
+                CreateEmail(GetRecipientsFromOrder(request.Order), 
+                    $"Bokningsförfrågan {orderNumber} har avbrutits på grund av avslutat ramavtal",
+                    body + GoToOrderPlain(request.Order.OrderId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
+                    notificationType
+                );
+            }
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, notificationType, NotificationChannel.Email);
+            if (email != null)
+            {
+                var body = $"Bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
+                CreateEmail(email.ContactInformation,
+                    $"Bokningsförfrågan {orderNumber} har avbrutits på grund av avslutat ramavtal",
+                    body + GoToRequestPlain(request.RequestId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
+                    notificationType
+                );
+            }
+        }
+
+        public void RequestGroupTerminatedDueToTerminatedFrameworkAgreement(RequestGroup requestGroup)
+        {
+            //Order, Broker
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupTerminatedDueToTerminatedFrameworkAgreement), nameof(NotificationService));
+            string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
+            NotificationType notificationType = NotificationType.OrderGroupTerminatedDueToTerminatedFrameworkAgreement;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                var body = $"Sammanhållen bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
+                CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup), 
+                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av avslutat ramavtal",
+                    body + GoToOrderGroupPlain(requestGroup.OrderGroupId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroupId),
+                    notificationType
+                );
+            }
+            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
+            if (email != null)
+            {
+                var body = $"Sammanhållen bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
+                CreateEmail(email.ContactInformation,
+                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av avslutat ramavtal",
+                    body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToRequestGroupButton(requestGroup.RequestGroupId),
+                    notificationType
+                );
+            }
+        }
+
         public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true)
         {
             CreateEmail(new[] { recipient }, subject, plainBody, string.IsNullOrEmpty(htmlBody) ? HtmlHelper.ToHtmlBreak(plainBody) : htmlBody, notificationType, isBrokerMail, addContractInfo);

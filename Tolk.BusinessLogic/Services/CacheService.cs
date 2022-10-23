@@ -50,19 +50,20 @@ namespace Tolk.BusinessLogic.Services
                 if (currentFrameworkAgreement == null)
                 {
                     var now = _clock.SwedenNow;
-                    currentFrameworkAgreement = _dbContext.FrameworkAgreements
-                        .Where(f => f.FirstValidDate < now.Date && f.LastValidDate >= now.Date)
-                        .Select(f => new CurrentFrameworkAgreement
+                    var agreement = _dbContext.FrameworkAgreements.GetFrameworkAgreementByDate(now.Date);
+                    currentFrameworkAgreement = agreement != null ? 
+                        new CurrentFrameworkAgreement
                         {
-                            FrameworkAgreementId = f.FrameworkAgreementId,
-                            AgreementNumber = f.AgreementNumber,
-                            LastValidDate = f.LastValidDate,
-                            FirstValidDate = f.FirstValidDate,
-                            Description = f.Description,
-                            BrokerFeeCalculationType = f.BrokerFeeCalculationType,
-                            FrameworkAgreementResponseRuleset = f.FrameworkAgreementResponseRuleset,
+                            FrameworkAgreementId = agreement.FrameworkAgreementId,
+                            AgreementNumber = agreement.AgreementNumber,
+                            LastValidDate = agreement.LastValidDate,
+                            FirstValidDate = agreement.FirstValidDate,
+                            Description = agreement.Description,
+                            BrokerFeeCalculationType = agreement.BrokerFeeCalculationType,
+                            FrameworkAgreementResponseRuleset = agreement.FrameworkAgreementResponseRuleset,
                             IsActive = true
-                        }).SingleOrDefault() ?? new CurrentFrameworkAgreement { IsActive = false };
+                        } : 
+                        new CurrentFrameworkAgreement { IsActive = false };
 
                     _cache.Set(CacheKeys.CurrentFrameworkAgreement, currentFrameworkAgreement.ToByteArray());
                 }

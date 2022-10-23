@@ -140,6 +140,14 @@ namespace Tolk.BusinessLogic.Utilities
                 .Where(t => !IsObsolete(t) && (filterValues == null || filterValues.Contains(t)))
                 .Select(v => new EnumValue<TEnum>(v, type.GetMember(v.ToString()).GetEnumDescription()));
         }
+        public static IEnumerable<TEnum> GetEnumsWithParent<TEnum, TParentEnum>(TParentEnum parent)
+            where TParentEnum : struct
+        {
+            var type = typeof(TEnum);
+            type = Nullable.GetUnderlyingType(type) ?? type;
+
+            return Enum.GetValues(type).OfType<TEnum>().Where(t => parent.Equals(Parent<TEnum, TParentEnum>(t)));
+        }
 
         public static IEnumerable<EnumDescription<TEnum>> GetAllFullDescriptions<TEnum>(IEnumerable<TEnum> filterValues = null)
         {

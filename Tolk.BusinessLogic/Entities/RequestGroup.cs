@@ -1,4 +1,7 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Org.BouncyCastle.Asn1.Ocsp;
+using Renci.SshNet.Messages;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -201,6 +204,19 @@ namespace Tolk.BusinessLogic.Entities
             ImpersonatingCanceller = impersonatorId;
             CancelMessage = message;
             OrderGroup.Status = OrderStatus.CancelledByCreator;
+        }
+
+        internal void TerminateDueToEndedFrameworkAgreement(DateTimeOffset terminatedAt, string terminationMessage, IEnumerable<RequestStatus> terminatableStatuses)
+        {
+            if (!terminatableStatuses.Contains(Status))
+            {
+                throw new InvalidOperationException($"Request group {RequestGroupId} is {Status}. Only reuquests under negotiation can be terminated due to ended framework agreement");
+            }
+            Requests.ForEach(r => r.TerminateDueToEndedFrameworkAgreement(terminatedAt, terminationMessage, terminatableStatuses));
+            Status = RequestStatus.TerminatedDueToTerminatedFrameworkAgreement;
+            CancelledAt = terminatedAt;
+            CancelMessage = terminationMessage;
+            OrderGroup.Status = OrderStatus.TerminatedDueToTerminatedFrameworkAgreement;
         }
 
         public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool hasTravelCosts, bool partialAnswer, DateTimeOffset? latestAnswerTimeForCustomer, string brokerReferenceNumber)
