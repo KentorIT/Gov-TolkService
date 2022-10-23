@@ -16,11 +16,15 @@ namespace Tolk.BusinessLogic.Services
             _tolkDbContext = tolkDbContext;
         }
 
-        public IEnumerable<Ranking> GetActiveRankingsForRegion(int regionId, DateTime date)
+        public IEnumerable<Ranking> GetActiveRankingsForRegion(int regionId, DateTime date, DateTime activeFrameworkAgreementEnd)
         {
             if (date.TimeOfDay.Ticks != 0)
             {
                 throw new ArgumentException("Date must be a pure date, without time component", nameof(date));
+            }
+            if (date > activeFrameworkAgreementEnd)
+            {
+                date = activeFrameworkAgreementEnd;
             }
             var rankings = _tolkDbContext.Rankings.GetActiveRankingsForRegion(regionId, date).ToList();
             var quarantines = _tolkDbContext.Quarantines.GetQuarantinesForRankings(rankings.Select(r => r.RankingId)).ToList();

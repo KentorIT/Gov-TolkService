@@ -25,6 +25,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly VerificationService _verificationService;
         private readonly EmailService _emailService;
         private readonly ITolkBaseOptions _tolkBaseOptions;
+        private readonly CacheService _cacheService;
 
         public OrderService(
             TolkDbContext tolkDbContext,
@@ -36,7 +37,8 @@ namespace Tolk.BusinessLogic.Services
             INotificationService notificationService,
             VerificationService verificationService,
             EmailService emailService,
-            ITolkBaseOptions tolkBaseOptions
+            ITolkBaseOptions tolkBaseOptions,
+            CacheService cacheService
             )
         {
             _tolkDbContext = tolkDbContext;
@@ -49,6 +51,7 @@ namespace Tolk.BusinessLogic.Services
             _verificationService = verificationService;
             _emailService = emailService;
             _tolkBaseOptions = tolkBaseOptions;
+            _cacheService = cacheService;
         }
 
         public async Task HandleAllScheduledTasks()
@@ -154,8 +157,7 @@ namespace Tolk.BusinessLogic.Services
                 await _tolkDbContext.SaveChangesAsync();
                 return;
             }
-
-            var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date);
+            var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date, _cacheService.CurrentFrameworkAgreement.LastValidDate);
 
             if (expiredRequestGroup != null)
             {
@@ -221,7 +223,7 @@ namespace Tolk.BusinessLogic.Services
             DateTimeOffset? expiry = CalculateExpiryForNewRequest(declinedRequests.ClosestStartAt());
             OrderGroup group = requestGroup.OrderGroup;
 
-            var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date);
+            var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date, _cacheService.CurrentFrameworkAgreement.LastValidDate);
             RequestGroup partialRequestGroup = group.CreatePartialRequestGroup(declinedRequests, rankings, expiry, _clock.SwedenNow);
             // Save to get ids for the log message.
             await _tolkDbContext.SaveChangesAsync();
@@ -266,7 +268,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 order.Requests = await _tolkDbContext.Requests.GetRequestsForOrder(order.OrderId).ToListAsync();
             }
-            var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);//ska vi ha med offset time här?
+            var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date, _cacheService.CurrentFrameworkAgreement.LastValidDate);
 
             if (expiredRequest != null)
             {
@@ -570,7 +572,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(GetOrderPriceinformationForConfirmation), nameof(OrderService));
             CompetenceLevel cl = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel)));
-            int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date)
+            int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date, _cacheService.CurrentFrameworkAgreement.LastValidDate)
                 .Where(r => !r.Quarantines.Any(q => q.CustomerOrganisationId == order.CustomerOrganisationId && q.ActiveFrom <= _clock.SwedenNow && q.ActiveTo >= _clock.SwedenNow))
                 .OrderBy(r => r.Rank).FirstOrDefault().RankingId;
             return PriceCalculationService.GetPriceInformationToDisplay(
