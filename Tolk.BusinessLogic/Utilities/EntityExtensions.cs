@@ -1218,11 +1218,11 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<FailedPeppolMessage> GetFailedPeppolMessagesByPeppolMessageId(this IQueryable<FailedPeppolMessage> failedPeppolMessages, int id)
              => failedPeppolMessages.Where(f => f.OutboundPeppolMessageId == id);
 
-        public static IQueryable<Ranking> GetActiveRankings(this IQueryable<Ranking> rankings, DateTime now)
+        public static IQueryable<Ranking> GetActiveRankings(this IQueryable<Ranking> rankings, DateTime now,int activeFramweorkAgreementId)
         => rankings
             .Include(r => r.Broker)
             .Include(r => r.Region)
-            .Where(ra => ra.FirstValidDate <= now && ra.LastValidDate > now);
+            .Where(ra => ra.FirstValidDate <= now && ra.LastValidDate > now && ra.FrameworkAgreementId == activeFramweorkAgreementId);
 
         public static async Task<Request> GetRequestToUpdateExpiryByOrderId(this IQueryable<Request> requests, int orderId)
             => await requests.GetRequestsWithBaseIncludesAndRegionAndLanguage()

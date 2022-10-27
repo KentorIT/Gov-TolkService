@@ -50,8 +50,13 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> List()
         {            
             var brokerFeePrices = _cacheService.BrokerFeeByRegionAndBrokerPriceList;
-
-            var rankings = await _dbContext.Rankings.GetActiveRankings(_clock.SwedenNow.DateTime).ToListAsync();
+            var currentFrameworkAgreement = _cacheService.CurrentFrameworkAgreement;
+            if(!currentFrameworkAgreement.IsActive)
+            {
+                // No Active FrameworkAgreement, Show previous? or Forbid?
+                return Forbid();
+            }
+            var rankings = await _dbContext.Rankings.GetActiveRankings(_clock.SwedenNow.DateTime, currentFrameworkAgreement.FrameworkAgreementId).ToListAsync();
             var brokers = rankings.Select(r => r.Broker).Distinct().OrderBy(b => b.Name).ToList();
             var regions = rankings.Select(r => r.Region).Distinct().OrderBy(r => r.Name).ToList();
 
@@ -92,7 +97,7 @@ namespace Tolk.Web.Controllers
                                 .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                     }).ToList()
                 }),
-                ContractNumber = Constants.ContractNumber
+                ContractNumber = currentFrameworkAgreement.AgreementNumber
             });
         }
     }
