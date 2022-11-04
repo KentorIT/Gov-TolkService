@@ -630,6 +630,7 @@ namespace Tolk.BusinessLogic.Utilities
             => await requests
                 .Include(r => r.Interpreter)
                 .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
+                .Include(r => r.Ranking).ThenInclude(ra => ra.FrameworkAgreement)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.AnsweringUser)
                 .SingleAsync(r => r.RequestId == id);
