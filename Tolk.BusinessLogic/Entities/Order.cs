@@ -201,7 +201,7 @@ namespace Tolk.BusinessLogic.Entities
 
         #region methods
 
-        public Request CreateRequest(IEnumerable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        public Request CreateRequest(IEnumerable<Ranking> rankings, RequestExpiryResponse newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             Ranking ranking = GetNextRanking(rankings, newRequestCreationTime);
             if (ranking == null)
@@ -214,7 +214,7 @@ namespace Tolk.BusinessLogic.Entities
             return CreateRequest(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest);
         }
 
-        internal Request CreateRequest(Ranking ranking, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        internal Request CreateRequest(Ranking ranking, RequestExpiryResponse newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             var request = new Request(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest);
             Requests.Add(request);

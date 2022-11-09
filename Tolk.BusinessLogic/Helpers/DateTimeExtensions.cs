@@ -52,5 +52,7 @@ namespace Tolk.BusinessLogic.Helpers
                 .AddSeconds(time.Second);
         }
 
+        public static DateTimeOffset ClearSeconds(this DateTimeOffset baseTime)
+            => baseTime.AddSeconds(-baseTime.Second);
     }
 }

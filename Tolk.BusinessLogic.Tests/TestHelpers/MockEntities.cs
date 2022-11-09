@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Tests.TestHelpers
 {
@@ -203,8 +204,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.RequestRespondedNewInterpreter,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,05,26,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,04,26,14,56,00, new TimeSpan(02,00,00))),
-                        new Request(mockRankings[1], new DateTimeOffset(2018,06,02,14,11,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,04,02,14,11,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,05,26,14,56,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,04,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[1], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,06,02,14,11,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,04,02,14,11,00, new TimeSpan(02,00,00))),
                     },
                 },
                 new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -221,7 +222,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,05,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,05,26,14,56,00, new TimeSpan(02,00,00))),
                     },
                 },
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -238,7 +239,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Requested,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,07,29,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,07,29,14,56,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
 
@@ -256,7 +257,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,09,01,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,09,01,14,56,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -273,7 +274,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.RequestResponded,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
                 new Order(mockCustomerUsers[1], null, mockCustomerUsers[1].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -290,8 +291,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
-                        new Request(mockRankings[1], new DateTimeOffset(2018,10,02,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[1], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,10,02,14,56,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -308,7 +309,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.CancelledByCreator,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,08,25,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,08,25,14,56,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -325,7 +326,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     Status = OrderStatus.Delivered,
                     Requests = new List<Request>
                     {
-                        new Request(mockRankings[0], new DateTimeOffset(2018,08,01,14,56,00, new TimeSpan(02,00,00)), new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
+                        new Request(mockRankings[0], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,08,01,14,56,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
                     }
                 },
                 new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
@@ -1216,14 +1217,14 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                 var requests = new List<Request>();
                 foreach (Order order in orders)
                 {
-                    var request = new Request(mockRankings[mocRank], createdAt.AddDays(mocRank + 1), createdAt.AddDays(mocRank)) { Status = requestStatus, Order = order };
+                    var request = new Request(mockRankings[mocRank], new RequestExpiryResponse { ExpiryAt = createdAt.AddDays(mocRank + 1), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, createdAt.AddDays(mocRank)) { Status = requestStatus, Order = order };
                     request.RequestStatusConfirmations = new List<RequestStatusConfirmation>();
                     requests.Add(request);
                     order.Requests.Add(request);
                     order.OrderGroupId = id;
                     order.Group = orderGroup;
                 }
-                var requestGroup = new RequestGroup(mockRankings[mocRank], createdAt.AddDays(mocRank + 1), createdAt.AddDays(mocRank), requests)
+                var requestGroup = new RequestGroup(mockRankings[mocRank], new RequestExpiryResponse { ExpiryAt = createdAt.AddDays(mocRank + 1), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, createdAt.AddDays(mocRank), requests)
                 {
                     Status = requestStatus,
                     OrderGroup = orderGroup,

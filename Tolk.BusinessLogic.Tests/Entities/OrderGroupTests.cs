@@ -3,6 +3,7 @@ using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Tests.TestHelpers;
+using Tolk.BusinessLogic.Utilities;
 using Xunit;
 
 namespace Tolk.BusinessLogic.Tests.Entities
@@ -21,7 +22,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         public void CreateRequestGroup(int requestGroups, OrderStatus expectedStatus, RequestStatus expectedRequestStatus)
         {
             var orderGroup = MockOrderGroups.Where(og => og.OrderGroupNumber == "JUSTCREATED").Single();
-            orderGroup.CreateRequestGroup(MockEntities.MockRankings.AsQueryable(), null, orderGroup.CreatedAt.AddMinutes(1));
+            orderGroup.CreateRequestGroup(MockEntities.MockRankings.AsQueryable(), new RequestExpiryResponse { RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer }, orderGroup.CreatedAt.AddMinutes(1));
             Assert.Equal(requestGroups, orderGroup.RequestGroups.Count);
             Assert.Equal(orderGroup.RequestGroups.First().Requests.Count, orderGroup.Orders.Count);
             Assert.Equal(expectedStatus, orderGroup.Status);
@@ -35,7 +36,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         public void CreateRequestGroupWithQuarantine(int requestGroups, OrderStatus expectedStatus, RequestStatus quarantinedStatus, RequestStatus requestedStatus)
         {
             var orderGroup = MockOrderGroups.Where(og => og.OrderGroupNumber == "JUSTCREATED").Single();
-            orderGroup.CreateRequestGroup(MockEntities.MockRankingsWithQuarantines.AsQueryable(), null, orderGroup.CreatedAt.AddMinutes(1));
+            orderGroup.CreateRequestGroup(MockEntities.MockRankingsWithQuarantines.AsQueryable(), new RequestExpiryResponse { RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer }, orderGroup.CreatedAt.AddMinutes(1));
             Assert.Equal(requestGroups, orderGroup.RequestGroups.Count);
             Assert.Equal(orderGroup.RequestGroups.Last().Requests.Count, orderGroup.Orders.Count);
             Assert.Equal(expectedStatus, orderGroup.Status);

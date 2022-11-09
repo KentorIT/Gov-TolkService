@@ -95,6 +95,23 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(100)]
         public string BrokerReferenceNumber { get; set; }
 
+        public RequestAnswerRuleType RequestAnswerRuleType { get; set; }
+
+        /// <summary>
+        /// The time (inclusive) when the request needs to be accepted. Only set if <see cref="RequestAnswerRuleType"/> is 1 or 2
+        /// </summary>
+        public DateTimeOffset? LastAcceptAt { get; set; }
+
+        public int? AcceptedBy { get; set; }
+
+        [ForeignKey(nameof(AcceptedBy))]
+        public AspNetUser AcceptingUser { get; set; }
+
+        public int? ImpersonatingAcceptedBy { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingAcceptedBy))]
+        public AspNetUser ImpersonatingAcceptingUser { get; set; }
+
         #region Status checks
 
         public bool IsAcceptedOrApproved

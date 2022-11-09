@@ -320,7 +320,7 @@ namespace Tolk.BusinessLogic.Services
                 throw new InvalidOperationException("Det går inte att tillsätta samma tolk som redan är tillsatt som extra tolk för samma tillfälle.");
             }
 
-            Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt, isChangeInterpreter: true, requestGroup: request.RequestGroup)
+            Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, changedAt, isChangeInterpreter: true, requestGroup: request.RequestGroup)
             {
                 Order = request.Order,
                 Status = RequestStatus.AcceptedNewInterpreterAppointed

@@ -4,6 +4,7 @@ using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Tests.TestHelpers;
+using Tolk.BusinessLogic.Utilities;
 using Xunit;
 
 namespace Tolk.BusinessLogic.Tests.Entities
@@ -288,10 +289,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData("2019-01-02", "2019-01-01", false)]
         public void CreateRequestValid(string expiry, string now, bool isTerminalRequest)
         {
-            DateTime? expiryDate = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null;
+            RequestExpiryResponse  response = new RequestExpiryResponse { ExpiryAt = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null ,RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer  };
             var nowDate = DateTime.Parse(now);
             var order = MockOrders.Last();
-            var request = order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), expiryDate, nowDate, isTerminalRequest);
+            var request = order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), response, nowDate, isTerminalRequest);
             Assert.Equal(RequestStatus.Created, request.Status);
         }
 
@@ -300,10 +301,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData("2019-01-01", "2019-01-02", true)]
         public void CreateRequestInValid(string expiry, string now, bool isTerminalRequest)
         {
-            DateTime? expiryDate = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null;
+            RequestExpiryResponse response = new RequestExpiryResponse { ExpiryAt = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null, RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer };
             var nowDate = DateTime.Parse(now);
             var order = MockOrders.Last();
-            Assert.Throws<InvalidOperationException>(() => order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), expiryDate, nowDate, isTerminalRequest));
+            Assert.Throws<InvalidOperationException>(() => order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), response, nowDate, isTerminalRequest));
         }
 
         [Theory]
@@ -317,7 +318,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var order = MockOrders.Last();
             order.CustomerOrganisationId = customer;
             order.RegionId = region;
-            order.CreateRequest(MockEntities.MockRankingsWithQuarantines.Where(r => r.RegionId == region).AsQueryable(), null, new DateTimeOffset(2018, 09, 07, 0, 0, 0, new TimeSpan(02, 00, 00)), false);
+            order.CreateRequest(MockEntities.MockRankingsWithQuarantines.Where(r => r.RegionId == region).AsQueryable(), new RequestExpiryResponse { RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer}, new DateTimeOffset(2018, 09, 07, 0, 0, 0, new TimeSpan(02, 00, 00)), false);
             Assert.Equal(requests, order.Requests.Count);
             Assert.Equal(expectedStatus, order.Status);
         }

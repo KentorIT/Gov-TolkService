@@ -71,6 +71,19 @@ namespace Tolk.BusinessLogic.Services
                 }
             }
         }
+        public DateTime GetDateForANumberOfWorkdaysinFuture(DateTime start, int numberOfWorkdays)
+        {
+            int counter = 0;
+            DateTime resultingDate;
+            while (true)
+            {
+                resultingDate = start.AddDays(counter++);
+                if (numberOfWorkdays == GetNoOf24HsPeriodsWorkDaysBetween(start, resultingDate))
+                {
+                    return resultingDate;
+                }
+            }
+        }
 
         /// <summary>
         /// Returns -1 if firstDate > secondDate

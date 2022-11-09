@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -15,12 +16,14 @@ namespace Tolk.BusinessLogic.Entities
 
         internal RequestGroup() { }
 
-        internal RequestGroup(Ranking ranking, DateTimeOffset? expiry, DateTimeOffset creationTime, List<Request> requests, bool isTerminalRequest = false)
+        internal RequestGroup(Ranking ranking, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime, List<Request> requests, bool isTerminalRequest = false)
         {
             requests.ForEach(r => r.RequestGroup = this);
             Ranking = ranking;
             Status = RequestStatus.Created;
-            ExpiresAt = expiry;
+            ExpiresAt = newRequestExpiry.ExpiryAt;
+            LastAcceptAt = newRequestExpiry.LastAcceptedAt;
+            RequestAnswerRuleType = newRequestExpiry.RequestAnswerRuleType;
             CreatedAt = creationTime;
             IsTerminalRequest = isTerminalRequest;
             Requests = requests;

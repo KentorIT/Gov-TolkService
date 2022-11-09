@@ -404,5 +404,13 @@ namespace Tolk.BusinessLogic.Enums
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
         OrderGroupTerminatedDueToTerminatedFrameworkAgreement = 58,
+
+        [Description("Förfrågan skapad, kräver endast bekräftelse")]
+        [CustomName("request_created_requires_acceptance_only")]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [AvailableNotificationChannel(NotificationChannel.Webhook)]
+        [NotificationConsumerType(NotificationConsumerType.Broker)]
+        RequestCreatedForAcceptance = 59,
+
     }
 }

@@ -14,18 +14,20 @@ namespace Tolk.BusinessLogic.Entities
 
         public Request() { }
 
-        public Request(Ranking ranking, DateTimeOffset? expiry, DateTimeOffset creationTime, bool isTerminalRequest = false, bool isChangeInterpreter = false, RequestGroup requestGroup = null)
+        public Request(Ranking ranking, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime, bool isTerminalRequest = false, bool isChangeInterpreter = false, RequestGroup requestGroup = null)
         {
-            if (!isChangeInterpreter && expiry.HasValue && expiry < creationTime)
+            if (!isChangeInterpreter && newRequestExpiry.ExpiryAt.HasValue && newRequestExpiry.ExpiryAt < creationTime)
             {
                 throw new InvalidOperationException("The Request cannot have an expiry before the creation time.");
             }
             Ranking = ranking;
             Status = RequestStatus.Created;
-            ExpiresAt = expiry;
+            ExpiresAt = newRequestExpiry.ExpiryAt;
             CreatedAt = creationTime;
             IsTerminalRequest = isTerminalRequest;
             RequestGroup = requestGroup;
+            RequestAnswerRuleType = newRequestExpiry.RequestAnswerRuleType;
+            LastAcceptAt = newRequestExpiry.LastAcceptedAt;
         }
 
         internal Request(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
@@ -37,8 +39,8 @@ namespace Tolk.BusinessLogic.Entities
             QuarantineId = quarantine.QuarantineId;
         }
 
-        internal Request(Request originalRequest, DateTimeOffset? expiry, DateTimeOffset creationTime)
-            : this(originalRequest.Ranking, expiry, creationTime)
+        internal Request(Request originalRequest, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime)
+            : this(originalRequest.Ranking, newRequestExpiry, creationTime)
         {
             Interpreter = originalRequest.Interpreter;
             CompetenceLevel = originalRequest.CompetenceLevel;

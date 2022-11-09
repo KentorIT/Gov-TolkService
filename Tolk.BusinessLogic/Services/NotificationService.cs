@@ -148,15 +148,15 @@ namespace Tolk.BusinessLogic.Services
 
             string subject = $"Behörighet ändrad för tolkuppdrag boknings-ID {orderNumber}";
             NotificationType notificationType = NotificationType.RequisitionApprovalRightsRemoved;
-            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType) 
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType)
                 && !string.IsNullOrEmpty(previousContactUser?.Email))
-                {
-                    string body = $"Behörighet att granska rekvisition har ändrats. Du har inte längre denna behörighet för bokning {orderNumber}.";
-                    CreateEmail(previousContactUser.Email, subject,
-                        body + GoToOrderPlain(order.OrderId),
-                        HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(order.OrderId),
-                        notificationType);
-                }
+            {
+                string body = $"Behörighet att granska rekvisition har ändrats. Du har inte längre denna behörighet för bokning {orderNumber}.";
+                CreateEmail(previousContactUser.Email, subject,
+                    body + GoToOrderPlain(order.OrderId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(order.OrderId),
+                    notificationType);
+            }
             notificationType = NotificationType.RequisitionApprovalRightsAdded;
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType)
             && !string.IsNullOrEmpty(currentContactUser?.Email))
@@ -290,19 +290,24 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestCreated), nameof(NotificationService));
             var order = request.Order;
-            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
-            if (email != null)
+            var answerLevel = EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(request.RequestAnswerRuleType);
+            switch (answerLevel)
             {
-                string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}\n\nObservera att bekräftelse måste lämnas via avropstjänsten.\n\n" +
-                    $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}\n" +
-                    $"\tRegion: {order.Region.Name}\n" +
-                    $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
-                    $"\tStart: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                    $"\tSlut: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                    $"\tSvara senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
-                    GoToRequestPlain(request.RequestId);
+                case RequiredAnswerLevel.Full:
+                    {
+                        var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
+                        if (email != null)
+                        {
+                            string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}\n\nObservera att bekräftelse måste lämnas via avropstjänsten.\n\n" +
+                                $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}\n" +
+                                $"\tRegion: {order.Region.Name}\n" +
+                                $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                                $"\tStart: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                                $"\tSlut: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                                $"\tSvara senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
+                                GoToRequestPlain(request.RequestId);
 
-                string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
+                            string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
 <ul>
 <li>Uppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}</li>
 <li>Region: {order.Region.Name}</li>
@@ -312,24 +317,61 @@ namespace Tolk.BusinessLogic.Services
 <li>Svara senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
 </ul>
 <div>{GoToRequestButton(request.RequestId, textOverride: "Till förfrågan", autoBreakLines: false)}</div>";
-                CreateEmail(
-                    email.ContactInformation,
-                    $"Ny bokningsförfrågan registrerad: {order.OrderNumber}",
-                    bodyPlain,
-                    bodyHtml,
-                    NotificationType.RequestCreated,
-                    true
-                );
-            }
-            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Webhook);
-            if (webhook != null)
-            {
-                CreateWebHookCall(
-                    await GetRequestModel(request),
-                    webhook.ContactInformation,
-                    NotificationType.RequestCreated,
-                    webhook.RecipientUserId
-                );
+                            CreateEmail(
+                                email.ContactInformation,
+                                $"Ny bokningsförfrågan registrerad: {order.OrderNumber}",
+                                bodyPlain,
+                                bodyHtml,
+                                email.NotificationType,
+                                true
+                            );
+                        }
+                        var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Webhook);
+                        if (webhook != null)
+                        {
+                            CreateWebHookCall(
+                                await GetRequestModel(request),
+                                webhook.ContactInformation,
+                                webhook.NotificationType,
+                                webhook.RecipientUserId
+                            );
+                        }
+                        break;
+                    }
+                case RequiredAnswerLevel.Acceptance:
+                    {
+                        var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreatedForAcceptance, NotificationChannel.Email);
+                        if (email != null)
+                        {
+                            string bodyPlain = $"SKRIV ETT BRA MEDDELANDE, MED LÄNKAR OCH GREJER!" +
+                                GoToRequestPlain(request.RequestId);
+
+                            string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
+SKRIV ETT BRA MEDDELANDE HÄR!
+<div>{GoToRequestButton(request.RequestId, textOverride: "Till förfrågan", autoBreakLines: false)}</div>";
+                            CreateEmail(
+                                email.ContactInformation,
+                                $"Ny bokningsförfrågan registrerad: {order.OrderNumber}",
+                                bodyPlain,
+                                bodyHtml,
+                                email.NotificationType,
+                                true
+                            );
+                        }
+                        var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreatedForAcceptance, NotificationChannel.Webhook);
+                        if (webhook != null)
+                        {
+                            CreateWebHookCall(
+                                await GetRequestModel(request),
+                                webhook.ContactInformation,
+                                webhook.NotificationType,
+                                webhook.RecipientUserId
+                            );
+                        }
+                        break;
+                    }
+                default:
+                    throw new NotSupportedException();
             }
         }
 
@@ -337,18 +379,23 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupCreated), nameof(NotificationService));
             var orderGroup = requestGroup.OrderGroup;
-            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Email);
-            if (email != null)
+            var answerLevel = EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(requestGroup.RequestAnswerRuleType);
+            switch (answerLevel)
             {
-                string bodyPlain = $"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {orderGroup.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {orderGroup.CustomerOrganisation.PeppolId}\n\nObservera att bekräftelse måste lämnas via avropstjänsten.\n\n" +
-                    $"\tUppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}\n" +
-                    $"\tRegion: {orderGroup.Region.Name}\n" +
-                    $"\tSpråk: {orderGroup.LanguageName}\n" +
-                    $"\tTillfällen: \n" +
-                    $"{GetOccurences(orderGroup.Orders)}\n" +
-                    $"\tSvara senast: {requestGroup.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
-                    GoToRequestGroupPlain(requestGroup.RequestGroupId);
-                string bodyHtml = $@"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {orderGroup.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {orderGroup.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
+                case RequiredAnswerLevel.Full:
+                    {
+                        var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Email);
+                        if (email != null)
+                        {
+                            string bodyPlain = $"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {orderGroup.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {orderGroup.CustomerOrganisation.PeppolId}\n\nObservera att bekräftelse måste lämnas via avropstjänsten.\n\n" +
+                                $"\tUppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}\n" +
+                                $"\tRegion: {orderGroup.Region.Name}\n" +
+                                $"\tSpråk: {orderGroup.LanguageName}\n" +
+                                $"\tTillfällen: \n" +
+                                $"{GetOccurences(orderGroup.Orders)}\n" +
+                                $"\tSvara senast: {requestGroup.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
+                                GoToRequestGroupPlain(requestGroup.RequestGroupId);
+                            string bodyHtml = $@"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {orderGroup.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {orderGroup.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
                     <ul>
                     <li>Uppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}</li>
                     <li>Region: {orderGroup.Region.Name}</li>
@@ -357,24 +404,60 @@ namespace Tolk.BusinessLogic.Services
                     <li>Svara senast: {requestGroup.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
                     </ul>
                     <div>{GoToRequestGroupButton(requestGroup.RequestGroupId, textOverride: "Till förfrågan", autoBreakLines: false)}</div>";
-                CreateEmail(
-                    email.ContactInformation,
-                    $"Ny sammanhållen bokningsförfrågan registrerad: {orderGroup.OrderGroupNumber}",
-                    bodyPlain,
-                    bodyHtml,
-                    NotificationType.RequestGroupCreated,
-                    true
-                );
-            }
-            var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Webhook);
-            if (webhook != null)
-            {
-                CreateWebHookCall(
-                    await GetRequestGroupModel(requestGroup),
-                    webhook.ContactInformation,
-                    NotificationType.RequestGroupCreated,
-                    webhook.RecipientUserId
-                );
+                            CreateEmail(
+                                email.ContactInformation,
+                                $"Ny sammanhållen bokningsförfrågan registrerad: {orderGroup.OrderGroupNumber}",
+                                bodyPlain,
+                                bodyHtml,
+                                email.NotificationType,
+                                true
+                            );
+                        }
+                        var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Webhook);
+                        if (webhook != null)
+                        {
+                            CreateWebHookCall(
+                                await GetRequestGroupModel(requestGroup),
+                                webhook.ContactInformation,
+                                webhook.NotificationType,
+                                webhook.RecipientUserId
+                            );
+                        }
+                        break;
+                    }
+                case RequiredAnswerLevel.Acceptance:
+                    {
+                        var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Email);
+                        if (email != null)
+                        {
+                            string bodyPlain = $"SKRIV ETT BRA MEDDELANDE, MED LÄNKAR OCH GREJER!" +
+                                GoToRequestGroupPlain(requestGroup.RequestGroupId);
+                            string bodyHtml = $@"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {orderGroup.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {orderGroup.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
+SKRIV ETT BRA MEDDELANDE HÄR!
+                    <div>{GoToRequestGroupButton(requestGroup.RequestGroupId, textOverride: "Till förfrågan", autoBreakLines: false)}</div>";
+                            CreateEmail(
+                                email.ContactInformation,
+                                $"Ny sammanhållen bokningsförfrågan registrerad: {orderGroup.OrderGroupNumber}",
+                                bodyPlain,
+                                bodyHtml,
+                                email.NotificationType,
+                                true
+                            );
+                        }
+                        var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Webhook);
+                        if (webhook != null)
+                        {
+                            CreateWebHookCall(
+                                await GetRequestGroupModel(requestGroup),
+                                webhook.ContactInformation,
+                                webhook.NotificationType,
+                                webhook.RecipientUserId
+                            );
+                        }
+                        break;
+                    }
+                default:
+                    throw new NotSupportedException();
             }
         }
 
@@ -1305,7 +1388,7 @@ Sammanställning:
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
                 var body = $"Bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
-                CreateEmail(GetRecipientsFromOrder(request.Order), 
+                CreateEmail(GetRecipientsFromOrder(request.Order),
                     $"Bokningsförfrågan {orderNumber} har avbrutits på grund av avslutat ramavtal",
                     body + GoToOrderPlain(request.Order.OrderId),
                     HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
@@ -1334,7 +1417,7 @@ Sammanställning:
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
                 var body = $"Sammanhållen bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
-                CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup), 
+                CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
                     $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av avslutat ramavtal",
                     body + GoToOrderGroupPlain(requestGroup.OrderGroupId),
                     HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroupId),
@@ -2046,7 +2129,7 @@ Sammanställning:
             };
         }
 
-        private  bool NotficationTypeExcludedForCustomer(NotificationType nt) => !string.IsNullOrWhiteSpace(_tolkBaseOptions.ExcludedNotificationTypesForCustomer) && _tolkBaseOptions.ExcludedNotificationTypesForCustomer.Split(",").Any(e => int.Parse(e) == (int)nt);
+        private bool NotficationTypeExcludedForCustomer(NotificationType nt) => !string.IsNullOrWhiteSpace(_tolkBaseOptions.ExcludedNotificationTypesForCustomer) && _tolkBaseOptions.ExcludedNotificationTypesForCustomer.Split(",").Any(e => int.Parse(e) == (int)nt);
 
         private static bool NotficationTypeAvailable(NotificationType nt, NotificationConsumerType consumer, NotificationChannel channel) => nt.GetAvailableNotificationChannels().Any(ch => ch == channel) && nt.GetAvailableNotificationConsumerTypes().Any(c => c == consumer);
 
