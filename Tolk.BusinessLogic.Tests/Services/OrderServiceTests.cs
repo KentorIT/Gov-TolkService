@@ -124,9 +124,9 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2022-11-08 14:00:01", "2022-11-09 12:30:00", FrameworkAgreementResponseRuleset.VersionTwo, null, null, RequestAnswerRuleType.ResponseSetByCustomer)]
         public void CalculateExpiryForNewRequestTest(string now, string startTime, FrameworkAgreementResponseRuleset ruleset, string expectedExpiry, string expectedLastAcceptBy, RequestAnswerRuleType answerRuleType)
         {
-            DateTimeOffset start = DateTimeOffset.Parse(startTime);
-            DateTimeOffset? expectedExpiryTime = !string.IsNullOrEmpty(expectedExpiry) ? DateTimeOffset.Parse(expectedExpiry) : null;
-            DateTimeOffset? expectedLastAcceptByTime = !string.IsNullOrEmpty(expectedLastAcceptBy) ? DateTimeOffset.Parse(expectedLastAcceptBy) : null;
+            DateTimeOffset start = DateTimeOffset.Parse(startTime).ToDateTimeOffsetSweden();
+            DateTimeOffset? expectedExpiryTime = !string.IsNullOrEmpty(expectedExpiry) ? DateTimeOffset.Parse(expectedExpiry).ToDateTimeOffsetSweden() : null;
+            DateTimeOffset? expectedLastAcceptByTime = !string.IsNullOrEmpty(expectedLastAcceptBy) ? DateTimeOffset.Parse(expectedLastAcceptBy).ToDateTimeOffsetSweden() : null;
 
             using var tolkDbContext = CreateTolkDbContext();
             var service = CreateOrderService(tolkDbContext, now);
