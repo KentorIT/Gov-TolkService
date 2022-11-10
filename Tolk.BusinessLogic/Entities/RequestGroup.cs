@@ -235,10 +235,10 @@ namespace Tolk.BusinessLogic.Entities
             Attachments = attachedFiles;
             AnswerProcessedAt = RequiresApproval(hasTravelCosts) ? null : (DateTimeOffset?)acceptTime;
             OrderGroup.SetStatus(RequiresApproval(hasTravelCosts) ?
-                partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestRespondedAwaitingApproval :
+                partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestResponded :
                 partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.ResponseAccepted, false);
             SetStatus(RequiresApproval(hasTravelCosts) ?
-                partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.AcceptedAwaitingApproval :
+                partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.Accepted :
                 partialAnswer ? RequestStatus.PartiallyApproved : RequestStatus.Approved, false);
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
             BrokerReferenceNumber = brokerReferenceNumber;

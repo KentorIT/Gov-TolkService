@@ -32,7 +32,7 @@ namespace Tolk.BusinessLogic.Tests.Models
                 Status = RequestStatus.Approved,
                 Order = new Order(MockOrder)
                 {
-                    Status = OrderStatus.RequestRespondedAwaitingApproval,
+                    Status = OrderStatus.RequestResponded,
                 },
                 Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1 },
             };

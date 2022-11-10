@@ -36,7 +36,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     Status = RequestStatus.Approved,
                     Order = new Order(MockOrder)
                     {
-                        Status = OrderStatus.RequestRespondedAwaitingApproval,
+                        Status = OrderStatus.RequestResponded,
                     },
                 },
             };

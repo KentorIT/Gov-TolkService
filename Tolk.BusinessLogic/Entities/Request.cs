@@ -165,7 +165,7 @@ namespace Tolk.BusinessLogic.Entities
         public bool CanCancelFromGroup => Order.Status == OrderStatus.Requested && IsToBeProcessedByBroker && Order.OrderGroupId.HasValue;
 
         private bool CanCancelRequestNotBelongsToGroup => !Order.OrderGroupId.HasValue &&
-            (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestRespondedAwaitingApproval
+            (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestResponded
             || Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted) &&
             (IsToBeProcessedByBroker || IsAcceptedOrApproved);
 
@@ -291,8 +291,8 @@ namespace Tolk.BusinessLogic.Entities
 
             var requiresAccept = overrideRequireAccept || RequiresAccept;
 
-            Status = requiresAccept ? RequestStatus.AcceptedAwaitingApproval : RequestStatus.Approved;
-            Order.Status = requiresAccept ? OrderStatus.RequestRespondedAwaitingApproval : OrderStatus.ResponseAccepted;
+            Status = requiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
+            Order.Status = requiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
             AnswerProcessedAt = requiresAccept ? null : (DateTimeOffset?)acceptTime;
         }
 
@@ -459,8 +459,8 @@ namespace Tolk.BusinessLogic.Entities
             PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
             if (RequiresAccept)
             {
-                Status = RequestStatus.AcceptedAwaitingApproval;
-                Order.Status = OrderStatus.RequestRespondedAwaitingApproval;
+                Status = RequestStatus.Accepted;
+                Order.Status = OrderStatus.RequestResponded;
             }
             else
             {

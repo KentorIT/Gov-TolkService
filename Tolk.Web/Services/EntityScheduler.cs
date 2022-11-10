@@ -122,21 +122,21 @@ namespace Tolk.Web.Services
 
             try
             {
-                if (nextRunIsNotifications)
-                {
-                    //Separate these, to get a better parallellism for the notifications
-                    // They fail to run together with the other Continous jobs, due to recurring deadlocks around the email table...
+                //if (nextRunIsNotifications)
+                //{
+                //    //Separate these, to get a better parallellism for the notifications
+                //    // They fail to run together with the other Continous jobs, due to recurring deadlocks around the email table...
 
-                    List<Task> tasksToRunNotifications = new List<Task>
-                    {
-                        Task.Factory.StartNew(() => _services.GetRequiredService<EmailService>().SendEmails(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current),
-                        Task.Factory.StartNew(() => _services.GetRequiredService<WebHookService>().CallWebHooks(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current),
-                        Task.Factory.StartNew(() => _services.GetRequiredService<PeppolService>().SendOrderAgreements(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current)
-                    };
-                    await Task.Factory.ContinueWhenAny(tasksToRunNotifications.ToArray(), r => { });
-                }
-                else
-                {
+                //    List<Task> tasksToRunNotifications = new List<Task>
+                //    {
+                //        Task.Factory.StartNew(() => _services.GetRequiredService<EmailService>().SendEmails(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current),
+                //        Task.Factory.StartNew(() => _services.GetRequiredService<WebHookService>().CallWebHooks(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current),
+                //        Task.Factory.StartNew(() => _services.GetRequiredService<PeppolService>().SendOrderAgreements(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current)
+                //    };
+                //    await Task.Factory.ContinueWhenAny(tasksToRunNotifications.ToArray(), r => { });
+                //}
+                //else
+                //{
                     //would like to have a timer here, to make it possible to get tighter runs if the last run ran for longer than 10 seconds or somethng...
                     using var serviceScope = _services.CreateScope();
                     Task[] tasksToRun;
@@ -153,30 +153,30 @@ namespace Tolk.Web.Services
                             RunAgreementValidation(serviceScope.ServiceProvider),
                         };
                     }
-                    else if (_clock.SwedenNow > nextDailyRunTime)
-                    {
-                        nextDailyRunTime = nextDailyRunTime.AddDays(1);
-                        nextDailyRunTime -= nextDailyRunTime.TimeOfDay;
-                        nextDailyRunTime = nextDailyRunTime.AddHours(timeToRunDailyJobs);
-                        _logger.LogTrace("Running DailyRunTime, next run on {0}", nextDailyRunTime);
+                    //else if (_clock.SwedenNow > nextDailyRunTime)
+                    //{
+                    //    nextDailyRunTime = nextDailyRunTime.AddDays(1);
+                    //    nextDailyRunTime -= nextDailyRunTime.TimeOfDay;
+                    //    nextDailyRunTime = nextDailyRunTime.AddHours(timeToRunDailyJobs);
+                    //    _logger.LogTrace("Running DailyRunTime, next run on {0}", nextDailyRunTime);
 
-                        tasksToRun = new Task[]
-                        {
-                            RunDailyJobs(serviceScope.ServiceProvider),
-                        };
-                    }
-                    else
-                    {
-                        tasksToRun = new Task[]
-                        {
-                            RunContinousJobs(serviceScope.ServiceProvider),
-                        };
-                    }
-                    if (!Task.WaitAll(tasksToRun, allotedTimeAllTasks))
-                    {
-                        throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTimeAllTasks / 1000} seconds");
-                    }
-                }
+                    //    tasksToRun = new Task[]
+                    //    {
+                    //        RunDailyJobs(serviceScope.ServiceProvider),
+                    //    };
+                    //}
+                    //else
+                    //{
+                    //    tasksToRun = new Task[]
+                    //    {
+                    //        RunContinousJobs(serviceScope.ServiceProvider),
+                    //    };
+                    //}
+                    //if (!Task.WaitAll(tasksToRun, allotedTimeAllTasks))
+                    //{
+                    //    throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTimeAllTasks / 1000} seconds");
+                    //}
+                //}
             }
             catch (Exception ex)
             {

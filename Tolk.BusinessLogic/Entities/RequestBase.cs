@@ -121,7 +121,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool IsAccepted
         {
-            get => Status == RequestStatus.AcceptedAwaitingApproval || Status == RequestStatus.AcceptedNewInterpreterAppointed;
+            get => Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed;
         }
 
         public bool StatusNotToBeDisplayedForBroker

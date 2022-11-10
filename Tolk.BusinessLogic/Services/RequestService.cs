@@ -75,7 +75,7 @@ namespace Tolk.BusinessLogic.Services
             //Create notification
             switch (request.Status)
             {
-                case RequestStatus.AcceptedAwaitingApproval:
+                case RequestStatus.Accepted:
                     _notificationService.RequestAccepted(request);
                     break;
                 case RequestStatus.Approved:
@@ -702,7 +702,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 requests = await _tolkDbContext.Requests.GetRequestsForOrder(request.Order.ExtraInterpreterOrder.OrderId).ToListAsync();
             }
-            return requests?.Where(r => r.Status == RequestStatus.AcceptedAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
+            return requests?.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
         }
 
         public async Task<RequestGroup> AddRequestsWithConfirmationListsToRequestGroup(RequestGroup requestGroup)
