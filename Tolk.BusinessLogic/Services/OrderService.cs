@@ -607,9 +607,9 @@ namespace Tolk.BusinessLogic.Services
                 RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer
             };
             //1. if sweden now is weekend or holiday, move up to first workday, and set 00:00 as time
-            if (!_dateCalculationService.IsWorkingDay(swedenNow.DateTime))
+            if (!_dateCalculationService.IsWorkingDay(swedenNow.Date))
             {
-                swedenNow = _dateCalculationService.GetFirstWorkDay(swedenNow.DateTime).Date.ToDateTimeOffsetSweden();
+                swedenNow = _dateCalculationService.GetFirstWorkDay(swedenNow.Date).Date.ToDateTimeOffsetSweden();
             }
             if (swedenNow.Date < startDateTime.Date)
             {
