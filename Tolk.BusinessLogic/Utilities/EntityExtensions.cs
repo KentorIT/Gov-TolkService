@@ -66,22 +66,31 @@ namespace Tolk.BusinessLogic.Utilities
         /// <summary>
         /// Expires due to:
         /// 1. ExpiresAt has passed 
-        /// 2. Customer has not set new expire time and order is starting 
-        /// 3. Customer has not answered a responded request within latest answer time
+        /// 2. LastAcceptAt has passed 
+        /// 3. Customer has not set new expire time and order is starting 
+        /// 4. Customer has not answered a responded request within latest answer time
         /// Also include requests that belong to approved requestgroup if LatestAnswerTimeForCustomer is set (interpreter changed)
         /// </summary>
         public static IQueryable<Request> ExpiredRequests(this IQueryable<Request> requests, DateTimeOffset now)
-        {
-            return requests.Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.LatestAnswerTimeForCustomer.HasValue && r.RequestGroup.Status == RequestStatus.Approved)) &&
-                    ((r.ExpiresAt <= now && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)) ||
-                    (r.Order.StartAt <= now && r.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
-                    (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= now && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed))));
-        }
+            => requests.Where(r => 
+                    (r.RequestGroupId == null || 
+                        (r.RequestGroupId.HasValue && r.LatestAnswerTimeForCustomer.HasValue && r.RequestGroup.Status == RequestStatus.Approved)
+                    ) && (
+                        (r.ExpiresAt <= now && 
+                            (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.AcceptedAwaitingInterpreter)
+                        ) ||
+                        (r.LastAcceptAt <= now &&
+                            (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)
+                        ) ||
+                        (r.Order.StartAt <= now && r.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
+                        (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= now && 
+                            (r.Status == RequestStatus.AcceptedAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                        )
+                    )
+                );
 
         public static Task<Request> GetExpiredRequest(this IQueryable<Request> requests, DateTimeOffset now, int requestId)
-        {
-            return requests.ExpiredRequests(now).Include(r => r.Ranking).Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation).SingleAsync(r => r.RequestId == requestId);
-        }
+            => requests.ExpiredRequests(now).Include(r => r.Ranking).Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation).SingleAsync(r => r.RequestId == requestId);
 
         public static IQueryable<Request> GetRequestsFromTerminatedFrameworkAgreement(this IQueryable<Request> requests, int frameworkAgreementId, IEnumerable<RequestStatus> openRequestStatuses)
             => requests
@@ -122,16 +131,22 @@ namespace Tolk.BusinessLogic.Utilities
         /// 3. Customer has not answered a responded requestgroup within latest answer time
         /// </summary>
         public static IQueryable<RequestGroup> ExpiredRequestGroups(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now)
-        {
-            return requestGroups.Where(rg => (rg.ExpiresAt <= now && (rg.Status == RequestStatus.Created || rg.Status == RequestStatus.Received)) ||
-                    (rg.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= now) && rg.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
-                    (rg.LatestAnswerTimeForCustomer.HasValue && rg.LatestAnswerTimeForCustomer <= now && (rg.Status == RequestStatus.Accepted || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed)));
-        }
+            => requestGroups.Where(rg => 
+                (rg.ExpiresAt <= now && 
+                    (rg.Status == RequestStatus.Created || rg.Status == RequestStatus.Received || rg.Status == RequestStatus.AcceptedAwaitingInterpreter)
+                ) ||
+                (rg.LastAcceptAt <= now &&
+                    (rg.Status == RequestStatus.Created || rg.Status == RequestStatus.Received)
+                ) ||
+                (rg.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= now) && 
+                    rg.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
+                (rg.LatestAnswerTimeForCustomer.HasValue && rg.LatestAnswerTimeForCustomer <= now && 
+                    (rg.Status == RequestStatus.AcceptedAwaitingApproval || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                )
+            );
 
         public static Task<RequestGroup> GetExpiredRequestGroup(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now, int requestGroupId)
-        {
-            return requestGroups.ExpiredRequestGroups(now).Include(r => r.Ranking).Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation).SingleAsync(r => r.RequestGroupId == requestGroupId);
-        }
+            => requestGroups.ExpiredRequestGroups(now).Include(r => r.Ranking).Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation).SingleAsync(r => r.RequestGroupId == requestGroupId);
 
         /// <summary>
         /// Requests that are responded but not answered by customer and order is starting 
@@ -140,8 +155,8 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<Request> NonAnsweredRespondedRequests(this IQueryable<Request> requests, DateTimeOffset now)
         {
             return requests.Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status == RequestStatus.Approved)) &&
-                    (r.Order.Status == OrderStatus.RequestResponded || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
-                    r.Order.StartAt <= now && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed));
+                    (r.Order.Status == OrderStatus.RequestRespondedAwaitingApproval || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
+                    r.Order.StartAt <= now && (r.Status == RequestStatus.AcceptedAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed));
         }
 
         public static Task<Request> GetNonAnsweredRespondedRequest(this IQueryable<Request> requests, DateTimeOffset now, int requestId)
@@ -154,8 +169,8 @@ namespace Tolk.BusinessLogic.Utilities
         /// </summary>
         public static IQueryable<RequestGroup> NonAnsweredRespondedRequestGroups(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now)
         {
-            return requestGroups.Where(rg => (rg.OrderGroup.Status == OrderStatus.RequestResponded || rg.OrderGroup.Status == OrderStatus.RequestRespondedNewInterpreter) &&
-                    rg.OrderGroup.Orders.Any(o => o.StartAt <= now) && (rg.Status == RequestStatus.Accepted || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed));
+            return requestGroups.Where(rg => (rg.OrderGroup.Status == OrderStatus.RequestRespondedAwaitingApproval || rg.OrderGroup.Status == OrderStatus.RequestRespondedNewInterpreter) &&
+                    rg.OrderGroup.Orders.Any(o => o.StartAt <= now) && (rg.Status == RequestStatus.AcceptedAwaitingApproval || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed));
         }
 
         public static Task<RequestGroup> GetNonAnsweredRespondedRequestGroup(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now, int requestGroupId)
@@ -170,7 +185,7 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<Request> NonAnsweredRespondedRequestsToBeReminded(this IQueryable<Request> requests, DateTimeOffset now)
         {
             return requests.GetRequestsWithBaseIncludes().Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status == RequestStatus.Approved))
-                  && r.Order.StartAt > now && (r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed));
+                  && r.Order.StartAt > now && (r.Status == RequestStatus.AcceptedAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed));
         }
 
         /// <summary>
@@ -178,7 +193,7 @@ namespace Tolk.BusinessLogic.Utilities
         /// </summary>
         public static IQueryable<RequestGroup> NonAnsweredRespondedRequestGroupsToBeReminded(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now)
         {
-            return requestGroups.GetRequestGroupsWithBaseIncludes().Where(rg => rg.OrderGroup.Orders.Any(o => o.StartAt > now) && (rg.Status == RequestStatus.Accepted || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed));
+            return requestGroups.GetRequestGroupsWithBaseIncludes().Where(rg => rg.OrderGroup.Orders.Any(o => o.StartAt > now) && (rg.Status == RequestStatus.AcceptedAwaitingApproval || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed));
         }
 
         public static IQueryable<Request> CompletedRequests(this IQueryable<Request> requests, DateTimeOffset now)

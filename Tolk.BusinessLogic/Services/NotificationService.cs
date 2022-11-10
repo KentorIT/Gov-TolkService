@@ -1167,7 +1167,7 @@ Sammanställning:
 
             switch (request.Status)
             {
-                case RequestStatus.Accepted:
+                case RequestStatus.AcceptedAwaitingApproval:
                     notificationType = NotificationType.ReplamentOrderAccepted;
                     if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
                     {

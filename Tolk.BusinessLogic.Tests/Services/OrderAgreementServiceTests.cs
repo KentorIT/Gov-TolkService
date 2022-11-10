@@ -68,7 +68,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 {
                     CustomerOrganisationId = 1,
                     OrderNumber = OrderNumber,
-                    Status = OrderStatus.RequestResponded,
+                    Status = OrderStatus.RequestRespondedAwaitingApproval,
                     EndAt = DateTime.Parse("2018-12-10 10:00:00").ToDateTimeOffsetSweden()
                 },
                 Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1 },

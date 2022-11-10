@@ -8,7 +8,7 @@ namespace Tolk.BusinessLogic.Tests.Utilities
     public class EnumHelperTests
     {
         [Theory]
-        [InlineData(NegotiationState.UnderNegotiation, 6)]
+        [InlineData(NegotiationState.UnderNegotiation, 7)]
         [InlineData(NegotiationState.ContractValid, 4)]
         [InlineData(NegotiationState.TerminatedPrematurely, 10)]
         public void GetEnumsWithParent(NegotiationState type, int expected)

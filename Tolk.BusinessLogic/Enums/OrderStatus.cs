@@ -17,9 +17,9 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Bokningsförfrågan skickad")]
         [Parent(NegotiationState.UnderNegotiation)]
         Requested = 2,
-        [Description("Tolk är tillsatt")]
+        [Description("Tolk är tillsatt, med resekostnader som behöver godkännas")]
         [Parent(NegotiationState.UnderNegotiation)]
-        RequestResponded = 3,
+        RequestRespondedAwaitingApproval = 3,
         [Description("Tillsättning är godkänd")]
         [Parent(NegotiationState.ContractValid)]
         ResponseAccepted = 4,
@@ -64,5 +64,9 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Bokningsförfrågan avbruten eftersom ramavtalet löpte ut")]
         [Parent(NegotiationState.TerminatedPrematurely)]
         TerminatedDueToTerminatedFrameworkAgreement = 20,
+        [Description("Förfrågan bekräftad av förmedling, inväntar tolktillsättning")]
+        [Parent(NegotiationState.UnderNegotiation)]
+        RequestRespondedAwaitingInterpreter = 21,
+
     }
 }
