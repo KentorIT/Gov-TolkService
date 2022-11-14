@@ -81,7 +81,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public RequestGroup ActiveUnAnsweredRequestGroup => RequestGroups.SingleOrDefault(r => r.IsToBeProcessedByBroker);
 
-        public RequestGroup ActiveRequestToBeProcessedForCustomer => RequestGroups.SingleOrDefault(r => r.IsAccepted);
+        public RequestGroup ActiveRequestToBeProcessedForCustomer => RequestGroups.SingleOrDefault(r => r.IsAwaitingApproval);
 
         public Order FirstOrder => Orders?.OrderBy(o => o.StartAt).FirstOrDefault();
 

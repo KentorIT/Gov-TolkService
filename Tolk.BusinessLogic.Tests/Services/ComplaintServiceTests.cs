@@ -37,7 +37,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData(RequestStatus.Accepted)]
+        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
         [InlineData(RequestStatus.DeclinedByBroker)]
         public void Create_InvalidStatus(RequestStatus status)
         {

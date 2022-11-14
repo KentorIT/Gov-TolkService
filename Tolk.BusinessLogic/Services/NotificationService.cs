@@ -427,7 +427,7 @@ SKRIV ETT BRA MEDDELANDE HÄR!
                     }
                 case RequiredAnswerLevel.Acceptance:
                     {
-                        var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Email);
+                        var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreatedForAcceptance, NotificationChannel.Email);
                         if (email != null)
                         {
                             string bodyPlain = $"SKRIV ETT BRA MEDDELANDE, MED LÄNKAR OCH GREJER!" +
@@ -444,7 +444,7 @@ SKRIV ETT BRA MEDDELANDE HÄR!
                                 true
                             );
                         }
-                        var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreated, NotificationChannel.Webhook);
+                        var webhook = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreatedForAcceptance, NotificationChannel.Webhook);
                         if (webhook != null)
                         {
                             CreateWebHookCall(
@@ -1167,7 +1167,7 @@ Sammanställning:
 
             switch (request.Status)
             {
-                case RequestStatus.Accepted:
+                case RequestStatus.AcceptedAwaitingApproval:
                     notificationType = NotificationType.ReplamentOrderAccepted;
                     if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
                     {

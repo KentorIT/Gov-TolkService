@@ -165,12 +165,12 @@ namespace Tolk.BusinessLogic.Entities
         public bool CanCancelFromGroup => Order.Status == OrderStatus.Requested && IsToBeProcessedByBroker && Order.OrderGroupId.HasValue;
 
         private bool CanCancelRequestNotBelongsToGroup => !Order.OrderGroupId.HasValue &&
-            (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestResponded
-            || Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted) &&
+            (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestRespondedAwaitingApproval
+            || Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted || Order.Status == OrderStatus.RequestRespondedAwaitingInterpreter) &&
             (IsToBeProcessedByBroker || IsAcceptedOrApproved);
 
         private bool CanCancelRequestBelongsToGroup => Order.OrderGroupId.HasValue &&
-            (Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted) &&
+            (Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted || Order.Status == OrderStatus.RequestRespondedAwaitingInterpreter) &&
             (Status == RequestStatus.Approved || Status == RequestStatus.AcceptedNewInterpreterAppointed);
 
         public bool CanCreateReplacementOrderOnCancel => !Order.OrderGroupId.HasValue && !Order.ReplacingOrderId.HasValue && Status == RequestStatus.Approved;
@@ -230,7 +230,7 @@ namespace Tolk.BusinessLogic.Entities
 
         internal override void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
-            if (!IsAccepted)
+            if (!IsAwaitingApproval)
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only Accepted requests can be approved");
             }
@@ -291,8 +291,8 @@ namespace Tolk.BusinessLogic.Entities
 
             var requiresAccept = overrideRequireAccept || RequiresAccept;
 
-            Status = requiresAccept ? RequestStatus.Accepted : RequestStatus.Approved;
-            Order.Status = requiresAccept ? OrderStatus.RequestResponded : OrderStatus.ResponseAccepted;
+            Status = requiresAccept ? RequestStatus.AcceptedAwaitingApproval : RequestStatus.Approved;
+            Order.Status = requiresAccept ? OrderStatus.RequestRespondedAwaitingApproval : OrderStatus.ResponseAccepted;
             AnswerProcessedAt = requiresAccept ? null : (DateTimeOffset?)acceptTime;
         }
 
@@ -459,8 +459,8 @@ namespace Tolk.BusinessLogic.Entities
             PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
             if (RequiresAccept)
             {
-                Status = RequestStatus.Accepted;
-                Order.Status = OrderStatus.RequestResponded;
+                Status = RequestStatus.AcceptedAwaitingApproval;
+                Order.Status = OrderStatus.RequestRespondedAwaitingApproval;
             }
             else
             {

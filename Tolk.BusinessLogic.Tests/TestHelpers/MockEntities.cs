@@ -271,7 +271,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = new DateTimeOffset(2018,09,18,13,00,00, new TimeSpan(02,00,00)),
                     Region = Region.Regions.Where(r => r.Name == "Västra Götaland").Single(),
                     Language = mockLanguages.Where(l => l.Name == "German").Single(),
-                    Status = OrderStatus.RequestResponded,
+                    Status = OrderStatus.RequestRespondedAwaitingApproval,
                     Requests = new List<Request>
                     {
                         new Request(mockRankings[0], new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2018,09,15,14,56,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay }, new DateTimeOffset(2018,06,26,14,56,00, new TimeSpan(02,00,00))),
@@ -474,7 +474,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     null,
                     CreateOrders( mockCustomerUsers[0], new List<int>(){ 1,2,3}, baseDate, Region.Regions.Where(r => r.Name == "Stockholm").Single(), mockLanguages.Where(l => l.Name == "English").Single(), OrderStatus.Requested, null ).ToList(),
                     mockRankings,
-                    new List<RequestStatus>(){ RequestStatus.Accepted },
+                    new List<RequestStatus>(){ RequestStatus.AcceptedAwaitingApproval },
                     AllowExceedingTravelCost.YesShouldBeApproved
                 ),
                 CreateOrderGroup(
@@ -547,7 +547,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = mockOrders[3].EndAt,
                     ExpiresAt = mockOrders[3].StartAt.AddDays(-10),
                     EntityNumber = mockOrders[3].OrderNumber,
-                    Status = RequestStatus.Accepted
+                    Status = RequestStatus.AcceptedAwaitingApproval
                 },
                 new RequestListRow
                 {
@@ -607,7 +607,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = mockOrders[5].EndAt,
                     EntityNumber = mockOrders[5].OrderNumber,
                     ExpiresAt = mockOrders[5].StartAt.AddDays(-10),
-                    Status = RequestStatus.Accepted
+                    Status = RequestStatus.AcceptedAwaitingApproval
                 },
             };
         }

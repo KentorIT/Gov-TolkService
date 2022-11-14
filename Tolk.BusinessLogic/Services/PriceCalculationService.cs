@@ -273,7 +273,7 @@ namespace Tolk.BusinessLogic.Services
         {
             //One broker fee per day
             int days = GetNoOfDays(startAt, endAt);
-#warning Do we caculate the broker fee from the correct date?
+#warning Do we caculate the broker fee from the correct date? Shoud be now?
             return _cacheService.BrokerFeeByRegionGroupAndServiceTypePriceList
                 .Where(br =>
                     br.CompetenceLevel == competenceLevel &&

@@ -114,42 +114,25 @@ namespace Tolk.BusinessLogic.Entities
 
         #region Status checks
 
-        public bool IsAcceptedOrApproved
-        {
-            get => IsAccepted || Status == RequestStatus.Approved;
-        }
+        public bool IsAcceptedOrApproved 
+            => IsAwaitingApproval || Status == RequestStatus.Approved || Status == RequestStatus.AcceptedAwaitingInterpreter;        
 
-        public bool IsAccepted
-        {
-            get => Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed;
-        }
+        public bool IsAwaitingApproval
+            => Status == RequestStatus.AcceptedAwaitingApproval || Status == RequestStatus.AcceptedNewInterpreterAppointed;
 
-        public bool StatusNotToBeDisplayedForBroker
-        {
-            get => Status == RequestStatus.NoDeadlineFromCustomer || Status == RequestStatus.AwaitingDeadlineFromCustomer || Status == RequestStatus.InterpreterReplaced;
-        }
+        public bool CanDecline => IsToBeProcessedByBroker;
 
-        public bool CanDecline
-        {
-            get => IsToBeProcessedByBroker;
-        }
-
-        public bool CanApprove
-        {
-            get => IsAccepted;
-        }
+        public bool CanApprove => IsAwaitingApproval;
 
         public bool CanPrint => Status == RequestStatus.Approved || Status == RequestStatus.Delivered;
 
-        public bool CanDeny
-        {
-            get => IsAccepted;
-        }
+        public bool CanDeny  => IsAwaitingApproval;
 
-        public bool IsToBeProcessedByBroker
-        {
-            get => Status == RequestStatus.Created || Status == RequestStatus.Received;
-        }
+        public bool IsToBeProcessedByBroker 
+            => Status == RequestStatus.Created || Status == RequestStatus.Received || Status == RequestStatus.AcceptedAwaitingInterpreter;
+        #endregion
+
+        #region status-changing methods
 
         internal virtual void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
         {

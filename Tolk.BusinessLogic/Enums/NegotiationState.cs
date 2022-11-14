@@ -7,6 +7,7 @@ namespace Tolk.BusinessLogic.Enums
     {
         UnderNegotiation = 1,
         ContractValid = 2,
-        TerminatedPrematurely = 3
+        TerminatedPrematurely = 3,
+        ReplacedByOtherEntity = 4
     }
 }

@@ -185,7 +185,7 @@ namespace Tolk.BusinessLogic.Entities
 
         internal override void Approve(DateTimeOffset approveTime, int userId, int? impersonatorId)
         {
-            if (!IsAccepted)
+            if (!IsAwaitingApproval)
             {
                 throw new InvalidOperationException($"RequestGroup {RequestGroupId} is {Status}. Only Accepted RequestGroups can be approved");
             }
@@ -235,10 +235,10 @@ namespace Tolk.BusinessLogic.Entities
             Attachments = attachedFiles;
             AnswerProcessedAt = RequiresApproval(hasTravelCosts) ? null : (DateTimeOffset?)acceptTime;
             OrderGroup.SetStatus(RequiresApproval(hasTravelCosts) ?
-                partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestResponded :
+                partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestRespondedAwaitingApproval :
                 partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.ResponseAccepted, false);
             SetStatus(RequiresApproval(hasTravelCosts) ?
-                partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.Accepted :
+                partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.AcceptedAwaitingApproval :
                 partialAnswer ? RequestStatus.PartiallyApproved : RequestStatus.Approved, false);
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
             BrokerReferenceNumber = brokerReferenceNumber;

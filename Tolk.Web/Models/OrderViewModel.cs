@@ -181,7 +181,7 @@ namespace Tolk.Web.Models
 
         private bool AllowProcessingOrderBelongsToGroup => OrderGroupId.HasValue && RequestStatus == BusinessLogic.Enums.RequestStatus.AcceptedNewInterpreterAppointed;
 
-        private bool AllowProcessingOrderNotBelongsToGroup => !OrderGroupId.HasValue && (RequestStatus == BusinessLogic.Enums.RequestStatus.Accepted || RequestStatus == BusinessLogic.Enums.RequestStatus.AcceptedNewInterpreterAppointed);
+        private bool AllowProcessingOrderNotBelongsToGroup => !OrderGroupId.HasValue && (RequestStatus == BusinessLogic.Enums.RequestStatus.AcceptedAwaitingApproval || RequestStatus == BusinessLogic.Enums.RequestStatus.AcceptedNewInterpreterAppointed);
 
         [Display(Name = "Skapa ersättningsuppdrag")]
         public bool AddReplacementOrder { get; set; } = false;

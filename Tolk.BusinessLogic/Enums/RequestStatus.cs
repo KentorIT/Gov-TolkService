@@ -26,7 +26,7 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_answer_awaiting_approval")]
         [Description("Bekräftelse är skickad")]
         [Parent(NegotiationState.UnderNegotiation)]
-        Accepted = 4,
+        AcceptedAwaitingApproval = 4,
         [CustomName("request_answer_approved")]
         [Description("Tillsättning är godkänd")]
         [Parent(NegotiationState.ContractValid)]
@@ -57,7 +57,7 @@ namespace Tolk.BusinessLogic.Enums
         AcceptedNewInterpreterAppointed = 12,
         [CustomName("request_replaced_interpreter")]
         [Description("Tolk har ersatts")]
-        [Parent(NegotiationState.ContractValid)]
+        [Parent(NegotiationState.ReplacedByOtherEntity)]
         InterpreterReplaced = 13,
         [CustomName("request_cancelled_by_broker")]
         [Description("Uppdrag avbokat av förmedling")]
@@ -91,5 +91,9 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Förfrågan avbruten eftersom ramavtalet löpte ut")]
         [Parent(NegotiationState.TerminatedPrematurely)]
         TerminatedDueToTerminatedFrameworkAgreement = 22,
+        [CustomName("request_answer_awaiting_interpreter")]
+        [Description("Förfrågan bekräftad av förmedling, inväntar tolktillsättning")]
+        [Parent(NegotiationState.UnderNegotiation)]
+        AcceptedAwaitingInterpreter = 23,
     }
 }

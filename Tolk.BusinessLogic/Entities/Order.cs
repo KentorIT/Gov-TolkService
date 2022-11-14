@@ -85,7 +85,7 @@ namespace Tolk.BusinessLogic.Entities
                 if (value == OrderStatus.ResponseAccepted &&
                 //NEED TO ADD A CHECK IF REQUESTED, AND THE ALLOW CHECK IS FALSE
                     (!((base.Status == OrderStatus.Requested && !Requests.OrderBy(r => r.RequestId).Last().RequiresAccept) ||
-                        base.Status == OrderStatus.RequestResponded ||
+                        base.Status == OrderStatus.RequestRespondedAwaitingApproval ||
                         base.Status == OrderStatus.RequestRespondedNewInterpreter ||
                        (base.Status == OrderStatus.Requested && ReplacingOrderId.HasValue)) ||
                     Requests.Count(r => r.Status == RequestStatus.Approved) != 1))
