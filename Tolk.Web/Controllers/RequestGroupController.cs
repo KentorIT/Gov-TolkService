@@ -173,7 +173,7 @@ namespace Tolk.Web.Controllers
                 {
                     try
                     {
-                        await _requestService.AcceptGroup(
+                        await _requestService.AnswerGroup(
                             requestGroup,
                             _clock.SwedenNow,
                             User.GetUserId(),
