@@ -95,7 +95,7 @@ namespace Tolk.Web.Api.Controllers
                 }
                 try
                 {
-                    await _requestService.AcceptGroup(
+                    await _requestService.AnswerGroup(
                         requestGroup,
                         now,
                         user?.Id ?? apiUserId,
@@ -129,6 +129,48 @@ namespace Tolk.Web.Api.Controllers
             {
                 _logger.LogError(ex, "Failed to handle request group answer");
                 return ReturnError(ErrorCodes.UnspecifiedProblem);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att bekräfta att man accepterar det sammanhållna avropets krav, men utan tillsatt tolk")]
+        [OpenApiTag("Request")]
+        public async Task<IActionResult> Accept([FromBody] RequestGroupAcceptModel model)
+        {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
+            try
+            {
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+
+                var requestGroup = await _dbContext.RequestGroups.GetFullRequestGroupForApiWithBrokerAndOrderNumber(model.OrderGroupNumber, brokerId);
+                if (requestGroup == null)
+                {
+                    return ReturnError(ErrorCodes.RequestGroupNotFound);
+                }
+                if (!(requestGroup.Status == RequestStatus.Created || requestGroup.Status == RequestStatus.Received))
+                {
+                    return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
+                }
+                if (requestGroup.OrderGroup.SpecificCompetenceLevelRequired && model.CompetenceLevel == null)
+                {
+                    return ReturnError(ErrorCodes.AllRequirementsMustBeAnsweredOnAccept);
+                }
+                return ReturnError(ErrorCodes.UnspecifiedProblem, "Inte implementerat än...");
+                //TODO: ADD _requestService.AcceptGroup(...) HERE
+                //await _dbContext.SaveChangesAsync();
+                //return Ok(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
             }
         }
 

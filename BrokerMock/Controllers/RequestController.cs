@@ -249,6 +249,76 @@ namespace BrokerMock.Controllers
             }
             return new JsonResult("Success");
         }
+        [HttpPost]
+        public async Task<JsonResult> CreatedRequiresAcceptance([FromBody] RequestModel payload)
+        {
+            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var apiKey);
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Boknings-ID: {payload.OrderNumber} skapad av {payload.CustomerInformation.Name} organisationsnummer {payload.CustomerInformation.OrganisationNumber} i {payload.Region}, kräver endast bekräftelse");
+            }
+            if (_cache.Get<List<ListItemResponse>>("LocationTypes") == null)
+            {
+                await _apiService.GetAllLists();
+            }
+            var extraInstructions = GetExtraInstructions(payload.Description);
+
+            if (extraInstructions.Contains("SLEEP20"))
+            {
+                Thread.Sleep(20000);
+            }
+
+            if (extraInstructions.Contains("VIEWUNAUTHORIZED"))
+            {
+                await _apiService.CallRequestViewUnauthorized(payload.OrderNumber);
+            }
+
+            if (extraInstructions.Contains("THROW"))
+            {
+                throw new Exception();
+            }
+            if (extraInstructions.Contains("VIEW"))
+            {
+                var req = await _apiService.GetOrderRequest(payload.OrderNumber);
+            }
+
+            if (!extraInstructions.Contains("LEAVEUNACKNOWLEDGED"))
+            {
+                if (extraInstructions.Contains("ACKNOWLEDGE") || extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                {
+                    await Acknowledge(payload.OrderNumber);
+                }
+                if (extraInstructions.Contains("DECLINE"))
+                {
+                    await Decline(payload.OrderNumber, "Vill inte, kan inte bör inte...");
+                }
+                else
+                {
+                    if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                    {
+                        await AcceptRequest(
+                            payload.OrderNumber,
+                            payload.CompetenceLevelsAreRequired ?
+                                payload.CompetenceLevels.OrderBy(c => c.Rank).First().Key : null,
+                            payload.Requirements.Select(r => new RequirementAnswerModel
+                            {
+                                Answer = "Japp",
+                                CanMeetRequirement = true,
+                                RequirementId = r.RequirementId
+                            })
+                        );
+                    }
+                }
+                //Get the headers:
+                //X-Kammarkollegiet-InterpreterService-Delivery
+            }
+
+            if (extraInstructions.Contains("GETFILE"))
+            {
+                await GetFile(payload.OrderNumber, payload.Attachments.First().AttachmentId);
+            }
+            return new JsonResult("Success");
+        }
 
         [HttpPost]
         public async Task<JsonResult> GroupCreated([FromBody] RequestGroupModel payload)
@@ -369,6 +439,50 @@ namespace BrokerMock.Controllers
             if (extraInstructions.Contains("GETFILE"))
             {
                 await GetGroupFile(payload.OrderGroupNumber, payload.Attachments.First().AttachmentId);
+            }
+            return new JsonResult("Success");
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> GroupCreatedRequiresAcceptance([FromBody] RequestGroupModel payload)
+        {
+            Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-ApiKey", out var apiKey);
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Boknings-ID: {payload.OrderGroupNumber} skapad av {payload.CustomerInformation.Name} organisationsnummer {payload.CustomerInformation.OrganisationNumber} i {payload.Region}, kräver endast bekräftelse");
+            }
+            if (_cache.Get<List<ListItemResponse>>("LocationTypes") == null)
+            {
+                await _apiService.GetAllLists();
+            }
+            var extraInstructions = GetExtraInstructions(payload.Description);
+            if (!extraInstructions.Contains("LEAVEUNACKNOWLEDGED"))
+            {
+                if (extraInstructions.Contains("ACKNOWLEDGE") || extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                {
+                    await AcknowledgeGroup(payload.OrderGroupNumber);
+                }
+                if (extraInstructions.Contains("DECLINE"))
+                {
+                    await DeclineGroup(payload.OrderGroupNumber, "Vill inte, kan inte bör inte...");
+                }
+                else
+                {
+                    if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                    {
+                        await AcceptGroup(
+                            payload.OrderGroupNumber,
+                            payload.CompetenceLevelsAreRequired ?
+                                payload.CompetenceLevels.OrderBy(c => c.Rank).First().Key : null,
+                            payload.Requirements.Select(r => new RequirementAnswerModel
+                            {
+                                Answer = "Japp",
+                                CanMeetRequirement = true,
+                                RequirementId = r.RequirementId
+                            })
+                        );
+                    }
+                }
             }
             return new JsonResult("Success");
         }
@@ -688,6 +802,35 @@ namespace BrokerMock.Controllers
             return description.ToSwedishUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
         }
 
+        private async Task<bool> AcceptRequest(string orderNumber, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
+        {
+            var payload = new RequestAcceptModel
+            {
+                OrderNumber = orderNumber,
+                CompetenceLevel = competenceLevel,
+                CallingUser = "regular-user@formedling1.se",
+                RequirementAnswers = requirementAnswers,
+            };
+            using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Accept"), content);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: [Request/Accept] Unauthorized:: Boknings-ID: {orderNumber}");
+                return true;
+            }
+            var answer = JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync());
+            if (answer.Success)
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept]:: Boknings-ID: {orderNumber} bekräftelse accepterad.");
+            }
+            else
+            {
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[Request/Accept] FAILED:: Boknings-ID: {orderNumber} bekräftelse accepterades INTE, med ErrorMessage: {errorResponse.ErrorMessage}");
+            }
+            return true;
+        }
+
         private async Task<bool> AssignInterpreter(string orderNumber, InterpreterModel interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers, decimal? expectedTravelCosts = null, DateTimeOffset? latestAnswerAt = null)
         {
             var payload = new RequestAnswerModel
@@ -720,7 +863,6 @@ namespace BrokerMock.Controllers
             }
             return true;
         }
-
         private async Task<bool> AnswerGroup(string orderGroupNumber, InterpreterModel interpreter, InterpreterModel extraInterpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers, bool declineExtranInterpreter = false, decimal expectedTravelCosts = 0)
         {
             var payload = new RequestGroupAnswerModel
@@ -747,21 +889,50 @@ namespace BrokerMock.Controllers
                 } : new InterpreterGroupAnswerModel { Accepted = false, DeclineMessage = "Det är svårt för att lösa det, helt enkelt." },
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Answer"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Accept"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}");
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Accept] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}");
                 return false;
             }
             var answer = JsonConvert.DeserializeObject<GroupAnswerResponse>(await response.Content.ReadAsStringAsync());
             if (answer.Success)
             {
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer]:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}, och fick tillbaka id: {answer.InterpreterId}. {(answer.ExtraInterpreterId.HasValue ? $"Extra tolk id: {answer.ExtraInterpreterId}" : string.Empty)}");
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Accept]:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}, och fick tillbaka id: {answer.InterpreterId}. {(answer.ExtraInterpreterId.HasValue ? $"Extra tolk id: {answer.ExtraInterpreterId}" : string.Empty)}");
             }
             else
             {
                 var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email} ErrorMessage: {errorResponse.ErrorMessage}");
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Accept] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email} ErrorMessage: {errorResponse.ErrorMessage}");
+            }
+            return true;
+        }
+
+        private async Task<bool> AcceptGroup(string orderGroupNumber, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
+        {
+            var payload = new RequestGroupAcceptModel
+            {
+                OrderGroupNumber = orderGroupNumber,
+                CompetenceLevel = competenceLevel,
+                CallingUser = "regular-user@formedling1.se",
+                BrokerReferenceNumber = "2346",
+            };
+            using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Accept"), content);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Accept] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber}  bekräftelse accepterad");
+                return false;
+            }
+            var answer = JsonConvert.DeserializeObject<ResponseBase>(await response.Content.ReadAsStringAsync());
+            if (answer.Success)
+            {
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Accept]:: Sammanhållen Boknings-ID: {orderGroupNumber}  bekräftelse accepterad");
+            }
+            else
+            {
+                var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Accept] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} bekräftelse accepterades INTE, med ErrorMessage: {errorResponse.ErrorMessage}");
             }
             return true;
         }

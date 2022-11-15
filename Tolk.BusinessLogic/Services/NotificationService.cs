@@ -298,7 +298,7 @@ namespace Tolk.BusinessLogic.Services
                         var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
                         if (email != null)
                         {
-                            string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}\n\nObservera att bekräftelse måste lämnas via avropstjänsten.\n\n" +
+                            string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}\n\nObservera att alla svar kopplat till förfrågan måte lämnas via avropstjänsten.\n\n" +
                                 $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}\n" +
                                 $"\tRegion: {order.Region.Name}\n" +
                                 $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
@@ -307,7 +307,7 @@ namespace Tolk.BusinessLogic.Services
                                 $"\tSvara senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
                                 GoToRequestPlain(request.RequestId);
 
-                            string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
+                            string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}<br /><br />Observera att alla svar kopplat till förfrågan måte lämnas via avropstjänsten.<br />
 <ul>
 <li>Uppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}</li>
 <li>Region: {order.Region.Name}</li>
@@ -343,15 +343,32 @@ namespace Tolk.BusinessLogic.Services
                         var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCreatedForAcceptance, NotificationChannel.Email);
                         if (email != null)
                         {
-                            string bodyPlain = $"SKRIV ETT BRA MEDDELANDE, MED LÄNKAR OCH GREJER!" +
+                            string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}\n\nObservera att alla svar kopplat till förfrågan måte lämnas via avropstjänsten.\n\n" +
+                                $"\tDenna bokningsförfrågan behöver endast bekräftas i ett första steg, där bekräftelsen måste innehålla acceptans av alla krav kopplade till bokningsförfrågan. Namngivning av tolk kan göras senare. \n" +
+                                $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}\n" +
+                                $"\tRegion: {order.Region.Name}\n" +
+                                $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                                $"\tStart: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                                $"\tSlut: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                                $"\tBekräfta senast: {request.LastAcceptAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
+                                $"\tTillsätt tolk senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
                                 GoToRequestPlain(request.RequestId);
 
-                            string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
-SKRIV ETT BRA MEDDELANDE HÄR!
+                            string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}<br /><br />Observera att alla svar kopplat till förfrågan måte lämnas via avropstjänsten.<br />
+Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där bekräftelsen behöver innehålla acceptans av alla krav kopplade till bokningsförfrågan. Namngivning av tolk kan göras senare. <br />
+<ul>
+<li>Uppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}</li>
+<li>Region: {order.Region.Name}</li>
+<li>Språk: {order.OtherLanguage ?? order.Language?.Name}</li>
+<li>Start: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Slut: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Bekräfta senast: {request.LastAcceptAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Tillsätt tolk senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+</ul>
 <div>{GoToRequestButton(request.RequestId, textOverride: "Till förfrågan", autoBreakLines: false)}</div>";
                             CreateEmail(
                                 email.ContactInformation,
-                                $"Ny bokningsförfrågan registrerad: {order.OrderNumber}",
+                                $"Ny bokningsförfrågan registrerad som kräver initial bekräftelse: {order.OrderNumber}",
                                 bodyPlain,
                                 bodyHtml,
                                 email.NotificationType,
@@ -430,14 +447,29 @@ SKRIV ETT BRA MEDDELANDE HÄR!
                         var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestGroupCreatedForAcceptance, NotificationChannel.Email);
                         if (email != null)
                         {
-                            string bodyPlain = $"SKRIV ETT BRA MEDDELANDE, MED LÄNKAR OCH GREJER!" +
+                            string bodyPlain = $"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {orderGroup.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {orderGroup.CustomerOrganisation.PeppolId}\n\nObservera att bekräftelse måste lämnas via avropstjänsten.\n\n" +
+                                $"\tDenna bokningsförfrågan behöver endast bekräftas i ett första steg, där bekräftelsen måste innehålla acceptans av alla krav kopplade till bokningsförfrågan. Namngivning av tolk kan göras senare. \n" +
+                                $"\tUppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}\n" +
+                                $"\tRegion: {orderGroup.Region.Name}\n" +
+                                $"\tSpråk: {orderGroup.LanguageName}\n" +
+                                $"\tTillfällen: \n" +
+                                $"{GetOccurences(orderGroup.Orders)}\n" +
+                                $"\tBekräfta senast: {requestGroup.LastAcceptAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
+                                $"\tTillsätt tolk senast: {requestGroup.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
                                 GoToRequestGroupPlain(requestGroup.RequestGroupId);
                             string bodyHtml = $@"Bokningsförfrågan för ett sammanhållet tolkuppdrag {orderGroup.OrderGroupNumber} från {orderGroup.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {orderGroup.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {orderGroup.CustomerOrganisation.PeppolId}<br /><br />Observera att bekräftelse måste lämnas via avropstjänsten.<br />
-SKRIV ETT BRA MEDDELANDE HÄR!
+                    Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där bekräftelsen behöver innehålla acceptans av alla krav kopplade till bokningsförfrågan. Namngivning av tolk kan göras senare. <br />
+                    <ul>
+                    <li>Uppdragstyp: {EnumHelper.GetDescription(orderGroup.AssignmentType)}</li>
+                    <li>Region: {orderGroup.Region.Name}</li>
+                    <li>Språk: {orderGroup.LanguageName}</li>
+                    <li>Bekräfta senast: {requestGroup.LastAcceptAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+                    <li>Tillsätt tolk senast: {requestGroup.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+                    </ul>
                     <div>{GoToRequestGroupButton(requestGroup.RequestGroupId, textOverride: "Till förfrågan", autoBreakLines: false)}</div>";
                             CreateEmail(
                                 email.ContactInformation,
-                                $"Ny sammanhållen bokningsförfrågan registrerad: {orderGroup.OrderGroupNumber}",
+                                $"Ny sammanhållen bokningsförfrågan registrerad som kräver initial bekräftelse: {orderGroup.OrderGroupNumber}",
                                 bodyPlain,
                                 bodyHtml,
                                 email.NotificationType,
@@ -1921,6 +1953,9 @@ Sammanställning:
                     Description = order.OtherLanguage ?? order.Language.Name,
                 },
                 ExpiresAt = request.ExpiresAt,
+                LastAcceptAt = request.LastAcceptAt,
+                RequiredAnswerLevel =  EnumHelper.GetCustomName(EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(request.RequestAnswerRuleType)),
+                RequestAnswerRuleType = EnumHelper.GetCustomName(request.RequestAnswerRuleType),
                 StartAt = order.StartAt,
                 EndAt = order.EndAt,
                 Locations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(order.OrderId).Select(l => new LocationModel
@@ -2087,6 +2122,9 @@ Sammanställning:
                     Description = orderGroup.OtherLanguage ?? orderGroup.Language.Name,
                 },
                 ExpiresAt = requestGroup.ExpiresAt,
+                LastAcceptAt = requestGroup.LastAcceptAt,
+                RequiredAnswerLevel = EnumHelper.GetCustomName(EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(requestGroup.RequestAnswerRuleType)),
+                RequestAnswerRuleType = EnumHelper.GetCustomName(requestGroup.RequestAnswerRuleType),
                 Locations = locations.Select(l => new LocationModel
                 {
                     OffsiteContactInformation = l.OffSiteContactInformation,

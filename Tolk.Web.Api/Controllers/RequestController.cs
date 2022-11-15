@@ -117,7 +117,7 @@ namespace Tolk.Web.Api.Controllers
                 }
                 try
                 {
-                    await _requestService.Accept(
+                    await _requestService.Answer(
                         request,
                         now,
                         user?.Id ?? apiUserId,
@@ -150,6 +150,52 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, ex.Message);
                 }
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att bekräfta att man accepterar avropets krav, men utan tillsatt tolk")]
+        [OpenApiTag("Request")]
+        public async Task<IActionResult> Accept([FromBody] RequestAcceptModel model)
+        {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
+            try
+            {
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
+                if (order.OrderGroupId != null)
+                {
+                    return ReturnError(ErrorCodes.RequestIsPartOfAGroup);
+                }
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+                var request = await _dbContext.Requests.GetSimpleActiveRequestForApiWithBrokerAndOrderNumber(model.OrderNumber, brokerId);
+                if (request == null)
+                {
+                    return ReturnError(ErrorCodes.RequestNotFound);
+                }
+                if (request.Status != RequestStatus.Created && request.Status != RequestStatus.Received)
+                {
+                    return ReturnError(ErrorCodes.RequestNotInCorrectState);
+                }
+                if (request.Order.SpecificCompetenceLevelRequired && model.CompetenceLevel == null)
+                {
+                    return ReturnError(ErrorCodes.AllRequirementsMustBeAnsweredOnAccept);
+                }
+                return ReturnError(ErrorCodes.UnspecifiedProblem, "Inte implementerat än...");
+                //TODO: ADD _requestService.Accept(...) HERE
+                //await _dbContext.SaveChangesAsync();
+                //return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {

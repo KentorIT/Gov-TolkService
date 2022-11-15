@@ -234,7 +234,7 @@ namespace Tolk.Web.Controllers
                             }
                             else
                             {
-                                await _requestService.Accept(
+                                await _requestService.Answer(
                                     request,
                                     _clock.SwedenNow,
                                     User.GetUserId(),

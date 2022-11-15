@@ -405,14 +405,14 @@ namespace Tolk.BusinessLogic.Enums
         [NotificationConsumerType(NotificationConsumerType.Customer)]
         OrderGroupTerminatedDueToTerminatedFrameworkAgreement = 58,
 
-        [Description("Förfrågan skapad, kräver endast bekräftelse")]
+        [Description("Förfrågan skapad, kräver endast bekräftelse initialt, med egen tid för tillsättningen av tolk")]
         [CustomName("request_created_requires_acceptance_only")]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         RequestCreatedForAcceptance = 59,
 
-        [Description("Sammanhållen förfrågan skapad, kräver endast bekräftelse")]
+        [Description("Sammanhållen förfrågan skapad, kräver endast bekräftelse, med egen tid för tillsättningen av tolk")]
         [CustomName("request_group_created_requires_acceptance_only")]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]

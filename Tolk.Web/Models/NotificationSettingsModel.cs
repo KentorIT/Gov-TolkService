@@ -14,7 +14,7 @@ namespace Tolk.Web.Models
 
         [ClientRequired]
         [Display(Name = "Webhook url")]
-        [Url]
+        [RegularExpression(@"((https?:\/\/)(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)")]
         public string WebHookReceipentAddress { get; set; }
 
         [Display(Name = "E-post")]

@@ -65,6 +65,26 @@ namespace Tolk.Web.Api.Controllers
         [HttpGet]
         [AllowAnonymous]
         [ProducesResponseType(200, Type = typeof(IEnumerable<ListItemResponse>))]
+        [Description("Returnerar en lista på typer av krav på svar som en förfrågan kan ha")]
+        [OpenApiTag("List")]
+        public ActionResult<IEnumerable<ListItemResponse>> RequiredAnswerLevels()
+        {
+            return DescriptionsAsJson<RequiredAnswerLevel>();
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ListItemResponse>))]
+        [Description("Returnerar en lista på olika typer av svarstider och krav på svar systemet kan ha på en förfrågan")]
+        [OpenApiTag("List")]
+        public ActionResult<IEnumerable<ListItemResponse>> RequestAnswerRuleTypes()
+        {
+            return DescriptionsAsJson<RequestAnswerRuleType>();
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        [ProducesResponseType(200, Type = typeof(IEnumerable<ListItemResponse>))]
         [Description("Returnerar en lista på de språk som kan avropas genom systemet")]
         [OpenApiTag("List")]
         public ActionResult<IEnumerable<ListItemResponse>> Languages()

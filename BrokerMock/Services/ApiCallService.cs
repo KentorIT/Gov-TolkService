@@ -90,6 +90,16 @@ namespace BrokerMock.Services
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get price row types: {items.Count}");
             _cache.Set("PriceRowTypes", items);
 
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/RequiredAnswerLevels/"));
+            items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
+            await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get possible required response levels on a request or request group: {items.Count}");
+            _cache.Set("RequiredAnswerLevels", items);
+
+            response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/RequestAnswerRuleTypes/"));
+            items = JsonConvert.DeserializeObject<List<ListItemResponse>>(await response.Content.ReadAsStringAsync());
+            await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get possible response rule types: {items.Count}");
+            _cache.Set("RequestAnswerRuleTypes", items);
+
             response = await client.GetAsync(_options.TolkApiBaseUrl.BuildUri("List/Customers/"));
             var customers = JsonConvert.DeserializeObject<List<CustomerItemResponse>>(await response.Content.ReadAsStringAsync());
             await _hubContext.Clients.All.SendAsync("OutgoingCall", $"Get customers: {customers.Count}");
