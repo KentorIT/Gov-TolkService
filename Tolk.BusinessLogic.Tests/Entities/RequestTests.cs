@@ -39,7 +39,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.CancelledByBroker)]
@@ -64,7 +64,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         public void Approve_Valid(RequestStatus status)
         {
@@ -89,7 +89,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         [Theory]
         // Already approved request
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, true)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, true)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, true)]
         [InlineData(RequestStatus.Approved, true)]
         [InlineData(RequestStatus.CancelledByBroker, true)]
@@ -169,7 +169,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             request.Order.Requests.Add(request);
 
-            var expectedRequestStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? RequestStatus.AcceptedAwaitingApproval : RequestStatus.Approved;
+            var expectedRequestStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? RequestStatus.AnsweredAwaitingApproval : RequestStatus.Approved;
             var expectedOrderStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? OrderStatus.RequestRespondedAwaitingApproval : OrderStatus.ResponseAccepted;
             var acceptTime = DateTime.Now;
             var answeredBy = 10;
@@ -181,7 +181,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
 
-            request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
+            request.Answer(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
                 requirementAnswers, attachments, priceInfo, "12345", null, null);
 
             Assert.Equal(expectedRequestStatus, request.Status);
@@ -231,7 +231,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             var latestAnswerTimeForCustomerDate = setLatestAnswerTimeForCustomer ? (DateTime?)DateTime.Now.AddDays(1) : null;
 
-            var expectedRequestStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? RequestStatus.AcceptedAwaitingApproval : RequestStatus.Approved;
+            var expectedRequestStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? RequestStatus.AnsweredAwaitingApproval : RequestStatus.Approved;
             var expectedOrderStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? OrderStatus.RequestRespondedAwaitingApproval : OrderStatus.ResponseAccepted;
             var acceptTime = DateTime.Now;
             var answeredBy = 10;
@@ -243,7 +243,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
 
-            request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
+            request.Answer(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
                 requirementAnswers, attachments, priceInfo, null, latestAnswerTimeForCustomerDate, "12345");
 
             Assert.Equal(expectedRequestStatus, request.Status);
@@ -299,7 +299,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             var priceInfo = new PriceInformation { PriceRows = (travelcost > 0) ? new List<PriceRowBase> { new RequestPriceRow { Price = travelcost, StartAt = DateTime.Now, EndAt = DateTime.Now, PriceRowType = PriceRowType.TravelCost } } : new List<PriceRowBase>() };
 
-            Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
+            Assert.Throws<InvalidOperationException>(() => request.Answer(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
                 requirementAnswers, attachments, priceInfo, null, null, "12345"));
         }
 
@@ -340,7 +340,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
 
-            Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
+            Assert.Throws<InvalidOperationException>(() => request.Answer(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
                 requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(1), "12345"));
         }
 
@@ -372,7 +372,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
 
-            Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, InterpreterLocation.OnSite, competenceLevel,
+            Assert.Throws<InvalidOperationException>(() => request.Answer(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, InterpreterLocation.OnSite, competenceLevel,
                 requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(-1), "12345"));
         }
 
@@ -404,13 +404,13 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             var priceInfo = new PriceInformation { PriceRows = new List<PriceRowBase>() };
 
-            Assert.Throws<InvalidOperationException>(() => request.Accept(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, InterpreterLocation.OnSite, competenceLevel,
+            Assert.Throws<InvalidOperationException>(() => request.Answer(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, InterpreterLocation.OnSite, competenceLevel,
                 requirementAnswers, attachments, priceInfo, null, DateTime.Now.AddDays(2), "12345"));
         }
 
         [Theory]
         //Invalid status
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, false, true)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, false, true)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, false, true)]
         [InlineData(RequestStatus.Approved, false, true)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer, false, true)]
@@ -427,7 +427,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.LostDueToQuarantine, false, true)]
         [InlineData(RequestStatus.Delivered, false, true)]
         //// Replacing order has value
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, true, true)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, true, true)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, true, true)]
         [InlineData(RequestStatus.Approved, true, true)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer, true, true)]
@@ -446,7 +446,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.LostDueToQuarantine, true, true)]
         [InlineData(RequestStatus.Delivered, true, true)]
         // Interpreter isn't set
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, true, false)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, true, false)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, true, false)]
         [InlineData(RequestStatus.Approved, true, false)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer, true, false)]
@@ -476,7 +476,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                     ReplacingOrderId = replacingOrderId
                 }
             };
-            Assert.Throws<InvalidOperationException>(() => request.Accept(DateTime.Now, 10, null,
+            Assert.Throws<InvalidOperationException>(() => request.Answer(DateTime.Now, 10, null,
                 interpreter, InterpreterLocation.OnSite, CompetenceAndSpecialistLevel.AuthorizedInterpreter,
                 new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(),
                 new PriceInformation(), null, null, "12345"));
@@ -517,7 +517,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         [Theory]
         // Invalid status
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, false)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, false)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, false)]
         [InlineData(RequestStatus.Approved, false)]
         [InlineData(RequestStatus.CancelledByBroker, false)]
@@ -532,7 +532,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.LostDueToQuarantine, false)]
         [InlineData(RequestStatus.Delivered, false)]
         // Invalid status, Replacing order
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, true)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, true)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, true)]
         [InlineData(RequestStatus.Approved, true)]
         [InlineData(RequestStatus.CancelledByBroker, true)]
@@ -583,7 +583,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             request.Order.InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite, Street = "Byv. 34", City = "Byn" } };
             request.Order.Requests.Add(request);
-            var expectedRequestStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? RequestStatus.AcceptedAwaitingApproval : RequestStatus.Approved;
+            var expectedRequestStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? RequestStatus.AnsweredAwaitingApproval : RequestStatus.Approved;
             var expectedOrderStatus = (allowExceedingTravelCost == AllowExceedingTravelCost.YesShouldBeApproved && travelcost > 0) ? OrderStatus.RequestRespondedAwaitingApproval : OrderStatus.ResponseAccepted;
             var acceptTime = DateTime.Now;
             var userId = 10;
@@ -727,7 +727,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         [Theory]
         // Invalid status
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, false)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, false)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, false)]
         [InlineData(RequestStatus.Approved, false)]
         [InlineData(RequestStatus.CancelledByBroker, false)]
@@ -743,7 +743,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.LostDueToQuarantine, false)]
         [InlineData(RequestStatus.Delivered, false)]
         // Replacing order has value
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, true)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, true)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, true)]
         [InlineData(RequestStatus.Approved, true)]
         [InlineData(RequestStatus.CancelledByBroker, true)]
@@ -787,7 +787,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var oldRequestRecievedBy = 66;
             var oldRequestRecievedAt = DateTime.Parse("2019-01-29 15:32");
             var oldRequestImpersonatingRecievedBy = (int?)null;
-            var oldRequestStatus = isOldRequestApproved ? RequestStatus.Approved : RequestStatus.AcceptedAwaitingApproval;
+            var oldRequestStatus = isOldRequestApproved ? RequestStatus.Approved : RequestStatus.AnsweredAwaitingApproval;
             DateTime? oldRequestAnswerProcessedAt = isOldRequestApproved ? DateTime.Parse("2019-01-29 15:32") : (DateTime?)null;
             int? oldRequestAnswerProcessedBy = isOldRequestApproved ? 20 : (int?)null;
             int? oldRequestImpersonatingAnswerProcessedBy = isOldRequestApproved ? 100 : (int?)null;
@@ -857,7 +857,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.CancelledByBroker)]
         [InlineData(RequestStatus.CancelledByCreator)]
@@ -884,7 +884,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         public void Deny_Valid(RequestStatus status)
         {
@@ -938,25 +938,25 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [Theory]
         // OrderStatus.Requested
         [InlineData(OrderStatus.Requested, RequestStatus.Approved)]
-        [InlineData(OrderStatus.Requested, RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(OrderStatus.Requested, RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(OrderStatus.Requested, RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(OrderStatus.Requested, RequestStatus.Created)]
         [InlineData(OrderStatus.Requested, RequestStatus.Received)]
         // OrderStatus.RequestResponded
         [InlineData(OrderStatus.RequestRespondedAwaitingApproval, RequestStatus.Approved)]
-        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(OrderStatus.RequestRespondedAwaitingApproval, RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(OrderStatus.RequestRespondedAwaitingApproval, RequestStatus.Created)]
         [InlineData(OrderStatus.RequestRespondedAwaitingApproval, RequestStatus.Received)]
         // OrderStatus.RequestRespondedNewInterpreter
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, RequestStatus.Approved)]
-        [InlineData(OrderStatus.RequestRespondedNewInterpreter, RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter, RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, RequestStatus.Created)]
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, RequestStatus.Received)]
         // OrderStatus.ResponseAccepted
         [InlineData(OrderStatus.ResponseAccepted, RequestStatus.Approved)]
-        [InlineData(OrderStatus.ResponseAccepted, RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(OrderStatus.ResponseAccepted, RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(OrderStatus.ResponseAccepted, RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(OrderStatus.ResponseAccepted, RequestStatus.Created)]
         [InlineData(OrderStatus.ResponseAccepted, RequestStatus.Received)]
@@ -1057,7 +1057,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.RequestRespondedNewInterpreter, RequestStatus.Approved)]
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseNotAnsweredByCreator, RequestStatus.Approved)]
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ToBeProcessedByCustomer, RequestStatus.Approved)]
-        [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseAccepted, RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseAccepted, RequestStatus.AnsweredAwaitingApproval)]
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseAccepted, RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseAccepted, RequestStatus.CancelledByBroker)]
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseAccepted, RequestStatus.CancelledByCreator)]
@@ -1138,7 +1138,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData("2019-01-29 15:32", "2019-02-03 12:00", OrderStatus.ResponseNotAnsweredByCreator, RequestStatus.Approved)]
         [InlineData("2019-01-29 15:32", "2019-02-03 12:00", OrderStatus.ToBeProcessedByCustomer, RequestStatus.Approved)]
         // Invalid RequestStatus
-        [InlineData("2019-01-29 15:32", "2019-02-03 12:00", OrderStatus.ResponseAccepted, RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData("2019-01-29 15:32", "2019-02-03 12:00", OrderStatus.ResponseAccepted, RequestStatus.AnsweredAwaitingApproval)]
         [InlineData("2019-01-29 15:32", "2019-02-03 12:00", OrderStatus.ResponseAccepted, RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData("2019-01-29 15:32", "2019-02-03 12:00", OrderStatus.ResponseAccepted, RequestStatus.CancelledByBroker)]
         [InlineData("2019-01-29 15:32", "2019-02-03 12:00", OrderStatus.ResponseAccepted, RequestStatus.CancelledByCreator)]
@@ -1164,7 +1164,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.RequestRespondedNewInterpreter, RequestStatus.Approved)]
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseNotAnsweredByCreator, RequestStatus.Approved)]
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ToBeProcessedByCustomer, RequestStatus.Approved)]
-        [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseAccepted, RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseAccepted, RequestStatus.AnsweredAwaitingApproval)]
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseAccepted, RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseAccepted, RequestStatus.CancelledByBroker)]
         [InlineData("2019-02-03 12:00", "2019-01-29 15:32", OrderStatus.ResponseAccepted, RequestStatus.CancelledByCreator)]
@@ -1248,7 +1248,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         [Theory]
         // Invalid request status
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(RequestStatus.CancelledByBroker)]
         [InlineData(RequestStatus.CancelledByCreator)]
@@ -1263,7 +1263,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.ToBeProcessedByBroker)]
         [InlineData(RequestStatus.LostDueToQuarantine)]
         // Invalid request status, pre-existing valid requisition (DeniedByCustomer)
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, RequisitionStatus.Commented)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, RequisitionStatus.Commented)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, RequisitionStatus.Commented)]
         [InlineData(RequestStatus.CancelledByBroker, RequisitionStatus.Commented)]
         [InlineData(RequestStatus.CancelledByCreator, RequisitionStatus.Commented)]
@@ -1278,7 +1278,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.ToBeProcessedByBroker, RequisitionStatus.Commented)]
         [InlineData(RequestStatus.LostDueToQuarantine, RequisitionStatus.Commented)]
         // Invalid request status, pre-existing valid requisition (AutomaticApprovalFromCancelledOrder)
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
         [InlineData(RequestStatus.CancelledByBroker, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
         [InlineData(RequestStatus.CancelledByCreator, RequisitionStatus.AutomaticGeneratedFromCancelledOrder)]
@@ -1361,7 +1361,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         // Invalid request status
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
@@ -1405,7 +1405,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         // Invalid request status
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
@@ -1449,7 +1449,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         // Invalid request status
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
@@ -1494,7 +1494,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, "2019-01-29 15:32", "2019-02-03 12:00", true)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, "2019-01-29 15:32", "2019-02-03 12:00", true)]
         [InlineData(RequestStatus.Approved, "2019-01-29 15:32", "2019-02-03 12:00", true)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, "2019-01-29 15:32", "2019-02-03 12:00", true)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer, "2019-01-29 15:32", "2019-02-03 12:00", false)]
@@ -1511,7 +1511,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Received, "2019-01-29 15:32", "2019-02-03 12:00", false)]
         [InlineData(RequestStatus.ResponseNotAnsweredByCreator, "2019-01-29 15:32", "2019-02-03 12:00", false)]
         [InlineData(RequestStatus.ToBeProcessedByBroker, "2019-01-29 15:32", "2019-02-03 12:00", false)]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, "2019-02-03 12:00", "2019-01-29 15:32", false)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, "2019-02-03 12:00", "2019-01-29 15:32", false)]
         [InlineData(RequestStatus.Approved, "2019-02-03 12:00", "2019-01-29 15:32", false)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, "2019-02-03 12:00", "2019-01-29 15:32", false)]
         [InlineData(RequestStatus.Delivered, "2019-02-03 12:00", "2019-01-29 15:32", false)]
@@ -1533,7 +1533,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         // Invalid request status
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
@@ -1657,7 +1657,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
@@ -1721,7 +1721,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                 DateTimeOffset.Now,
                 1,
                 null,
@@ -1752,7 +1752,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.Order.Requests.Add(request);
             Assert.Throws<InvalidOperationException>(() =>
-                request.Accept(
+                request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -1784,7 +1784,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.Order.Requests.Add(request);
             Assert.Throws<InvalidOperationException>(() =>
-                request.Accept(
+                request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -1816,7 +1816,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.Order.Requests.Add(request);
             Assert.Throws<InvalidOperationException>(() =>
-                request.Accept(
+                request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -1847,7 +1847,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -1877,7 +1877,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -1908,7 +1908,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.Order.Requests.Add(request);
             Assert.Throws<InvalidOperationException>(() =>
-                request.Accept(
+                request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -1943,7 +1943,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                 DateTimeOffset.Now,
                 1,
                 null,
@@ -1983,7 +1983,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                 DateTimeOffset.Now,
                 1,
                 null,
@@ -2023,7 +2023,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.Order.Requests.Add(request);
             Assert.Throws<InvalidOperationException>(() =>
-                request.Accept(
+                request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -2064,7 +2064,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                 DateTimeOffset.Now,
                 1,
                 null,
@@ -2113,7 +2113,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                 DateTimeOffset.Now,
                 1,
                 null,
@@ -2146,7 +2146,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                 DateTimeOffset.Now,
                 1,
                 null,
@@ -2185,7 +2185,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.Order.Requests.Add(request);
             Assert.Throws<InvalidOperationException>(() =>
-                request.Accept(
+                request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -2223,7 +2223,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                 DateTimeOffset.Now,
                 1,
                 null,
@@ -2262,7 +2262,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.Order.Requests.Add(request);
             Assert.Throws<InvalidOperationException>(() =>
-                request.Accept(
+                request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -2298,7 +2298,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.Order.Requests.Add(request);
             Assert.Throws<InvalidOperationException>(() =>
-                request.Accept(
+                request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -2334,7 +2334,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                 DateTimeOffset.Now,
                 1,
                 null,
@@ -2370,7 +2370,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.Order.Requests.Add(request);
             Assert.Throws<InvalidOperationException>(() =>
-                request.Accept(
+                request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -2408,7 +2408,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 },
             };
             request.Order.Requests.Add(request);
-            request.Accept(
+            request.Answer(
                 DateTimeOffset.Now,
                 1,
                 null,
@@ -2445,7 +2445,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             };
             request.Order.Requests.Add(request);
             Assert.Throws<InvalidOperationException>(() =>
-                request.Accept(
+                request.Answer(
                     DateTimeOffset.Now,
                     1,
                     null,
@@ -2462,7 +2462,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval, false)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval, false)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed, false)]
         [InlineData(RequestStatus.Approved, true)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer, false)]

@@ -166,11 +166,11 @@ namespace Tolk.BusinessLogic.Entities
 
         private bool CanCancelRequestNotBelongsToGroup => !Order.OrderGroupId.HasValue &&
             (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestRespondedAwaitingApproval
-            || Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted || Order.Status == OrderStatus.RequestRespondedAwaitingInterpreter) &&
+            || Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted || Order.Status == OrderStatus.RequestAcceptedAwaitingInterpreter) &&
             (IsToBeProcessedByBroker || IsAcceptedOrApproved);
 
         private bool CanCancelRequestBelongsToGroup => Order.OrderGroupId.HasValue &&
-            (Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted || Order.Status == OrderStatus.RequestRespondedAwaitingInterpreter) &&
+            (Order.Status == OrderStatus.RequestRespondedNewInterpreter || Order.Status == OrderStatus.ResponseAccepted || Order.Status == OrderStatus.RequestAcceptedAwaitingInterpreter) &&
             (Status == RequestStatus.Approved || Status == RequestStatus.AcceptedNewInterpreterAppointed);
 
         public bool CanCreateReplacementOrderOnCancel => !Order.OrderGroupId.HasValue && !Order.ReplacingOrderId.HasValue && Status == RequestStatus.Approved;
@@ -243,7 +243,7 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.ResponseAccepted;
         }
 
-        public void Accept(
+        public void Answer(
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
@@ -273,7 +273,8 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
             }
             ValidateInterpreterLocationAgainstOrder(interpreterLocation);
-            ValidateRequirementsAgainstOrder(competenceLevel, requirementAnswers);
+            ValidateRequirementsAgainstOrder(requirementAnswers);
+            ValidateCompetenceLevelAgainstOrder(competenceLevel);
             ValidateLatestAnswerTimeAndTravelCost(interpreterLocation, priceInformation, latestAnswerTimeForCustomer, acceptTime);
             AnswerDate = acceptTime;
             AnsweredBy = userId;
@@ -291,9 +292,46 @@ namespace Tolk.BusinessLogic.Entities
 
             var requiresAccept = overrideRequireAccept || RequiresAccept;
 
-            Status = requiresAccept ? RequestStatus.AcceptedAwaitingApproval : RequestStatus.Approved;
+            Status = requiresAccept ? RequestStatus.AnsweredAwaitingApproval : RequestStatus.Approved;
             Order.Status = requiresAccept ? OrderStatus.RequestRespondedAwaitingApproval : OrderStatus.ResponseAccepted;
             AnswerProcessedAt = requiresAccept ? null : (DateTimeOffset?)acceptTime;
+        }
+        public void Accept(
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            CompetenceAndSpecialistLevel? competenceLevel,
+            List<OrderRequirementRequestAnswer> requirementAnswers,
+            List<RequestAttachment> attachedFiles,
+            PriceInformation priceInformation,
+            string brokerReferenceNumber
+            )
+        {
+            if (priceInformation == null)
+            {
+                throw new ArgumentNullException($"Det gick inte att bekräfta förfrågan med boknings-id {Order.OrderNumber} prisrader saknas");
+            }
+            if (!IsToBeProcessedByBroker)
+            {
+                throw new InvalidOperationException($"Det gick inte att bekräfta förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
+            }
+            if (Order.ReplacingOrderId.HasValue)
+            {
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
+            }
+            ValidateRequirementsAgainstOrder(requirementAnswers);
+            ValidateCompetenceLevelAgainstOrder(competenceLevel);
+            AcceptedAt = acceptTime;
+            AcceptedBy = userId;
+            ImpersonatingAcceptedBy = impersonatorId;
+            CompetenceLevel = (int?)competenceLevel;
+            RequirementAnswers = requirementAnswers;
+            Attachments = attachedFiles;
+            PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
+            BrokerReferenceNumber = brokerReferenceNumber;
+
+            Status = RequestStatus.AcceptedAwaitingInterpreter;
+            Order.Status = OrderStatus.RequestAcceptedAwaitingInterpreter;
         }
 
         public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
@@ -459,7 +497,7 @@ namespace Tolk.BusinessLogic.Entities
             PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
             if (RequiresAccept)
             {
-                Status = RequestStatus.AcceptedAwaitingApproval;
+                Status = RequestStatus.AnsweredAwaitingApproval;
                 Order.Status = OrderStatus.RequestRespondedAwaitingApproval;
             }
             else
@@ -501,7 +539,8 @@ namespace Tolk.BusinessLogic.Entities
                 throw new ArgumentNullException($"Det gick inte att byta tolk på förfrågan med boknings-id {Order.OrderNumber}, hittar ingen koppling till tidigare förfrågan");
             }
             ValidateInterpreterLocationAgainstOrder(interpreterLocation);
-            ValidateRequirementsAgainstOrder(competenceLevel, requirementAnswers);
+            ValidateRequirementsAgainstOrder(requirementAnswers);
+            ValidateCompetenceLevelAgainstOrder(competenceLevel);
             ValidateLatestAnswerTimeAndTravelCost(interpreterLocation, priceInformation, latestAnswerTimeForCustomer, acceptTime);
             AnswerDate = acceptTime;
             AnsweredBy = userId;
@@ -692,15 +731,25 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        private void ValidateRequirementsAgainstOrder(CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers)
+        private void ValidateRequirementsAgainstOrder(List<OrderRequirementRequestAnswer> requirementAnswers)
         {
             if (!RequestGroupId.HasValue)
             {
                 ValidateRequirements(Order.Requirements, requirementAnswers);
             }
-            if (Order.SpecificCompetenceLevelRequired && !Order.CompetenceRequirements.Any(c => c.CompetenceLevel == competenceLevel))
+        }
+        private void ValidateCompetenceLevelAgainstOrder(CompetenceAndSpecialistLevel? competenceLevel)
+        {
+            if (Order.SpecificCompetenceLevelRequired)
             {
-                throw new InvalidOperationException($"Specified competence level {EnumHelper.GetCustomName(competenceLevel)} is not valid for this order.");
+                if (!competenceLevel.HasValue)
+                {
+                    throw new InvalidOperationException($"Competence level must be specified for this order.");
+                }
+                if (!Order.CompetenceRequirements.Any(c => c.CompetenceLevel == competenceLevel))
+                {
+                    throw new InvalidOperationException($"Specified competence level {EnumHelper.GetCustomName(competenceLevel.Value)} is not valid for this order.");
+                }
             }
         }
 

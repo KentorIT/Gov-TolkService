@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -102,6 +103,8 @@ namespace Tolk.BusinessLogic.Entities
         /// </summary>
         public DateTimeOffset? LastAcceptAt { get; set; }
 
+        public DateTimeOffset? AcceptedAt { get; set; }
+
         public int? AcceptedBy { get; set; }
 
         [ForeignKey(nameof(AcceptedBy))]
@@ -118,9 +121,13 @@ namespace Tolk.BusinessLogic.Entities
             => IsAwaitingApproval || Status == RequestStatus.Approved || Status == RequestStatus.AcceptedAwaitingInterpreter;        
 
         public bool IsAwaitingApproval
-            => Status == RequestStatus.AcceptedAwaitingApproval || Status == RequestStatus.AcceptedNewInterpreterAppointed;
+            => Status == RequestStatus.AnsweredAwaitingApproval || Status == RequestStatus.AcceptedNewInterpreterAppointed;
 
         public bool CanDecline => IsToBeProcessedByBroker;
+
+        public bool CanAccept => LastAcceptAt.HasValue && 
+            EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(RequestAnswerRuleType) == RequiredAnswerLevel.Acceptance && 
+            (Status == RequestStatus.Created || Status == RequestStatus.Received);
 
         public bool CanApprove => IsAwaitingApproval;
 

@@ -24,6 +24,7 @@ namespace Tolk.BusinessLogic.Services
         void RemindUnhandledRequest(Request request);
         void RemindUnhandledRequestGroup(RequestGroup requestGrpoup);
         void RequestCompleted(Request request);
+        void RequestAnsweredAwaitingApproval(Request request);
         void RequestAccepted(Request request);
         void RequestAnswerApproved(Request request);
         void RequestAnswerAutomaticallyApproved(Request request);

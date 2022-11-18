@@ -26,7 +26,7 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_answer_awaiting_approval")]
         [Description("Bekräftelse är skickad")]
         [Parent(NegotiationState.UnderNegotiation)]
-        AcceptedAwaitingApproval = 4,
+        AnsweredAwaitingApproval = 4,
         [CustomName("request_answer_approved")]
         [Description("Tillsättning är godkänd")]
         [Parent(NegotiationState.ContractValid)]

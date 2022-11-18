@@ -238,7 +238,7 @@ namespace Tolk.BusinessLogic.Entities
                 partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestRespondedAwaitingApproval :
                 partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.ResponseAccepted, false);
             SetStatus(RequiresApproval(hasTravelCosts) ?
-                partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.AcceptedAwaitingApproval :
+                partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.AnsweredAwaitingApproval :
                 partialAnswer ? RequestStatus.PartiallyApproved : RequestStatus.Approved, false);
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
             BrokerReferenceNumber = brokerReferenceNumber;

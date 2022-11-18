@@ -584,7 +584,7 @@ namespace Tolk.BusinessLogic.Services
                     pl, 
                     rankingId, 
                     order.CreatedAt,
-                    _priceCalculationService.GetCalculatedBrokerFee(order, brokerFeeCalculationType, cl, rankingId))
+                    _priceCalculationService.GetCalculatedBrokerFee(order, brokerFeeCalculationType, cl, rankingId, order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation))
                 .PriceRows);
         }
 
@@ -878,7 +878,7 @@ namespace Tolk.BusinessLogic.Services
                 order.CustomerOrganisation.PriceListType,
                 order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId,
                 order.CreatedAt,
-                _priceCalculationService.GetCalculatedBrokerFee(order, brokerFeeCalculationType, competenceLevel, rankingId));
+                _priceCalculationService.GetCalculatedBrokerFee(order, brokerFeeCalculationType, competenceLevel, rankingId, order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation));
             order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
         }
 

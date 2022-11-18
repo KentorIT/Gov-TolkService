@@ -146,7 +146,7 @@
                         <div class="col-sm-6">
                             @if (Model.ActiveRequest.AllowInterpreterChange)
                             {
-                                <a class="btn btn-primary btn-large pull-right" href="@Url.Action("Change", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
+                                <a class="btn btn-primary btn-large pull-right" href="@Url.Action("ChangeInterpreter", new { id = Model.RequestId })">Byt tolk för uppdraget</a>
                             }
                         </div>
                     </div>

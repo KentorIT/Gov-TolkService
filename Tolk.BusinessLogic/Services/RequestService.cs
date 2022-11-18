@@ -75,8 +75,8 @@ namespace Tolk.BusinessLogic.Services
             //Create notification
             switch (request.Status)
             {
-                case RequestStatus.AcceptedAwaitingApproval:
-                    _notificationService.RequestAccepted(request);
+                case RequestStatus.AnsweredAwaitingApproval:
+                    _notificationService.RequestAnsweredAwaitingApproval(request);
                     break;
                 case RequestStatus.Approved:
                     _notificationService.RequestAnswerAutomaticallyApproved(request);
@@ -84,6 +84,26 @@ namespace Tolk.BusinessLogic.Services
                 default:
                     throw new NotImplementedException("NOT OK!!");
             }
+        }
+
+        public async Task Accept(
+            Request request,
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            CompetenceAndSpecialistLevel? competenceLevel,
+            List<OrderRequirementRequestAnswer> requirementAnswers,
+            List<RequestAttachment> attachedFiles,
+            string brokerReferenceNumber
+        )
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(Accept), nameof(RequestService));
+            request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
+            request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
+            request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
+            AcceptRequest(request, acceptTime, userId, impersonatorId, competenceLevel, requirementAnswers, attachedFiles, brokerReferenceNumber);
+            //Create notification
+            _notificationService.RequestAccepted(request);
         }
 
         public async Task AnswerGroup(
@@ -320,7 +340,7 @@ namespace Tolk.BusinessLogic.Services
                 throw new InvalidOperationException("Det går inte att tillsätta samma tolk som redan är tillsatt som extra tolk för samma tillfälle.");
             }
 
-            Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, changedAt, isChangeInterpreter: true, requestGroup: request.RequestGroup)
+            Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, changedAt, isChangeInterpreter: true, requestGroup: request.RequestGroup)
             {
                 Order = request.Order,
                 Status = RequestStatus.AcceptedNewInterpreterAppointed
@@ -648,7 +668,16 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(request, nameof(AnswerRequest), nameof(RequestService));
             //Get prices
             var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
-            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult, overrideRequireAccept);
+            request.Answer(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult, overrideRequireAccept);
+        }
+
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, CompetenceAndSpecialistLevel? competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, string brokerReferenceNumber)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
+            //Get prices
+            var competenceLevelForPriceCalculation = competenceLevel ?? OrderService.SelectCompetenceLevelForPriceEstimation(request.Order.CompetenceRequirements?.Select(item => item.CompetenceLevel));
+            var prices = _priceCalculationService.GetPrices(request, competenceLevelForPriceCalculation, null);
+            request.Accept(acceptTime, userId, impersonatorId, competenceLevel, requirementAnswers, attachedFiles, prices, brokerReferenceNumber);
         }
 
         private void AnswerReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
@@ -702,7 +731,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 requests = await _tolkDbContext.Requests.GetRequestsForOrder(request.Order.ExtraInterpreterOrder.OrderId).ToListAsync();
             }
-            return requests?.Where(r => r.Status == RequestStatus.AcceptedAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
+            return requests?.Where(r => r.Status == RequestStatus.AnsweredAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
         }
 
         public async Task<RequestGroup> AddRequestsWithConfirmationListsToRequestGroup(RequestGroup requestGroup)

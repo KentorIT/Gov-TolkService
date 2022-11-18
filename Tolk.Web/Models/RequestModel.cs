@@ -77,6 +77,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolkens kompetensnivå")]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
+        [ClientRequired]
+        [Display(Name = "Tolkens kompetensnivå", Description = "Ni behöver sätta vilken kompetensnivå tolken kommer ha.")]
+        public CompetenceAndSpecialistLevel? InterpreterCompetenceLevelOnAccept { get; set; }
+
         [Required]
         [Display(Name = "Tolk", Description = "I de fall tillsatt tolk har skyddad identitet skall inte tolkens namn eller kontaktuppgifter finnas i bekräftelsen. Använd i dessa fall valet ”Tolk med skyddade personuppgifter”. Överlämna tolkens uppgifter på annat sätt i enlighet med era säkerhetsrutiner")]
         public int? InterpreterId { get; set; }
@@ -141,13 +145,21 @@ namespace Tolk.Web.Models
         [Display(Name = "Inkommen")]
         public DateTimeOffset? CreatedAt { get; set; }
 
-        [Display(Name = "Svara senast")]
+        [Display(Name = "Bekräfta senast")]
+        public DateTimeOffset? LastAcceptAt { get; set; }
+
+        [Display(Name = "Tillsätt tolk senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 
         [Display(Name = "Förmedlingens bokningsnummer", Description = "Här kan ni som förmedling ange ett eget bokningsnummer att koppla till bokningen.")]
         public string BrokerReferenceNumber { get; set; }
 
         public bool AllowProcessing { get; set; } = true;
+
+        public bool AllowAccept { get; set; } = true;
+
+        [Display(Name = "Tillsätt tolk direkt", Description = "Detta är en förfrågan med lång framförhållning, där ni som förmedling inte behöver tillsätta tolk i första svaret. Men om ni gör det så kommer det anses som en fullständig tillsättning, vilket gör att ni inte behöver tillsätta tolken senare.")]
+        public bool FullAnswer { get; set; } = true;
 
         public bool DisplayExpectedTravelCostInfo { get; set; }
 
@@ -203,6 +215,7 @@ namespace Tolk.Web.Models
                 RequestGroupStatus = request.RequestGroup?.Status,
                 RequestId = request.RequestId,
                 CreatedAt = request.CreatedAt,
+                LastAcceptAt = request.LastAcceptAt,
                 ExpiresAt = request.ExpiresAt,
                 BrokerReferenceNumber = request.BrokerReferenceNumber,
                 Interpreter = request.Interpreter?.CompleteContactInformation,

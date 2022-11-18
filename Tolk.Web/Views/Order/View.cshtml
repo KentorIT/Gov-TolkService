@@ -168,7 +168,7 @@
             </div>
         </div>
         <div class="row">
-            @if (Model.ActiveRequestIsAnswered && (Model.RequestStatus == RequestStatus.AcceptedAwaitingApproval || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && Model.RequestedCompetenceLevels.Any() && !Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
+            @if (Model.ActiveRequestIsAnswered && (Model.RequestStatus == RequestStatus.AnsweredAwaitingApproval || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && Model.RequestedCompetenceLevels.Any() && !Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
             {
                 <div class="col-sm-12 important-info">
                     Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå

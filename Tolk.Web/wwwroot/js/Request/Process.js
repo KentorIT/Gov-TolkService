@@ -2,6 +2,7 @@ $(function () {
 
     var checkRequirements = function checkRequirements() {
         $('#Accept').attr('disabled', false);
+        $('#Answer').attr('disabled', false);
 
         $("input[id$='CanMeetRequirement']").each(function () {
             var isChecked = $(this).is(':checked');
@@ -9,6 +10,7 @@ $(function () {
 
             if (isRequired && !isChecked) {
                 $('#Accept').attr('disabled', true);
+                $('#Answer').attr('disabled', true);
             }
         });
     };
@@ -22,6 +24,7 @@ $(function () {
     $(document).ready(function () {
         setInterpreter();
         setExpectedTravelcost();
+        toggleFullAnswerPanel();
     });
 
     $('#InterpreterId').change(function () {
@@ -38,7 +41,39 @@ $(function () {
         }
     });
 
-    $("#Accept").closest("form").on("submit", function () { if (!validateSetLatestAnswerTimeForCustomer() || !validateLatestAnswerTimeWithinValidTimeSpan()) { return false; }; $("#Accept").disableOnSubmit(); });
+    $("body").on("change", "#FullAnswer", function () {
+        toggleFullAnswerPanel();
+    });
+
+    function toggleFullAnswerPanel() {
+        if ($("#FullAnswer").is(":hidden") || $("#FullAnswer").is(":checked")) {
+            $(".full-answer-panel").show();
+            $("#Answer").show();
+            $("#Accept").hide();
+            $("#required-competence-on-accept-panel").hide();
+        }
+        else {
+            $(".full-answer-panel").hide();
+            $("#Answer").hide();
+            $("#Accept").show();
+            $("#required-competence-on-accept-panel").show();
+       }
+    }
+
+    $("#Answer").closest("form").on("submit", function () {
+        if (!validateSetLatestAnswerTimeForCustomer() || !validateLatestAnswerTimeWithinValidTimeSpan()) {
+            return false;
+        };
+        $("#Answer").disableOnSubmit();
+    });
+
+    $("body").on("click", "#Accept", function () {
+        var $form = $(this).closest("form");
+        var $action = $form.prop("action");
+        $form.prop("action", $action.replace("/Answer", "/Accept"));
+        $form.submit();
+        $("#Accept").disableOnSubmit();
+    });
 
     function setInterpreter() {
         if ($("#InterpreterId option:selected").val() === "-1") {

@@ -66,7 +66,7 @@ namespace Tolk.BusinessLogic.Enums
         TerminatedDueToTerminatedFrameworkAgreement = 20,
         [Description("Förfrågan bekräftad av förmedling, inväntar tolktillsättning")]
         [Parent(NegotiationState.UnderNegotiation)]
-        RequestRespondedAwaitingInterpreter = 21,
+        RequestAcceptedAwaitingInterpreter = 21,
 
     }
 }

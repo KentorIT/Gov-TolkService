@@ -36,7 +36,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.CancelledByCreator)]
         [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
@@ -194,7 +194,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
@@ -241,7 +241,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestRespondedAwaitingApproval :
                 partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.ResponseAccepted;
             var expectedRequestGroupStatus = hasTravelCosts && actualLocation == InterpreterLocation.OnSite ?
-                partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.AcceptedAwaitingApproval :
+                partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.AnsweredAwaitingApproval :
                 partialAnswer ? RequestStatus.PartiallyApproved : RequestStatus.Approved;
 
             var acceptAt = DateTime.Now;
@@ -271,7 +271,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
@@ -306,7 +306,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         // Invalid request status
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
@@ -344,7 +344,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         // Invalid request status
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
@@ -380,7 +380,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         // Invalid request status
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
@@ -464,7 +464,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(RequestStatus.AcceptedAwaitingApproval)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]

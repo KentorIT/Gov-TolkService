@@ -474,7 +474,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     null,
                     CreateOrders( mockCustomerUsers[0], new List<int>(){ 1,2,3}, baseDate, Region.Regions.Where(r => r.Name == "Stockholm").Single(), mockLanguages.Where(l => l.Name == "English").Single(), OrderStatus.Requested, null ).ToList(),
                     mockRankings,
-                    new List<RequestStatus>(){ RequestStatus.AcceptedAwaitingApproval },
+                    new List<RequestStatus>(){ RequestStatus.AnsweredAwaitingApproval },
                     AllowExceedingTravelCost.YesShouldBeApproved
                 ),
                 CreateOrderGroup(
@@ -547,7 +547,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = mockOrders[3].EndAt,
                     ExpiresAt = mockOrders[3].StartAt.AddDays(-10),
                     EntityNumber = mockOrders[3].OrderNumber,
-                    Status = RequestStatus.AcceptedAwaitingApproval
+                    Status = RequestStatus.AnsweredAwaitingApproval
                 },
                 new RequestListRow
                 {
@@ -607,7 +607,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                     EndAt = mockOrders[5].EndAt,
                     EntityNumber = mockOrders[5].OrderNumber,
                     ExpiresAt = mockOrders[5].StartAt.AddDays(-10),
-                    Status = RequestStatus.AcceptedAwaitingApproval
+                    Status = RequestStatus.AnsweredAwaitingApproval
                 },
             };
         }

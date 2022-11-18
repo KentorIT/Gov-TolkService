@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Math;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Data;
@@ -39,6 +40,8 @@ namespace Tolk.BusinessLogic.Services
                 throw new ArgumentNullException(nameof(request));
             }
             var order = request.Order;
+            var interpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation)request.InterpreterLocation.Value :
+                order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation;
             return GetPrices(
                 order.StartAt,
                 order.EndAt,
@@ -46,7 +49,7 @@ namespace Tolk.BusinessLogic.Services
                 order.CustomerOrganisation.PriceListType,
                 request.RankingId,
                 order.CreatedAt,
-                GetCalculatedBrokerFee(order, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType, EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel), request.RankingId),
+                GetCalculatedBrokerFee(order, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType, EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel), request.RankingId, interpreterLocation),
                 expectedTravelCost);
         }
 
@@ -58,7 +61,7 @@ namespace Tolk.BusinessLogic.Services
                 brokerFee);
         }
 
-        public PriceRowBase GetCalculatedBrokerFee(Order order, BrokerFeeCalculationType brokerFeeCalculationType, CompetenceLevel cl, int rankingId)
+        public PriceRowBase GetCalculatedBrokerFee(Order order, BrokerFeeCalculationType brokerFeeCalculationType, CompetenceLevel cl, int rankingId, InterpreterLocation interpreterLocation)
         {
             return brokerFeeCalculationType switch
             {
@@ -69,7 +72,7 @@ namespace Tolk.BusinessLogic.Services
                         order.StartAt,
                         order.EndAt,
                         cl,
-                        order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation,
+                        interpreterLocation,
                         order.RegionId),
                 _ => throw new NotImplementedException($"Broker fee cannot be calculated for the unknown {nameof(BrokerFeeCalculationType)}: {brokerFeeCalculationType}")
             };

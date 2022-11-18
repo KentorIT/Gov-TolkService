@@ -132,7 +132,7 @@ namespace Tolk.Web.Tests.Filters
         [Fact]
         public void RequestFilter_ByStatus()
         {
-            var status = BusinessLogic.Enums.RequestStatus.AcceptedAwaitingApproval;
+            var status = BusinessLogic.Enums.RequestStatus.AnsweredAwaitingApproval;
             var filter = new RequestFilterModel
             {
                 Status = status

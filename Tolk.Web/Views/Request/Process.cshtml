@@ -7,10 +7,10 @@
 @using Tolk.BusinessLogic.Utilities
 @using Tolk.BusinessLogic.Enums
 @{
-    ViewData["Title"] = Model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Byt ut tolk" : "Svara på bokningsförfrågan";
-    var declineHeader = @Model.OrderViewModel.ReplacingOrderId.HasValue ? "Tacka nej till ersättningsuppdrag" : "Tacka nej till bokning";
+    ViewData["Title"] = "Svara på bokningsförfrågan";
+    var declineHeader = "Tacka nej till bokning";
     HelpLinkService.PageName = "formedling-besvara-bokningsforfragan";
-    var headerHelpLink = Model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? string.Empty : HelpLinkService.PageName;
+    var headerHelpLink = HelpLinkService.PageName;
 }
 <section aria-label="@ViewData["Title"]">
     <div class="row">
@@ -26,9 +26,11 @@
                     }
                 </div>
                 <div class="col-sm-4">
-                    @if (Model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
+                    @if (Model.AllowAccept)
                     {
-                        <display-entry asp-for="Interpreter" />
+                        <div class="red-border-left">
+                            <display-entry asp-for="LastAcceptAt" />
+                        </div>
                     }
                 </div>
                 <div class="col-sm-4">
@@ -39,28 +41,30 @@
             </div>
             @if (Model.AllowProcessing)
             {
-                <form method="post" asp-action="Accept">
+                <form method="post" asp-action="Answer">
                     <input asp-for="RequestId" type="hidden" />
                     <input asp-for="OrderId" type="hidden" />
-
-                    @if (Model.OrderViewModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
+                    @if (Model.AllowAccept)
                     {
-                        @await Html.PartialAsync("_RequestSummary", Model.ProcessReplacementRequestViewModel, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", "Svar på ersatt bokningsförfrågan" }, { "isBroker", true } })
                         <div class="row">
                             <div class="col-sm-4">
-                                @if (Model.InterpreterLocation.HasValue)
+                                <form-entry asp-for="FullAnswer" />
+                            </div>
+                            <div class="col-sm-4">
+                                @if (Model.OrderViewModel.SpecificCompetenceLevelRequired)
                                 {
-                                    <input asp-for="InterpreterLocation" type="hidden" />
-                                }
-                                else
-                                {
-                                    <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderViewModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
+                                    <div id="required-competence-on-accept-panel">
+                                        <form-entry asp-for="InterpreterCompetenceLevelOnAccept" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderViewModel.RequestedCompetenceLevels).OrderByDescending(e => (int)e.Value).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
+                                    </div>
                                 }
                             </div>
                         </div>
-                    }
+                    } 
                     else
                     {
+                        <input asp-for="FullAnswer" type="hidden" />
+                    }
+                    <span class="full-answer-panel">
                         <div class="row">
                             <div class="col-sm-4 interpreter-panel">
                                 <form-entry asp-for="InterpreterId" type="select" asp-items="SelectListService.GetInterpreters(Model.BrokerId, interpreterToBeReplacedId: Model.OldInterpreterId, otherInterpreterId: Model.OtherInterpreterId).ToList()" help-link="@HelpLinkService.GenerateUrl("tolk")" />
@@ -75,7 +79,7 @@
                                     <span class="glyphicon message-icon glyphicon-ok"></span>
                                     <span class="info-message"></span>
                                     <span title="" class="form-entry-information glyphicon glyphicon-info-sign d-none"
-                                          data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
+                                      data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
                                 </div>
                             </div>
                             <div class="col-sm-4">
@@ -99,87 +103,83 @@
                                 }
                             </div>
                         </div>
-                    }
-                    <input asp-for="Status" type="hidden" />
-                    @if (Model.OrderViewModel.AllowSettingTravelCosts)
-                    {
-                        <div class="collapse" id="set-expected-travel-costs">
-                            <div class="row">
-                                <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
-                                <div class="col-sm-4">
-                                    <form-entry asp-for="ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
-                                </div>
-                                <div class="col-sm-4">
-                                    <form-entry asp-for="ExpectedTravelCostInfo" />
-                                </div>
-                            </div>
-                            @if (TolkOptions.Value.EnableSetLatestAnswerTimeForCustomer)
-                            {
-                                <div class="row">
-                                    <div class="col-sm-4">
-                                        <form-entry asp-for="SetLatestAnswerTimeForCustomer" layout-option="row" asp-items="SelectListService.BoolList" />
-                                        <div id="SetLatestAnswerTimeForCustomerValidator" class="d-none text-danger body">Ange om du vill sätta sista svarstid eller inte</div>
-                                    </div>
-                                    <div class="col-sm-8 d-none" id="latestAnswerTimeForCustomer">
-                                        <input asp-for="OrderViewModel.StartAt" type="hidden" />
-                                        <form-entry asp-for="LatestAnswerTimeForCustomer" />
-                                        <div id="LatestAnswerTimeForCustomerValidator" class="d-none text-danger body"></div>
-                                        <br /><br />
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-                    <div class="row">
-                        @if (!(Model.OrderViewModel.ReplacingOrderId.HasValue && Model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
+                        @if (Model.OrderViewModel.AllowSettingTravelCosts)
                         {
-                            <div class="col-sm-4">
-                                <label>Tillkommande krav</label> @HelpLinkService.Anchor("tillkommande-krav")<br />
-                                @if (Model.RequiredRequirementAnswers.Any())
+                            <div class="collapse" id="set-expected-travel-costs">
+                                <div class="row">
+                                    <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
+                                    <div class="col-sm-4">
+                                        <form-entry asp-for="ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <form-entry asp-for="ExpectedTravelCostInfo" />
+                                    </div>
+                                </div>
+                                @if (TolkOptions.Value.EnableSetLatestAnswerTimeForCustomer)
                                 {
-                                    @for (var i = 0; i < Model.RequiredRequirementAnswers.Count(); ++i)
-                                    {
-                                        <div class="border detail-text">
-                                            <span class="detail-text">@Model.RequiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.RequiredRequirementAnswers[i].Description</span>
-                                            <input asp-for="RequiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
-                                            <form-entry asp-for="RequiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla kravet" />
-                                            <input asp-for="RequiredRequirementAnswers[i].IsRequired" type="hidden" />
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            <form-entry asp-for="SetLatestAnswerTimeForCustomer" layout-option="row" asp-items="SelectListService.BoolList" />
+                                            <div id="SetLatestAnswerTimeForCustomerValidator" class="d-none text-danger body">Ange om du vill sätta sista svarstid eller inte</div>
                                         </div>
-                                    }
-                                }
-                                else
-                                {
-                                    <span class="no-value-info">Inga tillkommande krav är angivna</span>
-                                }
-                            </div>
-                            <div class="col-sm-4">
-                                <label>Tillkommande önskemål</label> @HelpLinkService.Anchor("tillkommande-onskemal")<br />
-                                @if (Model.DesiredRequirementAnswers.Any())
-                                {
-                                    @for (var i = 0; i < Model.DesiredRequirementAnswers.Count(); ++i)
-                                    {
-                                        <div class="border">
-                                            <span class="detail-text">@Model.DesiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.DesiredRequirementAnswers[i].Description</span>
-                                            <input asp-for="DesiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
-                                            <form-entry asp-for="DesiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla önskemålet" />
-                                            <form-entry asp-for="DesiredRequirementAnswers[i].Answer" />
-                                            <input asp-for="DesiredRequirementAnswers[i].IsRequired" type="hidden" />
+                                        <div class="col-sm-8 d-none" id="latestAnswerTimeForCustomer">
+                                            <input asp-for="OrderViewModel.StartAt" type="hidden" />
+                                            <form-entry asp-for="LatestAnswerTimeForCustomer" />
+                                            <div id="LatestAnswerTimeForCustomerValidator" class="d-none text-danger body"></div>
+                                            <br /><br />
                                         </div>
-
-                                    }
+                                    </div>
                                 }
-                                else
-                                {
-                                    <span class="no-value-info">Inga tillkommande önskemål är angivna</span>
-                                }
-                            </div>
-                            <div class="col-sm-4">
-                                <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
-                                @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
-                                <br />
-                                <br />
                             </div>
                         }
+                    </span>
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <label>Tillkommande krav</label> @HelpLinkService.Anchor("tillkommande-krav")<br />
+                            @if (Model.RequiredRequirementAnswers.Any())
+                            {
+                                @for (var i = 0; i < Model.RequiredRequirementAnswers.Count(); ++i)
+                                {
+                                    <div class="border detail-text">
+                                        <span class="detail-text">@Model.RequiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.RequiredRequirementAnswers[i].Description</span>
+                                        <input asp-for="RequiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
+                                        <form-entry asp-for="RequiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla kravet" />
+                                        <input asp-for="RequiredRequirementAnswers[i].IsRequired" type="hidden" />
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <span class="no-value-info">Inga tillkommande krav är angivna</span>
+                            }
+                        </div>
+                        <div class="col-sm-4">
+                            <label>Tillkommande önskemål</label> @HelpLinkService.Anchor("tillkommande-onskemal")<br />
+                            @if (Model.DesiredRequirementAnswers.Any())
+                            {
+                                @for (var i = 0; i < Model.DesiredRequirementAnswers.Count(); ++i)
+                                {
+                                    <div class="border">
+                                        <span class="detail-text">@Model.DesiredRequirementAnswers[i].RequirementType.GetDescription(): @Model.DesiredRequirementAnswers[i].Description</span>
+                                        <input asp-for="DesiredRequirementAnswers[i].OrderRequirementId" type="hidden" />
+                                        <form-entry asp-for="DesiredRequirementAnswers[i].CanMeetRequirement" label-override="Kan uppfylla önskemålet" />
+                                        <form-entry asp-for="DesiredRequirementAnswers[i].Answer" />
+                                        <input asp-for="DesiredRequirementAnswers[i].IsRequired" type="hidden" />
+                                    </div>
+
+                                }
+                            }
+                            else
+                            {
+                                <span class="no-value-info">Inga tillkommande önskemål är angivna</span>
+                            }
+                        </div>
+                        <div class="col-sm-4">
+                            <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
+                            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
+                            <br />
+                            <br />
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-sm-4">
@@ -188,35 +188,21 @@
                     </div>
 
                     @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderViewModel)
-                    @if (Model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                    {
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <a class="btn btn-large btn-warning do-not-check-dirty left-md-button" href="@Url.Action("View", new { id = Model.RequestId })">Avbryt <span class="btn-remove-times">&times;</span></a>
-                            </div>
-                            <div class="col-sm-6">
-                                <button id="Accept" class="btn btn-large btn-primary right-md-button" data-set-status="Accepted">Byt tolk</button>
-                            </div>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <a class="btn btn-large btn-warning do-not-check-dirty left-lg-button" id="cancel-go-back">Avbryt <span class="btn-remove-times">&times;</span></a>
                         </div>
-                    }
-                    else
-                    {
-                        @if (Model.OrderViewModel.ReplacingOrderId.HasValue)
-                        {
-                            <div class="important-info">Observera att detta uppdrag ersätter tidigare uppdrag @Model.OrderViewModel.ReplacingOrderNumber som avbokats med mindre än 48 timmar kvar. <br /></div>
-                        }
-                        <div class="row">
-                            <div class="col-lg-4">
-                                <a class="btn btn-large btn-warning do-not-check-dirty left-lg-button" id="cancel-go-back">Avbryt <span class="btn-remove-times">&times;</span></a>
-                            </div>
-                            <div class="col-lg-4 center-lg-button">
-                                <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-large btn-danger">Tacka nej till bokning</button>
-                            </div>
-                            <div class="col-lg-4">
-                                <button id="Accept" class="btn btn-large btn-success right-lg-button" data-set-status="Accepted">Acceptera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
-                            </div>
+                        <div class="col-lg-4 center-lg-button">
+                            <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-large btn-danger">Tacka nej till bokning</button>
                         </div>
-                    }
+                        <div class="col-lg-4">
+                            @if (Model.AllowAccept)
+                            {
+                                <button id="Accept" class="btn btn-large btn-success right-lg-button">Bekräfta <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                            }
+                            <button id="Answer" class="btn btn-large btn-success right-lg-button d-none">Acceptera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                        </div>
+                    </div>
                 </form>
             }
             else

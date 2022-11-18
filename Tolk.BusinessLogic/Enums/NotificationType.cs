@@ -190,18 +190,18 @@ namespace Tolk.BusinessLogic.Enums
         RequestAssignmentTimePassed = 25,
 
         [Description("Beställning fullständigt besvarad")]
-        [CustomName("order_accepted", false)]
+        [CustomName("order_answered_and_approved", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
-        OrderAccepted = 26,
+        OrderAnsweredAndApproved = 26,
 
         [Description("Beställning besvarad, inväntar godkännande av beställare")]
         [CustomName("order_answered", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
-        OrderAnswered = 27,
+        OrderAnsweredAwaitingApproval = 27,
 
         [Description("Beställning avböjd av förmedling")]
         [CustomName("order_declined", false)]
@@ -418,5 +418,12 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         RequestGroupCreatedForAcceptance = 60,
+
+        [Description("Beställning besvarad, inväntar godkännande av beställare")]
+        [CustomName("order_accepted", false)]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [NotificationConsumerType(NotificationConsumerType.Customer)]
+        OrderAccepted = 61,
+
     }
 }

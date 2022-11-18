@@ -842,7 +842,7 @@ namespace Tolk.Web.Controllers
             try
             {
                 acceptedRequests = _dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
-                    .Where(r => r.RowType == StartListRowType.Request && ((r.RequestGroupId == null & r.RequestStatus == RequestStatus.AcceptedAwaitingApproval) || r.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) &&
+                    .Where(r => r.RowType == StartListRowType.Request && ((r.RequestGroupId == null & r.RequestStatus == RequestStatus.AnsweredAwaitingApproval) || r.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) &&
                         r.StartAt > _clock.SwedenNow)
                     .Select(r => new StartListItemModel
                     {
@@ -868,7 +868,7 @@ namespace Tolk.Web.Controllers
             try
             {
                 acceptedRequests.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
-                .Where(rg => rg.RowType == StartListRowType.RequestGroup && rg.RequestGroupStatus == RequestStatus.AcceptedAwaitingApproval && !(rg.StartAt < _clock.SwedenNow))
+                .Where(rg => rg.RowType == StartListRowType.RequestGroup && rg.RequestGroupStatus == RequestStatus.AnsweredAwaitingApproval && !(rg.StartAt < _clock.SwedenNow))
                 .Select(rg => new StartListItemModel
                 {
                     Orderdate = new TimeRange { StartDateTime = rg.StartAt, EndDateTime = rg.EndAt },

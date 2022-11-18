@@ -538,7 +538,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnswerAutomaticallyApproved), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
-            NotificationType notificationType = NotificationType.OrderAccepted;
+            NotificationType notificationType = NotificationType.OrderAnsweredAndApproved;
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
                 var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
@@ -1019,11 +1019,11 @@ Sammanställning:
             }
         }
 
-        public void RequestAccepted(Request request)
+        public void RequestAnsweredAwaitingApproval(Request request)
         {
-            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAccepted), nameof(NotificationService));
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAnsweredAwaitingApproval), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
-            NotificationType notificationType = NotificationType.OrderAnswered;
+            NotificationType notificationType = NotificationType.OrderAnsweredAwaitingApproval;
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
                 var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}\n\n" +
@@ -1039,7 +1039,7 @@ Sammanställning:
                     notificationType
                 );
             }
-            var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderAnswered, NotificationChannel.Webhook, NotificationConsumerType.Customer);
+            var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderAnsweredAwaitingApproval, NotificationChannel.Webhook, NotificationConsumerType.Customer);
             if (webhook != null)
             {
                 CreateWebHookCall(new OrderAnsweredModel
@@ -1050,6 +1050,27 @@ Sammanställning:
                 webhook.ContactInformation,
                 webhook.NotificationType,
                 webhook.RecipientUserId);
+            }
+        }
+        
+        public void RequestAccepted(Request request)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(RequestAccepted), nameof(NotificationService));
+            string orderNumber = request.Order.OrderNumber;
+            NotificationType notificationType = NotificationType.OrderAccepted;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                var body = $"Bekräftelse på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit.\n\n" +
+                    OrderReferenceNumberInfo(request.Order) +
+                    $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
+                    $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n"+
+                    $"Förmedlingen har fram till {request.ExpiresAt.Value.ToSwedishString("yyyy-MM-dd HH:mm")} på sig att tillsätta tolk.\n";
+
+                CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bekräftat bokningsförfrågan {orderNumber}",
+                    body + GoToOrderPlain(request.Order.OrderId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
+                    notificationType
+                );
             }
         }
 
@@ -1199,7 +1220,7 @@ Sammanställning:
 
             switch (request.Status)
             {
-                case RequestStatus.AcceptedAwaitingApproval:
+                case RequestStatus.AnsweredAwaitingApproval:
                     notificationType = NotificationType.ReplamentOrderAccepted;
                     if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
                     {
@@ -1761,7 +1782,7 @@ Sammanställning:
         }
         private void NotifyCustomerOnAcceptedAnswer(Request request, string orderNumber)
         {
-            var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderAccepted, NotificationChannel.Webhook, NotificationConsumerType.Customer);
+            var webhook = GetOrganisationNotificationSettings(request.Order.CustomerOrganisationId, NotificationType.OrderAnsweredAndApproved, NotificationChannel.Webhook, NotificationConsumerType.Customer);
             if (webhook != null)
             {
                 CreateWebHookCall(new OrderAcceptedModel

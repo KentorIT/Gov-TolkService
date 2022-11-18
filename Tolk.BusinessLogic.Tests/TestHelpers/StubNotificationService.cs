@@ -58,7 +58,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RemindUnhandledRequestGroup(RequestGroup requestGrpoup) { }
 
-        public void RequestAccepted(Request request) { }
+        public void RequestAnsweredAwaitingApproval(Request request) { }
 
         public void RequestAnswerApproved(Request request) { }
 
@@ -113,5 +113,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void RequestTerminatedDueToTerminatedFrameworkAgreement(Request request) { }
 
         public void RequestGroupTerminatedDueToTerminatedFrameworkAgreement(RequestGroup requestGroup) { }
+
+        public void RequestAccepted(Request request) { }
     }
 }
