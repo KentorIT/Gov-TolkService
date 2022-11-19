@@ -46,8 +46,11 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string CancelMessage { get; set; }
 
-        [Display(Name = "Svara senast")]
+        [Display(Name = "Tillsätt tolk senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
+
+        [Display(Name = "Bekräfta senast")]
+        public DateTimeOffset? LastAcceptAt { get; set; }
 
         public string ColorClassName => CssClassHelper.GetColorClassNameForRequestStatus(Status);
 

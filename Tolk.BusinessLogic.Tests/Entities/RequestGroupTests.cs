@@ -233,7 +233,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(true, true, true, InterpreterLocation.OffSitePhone)]
         [InlineData(false, false, true, InterpreterLocation.OffSitePhone)]
         [InlineData(true, false, true, InterpreterLocation.OffSitePhone)]
-        public void Accept_Valid(bool receive, bool hasTravelCosts, bool partialAnswer, InterpreterLocation actualLocation)
+        public void Answer_Valid(bool receive, bool hasTravelCosts, bool partialAnswer, InterpreterLocation actualLocation)
         {
             var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTGROUPALLOWEXCEEDINGJUSTCREATED");
             var requestGroup = orderGroup.RequestGroups.First();
@@ -253,7 +253,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 requestGroup.Received(acceptAt, userId, impersonatorId);
             }
             requestGroup.Requests.ForEach(r => r.InterpreterLocation = (int?)actualLocation);
-            requestGroup.Accept(acceptAt, userId, impersonatorId, Enumerable.Empty<RequestGroupAttachment>().ToList(), hasTravelCosts, partialAnswer, null, "12345");
+            requestGroup.Answer(acceptAt, userId, impersonatorId, Enumerable.Empty<RequestGroupAttachment>().ToList(), hasTravelCosts, partialAnswer, null, "12345");
 
             Assert.Equal(expectedOrderStatus, requestGroup.OrderGroup.Status);
             Assert.Equal(expectedRequestGroupStatus, requestGroup.Status);
@@ -285,12 +285,36 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.PartiallyApproved)]
         [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
         [InlineData(RequestStatus.ToBeProcessedByBroker)]
+        public void Answer_Invalid(RequestStatus status)
+        {
+            var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTSJUSTCREATED");
+            var requestGroup = orderGroup.RequestGroups.First();
+            requestGroup.SetStatus(status, false);
+            Assert.Throws<InvalidOperationException>(() => requestGroup.Answer(DateTime.Now, 10, null, Enumerable.Empty<RequestGroupAttachment>().ToList(), false, false, null, null));
+        }
+#warning add test for accept
+        [Theory]
+        [InlineData(RequestStatus.AcceptedAwaitingInterpreter)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
+        [InlineData(RequestStatus.Approved)]
+        [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
+        [InlineData(RequestStatus.CancelledByCreator)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.DeclinedByBroker)]
+        [InlineData(RequestStatus.DeniedByCreator)]
+        [InlineData(RequestStatus.DeniedByTimeLimit)]
+        [InlineData(RequestStatus.LostDueToQuarantine)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer)]
+        [InlineData(RequestStatus.PartiallyAccepted)]
+        [InlineData(RequestStatus.PartiallyApproved)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker)]
         public void Accept_Invalid(RequestStatus status)
         {
             var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTSJUSTCREATED");
             var requestGroup = orderGroup.RequestGroups.First();
             requestGroup.SetStatus(status, false);
-            Assert.Throws<InvalidOperationException>(() => requestGroup.Accept(DateTime.Now, 10, null, Enumerable.Empty<RequestGroupAttachment>().ToList(), false, false, null, null));
+            Assert.Throws<InvalidOperationException>(() => requestGroup.Accept(DateTime.Now, 10,null, Enumerable.Empty<RequestGroupAttachment>().ToList(), false, null));
         }
 
         [Fact]

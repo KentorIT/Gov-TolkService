@@ -293,6 +293,7 @@ namespace Tolk.BusinessLogic.Services
             if (request != null)
             {
                 var newRequest = await _tolkDbContext.Requests.GetRequestForNewRequestById(request.RequestId);
+                newRequest.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToListAsync();
                 if (calculatedExpiry.ExpiryAt.HasValue)
                 {
                     _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",

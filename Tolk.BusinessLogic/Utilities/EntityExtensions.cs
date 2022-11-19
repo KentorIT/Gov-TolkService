@@ -393,7 +393,11 @@ namespace Tolk.BusinessLogic.Utilities
         #region lists connected to ordergroup and requestgroup
 
         public static IQueryable<Request> GetRequestsForRequestGroup(this IQueryable<Request> requests, int id)
-            => requests.Include(r => r.Order).Include(r => r.Interpreter).Where(r => r.RequestGroupId == id);
+            => requests
+            .Include(r => r.Order)
+            .Include(r => r.Interpreter)
+            .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement)
+            .Where(r => r.RequestGroupId == id);
 
         public static IQueryable<Request> GetRequestsWithIncludesForRequestGroup(this IQueryable<Request> requests, int id)
             => requests.GetRequestsWithBaseIncludesAndRegionAndLanguage()

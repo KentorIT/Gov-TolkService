@@ -7,6 +7,7 @@
             var isRequired = $('#' + $(this).attr('id').replace('CanMeetRequirement', 'IsRequired')).attr('value') === 'True';
 
             if (isRequired && !isChecked) {
+                $('#Answer').attr('disabled', true);
                 $('#Accept').attr('disabled', true);
                 requirementNotFulfilled = false;
                 return false;
@@ -14,6 +15,26 @@
         });
         return requirementNotFulfilled;
     };
+
+
+    $("body").on("change", "#FullAnswer", function () {
+        toggleFullAnswerPanel();
+    });
+
+    function toggleFullAnswerPanel() {
+        if ($("#FullAnswer").is(":hidden") || $("#FullAnswer").is(":checked")) {
+            $(".full-answer-panel").show();
+            $("#Answer").show();
+            $("#Accept").hide();
+            $(".required-competence-on-accept-panel").hide();
+        }
+        else {
+            $(".full-answer-panel").hide();
+            $("#Answer").hide();
+            $("#Accept").show();
+            $(".required-competence-on-accept-panel").show();
+        }
+    }
 
     var checkSameInterpreter = function () {
         if ($("#InterpreterAnswerModel_InterpreterId").val() != "" && $("#InterpreterAnswerModel_InterpreterId").val() !== "-1"
@@ -30,13 +51,15 @@
 
     function clientValidate() {
         if (checkSameInterpreter() && checkRequirements()) {
+            $('#Answer').attr('disabled', false);
             $('#Accept').attr('disabled', false);
         }
     }
 
     function triggerValidator(message, validatorId) {
+        $('#Answer').attr('disabled', true);
         $('#Accept').attr('disabled', true);
-        validatorId.empty();
+       validatorId.empty();
         validatorId.append(message);
         validatorId.show();
     }
@@ -133,10 +156,14 @@
         return "";
     }
 
-    checkRequirements();
-    setExpectedTravelcost();
-    setInterpreter();
-    setLatestAnswerDateTimeSpan();
+    $(document).ready(function () {
+
+        checkRequirements();
+        setExpectedTravelcost();
+        setInterpreter();
+        setLatestAnswerDateTimeSpan();
+        toggleFullAnswerPanel();
+    });
 
     $("#InterpreterAnswerModel_InterpreterCompetenceLevel, #InterpreterAnswerModel_NewInterpreterOfficialInterpreterId").change(function () {
         validateInterpreter(".interpreter-selection-panel", $('#InterpreterAnswerModel_InterpreterId').val(), $('#InterpreterAnswerModel_NewInterpreterOfficialInterpreterId').val(), $("#InterpreterAnswerModel_InterpreterCompetenceLevel").val(), null, $("#OrderGroupId").val(), $("#InterpreterAnswerModel_InterpreterId option:selected").data('additional') === "Protected");
@@ -157,7 +184,20 @@
         handlePartialDecline(".outer-extra-interpreter-panel");
     });
 
-    $("#Accept").closest("form").on("submit", function () { if (!validateSetLatestAnswerTimeForCustomer() || !validateLatestAnswerTimeWithinValidTimeSpan()) { return false; }; $("#Accept").disableOnSubmit(); });
+    $("body").on("click", "#Accept", function () {
+        var $form = $(this).closest("form");
+        var $action = $form.prop("action");
+        $form.prop("action", $action.replace("/Answer", "/Accept"));
+        $form.submit();
+        $("#Accept").disableOnSubmit();
+    });
+
+    $("#Answer").closest("form").on("submit", function () {
+        if (!validateSetLatestAnswerTimeForCustomer() || !validateLatestAnswerTimeWithinValidTimeSpan()) {
+            return false;
+        };
+        $("#Answer").disableOnSubmit();
+    });
 
     $('#InterpreterLocation').change(function () {
         setExpectedTravelcost();

@@ -189,7 +189,7 @@ namespace Tolk.BusinessLogic.Services
             }
 
             // add the attachments to the group...
-            requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer, latestAnswerTimeForCustomer, brokerReferenceNumber);
+            requestGroup.Answer(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer, latestAnswerTimeForCustomer, brokerReferenceNumber);
 
             if (partialAnswer)
             {
@@ -215,6 +215,80 @@ namespace Tolk.BusinessLogic.Services
                 {
                     _notificationService.RequestGroupAnswerAutomaticallyApproved(requestGroup);
                 }
+            }
+        }
+
+        public async Task AcceptGroup(
+            RequestGroup requestGroup,
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            InterpreterAcceptDto accept,
+            InterpreterAcceptDto extraAccept,
+            List<RequestGroupAttachment> attachedFiles,
+            string brokerReferenceNumber
+        )
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(accept, nameof(AcceptGroup), nameof(RequestService));
+
+            var declinedRequests = new List<Request>();
+            await _orderService.AddOrdersWithListsForGroupToProcess(requestGroup.OrderGroup);
+            bool isSingleOccasion = requestGroup.OrderGroup.IsSingleOccasion;
+            bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
+            if (hasExtraInterpreter)
+            {
+                NullCheckHelper.ArgumentCheckNull(extraAccept, nameof(AcceptGroup), nameof(RequestService));
+            }
+
+            bool partialAnswer = false;
+
+            requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            await AddPriceRowsToRequestsInGroup(requestGroup);
+            await AddRequirementAnswersToRequestsInGroup(requestGroup);
+            requestGroup.Requests.ForEach(r => r.Order = requestGroup.OrderGroup.Orders.Where(o => o.OrderId == r.OrderId).SingleOrDefault());
+            foreach (var request in requestGroup.Requests)
+            {
+                bool isExtraInterpreterOccasion = request.Order.IsExtraInterpreterForOrderId.HasValue;
+                if (isExtraInterpreterOccasion)
+                {
+                    if (extraAccept.Accepted)
+                    {
+                        AcceptReqestGroupRequest(request,
+                            acceptTime,
+                            userId,
+                            impersonatorId,
+                            extraAccept,
+                            Enumerable.Empty<RequestAttachment>().ToList()
+                       );
+                    }
+                    else
+                    {
+                        partialAnswer = true;
+                        await Decline(request, acceptTime, userId, impersonatorId, extraAccept.DeclineMessage, false, false);
+                        declinedRequests.Add(request);
+                    }
+                }
+                else
+                {
+                    AcceptReqestGroupRequest(request,
+                        acceptTime,
+                        userId,
+                        impersonatorId,
+                        accept,
+                        Enumerable.Empty<RequestAttachment>().ToList()
+                    );
+                }
+            }
+            requestGroup.Accept(acceptTime, userId, impersonatorId, attachedFiles, partialAnswer, brokerReferenceNumber);
+
+            if (partialAnswer)
+            {
+                throw new NotImplementedException("Havn't implemented partial accept on groups");
+            }
+            else
+            {
+                    _notificationService.RequestGroupAccepted(requestGroup);
             }
         }
 
@@ -683,6 +757,11 @@ namespace Tolk.BusinessLogic.Services
         private void AnswerReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
         {
             AnswerRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, string.Empty, overrideRequireAccept);
+        }
+
+        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAcceptDto accept, List<RequestAttachment> attachedFiles)
+        {
+            AcceptRequest(request, acceptTime, userId, impersonatorId, accept.CompetenceLevel, ReplaceIds(request.Order.Requirements, accept.RequirementAnswers).ToList(), attachedFiles, string.Empty);
         }
 
         private static IEnumerable<OrderRequirementRequestAnswer> ReplaceIds(List<OrderRequirement> requirements, IEnumerable<OrderRequirementRequestAnswer> requirementAnswers)

@@ -1,18 +1,11 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Tolk.BusinessLogic.Enums;
+﻿using System.ComponentModel.DataAnnotations;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class InterpreterAnswerModel : IModel
+    public class InterpreterAnswerModel : InterpreterAcceptModel, IModel
     {
-
-        [ClientRequired]
-        [Display(Name = "Tolkens kompetensnivå")]
-        public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
-
         [Required]
         [Display(Name = "Tolk", Description = "I de fall tillsatt tolk har skyddad identitet skall inte tolkens namn eller kontaktuppgifter finnas i bekräftelsen. Använd i dessa fall valet ”Tolk med skyddade personuppgifter”. Överlämna tolkens uppgifter på annat sätt i enlighet med era säkerhetsrutiner")]
         public int? InterpreterId { get; set; }
@@ -56,16 +49,11 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string ExpectedTravelCostInfo { get; set; }
 
-        [Display(Name = "Kommentar till tacka nej", Description = "Beskriv varför det inte är mökligt att tillsätta den extra tolken")]
+        [Display(Name = "Kommentar till tacka nej", Description = "Beskriv varför det inte är möjligt att tillsätta den extra tolken")]
         [Placeholder("Ange en anledning till varför ni inte kan tillsätta denna tolk")]
         [StringLength(1000)]
         [DataType(DataType.MultilineText)]
         [ClientRequired]
         public string DeclineMessage { get; set; }
-
-        public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; }
-
-        public List<RequestRequirementAnswerModel> DesiredRequirementAnswers { get; set; }
-
     }
 }

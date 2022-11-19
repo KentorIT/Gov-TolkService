@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -17,6 +18,13 @@ namespace Tolk.Web.Models
         public bool ShouldAssignExtraInterpreter { get; set; } = true;
 
         public bool AllowDeclineExtraInterpreter { get; set; }
+        public bool AllowAccept { get; set; }
+
+        [Display(Name = "Tillsätt tolk direkt", Description = "Detta är en förfrågan med lång framförhållning, där ni som förmedling inte behöver tillsätta tolk i första svaret. Men om ni gör det så kommer det anses som en fullständig tillsättning, vilket gör att ni inte behöver tillsätta tolken senare.")]
+        public bool FullAnswer { get; set; } = true;
+
+        public InterpreterAcceptModel InterpreterAcceptModel { get; set; }
+        public InterpreterAcceptModel ExtraInterpreterAcceptModel { get; set; }
 
         public IEnumerable<CompetenceAndSpecialistLevel> RequestedCompetenceLevels
         {
@@ -72,6 +80,8 @@ namespace Tolk.Web.Models
             Order order = requestGroup.Requests.First().Order;
             return new RequestGroupProcessModel
             {
+                AllowAccept = requestGroup.CanAccept,
+                FullAnswer = !requestGroup.CanAccept,
                 AllowDeclineExtraInterpreter = allowDeclineExtraInterpreter,
                 OrderGroupId = requestGroup.OrderGroupId,
                 RequestGroupId = requestGroup.RequestGroupId,
@@ -81,6 +91,7 @@ namespace Tolk.Web.Models
                 CombinedMaxSizeAttachments = combinedMaxSizeAttachments,
                 CreatedAt = requestGroup.CreatedAt,
                 ExpiresAt = requestGroup.ExpiresAt.Value,
+                LastAcceptAt = requestGroup.LastAcceptAt,
                 OccasionList = new OccasionListModel
                 {
                     Occasions = requestGroup.Requests.Where(r => r.Status != RequestStatus.InterpreterReplaced)

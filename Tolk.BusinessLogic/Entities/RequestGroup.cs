@@ -222,7 +222,7 @@ namespace Tolk.BusinessLogic.Entities
             OrderGroup.Status = OrderStatus.TerminatedDueToTerminatedFrameworkAgreement;
         }
 
-        public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool hasTravelCosts, bool partialAnswer, DateTimeOffset? latestAnswerTimeForCustomer, string brokerReferenceNumber)
+        public void Answer(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool hasTravelCosts, bool partialAnswer, DateTimeOffset? latestAnswerTimeForCustomer, string brokerReferenceNumber)
         {
             if (!IsToBeProcessedByBroker)
             {
@@ -241,6 +241,26 @@ namespace Tolk.BusinessLogic.Entities
                 partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.AnsweredAwaitingApproval :
                 partialAnswer ? RequestStatus.PartiallyApproved : RequestStatus.Approved, false);
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
+            BrokerReferenceNumber = brokerReferenceNumber;
+        }
+        
+        public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool partialAnswer, string brokerReferenceNumber)
+        {
+            if (!CanAccept)
+            {
+                throw new InvalidOperationException($"Det gick inte att bekräfta på sammanhållen förfrågan med boknings-id {OrderGroup.OrderGroupNumber}, den har redan blivit besvarad");
+            }
+            if (partialAnswer)
+            {
+                throw new InvalidOperationException($"Del-bekräftelse är inte implementerad");
+            }
+
+            AcceptedAt = acceptTime;
+            AcceptedBy = userId;
+            ImpersonatingAcceptedBy = impersonatorId;
+            Attachments = attachedFiles;
+            OrderGroup.SetStatus(OrderStatus.RequestAcceptedAwaitingInterpreter);
+            SetStatus(RequestStatus.AcceptedAwaitingInterpreter, false);
             BrokerReferenceNumber = brokerReferenceNumber;
         }
 
