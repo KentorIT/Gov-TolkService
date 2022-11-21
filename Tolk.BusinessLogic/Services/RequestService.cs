@@ -91,6 +91,7 @@ namespace Tolk.BusinessLogic.Services
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
+            InterpreterLocation interpreterLocation, 
             CompetenceAndSpecialistLevel? competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
@@ -101,7 +102,7 @@ namespace Tolk.BusinessLogic.Services
             request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
-            AcceptRequest(request, acceptTime, userId, impersonatorId, competenceLevel, requirementAnswers, attachedFiles, brokerReferenceNumber);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, brokerReferenceNumber);
             //Create notification
             _notificationService.RequestAccepted(request);
         }
@@ -223,6 +224,7 @@ namespace Tolk.BusinessLogic.Services
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
+            InterpreterLocation interpreterLocation,
             InterpreterAcceptDto accept,
             InterpreterAcceptDto extraAccept,
             List<RequestGroupAttachment> attachedFiles,
@@ -258,6 +260,7 @@ namespace Tolk.BusinessLogic.Services
                             acceptTime,
                             userId,
                             impersonatorId,
+                            interpreterLocation,
                             extraAccept,
                             Enumerable.Empty<RequestAttachment>().ToList()
                        );
@@ -275,6 +278,7 @@ namespace Tolk.BusinessLogic.Services
                         acceptTime,
                         userId,
                         impersonatorId,
+                        interpreterLocation,
                         accept,
                         Enumerable.Empty<RequestAttachment>().ToList()
                     );
@@ -284,7 +288,7 @@ namespace Tolk.BusinessLogic.Services
 
             if (partialAnswer)
             {
-                throw new NotImplementedException("Havn't implemented partial accept on groups");
+                throw new NotImplementedException("Haven't implemented partial accept on groups");
             }
             else
             {
@@ -326,7 +330,7 @@ namespace Tolk.BusinessLogic.Services
                 impersonatorId,
                 expectedTravelCostInfo,
                 interpreterLocation,
-                _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, expectedTravelCosts),
+                _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, interpreterLocation, expectedTravelCosts),
                 latestAnswerTimeForCustomer,
                 brokerReferenceNumber
             );
@@ -436,7 +440,7 @@ namespace Tolk.BusinessLogic.Services
                 competenceLevel,
                 requirementAnswers,
                 attachedFiles,
-                _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts),
+                _priceCalculationService.GetPrices(request, competenceLevel, interpreterLocation, expectedTravelCosts),
                 noNeedForUserAccept,
                 request,
                 expectedTravelCostInfo,
@@ -741,17 +745,17 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AnswerRequest), nameof(RequestService));
             //Get prices
-            var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
+            var prices = _priceCalculationService.GetPrices(request, competenceLevel, interpreterLocation, expectedTravelCosts);
             request.Answer(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult, overrideRequireAccept);
         }
 
-        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, CompetenceAndSpecialistLevel? competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, string brokerReferenceNumber)
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel? competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, string brokerReferenceNumber)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
             //Get prices
             var competenceLevelForPriceCalculation = competenceLevel ?? OrderService.SelectCompetenceLevelForPriceEstimation(request.Order.CompetenceRequirements?.Select(item => item.CompetenceLevel));
-            var prices = _priceCalculationService.GetPrices(request, competenceLevelForPriceCalculation, null);
-            request.Accept(acceptTime, userId, impersonatorId, competenceLevel, requirementAnswers, attachedFiles, prices, brokerReferenceNumber);
+            var prices = _priceCalculationService.GetPrices(request, competenceLevelForPriceCalculation, interpreterLocation, null);
+            request.Accept(acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, brokerReferenceNumber);
         }
 
         private void AnswerReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
@@ -759,9 +763,9 @@ namespace Tolk.BusinessLogic.Services
             AnswerRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, string.Empty, overrideRequireAccept);
         }
 
-        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAcceptDto accept, List<RequestAttachment> attachedFiles)
+        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, InterpreterAcceptDto accept, List<RequestAttachment> attachedFiles)
         {
-            AcceptRequest(request, acceptTime, userId, impersonatorId, accept.CompetenceLevel, ReplaceIds(request.Order.Requirements, accept.RequirementAnswers).ToList(), attachedFiles, string.Empty);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreterLocation, accept.CompetenceLevel, ReplaceIds(request.Order.Requirements, accept.RequirementAnswers).ToList(), attachedFiles, string.Empty);
         }
 
         private static IEnumerable<OrderRequirementRequestAnswer> ReplaceIds(List<OrderRequirement> requirements, IEnumerable<OrderRequirementRequestAnswer> requirementAnswers)

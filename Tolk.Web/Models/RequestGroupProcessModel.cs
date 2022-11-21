@@ -18,12 +18,18 @@ namespace Tolk.Web.Models
         public bool ShouldAssignExtraInterpreter { get; set; } = true;
 
         public bool AllowDeclineExtraInterpreter { get; set; }
+
         public bool AllowAccept { get; set; }
 
         [Display(Name = "Tillsätt tolk direkt", Description = "Detta är en förfrågan med lång framförhållning, där ni som förmedling inte behöver tillsätta tolk i första svaret. Men om ni gör det så kommer det anses som en fullständig tillsättning, vilket gör att ni inte behöver tillsätta tolken senare.")]
         public bool FullAnswer { get; set; } = true;
 
+        [ClientRequired]
+        [Display(Name = "Inställelsesätt")]
+        public InterpreterLocation? InterpreterLocationOnAccept { get; set; }
+
         public InterpreterAcceptModel InterpreterAcceptModel { get; set; }
+
         public InterpreterAcceptModel ExtraInterpreterAcceptModel { get; set; }
 
         public IEnumerable<CompetenceAndSpecialistLevel> RequestedCompetenceLevels

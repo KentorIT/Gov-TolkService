@@ -78,7 +78,7 @@ namespace Tolk.Web.Api.Services
             request.Order.Requirements = await _dbContext.OrderRequirements.GetRequirementsForOrder(request.OrderId).ToListAsync();
             request.Order.InterpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToListAsync();
             request.Order.CompetenceRequirements = await _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.OrderId).ToListAsync();
-            var priceRows = _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.Order.PriceCalculatedFromCompetenceLevel, null).PriceRows.ToList();
+            var priceRows = _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.Order.PriceCalculatedFromCompetenceLevel, null, null).PriceRows.ToList();
             var calculationCharges = _dbContext.PriceCalculationCharges.GetPriceCalculationChargesByIds(priceRows.Where(p => p.PriceCalculationChargeId.HasValue).Select(p => p.PriceCalculationChargeId.Value).ToList());
             priceRows.Where(p => p.PriceCalculationChargeId.HasValue).ToList().ForEach(p => p.PriceCalculationCharge = new PriceCalculationCharge { ChargePercentage = calculationCharges.Where(c => c.PriceCalculationChargeId == p.PriceCalculationChargeId).FirstOrDefault().ChargePercentage });
 

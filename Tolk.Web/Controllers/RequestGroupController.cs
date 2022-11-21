@@ -221,6 +221,7 @@ namespace Tolk.Web.Controllers
                             _clock.SwedenNow,
                             User.GetUserId(),
                             User.TryGetImpersonatorId(),
+                            model.InterpreterLocationOnAccept,
                             model.InterpreterAcceptModel.AcceptDto,
                             model.ExtraInterpreterAcceptModel?.AcceptDto,
                             model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList(),
@@ -384,13 +385,14 @@ namespace Tolk.Web.Controllers
             await _requestService.AddRequestsWithConfirmationListsToRequestGroup(requestGroup);
             return requestGroup;
         }
+
         private PriceInformationModel GetPriceinformationOrderToDisplay(Request request, List<CompetenceAndSpecialistLevel> requestedCompetenceLevels)
         {
             return new PriceInformationModel
             {
                 MealBreakIsNotDetucted = request.Order.MealBreakIncluded ?? false,
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(
-                    _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
+                    _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null, null).PriceRows),
                 Header = "Beräknat pris enligt bokningsförfrågan",
                 UseDisplayHideInfo = true
             };

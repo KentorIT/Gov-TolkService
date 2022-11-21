@@ -26,13 +26,13 @@
             $(".full-answer-panel").show();
             $("#Answer").show();
             $("#Accept").hide();
-            $(".required-competence-on-accept-panel").hide();
+            $(".required-on-accept-panel").hide();
         }
         else {
             $(".full-answer-panel").hide();
             $("#Answer").hide();
             $("#Accept").show();
-            $(".required-competence-on-accept-panel").show();
+            $(".required-on-accept-panel").show();
         }
     }
 

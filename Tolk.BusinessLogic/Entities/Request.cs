@@ -300,6 +300,7 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
+            InterpreterLocation interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
@@ -321,8 +322,10 @@ namespace Tolk.BusinessLogic.Entities
             }
             ValidateRequirementsAgainstOrder(requirementAnswers);
             ValidateCompetenceLevelAgainstOrder(competenceLevel);
+            ValidateInterpreterLocationAgainstOrder(interpreterLocation);
             AcceptedAt = acceptTime;
             AcceptedBy = userId;
+            InterpreterLocation = (int?)interpreterLocation;
             ImpersonatingAcceptedBy = impersonatorId;
             CompetenceLevel = (int?)competenceLevel;
             RequirementAnswers = requirementAnswers;

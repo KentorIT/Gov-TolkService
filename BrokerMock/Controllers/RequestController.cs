@@ -889,21 +889,21 @@ namespace BrokerMock.Controllers
                 } : new InterpreterGroupAnswerModel { Accepted = false, DeclineMessage = "Det är svårt för att lösa det, helt enkelt." },
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
-            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Accept"), content);
+            using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Answer"), content);
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Accept] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}");
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer] FAILED Unauthorized:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}");
                 return false;
             }
             var answer = JsonConvert.DeserializeObject<GroupAnswerResponse>(await response.Content.ReadAsStringAsync());
             if (answer.Success)
             {
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Accept]:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}, och fick tillbaka id: {answer.InterpreterId}. {(answer.ExtraInterpreterId.HasValue ? $"Extra tolk id: {answer.ExtraInterpreterId}" : string.Empty)}");
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer]:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email}, och fick tillbaka id: {answer.InterpreterId}. {(answer.ExtraInterpreterId.HasValue ? $"Extra tolk id: {answer.ExtraInterpreterId}" : string.Empty)}");
             }
             else
             {
                 var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(await response.Content.ReadAsStringAsync());
-                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Accept] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email} ErrorMessage: {errorResponse.ErrorMessage}");
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", $"[RequestGroup/Answer] FAILED:: Sammanhållen Boknings-ID: {orderGroupNumber} skickad tolk: {interpreter.Email} ErrorMessage: {errorResponse.ErrorMessage}");
             }
             return true;
         }

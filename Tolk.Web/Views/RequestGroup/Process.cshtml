@@ -222,8 +222,13 @@
                         <div class="col-sm-4">
                             <form-entry asp-for="FullAnswer" />
                         </div>
+                        <div class="col-sm-4">
+                            <div class="required-on-accept-panel">
+                                <form-entry asp-for="InterpreterLocationOnAccept" type="select" asp-items="SelectListService.FilteredInterpreterLocations(Model.RankedInterpreterLocations)" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
+                            </div>
+                        </div>
                     </div>
-                    <div class="row no-gutter required-competence-on-accept-panel">
+                    <div class="row no-gutter required-on-accept-panel">
                         <div class="col-sm-4">
                             @if (Model.SpecificCompetenceLevelRequired)
                             {
@@ -273,7 +278,7 @@
                     </div>
                     @if (Model.HasExtraInterpreter)
                     {
-                        <div class="row no-gutter bg-gray padding-top-10 required-competence-on-accept-panel">
+                        <div class="row no-gutter bg-gray padding-top-10 required-on-accept-panel">
                             <div class="col-sm-4">
                                 @if (Model.SpecificCompetenceLevelRequired)
                                 {

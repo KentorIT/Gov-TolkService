@@ -431,7 +431,7 @@ namespace Tolk.Web.Controllers
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
-                    if (!request.IsToBeProcessedByBroker)
+                    if (!request.CanAccept)
                     {
                         return RedirectToAction("Index", "Home", new { ErrorMessage = "Förfrågan är redan behandlad" });
                     }
@@ -457,6 +457,7 @@ namespace Tolk.Web.Controllers
                             _clock.SwedenNow,
                             User.GetUserId(),
                             User.TryGetImpersonatorId(),
+                            model.InterpreterLocationOnAccept,
                             model.InterpreterCompetenceLevelOnAccept,
                             requirementAnswers,
                             model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
@@ -770,7 +771,7 @@ namespace Tolk.Web.Controllers
             {
                 MealBreakIsNotDetucted = request.Order.MealBreakIncluded ?? false,
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(
-                    _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
+                    _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null, null).PriceRows),
                 Header = "Beräknat pris enligt bokningsförfrågan",
                 UseDisplayHideInfo = true
             };

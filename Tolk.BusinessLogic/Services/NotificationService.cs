@@ -1940,7 +1940,7 @@ Sammanställning:
         private async Task<RequestModel> GetRequestModel(Request request)
         {
             var order = await _dbContext.Orders.GetFullOrderById(request.OrderId);
-            var priceRows = _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)order.PriceCalculatedFromCompetenceLevel, null).PriceRows.ToList();
+            var priceRows = _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)order.PriceCalculatedFromCompetenceLevel, null, null).PriceRows.ToList();
             var calculationCharges = _dbContext.PriceCalculationCharges.GetPriceCalculationChargesByIds(priceRows.Where(p => p.PriceCalculationChargeId.HasValue).Select(p => p.PriceCalculationChargeId.Value).ToList());
             priceRows.Where(p => p.PriceCalculationChargeId.HasValue).ToList().ForEach(p => p.PriceCalculationCharge = new PriceCalculationCharge { ChargePercentage = calculationCharges.Where(c => c.PriceCalculationChargeId == p.PriceCalculationChargeId).FirstOrDefault().ChargePercentage });
 

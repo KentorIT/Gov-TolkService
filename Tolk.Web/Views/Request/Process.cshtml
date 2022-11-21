@@ -51,15 +51,20 @@
                                 <form-entry asp-for="FullAnswer" />
                             </div>
                             <div class="col-sm-4">
+                                <div class="required-on-accept-panel">
+                                    <form-entry asp-for="InterpreterLocationOnAccept" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderViewModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
                                 @if (Model.OrderViewModel.SpecificCompetenceLevelRequired)
                                 {
-                                    <div id="required-competence-on-accept-panel">
+                                    <div class="required-on-accept-panel">
                                         <form-entry asp-for="InterpreterCompetenceLevelOnAccept" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderViewModel.RequestedCompetenceLevels).OrderByDescending(e => (int)e.Value).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
                                     </div>
                                 }
                             </div>
                         </div>
-                    } 
+                    }
                     else
                     {
                         <input asp-for="FullAnswer" type="hidden" />

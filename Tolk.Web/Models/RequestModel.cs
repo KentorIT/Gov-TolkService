@@ -81,6 +81,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolkens kompetensnivå", Description = "Ni behöver sätta vilken kompetensnivå tolken kommer ha.")]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevelOnAccept { get; set; }
 
+        [ClientRequired]
+        [Display(Name = "Inställelsesätt")]
+        public InterpreterLocation? InterpreterLocationOnAccept { get; set; }
+
         [Required]
         [Display(Name = "Tolk", Description = "I de fall tillsatt tolk har skyddad identitet skall inte tolkens namn eller kontaktuppgifter finnas i bekräftelsen. Använd i dessa fall valet ”Tolk med skyddade personuppgifter”. Överlämna tolkens uppgifter på annat sätt i enlighet med era säkerhetsrutiner")]
         public int? InterpreterId { get; set; }

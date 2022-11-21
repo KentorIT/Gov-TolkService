@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
@@ -9,6 +10,9 @@ namespace Tolk.Web.Models
     public class RequestAcceptModel : IModel
     {
         public int RequestId { get; set; }
+
+        [Required]
+        public InterpreterLocation InterpreterLocationOnAccept { get; set; }
 
         [ClientRequired]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevelOnAccept { get; set; }

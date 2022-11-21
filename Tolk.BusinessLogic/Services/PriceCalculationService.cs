@@ -33,15 +33,15 @@ namespace Tolk.BusinessLogic.Services
             _cacheService = cacheService;
         }
 
-        public PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel, decimal? expectedTravelCost)
+        public PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel, InterpreterLocation? interpreterLocation, decimal? expectedTravelCost)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
             var order = request.Order;
-            var interpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation)request.InterpreterLocation.Value :
-                order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation;
+            var interpreterLocationCorCalculation = interpreterLocation ?? (request.InterpreterLocation.HasValue ? (InterpreterLocation)request.InterpreterLocation.Value :
+                order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation);
             return GetPrices(
                 order.StartAt,
                 order.EndAt,
@@ -49,7 +49,7 @@ namespace Tolk.BusinessLogic.Services
                 order.CustomerOrganisation.PriceListType,
                 request.RankingId,
                 order.CreatedAt,
-                GetCalculatedBrokerFee(order, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType, EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel), request.RankingId, interpreterLocation),
+                GetCalculatedBrokerFee(order, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType, EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel), request.RankingId, interpreterLocationCorCalculation),
                 expectedTravelCost);
         }
 
