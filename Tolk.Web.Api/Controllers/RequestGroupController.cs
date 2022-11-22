@@ -250,7 +250,7 @@ namespace Tolk.Web.Api.Controllers
                 var requestGroup = await _apiOrderService.CheckOrderGroupAndGetRequestGroup(model.OrderGroupNumber, brokerId);
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                if (!(requestGroup.Status == RequestStatus.Created || requestGroup.Status == RequestStatus.Received))
+                if (!(requestGroup.CanDecline))
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
                 }

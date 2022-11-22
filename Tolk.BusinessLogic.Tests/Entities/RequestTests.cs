@@ -485,8 +485,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [Theory]
         [InlineData(RequestStatus.Created, false)]
         [InlineData(RequestStatus.Received, false)]
+        [InlineData(RequestStatus.AcceptedAwaitingInterpreter, false)]
         [InlineData(RequestStatus.Created, true)]
         [InlineData(RequestStatus.Received, true)]
+        [InlineData(RequestStatus.AcceptedAwaitingInterpreter, true)]
         public void Decline(RequestStatus status, bool hasReplacingOrder)
         {
             var replacingOrderId = hasReplacingOrder ? (int?)10 : null;

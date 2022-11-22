@@ -308,6 +308,11 @@ namespace BrokerMock.Controllers
                                 RequirementId = r.RequirementId
                             })
                         );
+                        if (extraInstructions.Contains("DECLINEAFTERACCEPT"))
+                        {
+                            Thread.Sleep(1500);
+                            await Decline(payload.OrderNumber, "Tackar nej efter lite eftertanke...");
+                        }
                     }
                 }
                 //Get the headers:
@@ -502,6 +507,11 @@ namespace BrokerMock.Controllers
                             },
                             extraAccept
                         );
+                        if (extraInstructions.Contains("DECLINEAFTERACCEPT"))
+                        {
+                            Thread.Sleep(1500);
+                            await DeclineGroup(payload.OrderGroupNumber, "Tackar nej efter lite eftertanke...");
+                        }
                     }
                 }
             }
