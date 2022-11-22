@@ -63,7 +63,7 @@ namespace Tolk.Web.Services
                 //if previous contact is null, a new contact person is added - get the new contact
                 if (oc.OrderContactPersonHistory.PreviousContactPersonId == null)
                 {
-                    EventLogEntryModel eventRow = GetEventRowForNewContactPerson(oc, order, orderContactPersons,  i + 1);
+                    EventLogEntryModel eventRow = GetEventRowForNewContactPerson(oc, order, orderContactPersons, i + 1);
                     if (eventRow != null)
                     {
                         eventLog.Add(eventRow);
@@ -199,7 +199,7 @@ namespace Tolk.Web.Services
             {
                 if (requests.All(r => r.Status == RequestStatus.DeclinedByBroker || r.Status == RequestStatus.DeniedByTimeLimit))
                 {
-                    var terminatingRequest = requests.OrderBy( r => r.RequestId).Last();
+                    var terminatingRequest = requests.OrderBy(r => r.RequestId).Last();
 
                     // No one accepted order
                     if (terminatingRequest.Order.Status == OrderStatus.NoBrokerAcceptedOrder)
@@ -381,7 +381,7 @@ namespace Tolk.Web.Services
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.CreatedAt,
-                    EventDetails = isRequestDetailView ? request.Order?.ReplacingOrder != null ? $"Ersättningsuppdrag inkommet (ersätter { request.Order.ReplacingOrder.OrderNumber })" : "Förfrågan inkommen" : $"Förfrågan skickad till {brokerName}",
+                    EventDetails = isRequestDetailView ? request.Order?.ReplacingOrder != null ? $"Ersättningsuppdrag inkommet (ersätter {request.Order.ReplacingOrder.OrderNumber})" : "Förfrågan inkommen" : $"Förfrågan skickad till {brokerName}",
                     Actor = "Systemet",
                 });
             }
@@ -462,6 +462,17 @@ namespace Tolk.Web.Services
                         ActorContactInfo = GetContactinfo(request.AnsweringUser),
                     });
                 }
+            }
+            if (request.AcceptedAt.HasValue)
+            {
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = request.AcceptedAt.Value,
+                    EventDetails = $"Förfrågan bekräftad av förmedling",
+                    Actor = request.AcceptingUser.FullName,
+                    Organization = brokerName,
+                    ActorContactInfo = GetContactinfo(request.AcceptingUser),
+                });
             }
             // Request answer processed by customer organization or system
             if (request.AnswerProcessedAt.HasValue)

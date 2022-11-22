@@ -669,6 +669,7 @@ namespace Tolk.Web.Controllers
             return Json(new { success = true });
         }
 
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {
