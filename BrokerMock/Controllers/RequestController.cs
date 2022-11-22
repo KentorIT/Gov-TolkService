@@ -298,6 +298,7 @@ namespace BrokerMock.Controllers
                     {
                         await AcceptRequest(
                             payload.OrderNumber,
+                            payload.Locations.First().Key,
                             payload.CompetenceLevelsAreRequired ?
                                 payload.CompetenceLevels.OrderBy(c => c.Rank).First().Key : null,
                             payload.Requirements.Select(r => new RequirementAnswerModel
@@ -470,16 +471,36 @@ namespace BrokerMock.Controllers
                 {
                     if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
                     {
+                        InterpreterGroupAcceptModel extraAccept = null;
+                        if (payload.Occasions.Any(o => !string.IsNullOrEmpty(o.IsExtraInterpreterForOrderNumber)))
+                        {
+                            extraAccept = new InterpreterGroupAcceptModel
+                            {
+                                CompetenceLevel = payload.CompetenceLevelsAreRequired ?
+                                    payload.CompetenceLevels.OrderBy(c => c.Rank).Last().Key : null,
+                                RequirementAnswers = payload.Requirements.Select(r => new RequirementAnswerModel
+                                {
+                                    Answer = "Japp",
+                                    CanMeetRequirement = true,
+                                    RequirementId = r.RequirementId
+                                })
+                            };
+                        }
+
                         await AcceptGroup(
                             payload.OrderGroupNumber,
-                            payload.CompetenceLevelsAreRequired ?
-                                payload.CompetenceLevels.OrderBy(c => c.Rank).First().Key : null,
-                            payload.Requirements.Select(r => new RequirementAnswerModel
-                            {
-                                Answer = "Japp",
-                                CanMeetRequirement = true,
-                                RequirementId = r.RequirementId
-                            })
+                            payload.Locations.First().Key,
+                            new InterpreterGroupAcceptModel{
+                                CompetenceLevel = payload.CompetenceLevelsAreRequired ?
+                                    payload.CompetenceLevels.OrderBy(c => c.Rank).First().Key : null,
+                                RequirementAnswers = payload.Requirements.Select(r => new RequirementAnswerModel
+                                    {
+                                        Answer = "Japp",
+                                        CanMeetRequirement = true,
+                                        RequirementId = r.RequirementId
+                                    }) 
+                            },
+                            extraAccept
                         );
                     }
                 }
@@ -802,11 +823,12 @@ namespace BrokerMock.Controllers
             return description.ToSwedishUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
         }
 
-        private async Task<bool> AcceptRequest(string orderNumber, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
+        private async Task<bool> AcceptRequest(string orderNumber, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
         {
             var payload = new RequestAcceptModel
             {
                 OrderNumber = orderNumber,
+                Location = location,
                 CompetenceLevel = competenceLevel,
                 CallingUser = "regular-user@formedling1.se",
                 RequirementAnswers = requirementAnswers,
@@ -908,14 +930,16 @@ namespace BrokerMock.Controllers
             return true;
         }
 
-        private async Task<bool> AcceptGroup(string orderGroupNumber, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
+        private async Task<bool> AcceptGroup(string orderGroupNumber, string location, InterpreterGroupAcceptModel accept, InterpreterGroupAcceptModel extraAccept)
         {
             var payload = new RequestGroupAcceptModel
             {
                 OrderGroupNumber = orderGroupNumber,
-                CompetenceLevel = competenceLevel,
+                Location = location,
+                InterpreterAcceptModel = accept,
+                ExtraInterpreterAcceptModel = extraAccept,
                 CallingUser = "regular-user@formedling1.se",
-                BrokerReferenceNumber = "2346",
+                BrokerReferenceNumber = $"{orderGroupNumber}-vår",
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
             using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("RequestGroup/Accept"), content);

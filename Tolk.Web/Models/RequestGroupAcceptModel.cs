@@ -15,10 +15,6 @@ namespace Tolk.Web.Models
 
         public InterpreterAcceptModel ExtraInterpreterAcceptModel { get; set; }
 
-        public List<RequestRequirementAnswerModel> RequiredRequirementAnswers { get; set; } = new List<RequestRequirementAnswerModel>();
-
-        public List<RequestRequirementAnswerModel> DesiredRequirementAnswers { get; set; } = new List<RequestRequirementAnswerModel>();
-
         public string BrokerReferenceNumber { get; set; }
 
         public List<FileModel> Files { get; set; }

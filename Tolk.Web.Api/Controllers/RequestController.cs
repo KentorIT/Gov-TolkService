@@ -184,22 +184,49 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);
                 }
-                if (request.Status != RequestStatus.Created && request.Status != RequestStatus.Received)
+                if (!request.CanAccept)
                 {
                     return ReturnError(ErrorCodes.RequestNotInCorrectState);
                 }
+                if (model.Location == null)
+                {
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
+                }
+
                 if (request.Order.SpecificCompetenceLevelRequired && model.CompetenceLevel == null)
                 {
                     return ReturnError(ErrorCodes.AllRequirementsMustBeAnsweredOnAccept);
                 }
-                return ReturnError(ErrorCodes.UnspecifiedProblem, "Inte implementerat än...");
-                //TODO: ADD _requestService.Accept(...) HERE
-                //await _dbContext.SaveChangesAsync();
-                //return Ok(new ResponseBase());
+                var now = _timeService.SwedenNow;
+                await _requestService.Accept(
+                        request,
+                        now,
+                        user?.Id ?? apiUserId,
+                        user != null ? (int?)apiUserId : null,
+                        EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                        !string.IsNullOrEmpty(model.CompetenceLevel) ? EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value : null,
+                        model.RequirementAnswers == null ? new List<OrderRequirementRequestAnswer>() :
+                        model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                        {
+                            Answer = ra.Answer,
+                            CanSatisfyRequirement = ra.CanMeetRequirement,
+                            OrderRequirementId = ra.RequirementId,
+                        }).ToList(),
+                        //Does not handle attachments yet.
+                        new List<RequestAttachment>(),
+                        model.BrokerReferenceNumber
+                    );
+                await _dbContext.SaveChangesAsync();
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
                 return ReturnError(ex.ErrorCode);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Unexpected error occured when client called Request/{nameof(Accept)}");
+                return ReturnError(ErrorCodes.UnspecifiedProblem);
             }
         }
 

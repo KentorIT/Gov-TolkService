@@ -14,7 +14,11 @@ namespace Tolk.Api.Payloads.ApiPayloads
         [Required]
         public string OrderNumber { get; set; }
 
-        [Description("Den kompetensnivå som tolken har inom det språk som skall tolkas. Behöver sättas om kompetensnivå är ett krav. Måste vara ett av värdena i [/List/CompetenceLevels]")]
+        [Description("Det inställelsesätt som tolken kommer inställa sig med. Måste vara ett av värdena i [/List/LocationTypes] och även finnas med i förfrågan")]
+        [Required]
+        public string Location { get; set; }
+
+        [Description("Den kompetensnivå som tolken har inom det språk som skall tolkas. Behöver sättas om kompetensnivå är ett krav. Måste vara ett av värdena i [/List/CompetenceLevels]  och även finnas med i förfrågan")]
         public string CompetenceLevel { get; set; }
 
         [Description("Om avropet innehåller specifika krav så skall dessa besvaras här.")]

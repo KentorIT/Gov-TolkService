@@ -990,8 +990,13 @@ namespace Tolk.BusinessLogic.Utilities
 
         private static IQueryable<Request> GetRequestsWithBaseIncludesForApi(this IQueryable<Request> requests)
                 => requests
-                .Include(r => r.Ranking)
-                .Include(r => r.Order);
+                .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement)
+                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.Language)
+                .Include(r => r.Order).ThenInclude(o => o.ContactPersonUser)
+                .Include(r => r.Order).ThenInclude(o => o.CreatedByUser)
+                .Include(r => r.Order).ThenInclude(o => o.CustomerUnit);
 
         private static IQueryable<Requisition> GetRequisitionsWithBaseIncludes(this IQueryable<Requisition> requisitions)
                  => requisitions

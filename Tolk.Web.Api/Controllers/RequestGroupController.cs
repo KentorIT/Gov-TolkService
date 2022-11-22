@@ -70,13 +70,13 @@ namespace Tolk.Web.Api.Controllers
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
- 
+
                 var requestGroup = await _dbContext.RequestGroups.GetFullRequestGroupForApiWithBrokerAndOrderNumber(model.OrderGroupNumber, brokerId);
                 if (requestGroup == null)
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotFound);
                 }
-                if (!(requestGroup.Status == RequestStatus.Created || requestGroup.Status == RequestStatus.Received))
+                if (!(requestGroup.IsToBeProcessedByBroker))
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
                 }
@@ -155,22 +155,46 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotFound);
                 }
-                if (!(requestGroup.Status == RequestStatus.Created || requestGroup.Status == RequestStatus.Received))
+                if (!(requestGroup.CanAccept))
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
                 }
-                if (requestGroup.OrderGroup.SpecificCompetenceLevelRequired && model.CompetenceLevel == null)
+                if (model.Location == null)
                 {
-                    return ReturnError(ErrorCodes.AllRequirementsMustBeAnsweredOnAccept);
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
                 }
-                return ReturnError(ErrorCodes.UnspecifiedProblem, "Inte implementerat än...");
-                //TODO: ADD _requestService.AcceptGroup(...) HERE
-                //await _dbContext.SaveChangesAsync();
-                //return Ok(new ResponseBase());
+                var accept = GetAcceptDto(model.InterpreterAcceptModel);
+                InterpreterAcceptDto extraAccept = null;
+                requestGroup.OrderGroup.Orders = await _dbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroup.OrderGroupId).ToListAsync();
+                if (requestGroup.HasExtraInterpreter)
+                {
+                    extraAccept = GetAcceptDto(model.ExtraInterpreterAcceptModel);
+                }
+
+                var now = _timeService.SwedenNow;
+                await _requestService.AcceptGroup(
+                    requestGroup,
+                    now,
+                    user?.Id ?? apiUserId,
+                    user != null ? (int?)apiUserId : null,
+                    EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                    accept,
+                    extraAccept,
+                    //Does not handle attachments yet.
+                    new List<RequestGroupAttachment>(),
+                    model.BrokerReferenceNumber
+                );
+                await _dbContext.SaveChangesAsync();
+                return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
             {
                 return ReturnError(ex.ErrorCode);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Unexpected error occured when client called RequestGroup/{nameof(Accept)}");
+                return ReturnError(ErrorCodes.UnspecifiedProblem);
             }
         }
 
@@ -433,6 +457,18 @@ namespace Tolk.Web.Api.Controllers
         #endregion
 
         #region private methods
+
+        private static InterpreterAcceptDto GetAcceptDto(InterpreterGroupAcceptModel model) => new InterpreterAcceptDto
+        {
+            CompetenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
+            RequirementAnswers = model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+            {
+                Answer = ra.Answer,
+                CanSatisfyRequirement = ra.CanMeetRequirement,
+                OrderRequirementId = ra.RequirementId,
+            }).ToList(),
+        };
+
 
         //Break out to error generator service...
         private IActionResult ReturnError(string errorCode, string specifiedErrorMessage = null)
