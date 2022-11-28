@@ -217,7 +217,7 @@ namespace Tolk.Web.Controllers
         public IActionResult ListCustomerActionItems(IDataTablesRequest request)
         {
             var entities = CustomerActionListItems(User.GetCustomerOrganisationId(), User.GetUserId(), User.TryGetAllCustomerUnits());
-            return AjaxDataTableHelper.GetData(request, entities.Count, entities.AsQueryable(), d => d);
+            return AjaxDataTableHelper.GetData(request, entities.Count, entities.AsQueryable(), d => d, s => s.OrderByDescending(l => l.OrderNumber));
         }
 
         [HttpPost]
@@ -225,7 +225,7 @@ namespace Tolk.Web.Controllers
         public IActionResult ListCustomerWaitingItems(IDataTablesRequest request)
         {
             var entities = CustomerWaitingListItems(User.GetCustomerOrganisationId(), User.GetUserId(), User.TryGetAllCustomerUnits());
-            return AjaxDataTableHelper.GetData(request, entities.Count, entities.AsQueryable(), d => d);
+            return AjaxDataTableHelper.GetData(request, entities.Count, entities.AsQueryable(), d => d, s => s.OrderByDescending(l => l.OrderNumber));
         }
 
         [HttpPost]
@@ -233,7 +233,7 @@ namespace Tolk.Web.Controllers
         public IActionResult ListCustomerApprovedItems(IDataTablesRequest request)
         {
             var entities = CustomerApprovedListItems(User.GetCustomerOrganisationId(), User.GetUserId(), User.TryGetAllCustomerUnits());
-            return AjaxDataTableHelper.GetData(request, entities.Count, entities.AsQueryable(), d => d);
+            return AjaxDataTableHelper.GetData(request, entities.Count, entities.AsQueryable(), d => d, s => s.OrderByDescending(l => l.OrderNumber));
         }
 
         private List<ActionStartListItemModel> CustomerActionListItems(int customerOrganisationId, int userId, IEnumerable<int> customerUnits)

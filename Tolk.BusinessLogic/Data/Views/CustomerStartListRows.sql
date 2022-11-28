@@ -56,7 +56,7 @@ LEFT JOIN dbo.OrderStatusConfirmation osc
 LEFT JOIN dbo.RequestStatusConfirmation rsc
 	ON r.RequestId = rsc.RequestId
 		AND rsc.RequestStatus = 14 
-WHERE (o.Status IN (2, 3, 4, 10, 16) 
+WHERE (o.Status IN (2, 3, 4, 10, 16, 21) 
 OR (o.Status IN (9, 15) AND osc.OrderId IS NULL)
 OR (o.Status = 12 AND rsc.RequestId IS NULL))
 UNION
@@ -112,7 +112,7 @@ LEFT JOIN dbo.OrderGroupStatusConfirmations ogsc
 		AND ogsc.OrderStatus IN (9, 15)
 	INNER JOIN Orders o ON o.OrderGroupId = og.OrderGroupId AND o.OrderId IN 
 	(SELECT TOP 1 ord.OrderId FROM dbo.Orders ord WHERE ord.OrderGroupId = og.OrderGroupId ORDER BY ord.StartAt)
-WHERE (og.Status IN (2, 3, 4, 10, 16)
+WHERE (og.Status IN (2, 3, 4, 10, 16, 21)
 OR (og.Status IN (9, 15)
 AND ogsc.OrderGroupId IS NULL))
 UNION
