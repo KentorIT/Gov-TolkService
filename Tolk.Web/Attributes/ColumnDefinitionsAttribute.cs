@@ -16,6 +16,7 @@ namespace Tolk.Web.Attributes
         public bool IsLeftCssClassName { get; set; } = false;
         public bool Sortable { get; set; } = true;
         public bool Visible { get; set; } = true;
+        public bool ShowTitle { get; set; } = true;
         /// <summary>
         /// If false the <see cref="ColumnName"/> is used to sort in the database.
         /// Useful when for example a date column is formatted.
@@ -31,7 +32,7 @@ namespace Tolk.Web.Attributes
             Name = Name,
             Data = !string.IsNullOrEmpty(Data) ? Data : Name.ToLowerFirstChar(),
             ColumnName = !string.IsNullOrEmpty(ColumnName) ? ColumnName : (!string.IsNullOrEmpty(Data) ? Data : Name.ToLowerFirstChar()),
-            Title = !string.IsNullOrEmpty(Title) ? Title : Name,
+            Title = ShowTitle ? !string.IsNullOrEmpty(Title) ? Title : Name : string.Empty,
             Sortable = Sortable,
             Visible = Visible,
             SortOnWebServer = SortOnWebServer,

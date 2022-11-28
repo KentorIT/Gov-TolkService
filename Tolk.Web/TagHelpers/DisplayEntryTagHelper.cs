@@ -115,10 +115,7 @@ namespace Tolk.Web.TagHelpers
                     text = ValuePrefix + ((DateTimeOffset?)For.ModelExplorer.Model)?.ToSwedishString("yyyy-MM-dd HH:mm");
                     break;
                 case OutputType.TimeRange:
-                    var timeRange = (TimeRange)For.ModelExplorer.Model;
-                    text = ValuePrefix + timeRange.StartDate.ToSwedishString("yyyy-MM-dd") + " "
-                        + timeRange.StartTime.ToSwedishString("hh\\:mm") + "-"
-                        + timeRange.EndTime.ToSwedishString("hh\\:mm");
+                    text = ValuePrefix + ((TimeRange)For.ModelExplorer.Model).AsSwedishString;
                     break;
                 case OutputType.Currency:
                     text = ValuePrefix + ((decimal?)For.ModelExplorer.Model)?.ToSwedishString("#,0.00 SEK");

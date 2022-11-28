@@ -233,6 +233,7 @@ $(function () {
         function () {
             var $table = $(this);
             var $filterSelector = $table.data("filter-selector");
+            var $usePaging = !$table.hasClass("no-paging");
             $.ajax({
                 dataType: 'json',
                 url: $table.data("ajax-column-definition"),
@@ -251,8 +252,9 @@ $(function () {
                     var $dataTable = $table.DataTable({
                         serverSide: true,
                         searching: false,
-                        paging: true,
+                        paging: $usePaging,
                         dom: "lrtip",
+                        deferRender: true,
                         autoWidth: false,
                         createdRow: function (row, data, dataIndex) {
                             if ($table.hasClass("clickable-rows-with-action")) {
@@ -262,8 +264,7 @@ $(function () {
                                 }
                                 if ($idColumn.length > 0) {
                                     if ($action.indexOf("?") > -1) {
-                                        $action = $action.replace("?", "/" + data[$idColumn[0].data] + "?");
-
+                                        $action = $action.replace("?", data[$idColumn[0].data] + "?");
                                     } else {
                                         $action = $action + "/" + data[$idColumn[0].data];
                                     }
@@ -296,7 +297,23 @@ $(function () {
                         columns: $columnDefinition,
                         language: {
                             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
+                        },
+                        infoCallback: function (settings, start, end, max, total, pre) {
+                            var $headerClass = $table.data("header-class");
+                            if ($headerClass) {
+                                if (total > 0) {
+                                    $("." + $headerClass).text($table.data("header-text").replace("_TOTAL_", total));
+                                } else {
+                                    $("." + $headerClass).text($table.data("empty-header"));
+                                    //Hide the table
+                                    $table.hide();
+                                    //Show the empty message
+                                    $table.parent().append("<div class='list-empty'>" + $table.data("empty-message") + "</div>");
+
+                                }
+                            }
                         }
+
                     });
                     $("body").on("change", $filterSelector + " select, " + $filterSelector + " input.datepicker, " + $filterSelector + " :checkbox, " + $filterSelector + " :radio", function () {
                         $dataTable.draw();

@@ -83,119 +83,18 @@
 {
     <div class="row">
         <div class="col-xs-12">
-            <div class="list-header list-line"><span>@startlist.Header</span></div>
-            @if (startlist.StartListObjects.Any())
-            {
-                <div class="table-responsive table-datatable">
-                    <table class="table sortable-only-table table-hover full-row-height clickable-rows-with-action">
-                        <thead>
-                            <tr>
-                                <th>Status</th>
-                                <th>Tolkens kompetens</th>
-                                <th>Språk</th>
-                                @if (startlist.DisplayCustomer)
-                                {
-                                    <th>Myndighet</th>
-                                }
-                                <th data-order="desc">Datum för uppdrag</th>
-                                @if (startlist.HasReviewAction)
-                                {
-                                    <th data-sortable="false"></th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in startlist.StartListObjects)
-                            {
-                                <tr class="startlist-row" data-id="@item.DefaultItemId" data-click-action-url="@Url.Action(item.DefaulListAction, item.DefaulListController, new { id = item.DefaultItemId, tab = item.DefaultItemTab })">
-                                    <td class="gray-border-bottom @item.ColorClassName">
-                                        <br />
-                                        <span class="normal-weight">
-                                            @EnumHelper.GetDescription(item.Status)
-                                        </span><br /><br />
-                                        <span class="startlist-subrow">ID: @item.OrderNumber</span>
-                                        @if (!string.IsNullOrEmpty(item.ViewedByUser))
-                                        {
-                                            <span class="glyphicon glyphicon-user color-red" title="  @item.ViewedByUser"></span>
-                                        }
-                                        @if (!string.IsNullOrEmpty(item.OrderGroupNumber))
-                                        {
-                                            <br /><span class="small-red-border-left startlist-subrow">@item.OrderGroupNumber</span>
-                                        }
-                                    </td>
-                                    <td class="gray-border-bottom">
-                                        @if (item.HasExtraInterpreter)
-                                        {
-                                            <span class="small-red-border-left startlist-subrow">Extra tolk</span><br />
-                                        }
-                                        else
-                                        { <br />}
-                                        @EnumHelper.GetDescription(item.CompetenceLevel)<br />
-                                        @if (item.HasExtraInterpreter)
-                                        {
-                                            @EnumHelper.GetDescription(item.ExtraCompetenceLevel)<br />
-                                        }
-                                        <br />
-                                        <br />
-                                        @if (item.InfoDate.HasValue)
-                                        {
-                                            <span class="startlist-subrow">@item.InfoDateDescription@item.InfoDate?.ToString("yyyy-MM-dd HH:mm")</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="startlist-subrow">@item.InfoDateDescription -</span>
-                                        }
-                                    </td>
-                                    <td class="gray-border-bottom">
-                                        <br />
-                                        @item.Language<br /><br />
-                                        @if (item.LatestDate != null)
-                                        {
-                                            <span class="startlist-subrow-red">Svara innan: @item.LatestDate?.ToString("yyyy-MM-dd HH:mm")</span>
-                                        }
-                                    </td>
-                                    @if (startlist.DisplayCustomer && !string.IsNullOrEmpty(item.CustomerName))
-                                    {
-                                        <td class="gray-border-bottom">
-                                            <br />
-                                            @item.CustomerName<br /><br />
-                                        </td>
-                                    }
-                                    @if (startlist.HasReviewAction)
-                                    {
-                                        <td class="gray-border-bottom">
-                                            @if (!item.IsSingleOccasion)
-                                            {
-                                                <span class="small-red-border-left startlist-subrow">OBS! Första av flera tillfällen<br /></span>
-                                            }
-                                            else
-                                            { <br />}
-                                            <display-entry asp-for="@item.Orderdate" /><br /><br />
-                                        </td>
-                                        <td class="gray-border-bottom gray-border-right"><br /><a class="btn btn-datatable btn-primary pull-right do-not-check-dirty" asp-controller="@item.ButtonController" asp-action="@item.ButtonAction" asp-route-Id="@item.ButtonItemId" asp-route-tab="@item.ButtonItemTab">Granska <span class="center-glyphicon glyphicon glyphicon-triangle-right"></span></a><br /><br /></td>
-                                    }
-                                    else
-                                    {
-                                        <td class="gray-border-bottom gray-border-right">
-                                            @if (!item.IsSingleOccasion)
-                                            {
-                                                <span class="small-red-border-left startlist-subrow">OBS! Första av flera tillfällen:<br /></span>
-                                            }
-                                            else
-                                            { <br />}
-                                            <display-entry asp-for="@item.Orderdate" /><br /><br />
-                                        </td>
-                                    }
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="list-empty">@startlist.EmptyMessage</div>
-            }
+            <div class="list-header list-line"><span class="@startlist.HeaderClass">@startlist.HeaderLoading</span></div>
+            <div class="table-responsive ajax-listing table-datatable">
+                <table class="table startlist-table no-paging table-hover full-row-height clickable-rows-with-action"
+                   data-ajax-path="@Url.Action(@startlist.TableDataPath.Action, @startlist.TableDataPath.Controller)"
+                   data-ajax-column-definition="@Url.Action(@startlist.TableColumnDefinitionPath.Action, @startlist.TableColumnDefinitionPath.Controller)"
+                   data-click-action-url="@Url.Action(@startlist.DefaultLinkPath.Action, @startlist.DefaultLinkPath.Controller)"
+                   data-header-class="@startlist.HeaderClass"
+                   data-header-text="@startlist.Header"
+                   data-empty-header="@startlist.EmptyHeader"
+                   data-empty-message="@startlist.EmptyMessage">
+                </table>
+            </div>
         </div>
     </div>
 }
