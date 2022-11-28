@@ -32,6 +32,7 @@ namespace Tolk.Web.Helpers
             IQueryable<TModel> list = null;
             string sort = string.Empty;
             bool sortOnWebServer = false;
+            int filteredCount = -1;
             if (sortColumns.Any())
             {
                 //If one has sort on server, all needs to be sorted on server
@@ -57,6 +58,7 @@ namespace Tolk.Web.Helpers
                 }
                 if (request.Length > -1)
                 {
+                    filteredCount = filteredData.Count();
                     filteredData = filteredData.Skip(request.Start).Take(request.Length);
                 }
                 list = getModel(filteredData);
@@ -70,8 +72,11 @@ namespace Tolk.Web.Helpers
                     list = list.Skip(request.Start).Take(request.Length);
                 }
             }
-
-            var response = DataTablesResponse.Create(request, totalCount, filteredData.Count(), list);
+            if (filteredCount == -1)
+            {
+                filteredCount = filteredData.Count();
+            }
+            var response = DataTablesResponse.Create(request, totalCount, filteredCount, list);
             return new DataTablesJsonResult(response, true);
         }
 
