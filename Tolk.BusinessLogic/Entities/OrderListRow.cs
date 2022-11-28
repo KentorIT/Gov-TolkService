@@ -28,7 +28,6 @@ namespace Tolk.BusinessLogic.Entities
         public string CustomerName { get; set; }
         public int CustomerOrganisationId { get; set; }
         public bool CustomerUnitIsActive { get; set; }
-        public int? ParentEntityId { get; set; }
         public string CustomerReferenceNumber { get; set; }
         public int? ContactPersonId { get; set; }
 
