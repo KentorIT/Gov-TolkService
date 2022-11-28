@@ -20,6 +20,10 @@ namespace Tolk.BusinessLogic.Entities
         public int? RequestGroupId { get; set; }
         public DateTimeOffset? OrderChangedAt { get; set; }
         public DateTimeOffset? AnswerProcessedAt { get; set; }
+        public DateTimeOffset? LastAcceptAt { get; set; }
+        public DateTimeOffset? AcceptedAt { get; set; }
+        public RequestAnswerRuleType RequestAnswerRuleType { get; set; }
+
         public bool RequestIsToBeProcessedByBroker => RequestStatus.HasValue && RequestStatus == Enums.RequestStatus.Created || RequestStatus == Enums.RequestStatus.Received;
         public bool RequestGroupIsToBeProcessedByBroker => RequestGroupStatus.HasValue && RequestGroupStatus == Enums.RequestStatus.Created || RequestGroupStatus == Enums.RequestStatus.Received;
     }

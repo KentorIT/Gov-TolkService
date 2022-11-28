@@ -26,9 +26,6 @@ namespace Tolk.BusinessLogic.Entities
         public DateTimeOffset? RequestExpiresAt { get; set; }
         public int? ReplacingOrderId { get; set; }
         public DateTimeOffset? LastRequestCreatedUpdatedAt { get; set; }
-        public DateTimeOffset? LastAcceptAt { get; set; }
-        public DateTimeOffset? AcceptedAt { get; set; }
-        public RequestAnswerRuleType RequestAnswerRuleType { get; set; }
         public int? NoOfChildren { get; set; }
         public int? NoOfExtraInterpreter { get; set; }
         public bool IsSingleOccasion => NoOfChildren == 1 || (NoOfChildren == 2 && HasExtraInterpreter);
