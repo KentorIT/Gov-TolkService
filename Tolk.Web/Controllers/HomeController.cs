@@ -154,15 +154,23 @@ namespace Tolk.Web.Controllers
             }
             return result;
         }
- 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public JsonResult StartListWithActionColumnDefinition()
-            => Json(AjaxDataTableHelper.GetColumnDefinitions<ActionStartListItemModel>().ToList());
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public JsonResult StartListColumnDefinition()
-            => Json(AjaxDataTableHelper.GetColumnDefinitions<StartListItemModel>().ToList());
-       
+        public async Task<JsonResult> StartListWithActionColumnDefinition()
+        {
+            var definition = AjaxDataTableHelper.GetColumnDefinitions<ActionStartListItemModel>().ToList();
+            definition.Single(d => d.Name == nameof(ActionStartListItemModel.Customer)).Visible = !(await _authorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded;
+            return Json(definition);
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<JsonResult> StartListColumnDefinition()
+        {
+            var definition = AjaxDataTableHelper.GetColumnDefinitions<StartListItemModel>().ToList();
+            definition.Single(d => d.Name == nameof(StartListItemModel.Customer)).Visible = !(await _authorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded;
+            return Json(definition);
+        }
+
         #region Customer lists
 
         private IEnumerable<StartList> GetCustomerStartLists()
