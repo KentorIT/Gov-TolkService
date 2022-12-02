@@ -188,6 +188,7 @@ namespace Tolk.Web.Api.Services
             orderGroup.CompetenceRequirements = await _dbContext.OrderGroupCompetenceRequirements.GetOrderedCompetenceRequirementsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             orderGroup.Requirements = await _dbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             orderGroup.InterpreterLocations = await _dbContext.OrderGroupInterpreterLocations.GetInterpreterLocationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.Orders = await _dbContext.Orders.GetOrdersForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             var orderGroupAttachments = await _dbContext.Attachments.GetAttachmentsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             var requestGroupAttachments = await _dbContext.Attachments.GetAttachmentsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
             return new RequestGroupDetailsResponse

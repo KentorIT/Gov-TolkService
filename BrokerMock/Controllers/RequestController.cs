@@ -547,6 +547,31 @@ namespace BrokerMock.Controllers
                             Thread.Sleep(1500);
                             await DeclineGroup(payload.OrderGroupNumber, "Tackar nej efter lite eftertanke...");
                         }
+                        if (extraInstructions.Contains("ANSWERAFTERACCEPT"))
+                        {
+                            var interpreter = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters")?.FirstOrDefault();
+                            InterpreterModel extraInterpreter = null;
+                            if (payload.Occasions.Any(o => !string.IsNullOrEmpty(o.IsExtraInterpreterForOrderNumber)))
+                            {
+                                extraInterpreter = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters")?.LastOrDefault();
+                            }
+                            await AnswerGroup(
+                                payload.OrderGroupNumber,
+                                interpreter,
+                                extraInterpreter,
+                                payload.Locations.First().Key,
+                                payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                                payload.Requirements.Select(r => new RequirementAnswerModel
+                                {
+                                    Answer = "Japp",
+                                    CanMeetRequirement = true,
+                                    RequirementId = r.RequirementId
+                                }),
+                                false,
+                                extraInstructions.Contains("ADDTRAVELCOSTS") ? 100 : 0
+                            );
+                        }
+
                     }
                 }
             }

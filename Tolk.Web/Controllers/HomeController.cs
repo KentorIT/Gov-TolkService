@@ -652,7 +652,7 @@ namespace Tolk.Web.Controllers
                 .Where(r => r.RequestGroupId == null &&
                     list.Contains(r.RequestAnswerRuleType) &&
                     r.RowType == StartListRowType.Request &&
-                    (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received || r.RequestStatus == RequestStatus.AcceptedAwaitingInterpreter))
+                    (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received))
                 .Select(r => new ActionStartListItemModel
                 {
                     OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
@@ -827,7 +827,7 @@ namespace Tolk.Web.Controllers
             try
             {
                 actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
-                .Where(rg => rg.RowType == StartListRowType.RequestGroup && (rg.RequestGroupStatus == RequestStatus.Created || rg.RequestGroupStatus == RequestStatus.Received || rg.RequestGroupStatus == RequestStatus.DeniedByCreator || rg.RequestGroupStatus == RequestStatus.ResponseNotAnsweredByCreator))
+                .Where(rg => rg.RowType == StartListRowType.RequestGroup && (rg.RequestGroupStatus == RequestStatus.Created || rg.RequestGroupStatus == RequestStatus.Received || rg.RequestGroupStatus == RequestStatus.DeniedByCreator || rg.RequestGroupStatus == RequestStatus.ResponseNotAnsweredByCreator || rg.RequestGroupStatus == RequestStatus.AcceptedAwaitingInterpreter))
                 .Select(rg => new ActionStartListItemModel
                 {
                     OrderDateTimeRange = new TimeRange { StartDateTime = rg.StartAt, EndDateTime = rg.EndAt },
@@ -841,6 +841,7 @@ namespace Tolk.Web.Controllers
                     Status = GetStartListStatusForBroker((RequestStatus)rg.RequestGroupStatus, 0, true),
                     LatestDate = rg.RequestGroupIsToBeProcessedByBroker ? (rg.RequestExpiresAt.HasValue ? (DateTime?)rg.RequestExpiresAt.Value.DateTime : null) : null,
                     ViewedByUser = GetViewedByUserName(rg, userId),
+                    RequestAcceptedAt = rg.AcceptedAt.HasValue ? (DateTime?)rg.AcceptedAt.Value.DateTime : null,
                     LinkOverride = $"/RequestGroup/View",
                     IsSingleOccasion = rg.IsSingleOccasion,
                     HasExtraInterpreter = rg.HasExtraInterpreter

@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Entities
 
         internal RequestGroup() { }
 
-        internal RequestGroup(Ranking ranking, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime, List<Request> requests, bool isTerminalRequest = false)
+        internal RequestGroup(Ranking ranking, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime, List<Request> requests, bool isTerminalRequest = false, bool isAReplacingRequestGroup = false)
         {
             requests.ForEach(r => r.RequestGroup = this);
             Ranking = ranking;
@@ -51,6 +51,11 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(OrderGroupId))]
         public OrderGroup OrderGroup { get; set; }
 
+        public int? ReplacingRequestGroupId { get; set; }
+
+        [ForeignKey(nameof(ReplacingRequestGroupId))]
+        public RequestGroup ReplacingRequestGroup { get; set; }
+
         #endregion
 
         #region navigation
@@ -64,6 +69,9 @@ namespace Tolk.BusinessLogic.Entities
         public List<RequestGroupAttachment> Attachments { get; set; }
 
         public RequestGroupUpdateLatestAnswerTime RequestGroupUpdateLatestAnswerTime { get; set; }
+
+        [InverseProperty(nameof(ReplacingRequestGroup))]
+        public RequestGroup ReplacedByRequestGroup { get; set; }
 
         #endregion
 
@@ -98,10 +106,6 @@ namespace Tolk.BusinessLogic.Entities
                 if (value == RequestStatus.InterpreterReplaced)
                 {
                     throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {nameof(RequestStatus.InterpreterReplaced)}");
-                }
-                if (value == RequestStatus.ReplacedAtAnswerAfterAccept)
-                {
-                    throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {nameof(RequestStatus.ReplacedAtAnswerAfterAccept)}");
                 }
                 base.Status = value;
             }
@@ -226,18 +230,25 @@ namespace Tolk.BusinessLogic.Entities
             OrderGroup.Status = OrderStatus.TerminatedDueToTerminatedFrameworkAgreement;
         }
 
-        public void Answer(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool hasTravelCosts, bool partialAnswer, DateTimeOffset? latestAnswerTimeForCustomer, string brokerReferenceNumber)
+        public void Answer(DateTimeOffset answerTime, 
+            int userId, 
+            int? impersonatorId, 
+            List<RequestGroupAttachment> attachedFiles, 
+            bool hasTravelCosts, 
+            bool partialAnswer, 
+            DateTimeOffset? latestAnswerTimeForCustomer, 
+            string brokerReferenceNumber)
         {
             if (!IsToBeProcessedByBroker)
             {
                 throw new InvalidOperationException($"Det gick inte att svara på sammanhållen förfrågan med boknings-id {OrderGroup.OrderGroupNumber}, den har redan blivit besvarad");
             }
 
-            AnswerDate = acceptTime;
+            AnswerDate = answerTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
             Attachments = attachedFiles;
-            AnswerProcessedAt = RequiresApproval(hasTravelCosts) ? null : (DateTimeOffset?)acceptTime;
+            AnswerProcessedAt = RequiresApproval(hasTravelCosts) ? null : (DateTimeOffset?)answerTime;
             OrderGroup.SetStatus(RequiresApproval(hasTravelCosts) ?
                 partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestRespondedAwaitingApproval :
                 partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.ResponseAccepted, false);
@@ -247,7 +258,49 @@ namespace Tolk.BusinessLogic.Entities
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
             BrokerReferenceNumber = brokerReferenceNumber;
         }
-        
+
+        public void AnswerAcceptedRequest(
+            DateTimeOffset answerTime,
+            int userId,
+            int? impersonatorId,
+            List<RequestGroupAttachment> attachments,
+            RequestGroup oldRequestGroup,
+            bool hasTravelCosts,
+            DateTimeOffset? latestAnswerTimeForCustomer,
+            string brokerReferenceNumber,
+            bool partialAnswer = false
+            )
+        {
+            if (oldRequestGroup == null)
+            {
+                throw new ArgumentNullException($"Det gick inte att färdigställa tidigare bekräftad förfrågan med boknings-id {OrderGroup.OrderGroupNumber}, hittar ingen koppling till bekräftelsen");
+            }
+            AnswerDate = answerTime;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+            AnswerProcessedAt = (DateTimeOffset?)answerTime;
+            ReceivedBy = oldRequestGroup.ReceivedBy;
+            RecievedAt = oldRequestGroup.RecievedAt;
+            ImpersonatingReceivedBy = oldRequestGroup.ImpersonatingReceivedBy;
+            AcceptedAt = oldRequestGroup.AcceptedAt;
+            AcceptedBy = oldRequestGroup.AcceptedBy;
+            ImpersonatingAcceptedBy = oldRequestGroup.ImpersonatingAcceptedBy;
+            ReplacingRequestGroupId = oldRequestGroup.RequestGroupId;
+            Attachments = attachments;
+            BrokerReferenceNumber = brokerReferenceNumber;
+            LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
+
+            AnswerProcessedAt = RequiresApproval(hasTravelCosts) ? null : (DateTimeOffset?)answerTime;
+            OrderGroup.SetStatus(RequiresApproval(hasTravelCosts) ?
+                partialAnswer ? OrderStatus.RequestAwaitingPartialAccept : OrderStatus.RequestRespondedAwaitingApproval :
+                partialAnswer ? OrderStatus.GroupAwaitingPartialResponse : OrderStatus.ResponseAccepted, false);
+            SetStatus(RequiresApproval(hasTravelCosts) ?
+                partialAnswer ? RequestStatus.PartiallyAccepted : RequestStatus.AnsweredAwaitingApproval :
+                partialAnswer ? RequestStatus.PartiallyApproved : RequestStatus.Approved, false);
+            LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
+            BrokerReferenceNumber = brokerReferenceNumber;
+        }
+
         public void Accept(DateTimeOffset acceptTime, int userId, int? impersonatorId, List<RequestGroupAttachment> attachedFiles, bool partialAnswer, string brokerReferenceNumber)
         {
             if (!CanAccept)

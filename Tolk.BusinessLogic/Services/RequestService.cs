@@ -147,6 +147,7 @@ namespace Tolk.BusinessLogic.Services
             await AddPriceRowsToRequestsInGroup(requestGroup);
             await AddRequirementAnswersToRequestsInGroup(requestGroup);
             requestGroup.Requests.ForEach(r => r.Order = requestGroup.OrderGroup.Orders.Where(o => o.OrderId == r.OrderId).SingleOrDefault());
+            var returnedRequests = new List<Request>();
             foreach (var request in requestGroup.Requests)
             {
                 bool isExtraInterpreterOccasion = request.Order.IsExtraInterpreterForOrderId.HasValue;
@@ -154,7 +155,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     if (extraInterpreter.Accepted)
                     {
-                         AnswerReqestGroupRequest(request,
+                        returnedRequests.Add(AnswerReqestGroupRequest(request,
                             answerTime,
                             userId,
                             impersonatorId,
@@ -164,7 +165,7 @@ namespace Tolk.BusinessLogic.Services
                             extraInterpreterVerificationResult,
                             latestAnswerTimeForCustomer,
                             travelCostsShouldBeApproved
-                       );
+                       ));
                     }
                     else
                     {
@@ -175,7 +176,7 @@ namespace Tolk.BusinessLogic.Services
                 }
                 else
                 {
-                    AnswerReqestGroupRequest(request,
+                    returnedRequests.Add(AnswerReqestGroupRequest(request,
                         answerTime,
                         userId,
                         impersonatorId,
@@ -185,36 +186,51 @@ namespace Tolk.BusinessLogic.Services
                         verificationResult,
                         latestAnswerTimeForCustomer,
                         travelCostsShouldBeApproved
-                    );
+                    ));
                 }
             }
-
+            RequestGroup resultingGroup = null;
             // add the attachments to the group...
-            requestGroup.Answer(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer, latestAnswerTimeForCustomer, brokerReferenceNumber);
+            if (requestGroup.Status == RequestStatus.AcceptedAwaitingInterpreter)
+            {
+                RequestGroup newRequestGroup = new RequestGroup(requestGroup.Ranking, new RequestExpiryResponse { LastAcceptedAt = requestGroup.LastAcceptAt, ExpiryAt = requestGroup.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, answerTime, returnedRequests, isAReplacingRequestGroup: true)
+                {
+                    OrderGroup = requestGroup.OrderGroup
+                };
+                requestGroup.OrderGroup.RequestGroups.Add(newRequestGroup);
 
+                newRequestGroup.AnswerAcceptedRequest(answerTime, userId, impersonatorId, attachedFiles, requestGroup, hasTravelCosts, latestAnswerTimeForCustomer, brokerReferenceNumber);
+                requestGroup.Status = RequestStatus.ReplacedAtAnswerAfterAccept;
+                resultingGroup = newRequestGroup;
+            }
+            else
+            {
+                requestGroup.Answer(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer, latestAnswerTimeForCustomer, brokerReferenceNumber);
+                resultingGroup = requestGroup;
+            }
             if (partialAnswer)
             {
                 //Need to split the declined part of the group, and make a separate order- and request group for that, to forward to the next in line. if any...
-                await _orderService.CreatePartialRequestGroup(requestGroup, declinedRequests);
-                if (requestGroup.RequiresApproval(hasTravelCosts))
+                await _orderService.CreatePartialRequestGroup(resultingGroup, declinedRequests);
+                if (resultingGroup.RequiresApproval(hasTravelCosts))
                 {
-                    _notificationService.PartialRequestGroupAnswerAccepted(requestGroup);
+                    _notificationService.PartialRequestGroupAnswerAccepted(resultingGroup);
                 }
                 else
                 {
-                    _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(requestGroup);
+                    _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(resultingGroup);
                 }
             }
             else
             {
                 //2. Set the request group and order group in correct state
-                if (requestGroup.RequiresApproval(hasTravelCosts))
+                if (resultingGroup.RequiresApproval(hasTravelCosts))
                 {
-                    _notificationService.RequestGroupAccepted(requestGroup);
+                    _notificationService.RequestGroupAccepted(resultingGroup);
                 }
                 else
                 {
-                    _notificationService.RequestGroupAnswerAutomaticallyApproved(requestGroup);
+                    _notificationService.RequestGroupAnswerAutomaticallyApproved(resultingGroup);
                 }
             }
         }
@@ -748,7 +764,6 @@ namespace Tolk.BusinessLogic.Services
             var prices = _priceCalculationService.GetPrices(request, competenceLevel, interpreterLocation, expectedTravelCosts);
             if (request.Status == RequestStatus.AcceptedAwaitingInterpreter)
             {
-
                 Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, acceptTime, isAReplacingRequest: true, requestGroup: request.RequestGroup)
                 {
                     Order = request.Order,
@@ -776,9 +791,9 @@ namespace Tolk.BusinessLogic.Services
             request.Accept(acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, brokerReferenceNumber);
         }
 
-        private void AnswerReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
+        private Request AnswerReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
         {
-            AnswerRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, string.Empty, overrideRequireAccept);
+            return AnswerRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, string.Empty, overrideRequireAccept);
         }
 
         private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, InterpreterAcceptDto accept, List<RequestAttachment> attachedFiles)

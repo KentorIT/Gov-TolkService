@@ -68,6 +68,11 @@ namespace Tolk.Web.Controllers
             OrderGroup orderGroup = await _dbContext.OrderGroups.GetFullOrderGroupById(requestGroup.OrderGroupId);
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.View)).Succeeded)
             {
+                if (EnumHelper.Parent<RequestStatus, NegotiationState>(requestGroup.Status) == NegotiationState.ReplacedByOtherEntity)
+                {
+                    id = _dbContext.RequestGroups.OrderBy(rg => rg.RequestGroupId).Last(rg => rg.OrderGroupId == requestGroup.OrderGroupId && rg.Ranking.BrokerId == User.GetBrokerId()).RequestGroupId;
+                    return RedirectToAction(nameof(View), new { id });
+                }
                 if (requestGroup.IsToBeProcessedByBroker)
                 {
                     return RedirectToAction(nameof(Process), new { id = requestGroup.RequestGroupId });

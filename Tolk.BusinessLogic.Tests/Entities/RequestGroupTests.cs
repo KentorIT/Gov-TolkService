@@ -63,7 +63,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.CancelledByBroker)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(RequestStatus.InterpreterReplaced)]
-        [InlineData(RequestStatus.ReplacedAtAnswerAfterAccept)]
         public void Status_Invalid(RequestStatus status)
         {
             Assert.Throws<InvalidOperationException>(() => new RequestGroup()

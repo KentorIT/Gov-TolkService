@@ -722,13 +722,13 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<RequestGroup> GetRequestGroupForApiWithBrokerAndOrderNumber(this IQueryable<RequestGroup> requestGroups, string orderNumber, int brokerId)
            => await requestGroups.Include(r => r.OrderGroup)
-              .Include(r => r.Ranking).SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderNumber && r.Ranking.BrokerId == brokerId);
+              .Include(r => r.Ranking).SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderNumber && r.Ranking.BrokerId == brokerId && r.ReplacedByRequestGroup == null);
 
         public static async Task<RequestGroup> GetFullRequestGroupForApiWithBrokerAndOrderNumber(this IQueryable<RequestGroup> requestGroups, string orderNumber, int brokerId)
             => await requestGroups.GetRequestGroupsWithBaseIncludes()
             .Include(r => r.OrderGroup.Language)
             .Include(r => r.OrderGroup.Region)
-            .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderNumber && r.Ranking.BrokerId == brokerId);
+            .SingleOrDefaultAsync(r => r.OrderGroup.OrderGroupNumber == orderNumber && r.Ranking.BrokerId == brokerId && r.ReplacedByRequestGroup == null);
 
         public static async Task<Request> GetConfirmedRequestForApiWithBrokerAndOrderNumber(this IQueryable<Request> requests, string orderNumber, int brokerId, IEnumerable<RequestStatus> statuses)
             => await requests.GetRequestsWithBaseIncludesForApi()
