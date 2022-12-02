@@ -92,8 +92,8 @@ namespace Tolk.Web.Controllers
             var request = await _dbContext.Requests.GetRequestById(id);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                //if user tries to view a request with status InterpreterReplaced (email-link) - redirect to latest request for broker
-                if (request.Status == RequestStatus.InterpreterReplaced)
+                //if user tries to view a request with a status in negotiationState ReplacedByOtherEntity - redirect to latest request for broker
+                if (EnumHelper.Parent<RequestStatus, NegotiationState>(request.Status) == NegotiationState.ReplacedByOtherEntity)
                 {
                     id = _dbContext.Requests.OrderBy(r => r.RequestId).Last(r => r.OrderId == request.OrderId && r.Ranking.BrokerId == User.GetBrokerId()).RequestId;
                     return RedirectToAction(nameof(View), new { id });
@@ -406,12 +406,12 @@ namespace Tolk.Web.Controllers
                     }
                     catch (ArgumentException ex)
                     {
-                        _logger.LogError("Accept for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
+                        _logger.LogError("Answer for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
                         return RedirectToAction("Index", "Home", new { errormessage = "Något gick fel i behandlingen av bokningsförfrågan" });
                     }
                     catch (InvalidOperationException ex)
                     {
-                        _logger.LogError("Accept for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
+                        _logger.LogError("Answer for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
                         return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                     }
                     return RedirectToAction("Index", "Home", new { message = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Tolk har bytts ut för uppdraget" : "Svar har skickats" });

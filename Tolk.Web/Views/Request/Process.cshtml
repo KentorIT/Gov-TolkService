@@ -98,14 +98,7 @@
                                 }
                             </div>
                             <div class="col-sm-4">
-                                @if (Model.InterpreterLocation.HasValue)
-                                {
-                                    <input asp-for="InterpreterLocation" type="hidden" />
-                                }
-                                else
-                                {
-                                    <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderViewModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
-                                }
+                                <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderViewModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
                             </div>
                         </div>
                         @if (Model.OrderViewModel.AllowSettingTravelCosts)

@@ -313,6 +313,41 @@ namespace BrokerMock.Controllers
                             Thread.Sleep(1500);
                             await Decline(payload.OrderNumber, "Tackar nej efter lite eftertanke...");
                         }
+                        if (extraInstructions.Contains("ANSWERAFTERACCEPT"))
+                        {
+                            Thread.Sleep(1500);
+                            var interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
+                            var interpreter = interpreters?.FirstOrDefault();
+                            DateTimeOffset? latestAnswerAt = null;
+                            decimal? expectedTravelCosts = null;
+                            if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
+                            {
+                                interpreter = GetNewInterpreter();
+                            }
+                            if (extraInstructions.Contains("SETLATESTANSWERAT"))
+                            {
+                                latestAnswerAt = payload.StartAt.AddMinutes(-60);
+                                expectedTravelCosts = 300;
+                            }
+                            if (extraInstructions.Contains("ADDTRAVELCOSTS"))
+                            {
+                                expectedTravelCosts = 200;
+                            }
+                            await AssignInterpreter(
+                                payload.OrderNumber,
+                                interpreter,
+                                payload.Locations.First().Key,
+                                payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                                payload.Requirements.Select(r => new RequirementAnswerModel
+                                {
+                                    Answer = "Japp",
+                                    CanMeetRequirement = true,
+                                    RequirementId = r.RequirementId
+                                }),
+                                expectedTravelCosts,
+                                latestAnswerAt
+                            );
+                        }
                     }
                 }
                 //Get the headers:

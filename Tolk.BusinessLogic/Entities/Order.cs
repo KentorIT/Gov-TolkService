@@ -87,6 +87,7 @@ namespace Tolk.BusinessLogic.Entities
                     (!((base.Status == OrderStatus.Requested && !Requests.OrderBy(r => r.RequestId).Last().RequiresAccept) ||
                         base.Status == OrderStatus.RequestRespondedAwaitingApproval ||
                         base.Status == OrderStatus.RequestRespondedNewInterpreter ||
+                        base.Status == OrderStatus.RequestAcceptedAwaitingInterpreter ||
                        (base.Status == OrderStatus.Requested && ReplacingOrderId.HasValue)) ||
                     Requests.Count(r => r.Status == RequestStatus.Approved) != 1))
                 {

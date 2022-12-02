@@ -296,6 +296,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Order).ThenInclude(o => o.ReplacedByOrder).ThenInclude(r => r.CreatedByUser)
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.RequestUpdateLatestAnswerTime).ThenInclude(r => r.UpdatedByUser)
+                .Include(r => r.ReplacingRequest)
                 .Where(r => r.OrderId == id);
             if (brokerId.HasValue)
             {
@@ -748,6 +749,7 @@ namespace Tolk.BusinessLogic.Utilities
                                             r.Status != RequestStatus.DeniedByCreator &&
                                             r.Status != RequestStatus.DeclinedByBroker &&
                                             r.Status != RequestStatus.LostDueToQuarantine &&
+                                            r.Status != RequestStatus.ReplacedAtAnswerAfterAccept &&
                                             (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
 
         public static async Task<Request> GetActiveRequestIncludeProcessingUserByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)

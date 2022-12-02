@@ -99,6 +99,10 @@ namespace Tolk.BusinessLogic.Entities
                 {
                     throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {nameof(RequestStatus.InterpreterReplaced)}");
                 }
+                if (value == RequestStatus.ReplacedAtAnswerAfterAccept)
+                {
+                    throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {nameof(RequestStatus.ReplacedAtAnswerAfterAccept)}");
+                }
                 base.Status = value;
             }
         }

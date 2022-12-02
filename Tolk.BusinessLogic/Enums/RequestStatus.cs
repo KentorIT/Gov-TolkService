@@ -95,5 +95,9 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Förfrågan bekräftad av förmedling, inväntar tolktillsättning")]
         [Parent(NegotiationState.UnderNegotiation)]
         AcceptedAwaitingInterpreter = 23,
+        [CustomName("not_used", false)]
+        [Description("Förfrågan besvarad efter en tidigare bekräftelse")]
+        [Parent(NegotiationState.ReplacedByOtherEntity)]
+        ReplacedAtAnswerAfterAccept = 24,
     }
 }

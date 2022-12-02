@@ -14,9 +14,9 @@ namespace Tolk.BusinessLogic.Entities
 
         public Request() { }
 
-        public Request(Ranking ranking, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime, bool isTerminalRequest = false, bool isChangeInterpreter = false, RequestGroup requestGroup = null)
+        public Request(Ranking ranking, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime, bool isTerminalRequest = false, bool isAReplacingRequest = false, RequestGroup requestGroup = null)
         {
-            if (!isChangeInterpreter && newRequestExpiry.ExpiryAt.HasValue && newRequestExpiry.ExpiryAt < creationTime)
+            if (!isAReplacingRequest && newRequestExpiry.ExpiryAt.HasValue && newRequestExpiry.ExpiryAt < creationTime)
             {
                 throw new InvalidOperationException("The Request cannot have an expiry before the creation time.");
             }
@@ -296,6 +296,70 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = requiresAccept ? OrderStatus.RequestRespondedAwaitingApproval : OrderStatus.ResponseAccepted;
             AnswerProcessedAt = requiresAccept ? null : (DateTimeOffset?)acceptTime;
         }
+
+        public void AnswerAcceptedRequest(
+            DateTimeOffset answerTime,
+            int userId,
+            int? impersonatorId,
+            InterpreterBroker interperter,
+            InterpreterLocation interpreterLocation,
+            CompetenceAndSpecialistLevel competenceLevel,
+            List<OrderRequirementRequestAnswer> requirementAnswers,
+            List<RequestAttachment> attachments,
+            PriceInformation priceInformation,
+            Request oldRequest,
+            string expectedTravelCostInfo,
+            DateTimeOffset? latestAnswerTimeForCustomer,
+            string brokerReferenceNumber,
+            VerificationResult? verificationResult = null,
+            bool overrideRequireAccept = false
+            )
+        {
+            if (Status != RequestStatus.AcceptedNewInterpreterAppointed)
+            {
+                throw new InvalidOperationException($"Något gick fel, förfrågan med boknings-id {Order.OrderNumber} har inte rätt status");
+            }
+            if (priceInformation == null)
+            {
+                throw new ArgumentNullException($"Det gick inte att färdigställa tidigare bekräftad förfrågan med boknings-id {Order.OrderNumber}, förfrågan saknar prisrader");
+            }
+            if (oldRequest == null)
+            {
+                throw new ArgumentNullException($"Det gick inte att färdigställa tidigare bekräftad förfrågan med boknings-id {Order.OrderNumber}, hittar ingen koppling till bekräftelsen");
+            }
+            ValidateInterpreterLocationAgainstOrder(interpreterLocation);
+            ValidateRequirementsAgainstOrder(requirementAnswers);
+            ValidateCompetenceLevelAgainstOrder(competenceLevel);
+            ValidateLatestAnswerTimeAndTravelCost(interpreterLocation, priceInformation, latestAnswerTimeForCustomer, answerTime);
+            AnswerDate = answerTime;
+            AnsweredBy = userId;
+            ImpersonatingAnsweredBy = impersonatorId;
+            Interpreter = interperter;
+            InterpreterLocation = (int?)interpreterLocation;
+            CompetenceLevel = (int?)competenceLevel;
+            AnswerProcessedAt = (DateTimeOffset?)answerTime;
+            ReceivedBy = oldRequest.ReceivedBy;
+            RecievedAt = oldRequest.RecievedAt;
+            ImpersonatingReceivedBy = oldRequest.ImpersonatingReceivedBy;
+            AcceptedAt = oldRequest.AcceptedAt;
+            AcceptedBy = oldRequest.AcceptedBy;
+            ImpersonatingAcceptedBy = oldRequest.ImpersonatingAcceptedBy;
+            ReplacingRequestId = oldRequest.RequestId;
+            RequirementAnswers = requirementAnswers;
+            Attachments = attachments;
+            PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
+            ExpectedTravelCostInfo = expectedTravelCostInfo;
+            InterpreterCompetenceVerificationResultOnAssign = verificationResult;
+            BrokerReferenceNumber = brokerReferenceNumber;
+            LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
+
+            var requiresAccept = overrideRequireAccept || RequiresAccept;
+
+            Status = requiresAccept ? RequestStatus.AnsweredAwaitingApproval : RequestStatus.Approved;
+            Order.Status = requiresAccept ? OrderStatus.RequestRespondedAwaitingApproval : OrderStatus.ResponseAccepted;
+            AnswerProcessedAt = requiresAccept ? null : (DateTimeOffset?)answerTime;
+        }
+
         public void Accept(
             DateTimeOffset acceptTime,
             int userId,

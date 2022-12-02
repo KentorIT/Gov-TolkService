@@ -71,15 +71,15 @@ namespace Tolk.BusinessLogic.Services
             request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(Answer));
-            AnswerRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel), latestAnswerTimeForCustomer: latestAnswerTimeForCustomer, brokerReferenceNumber);
+            var resultingRequest = AnswerRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel), latestAnswerTimeForCustomer: latestAnswerTimeForCustomer, brokerReferenceNumber);
             //Create notification
-            switch (request.Status)
+            switch (resultingRequest.Status)
             {
                 case RequestStatus.AnsweredAwaitingApproval:
-                    _notificationService.RequestAnsweredAwaitingApproval(request);
+                    _notificationService.RequestAnsweredAwaitingApproval(resultingRequest);
                     break;
                 case RequestStatus.Approved:
-                    _notificationService.RequestAnswerAutomaticallyApproved(request);
+                    _notificationService.RequestAnswerAutomaticallyApproved(resultingRequest);
                     break;
                 default:
                     throw new NotImplementedException("NOT OK!!");
@@ -91,7 +91,7 @@ namespace Tolk.BusinessLogic.Services
             DateTimeOffset acceptTime,
             int userId,
             int? impersonatorId,
-            InterpreterLocation interpreterLocation, 
+            InterpreterLocation interpreterLocation,
             CompetenceAndSpecialistLevel? competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
@@ -154,7 +154,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     if (extraInterpreter.Accepted)
                     {
-                        AnswerReqestGroupRequest(request,
+                         AnswerReqestGroupRequest(request,
                             answerTime,
                             userId,
                             impersonatorId,
@@ -292,7 +292,7 @@ namespace Tolk.BusinessLogic.Services
             }
             else
             {
-                    _notificationService.RequestGroupAccepted(requestGroup);
+                _notificationService.RequestGroupAccepted(requestGroup);
             }
         }
 
@@ -418,7 +418,7 @@ namespace Tolk.BusinessLogic.Services
                 throw new InvalidOperationException("Det går inte att tillsätta samma tolk som redan är tillsatt som extra tolk för samma tillfälle.");
             }
 
-            Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, changedAt, isChangeInterpreter: true, requestGroup: request.RequestGroup)
+            Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, changedAt, isAReplacingRequest: true, requestGroup: request.RequestGroup)
             {
                 Order = request.Order,
                 Status = RequestStatus.AcceptedNewInterpreterAppointed
@@ -741,12 +741,30 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void AnswerRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, string brokerReferenceNumber, bool overrideRequireAccept = false)
+        private Request AnswerRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, string brokerReferenceNumber, bool overrideRequireAccept = false)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AnswerRequest), nameof(RequestService));
             //Get prices
             var prices = _priceCalculationService.GetPrices(request, competenceLevel, interpreterLocation, expectedTravelCosts);
-            request.Answer(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult, overrideRequireAccept);
+            if (request.Status == RequestStatus.AcceptedAwaitingInterpreter)
+            {
+
+                Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, acceptTime, isAReplacingRequest: true, requestGroup: request.RequestGroup)
+                {
+                    Order = request.Order,
+                    Status = RequestStatus.AcceptedNewInterpreterAppointed
+                };
+                request.Order.Requests.Add(newRequest);
+
+                newRequest.AnswerAcceptedRequest(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, request, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult);
+                request.Status = RequestStatus.ReplacedAtAnswerAfterAccept;
+                return newRequest;
+            }
+            else
+            {
+                request.Answer(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult, overrideRequireAccept);
+                return request;
+            }
         }
 
         private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel? competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, string brokerReferenceNumber)

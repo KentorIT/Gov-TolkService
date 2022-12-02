@@ -49,6 +49,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.LostDueToQuarantine)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.NoDeadlineFromCustomer)]
+        [InlineData(RequestStatus.AcceptedAwaitingInterpreter)]
         public void Recieved_Invalid(RequestStatus status)
         {
             var request = new RequestGroup()
@@ -62,6 +63,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.CancelledByBroker)]
         [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
         [InlineData(RequestStatus.InterpreterReplaced)]
+        [InlineData(RequestStatus.ReplacedAtAnswerAfterAccept)]
         public void Status_Invalid(RequestStatus status)
         {
             Assert.Throws<InvalidOperationException>(() => new RequestGroup()

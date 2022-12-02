@@ -248,7 +248,6 @@ namespace Tolk.Web.Services
             return eventLog;
         }
 
-
         public async Task<IEnumerable<EventLogEntryModel>> GetEventLogForRequisitions(int requestId, string customerName, string brokerName)
         {
             List<EventLogEntryModel> list = GetEventLogEntriesFromRequisitionList(_dbContext.Requisitions.GetRequisitionsForRequest(requestId), customerName, brokerName);
@@ -421,12 +420,36 @@ namespace Tolk.Web.Services
             // Request expired
             if (request.Status == RequestStatus.DeniedByTimeLimit)
             {
-                eventLog.Add(new EventLogEntryModel
+                if (request.LastAcceptAt.HasValue)
                 {
-                    Timestamp = request.ExpiresAt ?? request.Order.StartAt,
-                    EventDetails = "Förfrågan obesvarad, tiden gick ut",
-                    Actor = "Systemet",
-                });
+                    if (request.AcceptedAt.HasValue)
+                    {
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Timestamp = request.ExpiresAt ?? request.Order.StartAt,
+                            EventDetails = "Förfrågan obesvarad efter bekräftelse, tiden gick ut",
+                            Actor = "Systemet",
+                        });
+                    }
+                    else
+                    {
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Timestamp = request.LastAcceptAt.Value,
+                            EventDetails = "Förfrågan obesvarad, tiden gick ut",
+                            Actor = "Systemet",
+                        });
+                    }
+                }
+                else
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = request.ExpiresAt ?? request.Order.StartAt,
+                        EventDetails = "Förfrågan obesvarad, tiden gick ut",
+                        Actor = "Systemet",
+                    });
+                } 
             }
             else if (request.Status == RequestStatus.NoDeadlineFromCustomer)
             {
@@ -451,7 +474,7 @@ namespace Tolk.Web.Services
                         ActorContactInfo = GetContactinfo(request.AnsweringUser),
                     });
                 }
-                else if (!request.ReplacingRequestId.HasValue)
+                else if (!request.ReplacingRequestId.HasValue || request.ReplacingRequest.Status != RequestStatus.InterpreterReplaced)
                 {
                     eventLog.Add(new EventLogEntryModel
                     {
@@ -463,7 +486,7 @@ namespace Tolk.Web.Services
                     });
                 }
             }
-            if (request.AcceptedAt.HasValue)
+            if (request.AcceptedAt.HasValue && !request.ReplacingRequestId.HasValue)
             {
                 eventLog.Add(new EventLogEntryModel
                 {
@@ -503,7 +526,7 @@ namespace Tolk.Web.Services
                 else
                 {
                     //interpreter changed
-                    if (request.ReplacingRequestId.HasValue)
+                    if (request.ReplacingRequestId.HasValue && request.ReplacingRequest.Status == RequestStatus.InterpreterReplaced)
                     {
                         if (request.ProcessingUser != null)
                         {
