@@ -291,11 +291,11 @@ namespace Tolk.Web.Controllers
                     .Select(og => new ActionStartListItemModel
                     {
                         OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
-                        EntityId = og.OrderId,
+                        EntityId = og.OrderGroupId.Value,
                         InfoDate = GetInfoDateForCustomer(og)?.DateTime,
                         CompetenceLevel = (CompetenceAndSpecialistLevel?)og.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                         ExtraCompetenceLevel = (CompetenceAndSpecialistLevel?)og.ExtraCompetencelevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        LinkOverride = "/OrderGroup/View/",
+                        LinkOverride = "/OrderGroup/View",
                         LanguageName = og.LanguageName,
                         OrderNumber = og.OrderGroupNumber,
                         Status = GetStartListStatusForCustomer((OrderStatus)og.OrderGroupStatus, 0, true),
@@ -309,10 +309,10 @@ namespace Tolk.Web.Controllers
                     .Select(og => new ActionStartListItemModel
                     {
                         OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
-                        EntityId = og.OrderId,
+                        EntityId = og.OrderGroupId.Value,
                         InfoDate = GetInfoDateForCustomer(og)?.DateTime,
                         CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
-                        LinkOverride = "/OrderGroup/View/",
+                        LinkOverride = "/OrderGroup/View",
                         LanguageName = og.LanguageName,
                         OrderNumber = og.OrderGroupNumber,
                         Status = GetStartListStatusForCustomer((OrderStatus)og.OrderGroupStatus, 0, true),
@@ -334,10 +334,10 @@ namespace Tolk.Web.Controllers
                         .Select(og => new ActionStartListItemModel
                         {
                             OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
-                            EntityId = og.OrderId,
+                            EntityId = og.OrderGroupId.Value,
                             InfoDate = GetInfoDateForCustomer(og)?.DateTime,
                             CompetenceLevel = (CompetenceAndSpecialistLevel?)og.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,//this might not be correct
-                            LinkOverride = "/OrderGroup/View/",
+                            LinkOverride = "/OrderGroup/View",
                             LanguageName = og.LanguageName,
                             OrderNumber = og.OrderGroupNumber,
                             Status = GetStartListStatusForCustomer((OrderStatus)og.OrderGroupStatus, 0, true),
@@ -383,10 +383,10 @@ namespace Tolk.Web.Controllers
                         .Select(og => new ActionStartListItemModel
                         {
                             OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
-                            EntityId = og.OrderId,
+                            EntityId = og.OrderGroupId.Value,
                             InfoDate = og.OrderGroupStatus == OrderStatus.ResponseNotAnsweredByCreator ? og.LatestAnswerTimeForCustomer?.DateTime ?? og.StartAt.DateTime : GetInfoDateForCustomer(og)?.DateTime,
                             CompetenceLevel = og.OrderGroupStatus == OrderStatus.ResponseNotAnsweredByCreator ? (CompetenceAndSpecialistLevel?)og.CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter,
-                            LinkOverride = "/OrderGroup/View/",
+                            LinkOverride = "/OrderGroup/View",
                             LanguageName = og.LanguageName,
                             OrderNumber = og.OrderGroupNumber,
                             Status = og.OrderGroupStatus == OrderStatus.ResponseNotAnsweredByCreator ? StartListItemStatus.RespondedRequestGroupNotAnswered : StartListItemStatus.OrderGroupNotAnswered,
@@ -503,11 +503,11 @@ namespace Tolk.Web.Controllers
                     .Select(og => new StartListItemModel
                     {
                         OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
-                        EntityId = og.OrderId,
+                        EntityId = og.OrderGroupId.Value,
                         InfoDate = og.EntityDate.DateTime,
                         InfoDateDescription = "Skickad: ",
                         CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
-                        LinkOverride = "/OrderGroup/View/",
+                        LinkOverride = "/OrderGroup/View",
                         LanguageName = og.LanguageName,
                         OrderNumber = og.OrderGroupNumber,
                         Status = StartListItemStatus.OrderGroupCreated,
@@ -831,7 +831,7 @@ namespace Tolk.Web.Controllers
                 .Select(rg => new ActionStartListItemModel
                 {
                     OrderDateTimeRange = new TimeRange { StartDateTime = rg.StartAt, EndDateTime = rg.EndAt },
-                    EntityId = (int)rg.RequestId,
+                    EntityId = (int)rg.RequestGroupId,
                     InfoDate = GetInfoDateForGroupForBroker(rg),
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)rg.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     ExtraCompetenceLevel = (CompetenceAndSpecialistLevel?)rg.ExtraCompetencelevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -841,7 +841,7 @@ namespace Tolk.Web.Controllers
                     Status = GetStartListStatusForBroker((RequestStatus)rg.RequestGroupStatus, 0, true),
                     LatestDate = rg.RequestGroupIsToBeProcessedByBroker ? (rg.RequestExpiresAt.HasValue ? (DateTime?)rg.RequestExpiresAt.Value.DateTime : null) : null,
                     ViewedByUser = GetViewedByUserName(rg, userId),
-                    LinkOverride = $"/RequestGroup/View/",
+                    LinkOverride = $"/RequestGroup/View",
                     IsSingleOccasion = rg.IsSingleOccasion,
                     HasExtraInterpreter = rg.HasExtraInterpreter
                 }).ToList());
@@ -966,7 +966,7 @@ namespace Tolk.Web.Controllers
                         InfoDateDescription = "Tillsatt: ",
                         CompetenceLevel = (CompetenceAndSpecialistLevel?)rg.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                         ExtraCompetenceLevel = (CompetenceAndSpecialistLevel?)rg.ExtraCompetencelevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
-                        LinkOverride = $"/RequestGroup/View/",
+                        LinkOverride = $"/RequestGroup/View",
                         CustomerName = rg.CustomerName,
                         LanguageName = rg.LanguageName,
                         OrderNumber = rg.OrderGroupNumber,
