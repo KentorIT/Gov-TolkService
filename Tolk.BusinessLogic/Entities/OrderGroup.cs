@@ -127,7 +127,7 @@ namespace Tolk.BusinessLogic.Entities
                 Orders.Select(o => o.CreateRequest(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest)).ToList(),
                 isTerminalRequest
             );
-
+            SetStatus(OrderStatus.Requested);
             RequestGroups.Add(requestGroup);
 
             return requestGroup;

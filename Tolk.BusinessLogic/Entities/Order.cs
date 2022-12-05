@@ -218,6 +218,7 @@ namespace Tolk.BusinessLogic.Entities
         internal Request CreateRequest(Ranking ranking, RequestExpiryResponse newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             var request = new Request(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest);
+            Status = OrderStatus.Requested;
             Requests.Add(request);
             return request;
         }
