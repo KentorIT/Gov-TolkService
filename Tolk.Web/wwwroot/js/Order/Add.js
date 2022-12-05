@@ -533,6 +533,9 @@ $(function () {
             var startdate = new Date($("#SplitTimeRange_StartDate").val());
             var starthour = $("#SplitTimeRange_StartTimeHour").val();
             var startminute = $("#SplitTimeRange_StartTimeMinutes").val();
+            if (date > startdate) {
+                return false;
+            }
             if (date.equalsDate(new Date(startdate))) {
                 if (Number(hour) > Number(starthour)) {
                     return false;
