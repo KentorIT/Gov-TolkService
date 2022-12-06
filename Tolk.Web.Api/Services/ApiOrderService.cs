@@ -110,6 +110,9 @@ namespace Tolk.Web.Api.Services
                 },
                 Region = request.Order.Region.Name,
                 ExpiresAt = request.ExpiresAt,
+                LastAcceptAt = request.LastAcceptAt,
+                RequiredAnswerLevel = EnumHelper.GetCustomName(EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(request.RequestAnswerRuleType)),
+                RequestAnswerRuleType = EnumHelper.GetCustomName(request.RequestAnswerRuleType),
                 Language = new LanguageModel
                 {
                     Key = request.Order.Language?.ISO_639_Code,
@@ -214,6 +217,9 @@ namespace Tolk.Web.Api.Services
                 },
                 Region = orderGroup.Region.Name,
                 ExpiresAt = requestGroup.ExpiresAt,
+                LastAcceptAt = requestGroup.LastAcceptAt,
+                RequiredAnswerLevel = EnumHelper.GetCustomName(EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(requestGroup.RequestAnswerRuleType)),
+                RequestAnswerRuleType = EnumHelper.GetCustomName(requestGroup.RequestAnswerRuleType),
                 Language = new LanguageModel
                 {
                     Key = orderGroup.Language?.ISO_639_Code,

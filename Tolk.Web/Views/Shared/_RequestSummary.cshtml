@@ -67,13 +67,25 @@
             </div>
         </div>
         <div class="row">
-            @if (!Model.RequestIsAnswered && !isBroker)
+            @if (!Model.RequestIsAnswered)
             {
                 <div class="col-sm-4">
                     <label>Tolk ej tillsatt</label>
                 </div>
             }
-            else
+            @if (Model.Status == RequestStatus.AcceptedAwaitingInterpreter)
+            {
+                <div class="col-sm-4">
+                    @if (Model.InterpreterCompetenceLevel.HasValue)
+                    {
+                        <display-entry asp-for="InterpreterCompetenceLevel" label-override="Kompetensnivå enligt bekräftelse" />
+                    }
+                </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="InterpreterLocation" label-override="Inställelsesätt enligt bekräftelse" />
+                </div>
+            }
+            else if (Model.RequestIsAnswered)
             {
                 <div class="col-sm-4">
                     <display-entry asp-for="Interpreter" asp-empty="Tolk ej tillsatt" />
@@ -102,7 +114,7 @@
                                     @Model.InterpreterVerificationMessage
                                 </span>
                                 <span title="" class="form-entry-information glyphicon glyphicon-info-sign"
-                                      data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
+                          data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
                             </div>
                         }
                     }
@@ -201,21 +213,45 @@
         <div class="row">
             @if (Model.RequestIsAnswered)
             {
+                if (Model.LastAcceptAt.HasValue)
+                {
+                    <div class="col-sm-4">
+                        <display-entry asp-for="AcceptedBy" />
+                    </div>
+                }
                 <div class="col-sm-4">
                     <display-entry asp-for="AnsweredBy" />
                 </div>
             }
-            else if (!Model.RequestIsAnswered && !isBroker)
+            else
             {
-                <div class="col-sm-4">
-                    <display-entry asp-for="ExpiresAt" label-override="Senaste svarstid" />
-                </div>
+                if (Model.Status == RequestStatus.AcceptedAwaitingInterpreter)
+                {
+                    <div class="col-sm-4">
+                        <display-entry asp-for="AcceptedBy" />
+                    </div>
+                }
+                if (!isBroker)
+                {
+                    if (!Model.LastAcceptAt.HasValue || Model.Status == RequestStatus.AcceptedAwaitingInterpreter)
+                    {
+                        <div class="col-sm-4">
+                            <display-entry asp-for="ExpiresAt" label-override="Senaste tid för tillsättning" />
+                        </div>
+                    }
+                    else if (Model.LastAcceptAt.HasValue)
+                    {
+                        <div class="col-sm-4">
+                            <display-entry asp-for="LastAcceptAt" label-override="Senaste bekräftelsetid" />
+                        </div>
+                        <div class="col-sm-4">
+                            <display-entry asp-for="ExpiresAt" label-override="Senaste tid för tillsättning" />
+                        </div>
+                    }
+                }
             }
             <div class="col-sm-4">
-                <display-entry asp-for="Broker" />
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="BrokerOrganizationNumber" />
+                <display-entry asp-for="BrokerInformation" />
             </div>
         </div>
         @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)

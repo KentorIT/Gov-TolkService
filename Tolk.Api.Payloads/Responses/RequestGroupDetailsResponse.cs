@@ -17,6 +17,9 @@ namespace Tolk.Api.Payloads.Responses
         public CustomerInformationModel CustomerInformation { get; set; }
         public string Region { get; set; }
         public DateTimeOffset? ExpiresAt { get; set; }
+        public DateTimeOffset? LastAcceptAt { get; set; }
+        public string RequiredAnswerLevel { get; set; }
+        public string RequestAnswerRuleType { get; set; }
         public LanguageModel Language { get; set; }
         public IEnumerable<LocationModel> Locations { get; set; }
         public IEnumerable<CompetenceModel> CompetenceLevels { get; set; }

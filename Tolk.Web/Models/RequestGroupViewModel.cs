@@ -43,9 +43,17 @@ namespace Tolk.Web.Models
         [Display(Name = "Förmedlings organisationsnummer")]
         public string BrokerOrganizationNumber { get; set; }
 
+        [Display(Name = "Förmedling")]
+        [DataType(DataType.MultilineText)]
+        public string BrokerInformation => $"{Broker}\n({BrokerOrganizationNumber})";
+
         [Display(Name = "Förfrågan besvarad av")]
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
+
+        [Display(Name = "Förfrågan bekräftad av")]
+        [DataType(DataType.MultilineText)]
+        public string AcceptedBy { get; set; }
 
         [Display(Name = "Bedömd resekostnad per tillfälle")]
         [DataType(DataType.Currency)]
@@ -76,7 +84,7 @@ namespace Tolk.Web.Models
 
         public RequestStatus? ExtraInterpreterStatus { get; set; }
 
-        public bool RequestIsAnswered => Status != RequestStatus.InterpreterReplaced && Status != RequestStatus.Created && Status != RequestStatus.Received;
+        public bool RequestIsAnswered => Status != RequestStatus.InterpreterReplaced && Status != RequestStatus.Created && Status != RequestStatus.Received && Status != RequestStatus.AcceptedAwaitingInterpreter;
 
         public bool RequestIsDeclinedByBroker => Status == RequestStatus.DeclinedByBroker || Status == RequestStatus.DeniedByTimeLimit;
 
@@ -87,7 +95,6 @@ namespace Tolk.Web.Models
         public OrderBaseModel OrderGroupModel { get; set; }
 
         #region methods
-
 
         internal static RequestGroupViewModel GetModelFromRequestGroup(RequestGroup requestGroup, bool displayBrokerReferenceNumber, bool isCustomer = true)
         {
@@ -112,11 +119,13 @@ namespace Tolk.Web.Models
                 RequestGroupId = requestGroup.RequestGroupId,
                 OrderGroupNumber = orderGroup.OrderGroupNumber,
                 AnsweredBy = requestGroup.AnsweringUser?.CompleteContactInformation,
+                AcceptedBy = requestGroup.AcceptingUser?.CompleteContactInformation,
                 Broker = requestGroup.Ranking.Broker.BrokerContactInformation,
                 BrokerOrganizationNumber = requestGroup.Ranking?.Broker.OrganizationNumber,
                 DenyMessage = requestGroup.DenyMessage,
                 CancelMessage = requestGroup.CancelMessage,
                 ExpiresAt = requestGroup.ExpiresAt,
+                LastAcceptAt = requestGroup.LastAcceptAt,
                 LatestAnswerTimeForCustomer = requestGroup.LatestAnswerTimeForCustomer,
                 CustomerInformationModel = new CustomerInformationModel
                 {

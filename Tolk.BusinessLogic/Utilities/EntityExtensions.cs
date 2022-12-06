@@ -654,6 +654,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Ranking).ThenInclude(ra => ra.FrameworkAgreement)
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.AnsweringUser)
+                .Include(r => r.AcceptingUser)
                 .SingleAsync(r => r.RequestId == id);
 
         public static async Task<Request> GetSimpleRequestById(this IQueryable<Request> requests, int id)
@@ -973,6 +974,7 @@ namespace Tolk.BusinessLogic.Utilities
            => requests
                .Include(r => r.Order)
                .Include(r => r.AnsweringUser)
+               .Include(r => r.AcceptingUser)
                .Include(r => r.Interpreter)
                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement);
@@ -988,6 +990,7 @@ namespace Tolk.BusinessLogic.Utilities
             => requestGroups
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                 .Include(r => r.AnsweringUser)
+                .Include(r => r.AcceptingUser)
                 .Include(r => r.ProcessingUser)
                 .Include(r => r.CancelledByUser);
 
