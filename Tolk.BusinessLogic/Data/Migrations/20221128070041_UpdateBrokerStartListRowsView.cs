@@ -8,7 +8,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-			migrationBuilder.Sql(@"ALTER VIEW [dbo].[BrokerStartListRows]
+			migrationBuilder.Sql(@"Exec('ALTER VIEW [dbo].[BrokerStartListRows]
 AS
 
 --NOTE! When ALTER VIEW - also change file \GOV Tolk\Tolk.BusinessLogic\Data\Views\BrokerStartListRows.sql
