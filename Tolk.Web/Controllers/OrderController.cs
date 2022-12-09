@@ -364,12 +364,13 @@ namespace Tolk.Web.Controllers
             var now = _clock.SwedenNow.DateTime;
             var firstWorkDay = _dateCalculationService.GetFirstWorkDay(now).Date;
             var panicTime = _dateCalculationService.GetFirstWorkDay(firstWorkDay).Date;
-            if (now.Hour >= 14)
+            var nowIsWorkingDay = _dateCalculationService.IsWorkingDay(now);
+            if (nowIsWorkingDay && now.Hour >= 14)
             {
-                //Add day if after 14...
+                //Add day if after 14 if order creation is a working day...
                 panicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
             }
-            DateTime nextPanicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
+            DateTime nextPanicTime = nowIsWorkingDay ? _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date : panicTime;
 
             var user = await _userService.GetUserWithDefaultSettings(User.GetUserId());
 
