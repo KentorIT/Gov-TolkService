@@ -261,7 +261,7 @@ LEFT JOIN dbo.RequestViews rv
 	(SELECT TOP 1 rv1.RequestViewId FROM RequestViews rv1 WHERE r.RequestId = rv1.RequestId ORDER BY rv1.ViewedAt DESC)
 LEFT JOIN dbo.AspNetUsers anu
 	ON rv.ViewedBy = anu.Id
-WHERE c.Status = 1");
+WHERE c.Status = 1');");
 
         }
 

@@ -218,7 +218,7 @@ LEFT JOIN dbo.CustomerUnits cu
 	ON o.CustomerUnitId = cu.CustomerUnitId
 LEFT JOIN dbo.Languages l
 	ON l.LanguageId = o.LanguageId
-WHERE c.Status = 3");
+WHERE c.Status = 3');");
 
         }
 
