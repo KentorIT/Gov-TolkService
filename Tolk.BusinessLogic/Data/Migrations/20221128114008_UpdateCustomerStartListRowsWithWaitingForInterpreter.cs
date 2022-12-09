@@ -8,7 +8,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"ALTER VIEW [dbo].[CustomerStartListRows]
+            migrationBuilder.Sql(@"Exec('ALTER VIEW [dbo].[CustomerStartListRows]
 AS
 
 --NOTE! When ALTER VIEW - also change file \GOV Tolk\Tolk.BusinessLogic\Data\Views\CustomerStartListRows.sql
@@ -16,34 +16,34 @@ AS
 --Orders
 SELECT
 DISTINCT
-	1 'RowType'
+	1 ''RowType''
 	,o.OrderId 
-   ,COALESCE(l.Name, o.OtherLanguage) 'LanguageName'
+   ,COALESCE(l.Name, o.OtherLanguage) ''LanguageName''
    ,o.OrderNumber 
    ,og.OrderGroupNumber
    ,o.StartAt
    ,o.EndAt
-   ,o.Status 'OrderStatus'
-   ,og.Status 'OrderGroupStatus'
+   ,o.Status ''OrderStatus''
+   ,og.Status ''OrderGroupStatus''
    ,o.CreatedBy
    ,o.CustomerUnitId
-   ,o.CreatedAt 'EntityDate'
+   ,o.CreatedAt ''EntityDate''
    ,o.CustomerOrganisationId
-   ,CONVERT(BIT, COALESCE(cu.IsActive, 0)) 'CustomerUnitIsActive'
+   ,CONVERT(BIT, COALESCE(cu.IsActive, 0)) ''CustomerUnitIsActive''
    ,o.OrderGroupId 
    ,o.ContactPersonId
    ,o.ReplacingOrderId
    ,r.CompetenceLevel
-   ,NULL 'ExtraCompetencelevel'
+   ,NULL ''ExtraCompetencelevel''
    ,r.LatestAnswerTimeForCustomer
-   ,r.AnswerDate 'AnsweredAt'
+   ,r.AnswerDate ''AnsweredAt''
    ,r.CancelledAt
-   ,r.ExpiresAt 'RequestExpiresAt'
-   ,r.CreatedAt 'LastRequestCreatedUpdatedAt'
-   ,NULL 'NoOfChildren'
-   ,NULL 'NoOfExtraInterpreter'
-   ,NULL 'RequisitionStatus'
-   ,NULL 'ComplaintStatus'
+   ,r.ExpiresAt ''RequestExpiresAt''
+   ,r.CreatedAt ''LastRequestCreatedUpdatedAt''
+   ,NULL ''NoOfChildren''
+   ,NULL ''NoOfExtraInterpreter''
+   ,NULL ''RequisitionStatus''
+   ,NULL ''ComplaintStatus''
 FROM dbo.Orders o
 INNER JOIN dbo.CustomerOrganisations c
 	ON c.CustomerOrganisationId = o.CustomerOrganisationId
@@ -73,36 +73,36 @@ UNION
 --OrderGroups (PartlyAccepted request not implemented for groups)
 SELECT
 DISTINCT
-	2 'RowType'
+	2 ''RowType''
    ,o.OrderId 
-   ,COALESCE(l.Name, og.OtherLanguage) 'LanguageName'
-   ,NULL 'OrderNumber'
+   ,COALESCE(l.Name, og.OtherLanguage) ''LanguageName''
+   ,NULL ''OrderNumber''
    ,og.OrderGroupNumber
    ,o.StartAt
    ,o.EndAt
-   ,o.Status 'OrderStatus'
-   ,og.Status 'OrderGroupStatus'
+   ,o.Status ''OrderStatus''
+   ,og.Status ''OrderGroupStatus''
    ,og.CreatedBy
    ,og.CustomerUnitId
-   ,og.CreatedAt 'EntityDate'
+   ,og.CreatedAt ''EntityDate''
    ,og.CustomerOrganisationId
-   ,CONVERT(BIT, COALESCE(cu.IsActive, 0)) 'CustomerUnitIsActive'
-   ,og.OrderGroupId 'ParentEntityId'
+   ,CONVERT(BIT, COALESCE(cu.IsActive, 0)) ''CustomerUnitIsActive''
+   ,og.OrderGroupId ''ParentEntityId''
    ,o.ContactPersonId
    ,NULL ReplacingOrderId 
    ,(SELECT TOP 1 r.CompetenceLevel FROM Requests r
-   JOIN Orders oreq ON r.OrderId = oreq.OrderId AND OrderGroupId = og.OrderGroupId AND oreq.IsExtraInterpreterForOrderId IS NULL) 'Competencelevel'
+   JOIN Orders oreq ON r.OrderId = oreq.OrderId AND OrderGroupId = og.OrderGroupId AND oreq.IsExtraInterpreterForOrderId IS NULL) ''Competencelevel''
    ,(SELECT TOP 1 r.CompetenceLevel FROM Requests r 
-   JOIN Orders oreq ON r.OrderId = oreq.OrderId AND OrderGroupId = og.OrderGroupId AND oreq.IsExtraInterpreterForOrderId IS NOT NULL) 'ExtraCompetencelevel'
+   JOIN Orders oreq ON r.OrderId = oreq.OrderId AND OrderGroupId = og.OrderGroupId AND oreq.IsExtraInterpreterForOrderId IS NOT NULL) ''ExtraCompetencelevel''
    ,rg.LatestAnswerTimeForCustomer
-   ,rg.AnswerDate 'AnsweredAt'
+   ,rg.AnswerDate ''AnsweredAt''
    ,rg.CancelledAt
-   ,rg.ExpiresAt 'RequestExpiresAt'
-   ,rg.CreatedAt 'LastRequestCreatedUpdatedAt'
-   ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId) 'NoOfChildren'
-   ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId AND IsExtraInterpreterForOrderId IS NOT NULL) 'NoOfExtraInterpreter'
-   ,NULL 'RequisitionStatus'
-   ,NULL 'ComplaintStatus'
+   ,rg.ExpiresAt ''RequestExpiresAt''
+   ,rg.CreatedAt ''LastRequestCreatedUpdatedAt''
+   ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId) ''NoOfChildren''
+   ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId AND IsExtraInterpreterForOrderId IS NOT NULL) ''NoOfExtraInterpreter''
+   ,NULL ''RequisitionStatus''
+   ,NULL ''ComplaintStatus''
 FROM dbo.OrderGroups og 
 INNER JOIN dbo.CustomerOrganisations c
 	ON c.CustomerOrganisationId = og.CustomerOrganisationId
@@ -129,34 +129,34 @@ UNION
 --Requisitions
 SELECT
 DISTINCT
-	3 'RowType'
+	3 ''RowType''
    ,o.OrderId
-   ,COALESCE(l.Name, o.OtherLanguage) 'LanguageName'
+   ,COALESCE(l.Name, o.OtherLanguage) ''LanguageName''
    ,o.OrderNumber
    ,og.OrderGroupNumber
    ,o.StartAt
    ,o.EndAt
-   ,o.Status 'OrderStatus'
-   ,og.Status 'OrderGroupStatus'
+   ,o.Status ''OrderStatus''
+   ,og.Status ''OrderGroupStatus''
    ,o.CreatedBy
    ,o.CustomerUnitId
-   ,r.CreatedAt 'EntityDate'
+   ,r.CreatedAt ''EntityDate''
    ,o.CustomerOrganisationId
-   ,CONVERT(BIT, COALESCE(cu.IsActive, 0)) 'CustomerUnitIsActive'
+   ,CONVERT(BIT, COALESCE(cu.IsActive, 0)) ''CustomerUnitIsActive''
    ,og.OrderGroupId
    ,o.ContactPersonId
    ,NULL ReplacingOrderId 
-   ,rs.CompetenceLevel 'Competencelevel'
-   ,NULL 'ExtraCompetencelevel'
-   ,NULL 'LatestAnswerTimeForCustomer'
-   ,NULL 'AnsweredAt'
-   ,NULL 'CancelledAt'
-   ,NULL 'RequestExpiresAt'
-   ,NULL 'LastRequestCreatedUpdatedAt'
-   ,NULL 'NoOfChildren'
-   ,NULL 'NoOfExtraInterpreter'
-   ,r.Status 'RequisitionStatus'
-   ,NULL 'ComplaintStatus'
+   ,rs.CompetenceLevel ''Competencelevel''
+   ,NULL ''ExtraCompetencelevel''
+   ,NULL ''LatestAnswerTimeForCustomer''
+   ,NULL ''AnsweredAt''
+   ,NULL ''CancelledAt''
+   ,NULL ''RequestExpiresAt''
+   ,NULL ''LastRequestCreatedUpdatedAt''
+   ,NULL ''NoOfChildren''
+   ,NULL ''NoOfExtraInterpreter''
+   ,r.Status ''RequisitionStatus''
+   ,NULL ''ComplaintStatus''
 FROM dbo.Requisitions r
 INNER JOIN dbo.Requests rs
 	ON r.RequestId = rs.RequestId
@@ -177,34 +177,34 @@ UNION
 --Complaints
 SELECT
 DISTINCT
-	4 'RowType'
+	4 ''RowType''
    ,o.OrderId
-   ,COALESCE(l.Name, o.OtherLanguage) 'LanguageName'
+   ,COALESCE(l.Name, o.OtherLanguage) ''LanguageName''
    ,o.OrderNumber
    ,og.OrderGroupNumber
    ,o.StartAt
    ,o.EndAt
-   ,o.Status 'OrderStatus'
-   ,og.Status 'OrderGroupStatus'
+   ,o.Status ''OrderStatus''
+   ,og.Status ''OrderGroupStatus''
    ,o.CreatedBy
    ,o.CustomerUnitId
-   ,c.CreatedAt 'EntityDate'
+   ,c.CreatedAt ''EntityDate''
    ,o.CustomerOrganisationId
-   ,CONVERT(BIT, COALESCE(cu.IsActive, 0)) 'CustomerUnitIsActive'
+   ,CONVERT(BIT, COALESCE(cu.IsActive, 0)) ''CustomerUnitIsActive''
    ,og.OrderGroupId
    ,o.ContactPersonId
    ,NULL ReplacingOrderId 
-   ,rs.CompetenceLevel 'Competencelevel'
-   ,NULL 'ExtraCompetencelevel'
-   ,NULL 'LatestAnswerTimeForCustomer'
+   ,rs.CompetenceLevel ''Competencelevel''
+   ,NULL ''ExtraCompetencelevel''
+   ,NULL ''LatestAnswerTimeForCustomer''
    ,c.AnsweredAt
-   ,NULL 'CancelledAt'
-   ,NULL 'RequestExpiresAt'
-   ,NULL 'LastRequestCreatedUpdatedAt'
-   ,0 'NoOfChildren'
-   ,0 'NoOfExtraInterpreter'
-   ,NULL 'RequisitionStatus'
-   ,c.Status 'ComplaintStatus'
+   ,NULL ''CancelledAt''
+   ,NULL ''RequestExpiresAt''
+   ,NULL ''LastRequestCreatedUpdatedAt''
+   ,0 ''NoOfChildren''
+   ,0 ''NoOfExtraInterpreter''
+   ,NULL ''RequisitionStatus''
+   ,c.Status ''ComplaintStatus''
 FROM dbo.Complaints c
 INNER JOIN dbo.Requests rs
 	ON c.RequestId = rs.RequestId

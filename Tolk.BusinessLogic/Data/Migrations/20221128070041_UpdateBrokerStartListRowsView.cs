@@ -26,7 +26,7 @@ DISTINCT
    ,o.EndAt
    ,r.Status RequestStatus
    ,rg.Status RequestGroupStatus
-   ,anu.NameFirst + ' ' + anu.NameFamily ViewedBy
+   ,anu.NameFirst + '' '' + anu.NameFamily ViewedBy
    ,anu.Id ViewedByUserId
    ,r.CreatedAt EntityDate
    ,r.RequestGroupId 
@@ -93,13 +93,13 @@ DISTINCT
    ,NULL RequestId
    ,ra.BrokerId
    ,COALESCE(l.Name, o.OtherLanguage) LanguageName
-   ,'' OrderNumber
+   ,'''' OrderNumber
    ,og.OrderGroupNumber
    ,o.StartAt
    ,o.EndAt
    ,NULL RequestStatus
    ,rg.Status RequestGroupStatus
-   ,anu.NameFirst + ' ' + anu.NameFamily ViewedBy
+   ,anu.NameFirst + '' '' + anu.NameFamily ViewedBy
    ,anu.Id ViewedByUserId
    ,rg.CreatedAt EntityDate
    ,rg.RequestGroupId 
@@ -164,7 +164,7 @@ DISTINCT
    ,o.EndAt
    ,NULL RequestStatus
    ,NULL RequestGroupStatus
-   ,anu.NameFirst + ' ' + anu.NameFamily ViewedBy
+   ,anu.NameFirst + '' '' + anu.NameFamily ViewedBy
    ,anu.Id ViewedByUserId
    ,rs.CreatedAt EntityDate
    ,rs.RequestGroupId RequestGroupId
@@ -221,7 +221,7 @@ DISTINCT
    ,o.EndAt
    ,NULL RequestStatus
    ,NULL RequestGroupStatus
-   ,anu.NameFirst + ' ' + anu.NameFamily ViewedBy
+   ,anu.NameFirst + '' '' + anu.NameFamily ViewedBy
    ,anu.Id ViewedByUserId
    ,c.CreatedAt EntityDate
    ,r.RequestGroupId
