@@ -149,13 +149,13 @@ namespace Tolk.BusinessLogic.Utilities
             return Enum.GetValues(type).OfType<TEnum>().Where(t => parent.Equals(Parent<TEnum, TParentEnum>(t)));
         }
 
-        public static IEnumerable<EnumDescription<TEnum>> GetAllFullDescriptions<TEnum>(IEnumerable<TEnum> filterValues = null)
+        public static IEnumerable<EnumDescription<TEnum>> GetAllFullDescriptions<TEnum>(IEnumerable<TEnum> filterValues = null, bool onlyApiDescriptions = true)
         {
             var type = typeof(TEnum);
             type = Nullable.GetUnderlyingType(type) ?? type;
 
             return Enum.GetValues(type).OfType<TEnum>()
-                .Where(t => !IsObsolete(t) && UseInApi(t) &&
+                .Where(t => !IsObsolete(t) && (UseInApi(t) || !onlyApiDescriptions) &&
                     (filterValues == null || filterValues.Contains(t)))
                 .Select(v => new EnumDescription<TEnum>(v,
                     type.GetMember(v.ToString()).GetEnumDescription(),

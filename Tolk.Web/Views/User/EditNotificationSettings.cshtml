@@ -25,22 +25,29 @@
                                 <div class="notifcationsettings-header">
                                     @EnumHelper.GetDescription(Model[i].Type)
                                 </div>
-                                <div>
-                                    <div class="col-sm-2 selection-box">
-                                        <form-entry asp-for="@Model[i].UseEmail" />
+                                @if (Model[i].DisplayEmail)
+                                {
+
+                                    <div>
+                                        <div class="col-sm-2 selection-box">
+                                            <form-entry asp-for="@Model[i].UseEmail" />
+                                        </div>
+                                        <div class="col-sm-4 selection-textbox">
+                                            <form-entry asp-for="@Model[i].SpecificEmail" />
+                                        </div>
                                     </div>
-                                    <div class="col-sm-4 selection-textbox">
-                                        <form-entry asp-for="@Model[i].SpecificEmail" />
+                                }
+                                @if (Model[i].DisplayWebhook)
+                                {
+                                    <div>
+                                        <div class="col-sm-2 selection-box">
+                                            <form-entry asp-for="@Model[i].UseWebHook" />
+                                        </div>
+                                        <div class="col-sm-4 selection-textbox">
+                                            <form-entry asp-for="@Model[i].WebHookReceipentAddress" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <div class="col-sm-2 selection-box">
-                                        <form-entry asp-for="@Model[i].UseWebHook" />
-                                    </div>
-                                    <div class="col-sm-4 selection-textbox">
-                                        <form-entry asp-for="@Model[i].WebHookReceipentAddress" />
-                                    </div>
-                                </div>
+                                }
                             </div>
                         }
                     </div>

@@ -230,9 +230,6 @@ namespace Tolk.BusinessLogic.Enums
         OrderAgreementRepalced = 31,
 
 
-
-
-
         //Additional
         [Description("Uppdrag avbokat av myndighet efter godkänd bekräftelse")]
         [CustomName("request_cancelled_by_customer_when_approved", false)]
@@ -392,14 +389,14 @@ namespace Tolk.BusinessLogic.Enums
         PasswordReset = 56,
 
         [Description("Avslutat avrop på grund av ramavtalets slut")]
-        [CustomName("password_reset", false)]
+        [CustomName("order_terminated_due_to_terminated_framework_agreement", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
         OrderTerminatedDueToTerminatedFrameworkAgreement = 57,
 
         [Description("Avslutat sammanhållen förfrågan på grund av ramavtalets slut")]
-        [CustomName("password_reset", false)]
+        [CustomName("order_group_terminated_due_to_terminated_framework_agreement", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]

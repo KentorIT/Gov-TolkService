@@ -1135,7 +1135,7 @@ namespace Tolk.Web.Controllers
 
         private static IEnumerable<NotificationSettingsModel> GetAvailableNotifications(IEnumerable<UserNotificationSetting> settings)
         {
-            foreach (var val in EnumHelper.GetAllFullDescriptions<NotificationType>())
+            foreach (var val in EnumHelper.GetAllFullDescriptions<NotificationType>(null, false).Where(t => t.Value.GetAvailableNotificationConsumerTypes().Any(c => c == NotificationConsumerType.Broker)))
             {
                 var emailSettings = settings.SingleOrDefault(s => s.NotificationType == val.Value && s.NotificationChannel == NotificationChannel.Email);
                 var webhookSettings = settings.SingleOrDefault(s => s.NotificationType == val.Value && s.NotificationChannel == NotificationChannel.Webhook);
@@ -1146,6 +1146,8 @@ namespace Tolk.Web.Controllers
                     SpecificEmail = emailSettings?.ConnectionInformation,
                     UseWebHook = webhookSettings != null,
                     WebHookReceipentAddress = webhookSettings?.ConnectionInformation,
+                    DisplayEmail = val.Value.GetAvailableNotificationChannels().Any(nc => nc == NotificationChannel.Email),
+                    DisplayWebhook = val.Value.GetAvailableNotificationChannels().Any(nc => nc == NotificationChannel.Webhook)
                 };
             }
         }

@@ -24,5 +24,8 @@ namespace Tolk.Web.Models
         [Display(Name = "Specifik e-postadress", Description = "Egen e-post för just denna notifiering. Annars går den till er default.")]
         [StringLength(255)]
         public string SpecificEmail { get; set; }
+
+        public bool DisplayWebhook { get; set; }
+        public bool DisplayEmail { get; set; }
     }
 }
