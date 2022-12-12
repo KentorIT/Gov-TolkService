@@ -157,7 +157,7 @@ namespace Tolk.Web.Models
 
         public bool AllowSettingTravelCosts => AllowExceedingTravelCost != null && EnumHelper.Parse<TrueFalse>(AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes;
 
-        public bool AllowEditContactPerson => Status != OrderStatus.CancelledByBroker && Status != OrderStatus.CancelledByCreator && Status != OrderStatus.NoBrokerAcceptedOrder && Status != OrderStatus.ResponseNotAnsweredByCreator && UserCanEditContactPerson;
+        public bool AllowEditContactPerson => Status != OrderStatus.CancelledByBroker && Status != OrderStatus.CancelledByCreator && Status != OrderStatus.NoBrokerAcceptedOrder && Status != OrderStatus.ResponseNotAnsweredByCreator && Status != OrderStatus.TerminatedDueToTerminatedFrameworkAgreement && UserCanEditContactPerson;
 
         public bool AllowUpdate => OrderUpdateIsEnabled && Status == OrderStatus.ResponseAccepted && StartAtIsInFuture && UserCanEdit;
 
