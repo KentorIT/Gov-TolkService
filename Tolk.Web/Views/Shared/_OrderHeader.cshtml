@@ -9,8 +9,8 @@
                 int? actionReplacedById = isOrderDetailView ? Model.ReplacedByOrderId : Model.ActiveRequest.ReplacedByOrderRequestId; }
 <section aria-label="Bokningshuvud">
     <div class="row">
-        <div class="col-sm-12 order-header-contract-info">
-            Avrop från ramavtal för tolkförmedlingstjänster @Constants.ContractNumber
+        <div class="col-sm-12 order-header-contract-info">            
+            Avrop från ramavtal för tolkförmedlingstjänster @Model.FrameworkAgreementNumberOnCreated
             <div class="help-sign-big">
                 @HelpLinkService.HeaderAnchor()
             </div>
