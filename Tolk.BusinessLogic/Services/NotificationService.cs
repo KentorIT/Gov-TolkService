@@ -1723,7 +1723,7 @@ Sammanställning:
         {
             string noReply = "Detta e-postmeddelande går inte att svara på.";
             string handledBy = $"Detta ärende hanteras i {Constants.SystemName}.";
-            string contractInfo = $"Avrop från ramavtal för tolkförmedlingstjänster {Constants.ContractNumber}";
+            string contractInfo = $"Avrop från ramavtal för tolkförmedlingstjänster {_cacheService.CurrentFrameworkAgreement.AgreementNumber}";            
 
             foreach (string recipient in recipients)
             {
