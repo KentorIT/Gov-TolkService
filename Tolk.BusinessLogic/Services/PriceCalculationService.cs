@@ -33,7 +33,7 @@ namespace Tolk.BusinessLogic.Services
             _cacheService = cacheService;
         }
 
-        public PriceInformation GetPrices(Request request, CompetenceAndSpecialistLevel competenceLevel, InterpreterLocation? interpreterLocation, decimal? expectedTravelCost)
+        public PriceInformation GetPrices(Request request, DateTimeOffset calculateFrom, CompetenceAndSpecialistLevel competenceLevel, InterpreterLocation? interpreterLocation, decimal? expectedTravelCost)
         {
             if (request == null)
             {
@@ -49,7 +49,7 @@ namespace Tolk.BusinessLogic.Services
                 order.CustomerOrganisation.PriceListType,
                 request.RankingId,
                 order.CreatedAt,
-                GetCalculatedBrokerFee(order, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType, EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel), request.RankingId, interpreterLocationCorCalculation),
+                GetCalculatedBrokerFee(order, calculateFrom, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType, EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel), request.RankingId, interpreterLocationCorCalculation),
                 expectedTravelCost);
         }
 
@@ -61,16 +61,16 @@ namespace Tolk.BusinessLogic.Services
                 brokerFee);
         }
 
-        public PriceRowBase GetCalculatedBrokerFee(Order order, BrokerFeeCalculationType brokerFeeCalculationType, CompetenceLevel cl, int rankingId, InterpreterLocation interpreterLocation)
+        public PriceRowBase GetCalculatedBrokerFee(Order order, DateTimeOffset calculateFrom, BrokerFeeCalculationType brokerFeeCalculationType, CompetenceLevel cl, int rankingId, InterpreterLocation interpreterLocation)
         {
             return brokerFeeCalculationType switch
             {
                 BrokerFeeCalculationType.ByRegionAndBroker =>
-                    GetPriceRowBrokerFeeByRanking(order.StartAt, order.EndAt, cl, rankingId, order.CreatedAt),
+                    GetPriceRowBrokerFeeByRanking(GetNoOfDays(order.StartAt, order.EndAt), calculateFrom, cl, rankingId),
                 BrokerFeeCalculationType.ByRegionGroupAndServiceType =>
                     GetPriceRowBrokerFeeByServiceType(
-                        order.StartAt,
-                        order.EndAt,
+                        GetNoOfDays(order.StartAt, order.EndAt),
+                        calculateFrom,
                         cl,
                         interpreterLocation,
                         order.RegionId),
@@ -254,17 +254,16 @@ namespace Tolk.BusinessLogic.Services
             return GetPriceCalculationCharge(startAt, endAt, priceListRowsPerPriceType, ChargeType.AdministrativeCharge);
         }
 
-        public PriceRowBase GetPriceRowBrokerFeeByRanking(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, int rankingId, DateTimeOffset orderCreatedDate)
+        public PriceRowBase GetPriceRowBrokerFeeByRanking(int days, DateTimeOffset calculateFrom, CompetenceLevel competenceLevel, int rankingId)
         {
             //One broker fee per day
-            int days = GetNoOfDays(startAt, endAt);
-            var priceRow = _cacheService.BrokerFeeByRegionAndBrokerPriceList.Where(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date).Count() == 1 ?
-                 _cacheService.BrokerFeeByRegionAndBrokerPriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date) :
-                 _cacheService.BrokerFeeByRegionAndBrokerPriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= orderCreatedDate.Date && br.EndDate.Date >= orderCreatedDate.Date);
+            var priceRow = _cacheService.BrokerFeeByRegionAndBrokerPriceList.Where(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= calculateFrom.Date && br.EndDate.Date >= calculateFrom.Date).Count() == 1 ?
+                 _cacheService.BrokerFeeByRegionAndBrokerPriceList.Single(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= calculateFrom.Date && br.EndDate.Date >= calculateFrom.Date) :
+                 _cacheService.BrokerFeeByRegionAndBrokerPriceList.Where(br => br.RankingId == rankingId && br.CompetenceLevel == competenceLevel && br.StartDate.Date <= calculateFrom.Date).OrderByDescending(br => br.EndDate).First();
             return new PriceRowBase
             {
-                StartAt = startAt.Date.ToDateTimeOffsetSweden(),
-                EndAt = endAt.Date.ToDateTimeOffsetSweden(),
+                StartAt = calculateFrom,
+                EndAt = calculateFrom,
                 PriceRowType = PriceRowType.BrokerFee,
                 Quantity = days,
                 Price = priceRow.PriceToUse,
@@ -272,21 +271,24 @@ namespace Tolk.BusinessLogic.Services
             };
         }
 
-        public PriceRowBase GetPriceRowBrokerFeeByServiceType(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, InterpreterLocation interpreterLocation, int regionId)
+        public PriceRowBase GetPriceRowBrokerFeeByServiceType(int days, DateTimeOffset calculateFrom, CompetenceLevel competenceLevel, InterpreterLocation interpreterLocation, int regionId)
         {
             //One broker fee per day
-            int days = GetNoOfDays(startAt, endAt);
-#warning Do we caculate the broker fee from the correct date? Shoud be now?
+            var priceRow = _cacheService.BrokerFeeByRegionGroupAndServiceTypePriceList
+                .Where(br => br.CompetenceLevel == competenceLevel && br.InterpreterLocation == interpreterLocation && br.RegionId == regionId && br.StartDate.Date <= calculateFrom.Date && br.EndDate.Date >= calculateFrom.Date).Count() == 1 ?
+                 _cacheService.BrokerFeeByRegionGroupAndServiceTypePriceList.Single(br => br.CompetenceLevel == competenceLevel && br.InterpreterLocation == interpreterLocation && br.RegionId == regionId && br.StartDate.Date <= calculateFrom.Date && br.EndDate.Date >= calculateFrom.Date) :
+                 _cacheService.BrokerFeeByRegionGroupAndServiceTypePriceList.Where(br => br.CompetenceLevel == competenceLevel && br.InterpreterLocation == interpreterLocation && br.RegionId == regionId && br.StartDate.Date <= calculateFrom.Date).OrderByDescending(br => br.EndDate).First();
+            //One broker fee per day
             return _cacheService.BrokerFeeByRegionGroupAndServiceTypePriceList
                 .Where(br =>
                     br.CompetenceLevel == competenceLevel &&
                     br.InterpreterLocation == interpreterLocation &&
                     br.RegionId == regionId &&
-                    br.StartDate.Date <= startAt.Date && br.EndDate.Date >= startAt.Date)
+                    br.StartDate.Date <= calculateFrom.Date && br.EndDate.Date >= calculateFrom.Date)
                 .Select(f => new PriceRowBase
                 {
-                    StartAt = startAt.Date.ToDateTimeOffsetSweden(),
-                    EndAt = endAt.Date.ToDateTimeOffsetSweden(),
+                    StartAt = calculateFrom,
+                    EndAt = calculateFrom,
                     PriceRowType = PriceRowType.BrokerFee,
                     Quantity = days,
                     Price = f.BrokerFee,

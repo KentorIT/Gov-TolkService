@@ -346,7 +346,7 @@ namespace Tolk.BusinessLogic.Services
                 impersonatorId,
                 expectedTravelCostInfo,
                 interpreterLocation,
-                _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, interpreterLocation, expectedTravelCosts),
+                _priceCalculationService.GetPrices(request, _clock.SwedenNow, (CompetenceAndSpecialistLevel)request.CompetenceLevel, interpreterLocation, expectedTravelCosts),
                 latestAnswerTimeForCustomer,
                 brokerReferenceNumber
             );
@@ -456,7 +456,7 @@ namespace Tolk.BusinessLogic.Services
                 competenceLevel,
                 requirementAnswers,
                 attachedFiles,
-                _priceCalculationService.GetPrices(request, competenceLevel, interpreterLocation, expectedTravelCosts),
+                _priceCalculationService.GetPrices(request, _clock.SwedenNow, competenceLevel, interpreterLocation, expectedTravelCosts),
                 noNeedForUserAccept,
                 request,
                 expectedTravelCostInfo,
@@ -761,7 +761,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AnswerRequest), nameof(RequestService));
             //Get prices
-            var prices = _priceCalculationService.GetPrices(request, competenceLevel, interpreterLocation, expectedTravelCosts);
+            var prices = _priceCalculationService.GetPrices(request, _clock.SwedenNow, competenceLevel, interpreterLocation, expectedTravelCosts);
             if (request.Status == RequestStatus.AcceptedAwaitingInterpreter)
             {
                 Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, acceptTime, isAReplacingRequest: true, requestGroup: request.RequestGroup)
@@ -787,7 +787,7 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
             //Get prices
             var competenceLevelForPriceCalculation = competenceLevel ?? OrderService.SelectCompetenceLevelForPriceEstimation(request.Order.CompetenceRequirements?.Select(item => item.CompetenceLevel));
-            var prices = _priceCalculationService.GetPrices(request, competenceLevelForPriceCalculation, interpreterLocation, null);
+            var prices = _priceCalculationService.GetPrices(request, _clock.SwedenNow, competenceLevelForPriceCalculation, interpreterLocation, null);
             request.Accept(acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, brokerReferenceNumber);
         }
 
