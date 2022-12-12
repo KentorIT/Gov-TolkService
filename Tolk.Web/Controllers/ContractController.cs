@@ -31,7 +31,7 @@ namespace Tolk.Web.Controllers
         public IActionResult Index()
         {
             var currentContract = _cacheService.CurrentFrameworkAgreement;
-            if(currentContract != null && currentContract.FrameworkAgreementResponseRuleset.GetContractDefinitionAttribute() == null)
+            if(currentContract.IsActive && currentContract.FrameworkAgreementResponseRuleset.GetContractDefinitionAttribute() == null)
             {
                 return Forbid();
             }            
