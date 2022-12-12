@@ -716,7 +716,8 @@ namespace Tolk.Web.Controllers
             model.OrderViewModel.ActiveRequest = new RequestViewModel
             {
                 Status = request.Status,
-                CreatedAt = model.CreatedAt
+                CreatedAt = model.CreatedAt,
+                FrameworkAgreementNumberOnCreated = request.Ranking.FrameworkAgreement.AgreementNumber
             };
             model.OrderViewModel.UseAttachments = true;
             await _listToModelService.AddInformationFromListsToModel(model.OrderViewModel);
@@ -756,8 +757,7 @@ namespace Tolk.Web.Controllers
             model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
             model.ActiveRequest.AttachmentListModel = model.RequestAttachmentListModel;
             model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
-            model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.RequestedCompetenceLevels);
-            model.FrameworkAgreementNumberOnCreated = request?.Ranking.FrameworkAgreement.AgreementNumber;
+            model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.RequestedCompetenceLevels);            
             model.EventLog = new EventLogModel
             {
                 Header = "Bokningshändelser",

@@ -153,6 +153,8 @@ namespace Tolk.Web.Models
 
         public int? OtherInterpreterId { get; set; }
 
+        public string FrameworkAgreementNumberOnCreated { get; set; }
+
         #endregion
 
         internal static RequestViewModel GetModelFromRequest(Request request, AllowExceedingTravelCost? allowExceedingTravelCost)
@@ -182,7 +184,8 @@ namespace Tolk.Web.Models
                 DisplayExpectedTravelCostInfo = GetDisplayExpectedTravelCostInfo(allowExceedingTravelCost, request.InterpreterLocation ?? 0),
                 LatestAnswerTimeForCustomer = request.LatestAnswerTimeForCustomer,
                 ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
-                BrokerId = request.Ranking.BrokerId
+                BrokerId = request.Ranking.BrokerId,
+                FrameworkAgreementNumberOnCreated = request.Ranking.FrameworkAgreement.AgreementNumber
             };
         }
 

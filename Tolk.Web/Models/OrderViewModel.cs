@@ -251,8 +251,7 @@ namespace Tolk.Web.Models
 
         public int? ComplaintId { get; set; }
 
-        public int? RequisitionId { get; set; }
-        public string FrameworkAgreementNumberOnCreated { get; set; }
+        public int? RequisitionId { get; set; }        
 
         internal static OrderViewModel GetModelFromOrder(Order order, Request request, bool displayBrokerReferenceNumber, bool isBroker = false, bool isConnectedToCurrentFrameworkAgreement = true)
         {
