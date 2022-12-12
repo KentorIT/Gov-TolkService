@@ -87,17 +87,19 @@ namespace Tolk.Web.Controllers
                 }
             });
         }
-
+        
         public async Task<IActionResult> View(int id, string message = null, string errorMessage = null)
         {
             var order = await _dbContext.Orders.GetFullOrderById(id);
 
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
-                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);
+                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);                
                 bool isConnectedToCurrentFrameworkAgreement = _cacheService.CurrentFrameworkAgreement.IsCurrentFrameworkAgreement(request?.Ranking.FrameworkAgreementId);
                 var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator), false, isConnectedToCurrentFrameworkAgreement);
-
+                model.FrameworkAgreementNumberOnCreated = request?.Ranking.FrameworkAgreement.AgreementNumber ??
+                    await _dbContext.Requests.Where(r => r.OrderId == id).Select(r => r.Ranking.FrameworkAgreement.AgreementNumber).FirstOrDefaultAsync() ??
+                    _cacheService.CurrentFrameworkAgreement.AgreementNumber;
                 model.UserCanEdit = (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.UserCanCancelOrder = (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
                 model.UserCanEditContactPerson = (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded;
@@ -582,6 +584,9 @@ namespace Tolk.Web.Controllers
                 }
 
                 var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator));
+                model.FrameworkAgreementNumberOnCreated = request?.Ranking.FrameworkAgreement.AgreementNumber ??
+                 await _dbContext.Requests.Where(r => r.OrderId == id).Select(r => r.Ranking.FrameworkAgreement.AgreementNumber).FirstOrDefaultAsync() ??
+                 _cacheService.CurrentFrameworkAgreement.AgreementNumber;
                 model.BrokerName = request.Ranking.Broker.Name;
                 model.CreatedBy = request.Order.CreatedByUser.FullName;
                 model.RequestId = request.RequestId;

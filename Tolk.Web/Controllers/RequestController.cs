@@ -756,6 +756,7 @@ namespace Tolk.Web.Controllers
             model.ActiveRequest.AttachmentListModel = model.RequestAttachmentListModel;
             model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
             model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.RequestedCompetenceLevels);
+            model.FrameworkAgreementNumberOnCreated = request?.Ranking.FrameworkAgreement.AgreementNumber;
             model.EventLog = new EventLogModel
             {
                 Header = "Bokningshändelser",
