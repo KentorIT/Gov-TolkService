@@ -124,7 +124,7 @@ namespace Tolk.Web.Controllers
                     _logger.LogWarning("Wrong status when trying to process request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction(nameof(View), new { id });
                 }
-                if (request.ReplacingRequestId.HasValue)
+                if (request.Order.ReplacingOrderId.HasValue)
                 {
                     _logger.LogWarning("A replacing request should not be handled by {Method}. RequestId: {request.RequestId}", nameof(Process), request.RequestId);
                     return RedirectToAction(nameof(View), new { id });
