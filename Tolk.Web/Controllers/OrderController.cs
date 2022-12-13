@@ -143,7 +143,6 @@ namespace Tolk.Web.Controllers
             return Forbid();
         }
 
-
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)
         {
@@ -157,7 +156,7 @@ namespace Tolk.Web.Controllers
                     _cacheService.CurrentFrameworkAgreement.IsCurrentFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
                     TimeIsValidForOrderReplacement(order.StartAt))
                 {
-                    return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()))));
+                    return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()), _cacheService.CurrentFrameworkAgreement.FrameworkAgreementResponseRuleset)));
                 }
                 else
                 {

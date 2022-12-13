@@ -739,6 +739,7 @@ namespace Tolk.Web.TagHelpers
                     hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-staywithin", ".time-range-part"));
                     hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-msg-staywithin", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "ErrorMessage").TypedValue.Value));
                     hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-otherproperty", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "OtherRangeProperty").TypedValue.Value));
+                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-rulesetproperty", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "RulesetProperty").TypedValue.Value));
                     hiddenValidationField.AddCssClass("force-validation");
                     hiddenValidationField.Attributes.Remove("data-val-required");
                     hiddenValidationField.WriteTo(writer, _htmlEncoder);
