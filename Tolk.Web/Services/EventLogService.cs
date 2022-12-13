@@ -449,7 +449,7 @@ namespace Tolk.Web.Services
                         EventDetails = "Förfrågan obesvarad, tiden gick ut",
                         Actor = "Systemet",
                     });
-                } 
+                }
             }
             else if (request.Status == RequestStatus.NoDeadlineFromCustomer)
             {
@@ -634,6 +634,17 @@ namespace Tolk.Web.Services
                         Timestamp = request.CancelledAt.Value,
                         EventDetails = "Uppdrag avbokat av förmedling",
                         Actor = request.CancelledByUser.FullName,
+                        Organization = brokerName,
+                        ActorContactInfo = GetContactinfo(request.CancelledByUser),
+                    });
+                }
+                else if (request.Status == RequestStatus.TerminatedDueToTerminatedFrameworkAgreement)
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = request.CancelledAt.Value,
+                        EventDetails = "Förfrågan avbruten pga att avtalstiden tagit slut",
+                        Actor = "Systemet",
                         Organization = brokerName,
                         ActorContactInfo = GetContactinfo(request.CancelledByUser),
                     });
