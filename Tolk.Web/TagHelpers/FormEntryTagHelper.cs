@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
@@ -737,9 +738,11 @@ namespace Tolk.Web.TagHelpers
                 {
                     var hiddenValidationField = _htmlGenerator.GenerateHidden(ViewContext, For.ModelExplorer, $"{For.Name}_validator", null, false, null);
                     hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-staywithin", ".time-range-part"));
-                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-msg-staywithin", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "ErrorMessage").TypedValue.Value));
                     hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-otherproperty", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "OtherRangeProperty").TypedValue.Value));
-                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-rulesetproperty", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "RulesetProperty").TypedValue.Value));
+                    var rulesetProperty = (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "RulesetProperty").TypedValue.Value;
+                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-rulesetproperty", rulesetProperty));
+                    var ruleset = For.ModelExplorer.Container.GetExplorerForProperty(rulesetProperty).Model as FrameworkAgreementResponseRuleset?;
+                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-msg-staywithin", EnumHelper.GetContractDefinition(ruleset).ReplacementError));
                     hiddenValidationField.AddCssClass("force-validation");
                     hiddenValidationField.Attributes.Remove("data-val-required");
                     hiddenValidationField.WriteTo(writer, _htmlEncoder);

@@ -10,6 +10,7 @@ namespace Tolk.BusinessLogic.Utilities
         public string ExcludedServices { get; set; } = "Konferenstolkning, teckenspråkstolkning, skrivtolkning samt skriftlig översättning och språkgranskning ingår inte i detta ramavtalsområde.";
         public string RankingRules { get; set; }
         public string GeneralTerms { get; set; } = "Ramavtalets Allmänna villkor är tillämpliga på avtalsförhållandet mellan leverantören och avropande myndighet som har ingått kontrakt och utgör en bilaga till kontraktet. Allmänna villkor är tillämpliga för varje avrop som sker inom ramen för ramavtalet oberoende av om detta anges i avropsförfrågan eller inte.";
+        public string ReplacementError { get; set; }
 
         public ContractDefinitionAttribute()
         {
