@@ -32,7 +32,7 @@ namespace Tolk.BusinessLogic.Enums
 
         [CustomName("accept_replacement")]
         [Description("Förfrågan gäller ett ersättningsuppdrag som avbokats av användare mindre än 48 timmar (två fulla helgfira vardagar), och behöver besvaras innan uppdraget startar.")]
-        [Parent(RequiredAnswerLevel.AcceptReplacement)]
+        [Parent(RequiredAnswerLevel.Full)]
         ReplacedOrder = 6,
 
         [CustomName("not_used_in_api", useInApi: false)]
