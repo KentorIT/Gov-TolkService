@@ -69,9 +69,18 @@
         <div class="row">
             @if (!Model.RequestIsAnswered)
             {
-                <div class="col-sm-4">
-                    <label>Tolk ej tillsatt</label>
-                </div>
+                @if (!Model.AnswerReplacedRequest)
+                {
+                    <div class="col-sm-4">
+                        <label>Tolk ej tillsatt</label>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-sm-4">
+                        <display-entry asp-for="Interpreter" />
+                    </div>
+                }
             }
             @if (Model.Status == RequestStatus.AcceptedAwaitingInterpreter)
             {
