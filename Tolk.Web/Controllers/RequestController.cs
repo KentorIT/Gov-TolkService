@@ -100,7 +100,7 @@ namespace Tolk.Web.Controllers
                 }
                 if (request.IsToBeProcessedByBroker)
                 {
-                    if (request.ReplacingRequestId.HasValue)
+                    if (request.Order.ReplacingOrderId.HasValue)
                     {
                         return RedirectToAction(nameof(ProcessReplacement), new { id });
                     }
@@ -159,9 +159,9 @@ namespace Tolk.Web.Controllers
                     _logger.LogWarning("Wrong status when trying to process replacement request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction(nameof(View), new { id });
                 }
-                if (!request.ReplacingRequestId.HasValue)
+                if (!request.Order.ReplacingOrderId.HasValue)
                 {
-                    _logger.LogWarning("Cannot process this Request as a replacement request, RequestId: {request.RequestId}", request.Status, request.RequestId);
+                    _logger.LogWarning("Cannot process this Request as a replacement request, RequestId: {request.RequestId}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction(nameof(View), new { id });
                 }
                 if (request.Status == RequestStatus.Created)
