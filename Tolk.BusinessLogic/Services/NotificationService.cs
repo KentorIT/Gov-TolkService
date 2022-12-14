@@ -1477,7 +1477,7 @@ Sammanställning:
                     notificationType
                 );
             }
-            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, NotificationType.RequestCreated, NotificationChannel.Email);
+            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, notificationType, NotificationChannel.Email);
             if (email != null)
             {
                 var body = $"Sammanhållen bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
