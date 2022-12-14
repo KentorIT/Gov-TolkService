@@ -340,6 +340,7 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(View), new { id = model.OrderId, errorMessage = "Det gick inte att ändra bokningen." });
         }
 
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {
