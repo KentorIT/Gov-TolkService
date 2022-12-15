@@ -51,7 +51,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     var now = _clock.SwedenNow;
                     var agreement = _dbContext.FrameworkAgreements.GetFrameworkAgreementByDate(now.Date);
-                    currentFrameworkAgreement = agreement != null ? 
+                    currentFrameworkAgreement = agreement != null ?
                         new CurrentFrameworkAgreement
                         {
                             FrameworkAgreementId = agreement.FrameworkAgreementId,
@@ -67,8 +67,9 @@ namespace Tolk.BusinessLogic.Services
                         } : 
                         new CurrentFrameworkAgreement { IsActive = false };
 
-                    _cache.Set(CacheKeys.CurrentFrameworkAgreement, currentFrameworkAgreement.ToByteArray());
-                }
+                    _cache.Set(CacheKeys.CurrentFrameworkAgreement, currentFrameworkAgreement.ToByteArray(),new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = now.Date.AddDays(1) - now.Date });
+                    
+                }                
                 return currentFrameworkAgreement;
             }
         }
