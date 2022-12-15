@@ -39,7 +39,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 column: "FrameworkAgreementId");
 
             //Add the first agreement
-            migrationBuilder.Sql("exec 'insert FrameworkAgreements Values(''23.3-9066-16'',''Första ramavtalet som tolkavropstjänsten hanterar'',''20180101'',''20230131'',1)'");
+            migrationBuilder.Sql("exec('insert FrameworkAgreements Values(''23.3-9066-16'',''Första ramavtalet som tolkavropstjänsten hanterar'',''20180101'',''20230131'',1)'");
             // Add the agreement to all available rankings.
             migrationBuilder.Sql("Update Rankings Set FrameworkAgreementId = 1");
 
