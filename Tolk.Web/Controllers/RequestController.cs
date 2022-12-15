@@ -517,6 +517,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Decline(RequestDeclineModel model)
         {
             var request = await _dbContext.Requests.GetRequestWithContactsById(model.DeniedRequestId);
+            request.Requisitions = new List<Requisition>();
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {

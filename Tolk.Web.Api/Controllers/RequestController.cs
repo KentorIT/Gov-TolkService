@@ -296,6 +296,7 @@ namespace Tolk.Web.Api.Controllers
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
 
                 var request = await _dbContext.Requests.GetActiveRequestForApiWithBrokerAndOrderNumber(model.OrderNumber, User.TryGetBrokerId().Value);
+                request.Requisitions = new List<Requisition>();
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);

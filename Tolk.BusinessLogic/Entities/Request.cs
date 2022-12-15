@@ -503,15 +503,35 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        public override void Decline(
+        public void DeclineRequest(
             DateTimeOffset declinedAt,
             int userId,
             int? impersonatorId,
-            string message)
+            string message,
+            List<MealBreak> mealbreaks = null,
+            List<RequisitionPriceRow> priceRows = null)
         {
             if (!CanDecline)
             {
                 throw new InvalidOperationException($"Det gick inte att tacka nej till förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
+            }
+            if (priceRows != null)
+            {
+                Requisitions.Add(
+                    new Requisition
+                    {
+                        CreatedAt = declinedAt,
+                        CreatedBy = userId,
+                        ImpersonatingCreatedBy = impersonatorId,
+                        Message = "Genererad av systemet. Full ersättning utgår pga att avbokning skett mindre än 48 timmar före bokat tolktillfälle och att tolken inte kan inställa sig efter de förändrade tidsramarna.",
+                        Status = RequisitionStatus.AutomaticGeneratedFromCancelledOrder,
+                        SessionStartedAt = Order.StartAt,
+                        SessionEndedAt = Order.EndAt,
+                        PriceRows = priceRows,
+                        MealBreaks = mealbreaks
+                    }
+                );
+
             }
             base.Decline(declinedAt, userId, impersonatorId, message);
             Order.Status = !Order.ReplacingOrderId.HasValue ? OrderStatus.Requested : OrderStatus.NoBrokerAcceptedOrder;
