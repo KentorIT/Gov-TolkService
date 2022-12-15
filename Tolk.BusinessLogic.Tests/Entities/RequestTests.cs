@@ -1037,7 +1037,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var impersonatorId = (int?)null;
             var cancelMessage = "Neh";
             var expectedRequestStatus = request.Status == RequestStatus.Approved && !isReplaced ? RequestStatus.CancelledByCreatorWhenApproved : RequestStatus.CancelledByCreator;
-            request.Cancel(cancelledAt, userId, impersonatorId, cancelMessage, createFullCompensationRequisition, isReplaced);
+            request.Cancel(cancelledAt, userId, impersonatorId, cancelMessage, createFullCompensationRequisition, isReplaced, priceRows:  !isReplaced ? request.GenerateRequisitionPriceRows(createFullCompensationRequisition) : null);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(OrderStatus.CancelledByCreator, request.Order.Status);
