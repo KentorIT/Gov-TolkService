@@ -90,7 +90,13 @@ namespace Tolk.BusinessLogic.Utilities
                 );
 
         public static Task<Request> GetExpiredRequest(this IQueryable<Request> requests, DateTimeOffset now, int requestId)
-            => requests.ExpiredRequests(now).Include(r => r.Ranking).Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation).SingleAsync(r => r.RequestId == requestId);
+            => requests
+                .ExpiredRequests(now)
+                .Include(r => r.Ranking)
+                    .ThenInclude(ra => ra.FrameworkAgreement)
+                .Include(r => r.Order)
+                    .ThenInclude(o => o.CustomerOrganisation)
+                .SingleAsync(r => r.RequestId == requestId);
 
         public static IQueryable<Request> GetRequestsFromTerminatedFrameworkAgreement(this IQueryable<Request> requests, int frameworkAgreementId, IEnumerable<RequestStatus> openRequestStatuses)
             => requests
@@ -146,7 +152,13 @@ namespace Tolk.BusinessLogic.Utilities
             );
 
         public static Task<RequestGroup> GetExpiredRequestGroup(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now, int requestGroupId)
-            => requestGroups.ExpiredRequestGroups(now).Include(r => r.Ranking).Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation).SingleAsync(r => r.RequestGroupId == requestGroupId);
+            => requestGroups
+                .ExpiredRequestGroups(now)
+                .Include(r => r.Ranking)
+                    .ThenInclude(r => r.FrameworkAgreement)
+                .Include(g => g.OrderGroup)
+                    .ThenInclude(o => o.CustomerOrganisation)
+                .SingleAsync(r => r.RequestGroupId == requestGroupId);
 
         /// <summary>
         /// Requests that are responded but not answered by customer and order is starting 
@@ -161,7 +173,13 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static Task<Request> GetNonAnsweredRespondedRequest(this IQueryable<Request> requests, DateTimeOffset now, int requestId)
         {
-            return requests.NonAnsweredRespondedRequests(now).Include(r => r.Ranking).Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation).SingleAsync(r => r.RequestId == requestId);
+            return requests
+                .NonAnsweredRespondedRequests(now)
+                .Include(r => r.Ranking)
+                    .ThenInclude(ra => ra.FrameworkAgreement)
+                .Include(r => r.Order)
+                .ThenInclude(o => o.CustomerOrganisation)
+                .SingleAsync(r => r.RequestId == requestId);
         }
 
         /// <summary>
@@ -175,7 +193,13 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static Task<RequestGroup> GetNonAnsweredRespondedRequestGroup(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now, int requestGroupId)
         {
-            return requestGroups.NonAnsweredRespondedRequestGroups(now).Include(r => r.Ranking).Include(g => g.OrderGroup).ThenInclude(o => o.CustomerOrganisation).SingleAsync(r => r.RequestGroupId == requestGroupId);
+            return requestGroups
+                .NonAnsweredRespondedRequestGroups(now)
+                .Include(r => r.Ranking)
+                    .ThenInclude(ra => ra.FrameworkAgreement)
+                .Include(g => g.OrderGroup)
+                    .ThenInclude(o => o.CustomerOrganisation)
+                .SingleAsync(r => r.RequestGroupId == requestGroupId);
         }
 
         /// <summary>
@@ -204,7 +228,10 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static Task<Request> GetCompletedRequestById(this IQueryable<Request> requests, DateTimeOffset now, int id)
         {
-            return requests.CompletedRequests(now).Include(r => r.Order).Include(r => r.Ranking).SingleAsync(r => r.RequestId == id);
+            return requests.CompletedRequests(now)
+                .Include(r => r.Order)
+                .Include(r => r.Ranking).ThenInclude(ra => ra.FrameworkAgreement)
+                .SingleAsync(r => r.RequestId == id);
         }
         public static IQueryable<Requisition> GetRequisitionsForOrderAgreementCreation(this IQueryable<Requisition> requisitions, int customerId, DateTime validUseFrom)
             => requisitions.Where(r =>
@@ -530,7 +557,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         #endregion
 
-        #region single entities by id
+        #region single entities by id      
 
         public static async Task<OrderAgreementPayload> GetByOrderId(this IQueryable<OrderAgreementPayload> payloads, int orderId, int index)
             => await payloads
@@ -568,6 +595,7 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<RequestGroup> GetRequestGroupToProcessById(this IQueryable<RequestGroup> groups, int id)
            => await groups
                .Include(r => r.Ranking).ThenInclude(ra => ra.Broker)
+               .Include(r => r.Ranking).ThenInclude(ra => ra.FrameworkAgreement)
                .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
                .Include(r => r.OrderGroup).ThenInclude(o => o.CreatedByUser)
                .SingleAsync(r => r.RequestGroupId == id);
@@ -659,13 +687,17 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<Request> GetSimpleRequestById(this IQueryable<Request> requests, int id)
             => await requests
-                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Ranking)
+                    .ThenInclude(r => r.Broker)
+                .Include(r => r.Ranking)
+                    .ThenInclude(ra => ra.FrameworkAgreement)
                 .Include(r => r.Order)
                 .SingleAsync(r => r.RequestId == id);
 
         public static async Task<Request> GetRequestForRequisitionCreateById(this IQueryable<Request> requests, int id)
            => await requests.GetRequestsWithBaseIncludes()
                    .Include(r => r.Order).ThenInclude(o => o.ReplacingOrder)
+                   .Include(r => r.Ranking).ThenInclude(ra => ra.FrameworkAgreement)
                    .SingleAsync(r => r.RequestId == id);
 
         public static async Task<Request> GetRequestForOtherViewsById(this IQueryable<Request> requests, int id)
@@ -675,7 +707,7 @@ namespace Tolk.BusinessLogic.Utilities
                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                    .Include(r => r.Order).ThenInclude(o => o.Language)
                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                   .Include(r => r.Ranking).ThenInclude(r => r.Region)
+                   .Include(r => r.Ranking).ThenInclude(r => r.Region)                   
                    .SingleAsync(r => r.RequestId == id);
 
         public static async Task<Request> GetRequestForWebHook(this IQueryable<Request> requests, int id)
@@ -753,6 +785,12 @@ namespace Tolk.BusinessLogic.Utilities
                                             r.Status != RequestStatus.ReplacedAtAnswerAfterAccept &&
                                             (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
 
+        public static async Task<FrameworkAgreement> GetFrameworkByOrderId(this IQueryable<Request> requests, int orderId)
+            => await requests
+                .Where(r => r.OrderId == orderId)
+                .Select(r => r.Ranking.FrameworkAgreement)                
+                .FirstOrDefaultAsync();
+
         public static async Task<Request> GetActiveRequestIncludeProcessingUserByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
             => await requests.GetActiveRequestsWithBaseIncludes()
                 .Include(r => r.ProcessingUser)
@@ -776,6 +814,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(ra => ra.FrameworkAgreement)
                 .SingleOrDefaultAsync(o => o.ComplaintId == id);
 
         public static async Task<Complaint> GetComplaintForEventLogByOrderId(this IQueryable<Complaint> complaints, int id, int? brokerId = null)
@@ -820,6 +859,7 @@ namespace Tolk.BusinessLogic.Utilities
             => await complaints
                 .Include(c => c.CreatedByUser)
                 .Include(c => c.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerUnit)
+                .Include(c => c.Request).ThenInclude(r => r.Ranking).ThenInclude(ra => ra.FrameworkAgreement)
                 .SingleOrDefaultAsync(c => c.Request.Order.OrderNumber == orderNumber && c.Request.Ranking.BrokerId == brokerId);
 
         public static async Task<AspNetUser> GetAPIUserForBroker(this IQueryable<AspNetUser> users, int brokerId)
@@ -947,13 +987,13 @@ namespace Tolk.BusinessLogic.Utilities
             => orders
                 .Include(o => o.ReplacedByOrder)
                 .Include(o => o.ReplacingOrder).ThenInclude(o => o.CreatedByUser)
-                .Include(o => o.CreatedByUser)
+                .Include(o => o.CreatedByUser) 
                 .Include(o => o.ContactPersonUser)
                 .Include(o => o.Region)
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.CustomerUnit)
                 .Include(o => o.Language)
-                .Include(o => o.Group);
+                .Include(o => o.Group);                
 
         private static IQueryable<Request> GetRequestsWithBaseIncludes(this IQueryable<Request> requests)
             => requests
@@ -982,6 +1022,7 @@ namespace Tolk.BusinessLogic.Utilities
         private static IQueryable<RequestGroup> GetRequestGroupsWithBaseIncludes(this IQueryable<RequestGroup> requestGroups)
             => requestGroups
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Ranking).ThenInclude(ra => ra.FrameworkAgreement)
                 .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.OrderGroup).ThenInclude(o => o.CustomerUnit)
                 .Include(r => r.OrderGroup.CreatedByUser);
@@ -1009,7 +1050,8 @@ namespace Tolk.BusinessLogic.Utilities
                  .Include(r => r.CreatedByUser)
                  .Include(r => r.ProcessedUser)
                  .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
-                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker);
+                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.Broker)
+                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement);
 
         private static IQueryable<Complaint> GetComplaintsWithBaseIncludes(this IQueryable<Complaint> complaints)
             => complaints.Include(c => c.CreatedByUser)

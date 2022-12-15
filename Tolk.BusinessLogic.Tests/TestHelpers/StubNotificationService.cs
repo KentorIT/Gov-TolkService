@@ -17,7 +17,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void ComplaintTerminatedAsDisputeAccepted(Complaint complaint) { }
 
-        public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true) { }
+        public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, string frameworkAgreementNumber = null, bool isBrokerMail = false, bool addContractInfo = true) { }
 
         public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, int replacingEmailId, int resentByUserId) { }
 
@@ -46,7 +46,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void OrderGroupCancelledByCustomer(RequestGroup requestGroup) { }
 
-        public void OrderTerminated(Order order) { }
+        public async Task OrderTerminated(Order order) {  }
 
         public void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated) { }
 

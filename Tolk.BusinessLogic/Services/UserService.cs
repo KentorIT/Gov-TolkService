@@ -68,7 +68,7 @@ namespace Tolk.BusinessLogic.Services
 
             plainBody = plainBody.FormatSwedish(link);
             htmlBody = HtmlHelper.ToHtmlBreak(htmlBody).FormatSwedish(HtmlHelper.GetButtonDefaultLargeTag(link.AsUri(), "Registrera användarkonto"), link);
-            _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody, NotificationType.UserInvitation);
+            _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody, NotificationType.UserInvitation,addContractInfo:false);
             await _dbContext.SaveChangesAsync();
             _logger.LogInformation("Sent account confirmation link to {userId} ({email})", user.Id, user.Email);
         }
@@ -190,8 +190,8 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 bodyPlain,
                 bodyHtml,
                 NotificationType.ChangedEmailVerification,
-                false,
-                false);
+                isBrokerMail: false,
+                addContractInfo: false);
             await _dbContext.SaveChangesAsync();
             _logger.LogInformation("Verification link for changed email sent to {email} for {userId}",
                            newEmailAddress, user.Id);
