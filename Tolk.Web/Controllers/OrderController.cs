@@ -114,7 +114,10 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
+                    _logger.LogWarning("Order is missing an active request OrderId: {id}", id);
                     model.ActiveRequest = new RequestViewModel();
+                    var frameworkAgreement = await _dbContext.Requests.GetFrameworkByOrderId(id);
+                    model.ActiveRequest.FrameworkAgreementNumberOnCreated = frameworkAgreement.AgreementNumber;
                 }
                 model.ActiveRequest.RegionName = model.RegionName;
                 model.ActiveRequest.TimeRange = model.TimeRange;
@@ -315,8 +318,10 @@ namespace Tolk.Web.Controllers
                         }
                         await _dbContext.SaveChangesAsync();
                         order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
+                        order.Requests = order.Requests ?? new List<Request>();
+                        order.Requests.Add(await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId));                        
                         //Note: This retrieves the locations to the order object as well...
-                        _ = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(model.OrderId).ToListAsync();
+                        _ = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(model.OrderId).ToListAsync();                        
                         if (orderFieldsUpdated || attachmentChanged)
                         {
                             _notificationService.OrderUpdated(order, attachmentChanged, orderFieldsUpdated);
@@ -769,7 +774,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
         {
-            var order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
+            var order = await _dbContext.Orders.GetFullOrderById(model.OrderId);                     
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded)
             {
                 var oldContactPerson = order.ContactPersonUser;
@@ -779,6 +784,9 @@ namespace Tolk.Web.Controllers
                 }
                 _orderService.ChangeContactPerson(order, model.ContactPersonId, User.GetUserId(), User.TryGetImpersonatorId());
                 await _dbContext.SaveChangesAsync();
+                var request = await _dbContext.Requests.AsNoTracking().GetActiveRequestByOrderId(order.OrderId);
+                order.Requests = order.Requests ?? new List<Request>();
+                order.Requests.Add(request);                
                 _notificationService.OrderContactPersonChanged(order, oldContactPerson);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
                 {

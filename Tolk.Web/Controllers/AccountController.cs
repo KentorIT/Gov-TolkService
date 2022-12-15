@@ -1003,8 +1003,8 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 bodyPlain,
                 bodyHtml,
                 NotificationType.PasswordReset, 
-                false,
-                false);
+                isBrokerMail:false,
+                addContractInfo:false);
             _dbContext.SaveChanges();
 
             _logger.LogInformation("Password reset link sent to {email} for {userId}",

@@ -11,13 +11,13 @@ namespace Tolk.BusinessLogic.Services
         void ComplaintDisputed(Complaint complaint);
         void ComplaintDisputePendingTrial(Complaint complaint);
         void ComplaintTerminatedAsDisputeAccepted(Complaint complaint);
-        void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true);
+        void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType,string frameWorkAgreementNumber = null, bool isBrokerMail = false, bool addContractInfo = true);       
         void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, int replacingEmailId, int resentByUserId);
         void CustomerCreated(CustomerOrganisation customer);
         void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition);
         void OrderContactPersonChanged(Order order, AspNetUser previousContactUser);
         void OrderGroupCancelledByCustomer(RequestGroup requestGroup);
-        void OrderTerminated(Order order);
+        Task OrderTerminated(Order order);
         Task OrderReplacementCreated(int replacedRequestId, int newRequestId);
         void PartialRequestGroupAnswerAccepted(RequestGroup requestGroup);
         void PartialRequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup);
