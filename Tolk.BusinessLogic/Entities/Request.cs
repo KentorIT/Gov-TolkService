@@ -653,7 +653,7 @@ namespace Tolk.BusinessLogic.Entities
             Order.Status = OrderStatus.Requested;
         }
 
-        internal void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false, bool isCancelledFromGroup = false, List<MealBreak> mealbreaks = null, PriceInformation pi = null)
+        internal void Cancel(DateTimeOffset cancelledAt, int userId, int? impersonatorId, string message, bool createFullCompensationRequisition = false, bool isReplaced = false, bool isCancelledFromGroup = false, List<MealBreak> mealbreaks = null, List<RequisitionPriceRow> priceRows = null)
         {
             if ((!isCancelledFromGroup && !CanCancel) || (isCancelledFromGroup && !CanCancelFromGroup))
             {
@@ -662,6 +662,10 @@ namespace Tolk.BusinessLogic.Entities
             if (Order.StartAt < cancelledAt)
             {
                 throw new InvalidOperationException($"Order {OrderId} has already passed its start time. Orders that has started cannot be cancelled");
+            }
+            if (Status == RequestStatus.Approved && !isReplaced && priceRows == null)
+            {
+                throw new InvalidOperationException($"Price rows must be provided for order {OrderId}, if a approved order is cancelled without providing a replacement");
             }
             if (Status == RequestStatus.Approved && !isReplaced)
             {
@@ -675,7 +679,7 @@ namespace Tolk.BusinessLogic.Entities
                         Status = RequisitionStatus.AutomaticGeneratedFromCancelledOrder,
                         SessionStartedAt = Order.StartAt,
                         SessionEndedAt = Order.EndAt,
-                        PriceRows = pi?.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)).ToList() ?? GetPriceRows(createFullCompensationRequisition),
+                        PriceRows = priceRows,
                         MealBreaks = mealbreaks
                     }
                 );
@@ -748,6 +752,23 @@ namespace Tolk.BusinessLogic.Entities
             Status = RequestStatus.Delivered;
         }
 
+        public List<RequisitionPriceRow> GenerateRequisitionPriceRows(bool createFullCompensationRequisition)
+        {
+            var priceRows = createFullCompensationRequisition ? PriceRows : PriceRows.Where(p => p.PriceRowType == PriceRowType.BrokerFee).ToList();
+            return priceRows
+                .Select(p => new RequisitionPriceRow
+                {
+                    StartAt = p.StartAt,
+                    EndAt = p.EndAt,
+                    PriceRowType = p.PriceRowType == PriceRowType.TravelCost ? PriceRowType.Outlay : p.PriceRowType,
+                    PriceListRowId = p.PriceListRowId,
+                    Price = p.Price,
+                    Quantity = p.Quantity,
+                    PriceCalculationChargeId = p.PriceCalculationChargeId,
+                }).ToList();
+        }
+
+
         #endregion
 
         #region private methods
@@ -805,6 +826,7 @@ namespace Tolk.BusinessLogic.Entities
                 ValidateRequirements(Order.Requirements, requirementAnswers);
             }
         }
+
         private void ValidateCompetenceLevelAgainstOrder(CompetenceAndSpecialistLevel? competenceLevel)
         {
             if (Order.SpecificCompetenceLevelRequired)
@@ -818,22 +840,6 @@ namespace Tolk.BusinessLogic.Entities
                     throw new InvalidOperationException($"Specified competence level {EnumHelper.GetCustomName(competenceLevel.Value)} is not valid for this order.");
                 }
             }
-        }
-
-        private List<RequisitionPriceRow> GetPriceRows(bool createFullCompensationRequisition)
-        {
-            var priceRows = createFullCompensationRequisition ? PriceRows : PriceRows.Where(p => p.PriceRowType == PriceRowType.BrokerFee).ToList();
-            return priceRows
-                .Select(p => new RequisitionPriceRow
-                {
-                    StartAt = p.StartAt,
-                    EndAt = p.EndAt,
-                    PriceRowType = p.PriceRowType == PriceRowType.TravelCost ? PriceRowType.Outlay : p.PriceRowType,
-                    PriceListRowId = p.PriceListRowId,
-                    Price = p.Price,
-                    Quantity = p.Quantity,
-                    PriceCalculationChargeId = p.PriceCalculationChargeId,
-                }).ToList();
         }
 
         private static void ValidateRequirements(List<OrderRequirement> requirements, List<OrderRequirementRequestAnswer> requirementAnswers)
