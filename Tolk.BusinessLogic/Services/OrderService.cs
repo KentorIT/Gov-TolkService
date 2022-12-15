@@ -486,19 +486,13 @@ namespace Tolk.BusinessLogic.Services
             request.Requisitions = new List<Requisition>();
             var now = _clock.SwedenNow;
 
-            //TODO:
-            // 1. MOVE THE REQUISITION PRICE ROW CREATION that exists in Request's private method GetPriceRows to here, to make the code readable.
-            // 2. separate the price row creation into its own public method, from _priceCalculationService or the request method GetPriceRows. 
-            //pi?.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)).ToList() ?? GetRequisitionPriceRowsFromRequest(createFullCompensationRequisition)
-            // 3. use the above public method from requestService- deny, if a replacement order is denied, and the start or end is outside the original start or end times...
-
             //check if late cancelling, if so we check for mealbreaks
             bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2;
             List<RequisitionPriceRow> priceRows = null;
             List<MealBreak> mealbreaks = null;
             if (request.Status == RequestStatus.Approved && !isReplaced)
             {
-                GetCompensationPriceRowsForCancelledRequest(request, createFullCompensationRequisition, out priceRows, out mealbreaks);
+                (priceRows, mealbreaks) = GetCompensationPriceRowsForCancelledRequest(request, createFullCompensationRequisition);
             }
             request.Cancel(now, userId, impersonatorId, message, createFullCompensationRequisition, isReplaced, mealbreaks: mealbreaks, priceRows: priceRows);
 
@@ -510,12 +504,12 @@ namespace Tolk.BusinessLogic.Services
             _logger.LogInformation("Order {orderId} cancelled by customer {userId}.", order.OrderId, userId);
         }
 
-        private void GetCompensationPriceRowsForCancelledRequest(Request request, bool createFullCompensationRequisition, out List<RequisitionPriceRow> priceRows, out List<MealBreak> mealbreaks)
+        public (List<RequisitionPriceRow>, List<MealBreak>) GetCompensationPriceRowsForCancelledRequest(Request request, bool createFullCompensationRequisition)
         {
-            mealbreaks = (createFullCompensationRequisition && (request.Order.MealBreakIncluded ?? false)) ? new List<MealBreak> { new MealBreak { StartAt = request.Order.StartAt.AddHours(2).ToDateTimeOffsetSweden(), EndAt = request.Order.StartAt.AddHours(3).ToDateTimeOffsetSweden() } } : null;
+            var mealbreaks = (createFullCompensationRequisition && (request.Order.MealBreakIncluded ?? false)) ? new List<MealBreak> { new MealBreak { StartAt = request.Order.StartAt.AddHours(2).ToDateTimeOffsetSweden(), EndAt = request.Order.StartAt.AddHours(3).ToDateTimeOffsetSweden() } } : null;
 
             //if mealbreaks and full compensation we must get correct prices with mealbreaks deducted otherwize make a copy from the request's pricerows.
-            priceRows = (createFullCompensationRequisition && mealbreaks != null) ? _priceCalculationService.GetPricesRequisition(
+            var priceRows = (createFullCompensationRequisition && mealbreaks != null) ? _priceCalculationService.GetPricesRequisition(
                 request.Order.StartAt,
                 request.Order.EndAt,
                 request.Order.StartAt,
@@ -533,6 +527,7 @@ namespace Tolk.BusinessLogic.Services
                 mealbreaks
             ).PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)).ToList() :
             request.GenerateRequisitionPriceRows(createFullCompensationRequisition);
+            return (priceRows, mealbreaks);
         }
 
         public async Task CancelOrderGroup(OrderGroup orderGroup, int userId, int? impersonatorId, string message)

@@ -363,7 +363,20 @@ namespace Tolk.BusinessLogic.Services
             bool createNewRequest = true)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Decline), nameof(RequestService));
-            request.Decline(declinedAt, userId, impersonatorId, message);
+            List<RequisitionPriceRow> priceRows = null;
+            List<MealBreak> mealbreaks = null;
+            if (request.Order.ReplacingOrderId.HasValue)
+            {
+                var replacedOrder = await _tolkDbContext.Orders.SingleAsync(o => o.OrderId == request.Order.ReplacingOrderId);
+                //Check if the replacing order has startime before original order's starttime
+                // Or end time after original end time.
+                // If so, a requisition is in order...
+                if (replacedOrder.StartAt < request.Order.StartAt || replacedOrder.EndAt > request.Order.EndAt)
+                {
+                    (priceRows, mealbreaks) = _orderService.GetCompensationPriceRowsForCancelledRequest(request, true);
+                }
+            }
+            request.DeclineRequest(declinedAt, userId, impersonatorId, message, mealbreaks, priceRows);
             if (!request.Order.ReplacingOrderId.HasValue)
             {
                 if (createNewRequest)

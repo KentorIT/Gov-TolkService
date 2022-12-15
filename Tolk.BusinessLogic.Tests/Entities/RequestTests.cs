@@ -545,7 +545,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var impersonatorId = (int?)null;
             var message = "Declined because of reasons.";
 
-            request.Decline(declinedAt, userId, impersonatorId, message);
+            request.DeclineRequest(declinedAt, userId, impersonatorId, message);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(expectedOrderStatus, request.Order.Status);
@@ -598,7 +598,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 }
             };
             Assert.Throws<InvalidOperationException>(() =>
-                request.Decline(DateTime.Now, 10, null, "Fel"));
+                request.DeclineRequest(DateTime.Now, 10, null, "Fel"));
         }
 
         [Theory]
