@@ -61,7 +61,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Tillsättning är godkänd för ena tolken, andra har inte tillsatts än")]
         [Parent(NegotiationState.UnderNegotiation)]
         GroupAwaitingPartialResponse = 19,
-        [Description("Bokningsförfrågan avbruten eftersom ramavtalet löpte ut")]
+        [Description("Bokningsförfrågan avbruten p.g.a. utgånget ramavtal")]
         [Parent(NegotiationState.TerminatedPrematurely)]
         TerminatedDueToTerminatedFrameworkAgreement = 20,
         [Description("Förfrågan bekräftad av förmedling, inväntar tolktillsättning")]

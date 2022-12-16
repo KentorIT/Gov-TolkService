@@ -92,7 +92,7 @@ AS
 		(14, 'Uppdrag avbokat av förmedling'),
 		(16, 'Tillsättning ej besvarad'),
 		(19, 'Förlorad på grund av karantän'),
-		(22, 'Förfrågan avbruten eftersom ramavtalet löpte ut'),
+		(22, 'Förfrågan avbruten p.g.a. utgånget ramavtal'),
 		(23, 'Förfrågan bekräftad av förmedling, inväntar tolktillsättning'),
 		(24, 'Förfrågan besvarad efter en tidigare bekräftelse')
 	UPDATE #reportOrderRequests

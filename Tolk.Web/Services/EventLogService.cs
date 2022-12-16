@@ -643,7 +643,7 @@ namespace Tolk.Web.Services
                     eventLog.Add(new EventLogEntryModel
                     {
                         Timestamp = request.CancelledAt.Value,
-                        EventDetails = "Förfrågan avbruten pga att avtalstiden tagit slut",
+                        EventDetails = "Förfrågan avbruten p.g.a. utgånget ramavtal",
                         Actor = "Systemet",
                         Organization = brokerName,
                         ActorContactInfo = GetContactinfo(request.CancelledByUser),

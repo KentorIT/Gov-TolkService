@@ -88,7 +88,7 @@ namespace Tolk.BusinessLogic.Enums
         [Parent(NegotiationState.UnderNegotiation)]
         PartiallyApproved = 21,
         [CustomName("terminated_due_to_terminated_framework_agreement")]
-        [Description("Förfrågan avbruten eftersom ramavtalet löpte ut")]
+        [Description("Förfrågan avbruten p.g.a. utgånget ramavtal")]
         [Parent(NegotiationState.TerminatedPrematurely)]
         TerminatedDueToTerminatedFrameworkAgreement = 22,
         [CustomName("request_answer_awaiting_interpreter")]

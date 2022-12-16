@@ -88,7 +88,7 @@ AS
 		(15, 'Tillsättning ej besvarad'),
 		(16, 'Sista svarstid ej satt'),
 		(17, 'Uppdrag annullerat, sista svarstid ej satt'),
-		(20, 'Bokningsförfrågan avbruten eftersom ramavtalet löpte ut'),
+		(20, 'Bokningsförfrågan avbruten p.g.a. utgånget ramavtal'),
 		(21, 'Förfrågan bekräftad av förmedling, inväntar tolktillsättning')
 
 	--if customer check roles, if central admin take only admin units
