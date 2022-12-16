@@ -317,8 +317,8 @@ namespace Tolk.Web.Controllers
                         }
                         await _dbContext.SaveChangesAsync();
                         order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
-                        order.Requests = order.Requests ?? new List<Request>();
-                        order.Requests.Add(await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId));                        
+                        // Note: this discard-fetch will add request to the order entity being tracked by EF
+                        _ = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);                        
                         //Note: This retrieves the locations to the order object as well...
                         _ = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(model.OrderId).ToListAsync();                        
                         if (orderFieldsUpdated || attachmentChanged)
@@ -784,9 +784,8 @@ namespace Tolk.Web.Controllers
                 }
                 _orderService.ChangeContactPerson(order, model.ContactPersonId, User.GetUserId(), User.TryGetImpersonatorId());
                 await _dbContext.SaveChangesAsync();
-                var request = await _dbContext.Requests.AsNoTracking().GetActiveRequestByOrderId(order.OrderId);
-                order.Requests = order.Requests ?? new List<Request>();
-                order.Requests.Add(request);                
+                // Note: this discard-fetch will add request to the order entity being tracked by EF
+                _ = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                 _notificationService.OrderContactPersonChanged(order, oldContactPerson);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
                 {

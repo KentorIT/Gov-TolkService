@@ -1844,26 +1844,6 @@ Sammanställning:
             _dbContext.SaveChanges();
         }
 
-        //private void CreateEmail(IEnumerable<string> recipients, string subject, string plainBody, string htmlBody, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true)
-        //{
-        //    string noReply = "Detta e-postmeddelande går inte att svara på.";
-        //    string handledBy = $"Detta ärende hanteras i {Constants.SystemName}.";
-        //    string contractInfo = $"Avrop från ramavtal för tolkförmedlingstjänster TEST";
-
-        //    foreach (string recipient in recipients)
-        //    {
-        //        _dbContext.Add(new OutboundEmail(
-        //            recipient,
-        //            _senderPrepend + subject,
-        //            $"{plainBody}\n\n{noReply}" + (isBrokerMail ? $"\n\n{handledBy}" : "") + (addContractInfo ? $"\n\n{contractInfo}" : ""),
-        //            $"{htmlBody}<br/><br/>{noReply}" + (isBrokerMail ? $"<br/><br/>{handledBy}" : "") + (addContractInfo ? $"<br/><br/>{contractInfo}" : ""),
-        //            _clock.SwedenNow,
-        //            notificationType
-        //        ));
-        //    }
-        //    _dbContext.SaveChanges();
-        //}
-
         private async Task<string> GetRequisitionPriceInformationForMail(Requisition requisition)
         {
             var prices = await _dbContext.RequisitionPriceRows.GetPriceRowsForRequisition(requisition.RequisitionId).ToListAsync();
