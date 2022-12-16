@@ -365,15 +365,17 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(request, nameof(Decline), nameof(RequestService));
             List<RequisitionPriceRow> priceRows = null;
             List<MealBreak> mealbreaks = null;
+            request.Requisitions = new List<Requisition>();
             if (request.Order.ReplacingOrderId.HasValue)
             {
-                var replacedOrder = await _tolkDbContext.Orders.SingleAsync(o => o.OrderId == request.Order.ReplacingOrderId);
+                var replacedRequest = await _tolkDbContext.Requests.GetActiveRequestByOrderId(request.Order.ReplacingOrderId.Value);
+                replacedRequest.PriceRows = await _tolkDbContext.RequestPriceRows.GetPriceRowsForRequest(replacedRequest.RequestId).ToListAsync();
                 //Check if the replacing order has startime before original order's starttime
                 // Or end time after original end time.
                 // If so, a requisition is in order...
-                if (replacedOrder.StartAt < request.Order.StartAt || replacedOrder.EndAt > request.Order.EndAt)
+                if (replacedRequest.Order.StartAt > request.Order.StartAt || replacedRequest.Order.EndAt < request.Order.EndAt)
                 {
-                    (priceRows, mealbreaks) = _orderService.GetCompensationPriceRowsForCancelledRequest(request, true);
+                    (priceRows, mealbreaks) = _orderService.GetCompensationPriceRowsForCancelledRequest(replacedRequest, true);
                 }
             }
             request.DeclineRequest(declinedAt, userId, impersonatorId, message, mealbreaks, priceRows);
