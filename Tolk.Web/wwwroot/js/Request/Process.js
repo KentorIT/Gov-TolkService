@@ -1,16 +1,14 @@
 $(function () {
 
     var checkRequirements = function checkRequirements() {
-        $('#Accept').attr('disabled', false);
-        $('#Answer').attr('disabled', false);
+        $('.disable-at-required').attr('disabled', false);
 
         $("input[id$='CanMeetRequirement']").each(function () {
             var isChecked = $(this).is(':checked');
             var isRequired = $('#' + $(this).attr('id').replace('CanMeetRequirement', 'IsRequired')).attr('value') === 'True';
 
             if (isRequired && !isChecked) {
-                $('#Accept').attr('disabled', true);
-                $('#Answer').attr('disabled', true);
+                $('.disable-at-required').attr('disabled', true);
             }
         });
     };
