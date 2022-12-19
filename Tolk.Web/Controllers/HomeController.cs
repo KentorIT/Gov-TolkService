@@ -650,7 +650,7 @@ namespace Tolk.Web.Controllers
                 var list = EnumHelper.GetEnumsWithParent<RequestAnswerRuleType, RequiredAnswerLevel>(RequiredAnswerLevel.Full);
                 actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
                 .Where(r => r.RequestGroupId == null &&
-                    list.Contains(r.RequestAnswerRuleType) &&
+                    list.Contains(r.RequestAnswerRuleType.Value) &&
                     r.RowType == StartListRowType.Request &&
                     (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received))
                 .Select(r => new ActionStartListItemModel
@@ -677,7 +677,7 @@ namespace Tolk.Web.Controllers
                 var list = EnumHelper.GetEnumsWithParent<RequestAnswerRuleType, RequiredAnswerLevel>(RequiredAnswerLevel.Acceptance);
                 actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
                 .Where(r => r.RequestGroupId == null &&
-                    list.Contains(r.RequestAnswerRuleType) &&
+                    list.Contains(r.RequestAnswerRuleType.Value) &&
                     r.RowType == StartListRowType.Request &&
                     (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received))
                 .Select(r => new ActionStartListItemModel
@@ -705,7 +705,7 @@ namespace Tolk.Web.Controllers
                 var list = EnumHelper.GetEnumsWithParent<RequestAnswerRuleType, RequiredAnswerLevel>(RequiredAnswerLevel.Acceptance);
                 actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
                 .Where(r => r.RequestGroupId == null &&
-                    list.Contains(r.RequestAnswerRuleType) &&
+                    list.Contains(r.RequestAnswerRuleType.Value) &&
                     r.RowType == StartListRowType.Request &&
                     (r.RequestStatus == RequestStatus.AcceptedAwaitingInterpreter))
                 .Select(r => new ActionStartListItemModel
