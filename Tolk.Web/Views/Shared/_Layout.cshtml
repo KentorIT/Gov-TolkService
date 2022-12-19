@@ -79,7 +79,10 @@
                     <ul class="nav navbar-nav">
                         @if ((await AuthorizationService.AuthorizeAsync(User, Policies.Customer)).Succeeded)
                         {
-                            <li><a asp-area="" asp-controller="Order" asp-action="Create">Ny bokning</a></li>
+                            @if (CacheService.CurrentFrameworkAgreement.IsActive)
+                            {
+                                <li><a asp-area="" asp-controller="Order" asp-action="Create">Ny bokning</a></li>
+                            }
                             <li><a asp-area="" asp-controller="Home" asp-action="Index">Aktiva bokningar</a></li>
 
                             <li class="dropdown">
