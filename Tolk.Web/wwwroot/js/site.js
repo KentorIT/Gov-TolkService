@@ -254,7 +254,7 @@ $(function () {
                         searching: false,
                         paging: $usePaging,
                         dom: "lrtip",
-                        deferRender: true,
+                        //deferRender: true,
                         autoWidth: false,
                         createdRow: function (row, data, dataIndex) {
                             if ($table.hasClass("clickable-rows-with-action")) {
@@ -309,11 +309,15 @@ $(function () {
                                     $table.hide();
                                     //Show the empty message
                                     $table.parent().append("<div class='list-empty'>" + $table.data("empty-message") + "</div>");
-
+                                }
+                            } else {
+                                if (total === 0) {
+                                    return $table.DataTable().i18n("sInfoEmpty");
+                                } else {
+                                    return $table.DataTable().i18n("sInfo").replace(/_START_/g, start).replace(/_END_/g, end).replace(/_TOTAL_/g, total);
                                 }
                             }
                         }
-
                     });
                     $("body").on("change", $filterSelector + " select, " + $filterSelector + " input.datepicker, " + $filterSelector + " :checkbox, " + $filterSelector + " :radio", function () {
                         $dataTable.draw();
