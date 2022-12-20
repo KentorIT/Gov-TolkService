@@ -315,7 +315,7 @@ $(function () {
                                 if (total === 0) {
                                     return $table.DataTable().i18n("sInfoEmpty");
                                 } else {
-                                    return $table.DataTable().i18n("sInfo").replace(/_START_/g, start).replace(/_END_/g, end).replace(/_TOTAL_/g, total);
+                                    return $table.DataTable().i18n("sInfo").replace(/_START_/g, start).replace(/_END_/g, end).replace(/_TOTAL_/g, total) + (max > total ? " " + $table.DataTable().i18n("sInfoFiltered").replace(/_MAX_/g, max) : "");
                                 }
                             }
                         }
