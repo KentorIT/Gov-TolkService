@@ -31,9 +31,9 @@ jobs:
     - name: Create version number
       id: create_version_number
       run: |
-        echo "::set-output name=full_version_number::${{ steps.package.outputs.content }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
-        echo "version_number=${{ steps.package.outputs.content }}.${{github.run_number}}" >> $GITHUB_ENV
-        echo "full_version_number=${{ steps.package.outputs.content }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}" >> $GITHUB_ENV
+        echo "::set-output name=full_version_number::${{ steps.package.outputs.content }}-${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
+        echo "version_number=${{ steps.package.outputs.content }}-${{github.run_number}}" >> $GITHUB_ENV
+        echo "full_version_number=${{ steps.package.outputs.content }}-${{github.run_number}}-${{ steps.vars.outputs.sha_short }}" >> $GITHUB_ENV
     - name: Read Version number
       run: |
         echo "Full version number saved: ${{ env.full_version_number }}"
