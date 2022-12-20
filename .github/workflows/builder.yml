@@ -22,7 +22,7 @@ jobs:
       id: vars
       shell: bash
       run: |
-        echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
     - name: Read version number from file
       id: package
       uses: juliangruber/read-file-action@v1
@@ -31,7 +31,7 @@ jobs:
     - name: Create version number
       id: create_version_number
       run: |
-        echo "::set-output name=full_version_number::${{ steps.package.outputs.content }}-${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
+        echo "full_version_number=${{ steps.package.outputs.content }}-${{github.run_number}}-${{ steps.vars.outputs.sha_short }}" >> $GITHUB_OUTPUT
         echo "version_number=${{ steps.package.outputs.content }}-${{github.run_number}}" >> $GITHUB_ENV
         echo "full_version_number=${{ steps.package.outputs.content }}-${{github.run_number}}-${{ steps.vars.outputs.sha_short }}" >> $GITHUB_ENV
     - name: Read Version number
