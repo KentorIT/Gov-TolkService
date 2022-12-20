@@ -254,7 +254,7 @@ $(function () {
                         searching: false,
                         paging: $usePaging,
                         dom: "lrtip",
-                        //deferRender: true,
+                        deferRender: true,
                         autoWidth: false,
                         createdRow: function (row, data, dataIndex) {
                             if ($table.hasClass("clickable-rows-with-action")) {
@@ -263,8 +263,9 @@ $(function () {
                                     $action = data[$overrideClickLinkUrlColumn[0].data];
                                 }
                                 if ($idColumn.length > 0) {
-                                    if ($action.indexOf("?") > -1) {
-                                        $action = $action.replace("?", data[$idColumn[0].data] + "?");
+                                    var $qmark = $action.indexOf("?");
+                                    if ($qmark > -1) {
+                                        $action = $action.replace("?", ($action.substring($qmark - 1, $qmark) === "/" ? "" : "/") + data[$idColumn[0].data] + "?");
                                     } else {
                                         $action = $action + "/" + data[$idColumn[0].data];
                                     }
