@@ -27,6 +27,9 @@
                 <div class="col-sm-4">
                     <display-entry asp-for="Interpreter" />
                 </div>
+                <div class="col-sm-4">
+                    <display-entry asp-for="InterpreterLocation" label-override="Valt inställelsesätt" />
+                </div>
             </div>
             <form method="post">
                 <input asp-for="RequestId" type="hidden" />
@@ -57,9 +60,6 @@
                         {
                             <form-entry asp-for="InterpreterCompetenceLevel" type="select" asp-items="SelectListService.CompetenceLevels" help-link="@HelpLinkService.GenerateUrl("tolkens-kompetensniva")" />
                         }
-                    </div>
-                    <div class="col-sm-4">
-                        <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderViewModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
                     </div>
                 </div>
                 @if (Model.OrderViewModel.AllowSettingTravelCosts)

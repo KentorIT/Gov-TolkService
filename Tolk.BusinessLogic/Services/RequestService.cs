@@ -428,7 +428,6 @@ namespace Tolk.BusinessLogic.Services
             int userId,
             int? impersonatorId,
             InterpreterBroker interpreter,
-            InterpreterLocation interpreterLocation,
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             IEnumerable<RequestAttachment> attachedFiles,
@@ -442,7 +441,6 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(ChangeInterpreter), nameof(RequestService));
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(ChangeInterpreter));
             request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
-            request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
             if (interpreter.InterpreterBrokerId == await GetOtherInterpreterIdForSameOccasion(request) && !(interpreter.Interpreter?.IsProtected ?? false))
             {
@@ -452,7 +450,7 @@ namespace Tolk.BusinessLogic.Services
             Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, changedAt, isAReplacingRequest: true, requestGroup: request.RequestGroup)
             {
                 Order = request.Order,
-                Status = RequestStatus.AcceptedNewInterpreterAppointed
+                Status = RequestStatus.AcceptedNewInterpreterAppointed,
             };
             bool noNeedForUserAccept = await NoNeedForUserAccept(request, expectedTravelCosts);
             request.Order.Requests.Add(newRequest);
@@ -462,16 +460,14 @@ namespace Tolk.BusinessLogic.Services
                 //Only check if the selected level is other than other.
                 verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, request.OrderId, competenceLevel);
             }
-
             newRequest.ReplaceInterpreter(changedAt,
                 userId,
                 impersonatorId,
                 interpreter,
-                interpreterLocation,
                 competenceLevel,
                 requirementAnswers,
                 attachedFiles,
-                _priceCalculationService.GetPrices(request, _clock.SwedenNow, competenceLevel, interpreterLocation, expectedTravelCosts),
+                _priceCalculationService.GetPrices(request, _clock.SwedenNow, competenceLevel, (InterpreterLocation)request.InterpreterLocation.Value, expectedTravelCosts),
                 noNeedForUserAccept,
                 request,
                 expectedTravelCostInfo,

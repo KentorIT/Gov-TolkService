@@ -409,9 +409,9 @@ namespace Tolk.Web.Api.Controllers
                     //Possibly the interpreter should be added, if not found?? 
                     return ReturnError(ErrorCodes.InterpreterNotFound);
                 }
-                if (model.Location == null)
+                if (model.Location != null && EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value != (InterpreterLocation)request.InterpreterLocation.Value)
                 {
-                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location cannot be changed when changing interpreter");
                 }
                 if (model.CompetenceLevel == null)
                 {
@@ -425,7 +425,6 @@ namespace Tolk.Web.Api.Controllers
                         user?.Id ?? apiUserId,
                         (user != null ? (int?)apiUserId : null),
                         interpreter,
-                        EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                         EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
                         model.RequirementAnswers == null ? new List<OrderRequirementRequestAnswer>() :
                         model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer

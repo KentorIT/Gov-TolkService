@@ -842,6 +842,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 AnswerProcessedAt = oldRequestAnswerProcessedAt,
                 AnswerProcessedBy = oldRequestAnswerProcessedBy,
                 ImpersonatingAnsweredBy = oldRequestImpersonatingAnswerProcessedBy,
+                InterpreterLocation = (int)interpreterLocation,
                 Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.Requested,
@@ -876,7 +877,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 PriceRows = new List<PriceRowBase>()
             };
 
-            request.ReplaceInterpreter(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, interpreterLocation, competenceLevel,
+            request.ReplaceInterpreter(acceptTime, answeredBy, impersonatingAnsweredBy, interpreter, competenceLevel,
                 requirementAnswers, attachments, priceInfo, isAutoAccepted, oldRequest, null, string.Empty);
 
             Assert.Equal(expectedRequestStatus, request.Status);
@@ -920,7 +921,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 Status = status,
             };
             Assert.Throws<InvalidOperationException>(() =>
-                request.ReplaceInterpreter(DateTime.Now, 10, null, null, InterpreterLocation.OffSitePhone, CompetenceAndSpecialistLevel.OtherInterpreter, null, null, null, false, null, null, "121"));
+                request.ReplaceInterpreter(DateTime.Now, 10, null, null, CompetenceAndSpecialistLevel.OtherInterpreter, null, null, null, false, null, null, "121"));
         }
 
         [Theory]

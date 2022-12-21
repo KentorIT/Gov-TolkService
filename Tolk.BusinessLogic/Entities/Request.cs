@@ -600,7 +600,6 @@ namespace Tolk.BusinessLogic.Entities
             int userId,
             int? impersonatorId,
             InterpreterBroker interperter,
-            InterpreterLocation interpreterLocation,
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             IEnumerable<RequestAttachment> attachments,
@@ -625,15 +624,14 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new ArgumentNullException($"Det gick inte att byta tolk på förfrågan med boknings-id {Order.OrderNumber}, hittar ingen koppling till tidigare förfrågan");
             }
-            ValidateInterpreterLocationAgainstOrder(interpreterLocation);
             ValidateRequirementsAgainstOrder(requirementAnswers);
             ValidateCompetenceLevelAgainstOrder(competenceLevel);
-            ValidateLatestAnswerTimeAndTravelCost(interpreterLocation, priceInformation, latestAnswerTimeForCustomer, acceptTime);
+            ValidateLatestAnswerTimeAndTravelCost((InterpreterLocation)oldRequest.InterpreterLocation.Value, priceInformation, latestAnswerTimeForCustomer, acceptTime);
             AnswerDate = acceptTime;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;
             Interpreter = interperter;
-            InterpreterLocation = (int?)interpreterLocation;
+            InterpreterLocation = oldRequest.InterpreterLocation;
             CompetenceLevel = (int?)competenceLevel;
             AnswerProcessedAt = isAutoAccepted ? (DateTimeOffset?)acceptTime : null;
             ReceivedBy = oldRequest.ReceivedBy;

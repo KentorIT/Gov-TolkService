@@ -247,7 +247,6 @@ namespace Tolk.Web.Controllers
                                 User.GetUserId(),
                                 User.TryGetImpersonatorId(),
                                 interpreter,
-                                model.InterpreterLocation.Value,
                                 model.InterpreterCompetenceLevel.Value,
                                 requirementAnswers,
                                 model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
