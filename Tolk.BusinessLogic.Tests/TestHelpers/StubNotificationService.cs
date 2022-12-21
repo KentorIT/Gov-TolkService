@@ -46,6 +46,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void OrderGroupCancelledByCustomer(RequestGroup requestGroup) { }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task OrderTerminated(Order order) {  }
 
         public void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated) { }
