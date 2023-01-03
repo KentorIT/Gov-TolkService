@@ -64,7 +64,7 @@ namespace Tolk.BusinessLogic.Utilities
             => agreements.Where(f => f.FirstValidDate <= today && f.LastValidDate >= today).SingleOrDefault();
 
         public static FrameworkAgreement GetCurrentOrLatestActiveFrameworkAgreementByDate(this IQueryable<FrameworkAgreement> agreements, DateTime today)
-            => agreements.GetFrameworkAgreementByDate(today) ?? agreements.OrderBy(a => a.LastValidDate).Last();
+            => agreements.GetFrameworkAgreementByDate(today) ?? agreements.Where(a => a.FirstValidDate <= today).OrderBy(a => a.LastValidDate).Last();
 
         /// <summary>
         /// Expires due to:

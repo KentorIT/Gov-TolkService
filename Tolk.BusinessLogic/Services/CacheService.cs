@@ -51,7 +51,6 @@ namespace Tolk.BusinessLogic.Services
                 {
                     var now = _clock.SwedenNow;
                     var agreement = _dbContext.FrameworkAgreements.GetCurrentOrLatestActiveFrameworkAgreementByDate(now.Date);
-                    //var agreement = _dbContext.FrameworkAgreements.GetFrameworkAgreementByDate(now.Date);
                     currentFrameworkAgreement = agreement != null ?
                         new CurrentOrLatestFrameworkAgreement
                         {
@@ -64,7 +63,7 @@ namespace Tolk.BusinessLogic.Services
                             Description = agreement.Description,
                             BrokerFeeCalculationType = agreement.BrokerFeeCalculationType,
                             FrameworkAgreementResponseRuleset = agreement.FrameworkAgreementResponseRuleset,
-                            IsActive = agreement.LastValidDate >= now.Date,
+                            IsActive = agreement.LastValidDate >= now.Date && now.Date >= agreement.FirstValidDate,
                         } : 
                         new CurrentOrLatestFrameworkAgreement { IsActive = false };
 
