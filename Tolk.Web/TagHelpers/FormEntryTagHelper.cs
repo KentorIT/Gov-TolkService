@@ -62,6 +62,9 @@ namespace Tolk.Web.TagHelpers
         [HtmlAttributeName("label-override")]
         public string LabelOverride { get; set; }
 
+        [HtmlAttributeName("description-override")]
+        public string DescriptionOverride { get; set; }
+
         [HtmlAttributeName("help-link")]
         public string HelpLink { get; set; }
 
@@ -310,7 +313,7 @@ namespace Tolk.Web.TagHelpers
         {
             if (!string.IsNullOrEmpty(For.ModelExplorer.Metadata.Description))
             {
-                writer.WriteLine(InformationSpan.FormatSwedish(For.ModelExplorer.Metadata.Description));
+                writer.WriteLine(InformationSpan.FormatSwedish(DescriptionOverride ?? For.ModelExplorer.Metadata.Description));
             }
         }
 
@@ -417,7 +420,7 @@ namespace Tolk.Web.TagHelpers
             htmlBuilder.AppendHtml(labelBuilder.InnerHtml);
             if (!string.IsNullOrEmpty(For.Metadata.Description))
             {
-                htmlBuilder.AppendHtml(InformationSpan.FormatSwedish(For.Metadata.Description));
+                htmlBuilder.AppendHtml(InformationSpan.FormatSwedish(DescriptionOverride ?? For.Metadata.Description));
             }
             if (!string.IsNullOrEmpty(HelpLink))
             {
@@ -948,7 +951,7 @@ namespace Tolk.Web.TagHelpers
                 {
                     writer.WriteLine(RequiredStarSpan);
                 }
-                writer.WriteLine(InformationSpan.FormatSwedish(For.ModelExplorer.Metadata.Description));
+                writer.WriteLine(InformationSpan.FormatSwedish(DescriptionOverride ?? For.ModelExplorer.Metadata.Description));
                 if (!string.IsNullOrEmpty(HelpLink))
                 {
                     writer.WriteLine(HelpAnchor.FormatSwedish(HelpLink));

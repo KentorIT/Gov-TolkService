@@ -1,13 +1,10 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Services;
 
 namespace Tolk.BusinessLogic.Utilities
 {
     [Serializable]
-    public class CurrentFrameworkAgreement
+    public class CurrentOrLatestFrameworkAgreement
     {
         public int FrameworkAgreementId { get; set; }
         
@@ -18,7 +15,9 @@ namespace Tolk.BusinessLogic.Utilities
         public DateTime FirstValidDate { get; set; }
 
         public DateTime LastValidDate { get; set; }
+
         public DateTime OriginalLastValidDate { get; set; }
+
         public int PossibleAgreementExtensionsInMonths { get; set; }
 
         public BrokerFeeCalculationType BrokerFeeCalculationType { get; set; }
@@ -27,7 +26,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public bool IsActive { get; set; }
         
-        public bool IsCurrentFrameworkAgreement(int? frameworkAgreementId)
+        public bool IsCurrentAndActiveFrameworkAgreement(int? frameworkAgreementId)
              => IsActive && FrameworkAgreementId == frameworkAgreementId;
     }
 }

@@ -251,7 +251,7 @@ namespace Tolk.Web.Models
 
         public int? ComplaintId { get; set; }
 
-        public int? RequisitionId { get; set; }        
+        public int? RequisitionId { get; set; }
 
         internal static OrderViewModel GetModelFromOrder(Order order, Request request, bool displayBrokerReferenceNumber, bool isBroker = false, bool isConnectedToCurrentFrameworkAgreement = true)
         {
@@ -293,7 +293,7 @@ namespace Tolk.Web.Models
                 Description = order.Description,
                 UnitName = order.UnitName,
                 IsCreatorInterpreterUser = order.CreatorIsInterpreterUser,
-                MealbreakIncluded = order.MealBreakIncluded ?? false
+                MealbreakIncluded = order.MealBreakIncluded ?? false,
             };
             if (request != null)
             {
@@ -324,6 +324,8 @@ namespace Tolk.Web.Models
                     model.TerminateOnDenial = request.TerminateOnDenial;
 
                 }
+                model.TravelConditionHours = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionHours;
+                model.TravelConditionKilometers = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionKilometers;
             }
             return model;
         }

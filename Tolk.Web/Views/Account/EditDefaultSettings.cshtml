@@ -68,7 +68,7 @@
         </div>
         <div class="row">
             <div class="col-sm-6">
-                <form-entry asp-for="AllowExceedingTravelCost" type="select" asp-items="SelectListService.AllowExceedingTravelCost" class="allow-clear" />
+                <form-entry asp-for="AllowExceedingTravelCost" type="select" asp-items="SelectListService.AllowExceedingTravelCost" class="allow-clear" description-override=@Model.TravelConditionText />
             </div>
             <div class="col-sm-6">
                 <form-entry asp-for="CreatorIsInterpreterUser" type="select" asp-items="SelectListService.BoolList" class="allow-clear" />

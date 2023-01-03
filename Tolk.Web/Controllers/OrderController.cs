@@ -94,8 +94,8 @@ namespace Tolk.Web.Controllers
 
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
-                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);                
-                bool isConnectedToCurrentFrameworkAgreement = _cacheService.CurrentFrameworkAgreement.IsCurrentFrameworkAgreement(request?.Ranking.FrameworkAgreementId);
+                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);  
+                bool isConnectedToCurrentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId);
                 var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator), false, isConnectedToCurrentFrameworkAgreement);              
                 model.UserCanEdit = (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.UserCanCancelOrder = (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
@@ -153,10 +153,10 @@ namespace Tolk.Web.Controllers
             {
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(replacingOrderId);
                 if (request.CanCreateReplacementOrderOnCancel &&
-                    _cacheService.CurrentFrameworkAgreement.IsCurrentFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
+                    _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
                     TimeIsValidForOrderReplacement(order.StartAt))
                 {
-                    return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()), _cacheService.CurrentFrameworkAgreement.FrameworkAgreementResponseRuleset)));
+                    return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()), _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset)));
                 }
                 else
                 {
@@ -178,7 +178,7 @@ namespace Tolk.Web.Controllers
                 {
                     var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                     if (request.CanCreateReplacementOrderOnCancel &&
-                        _cacheService.CurrentFrameworkAgreement.IsCurrentFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
+                        _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
                         TimeIsValidForOrderReplacement(order.StartAt))
                     {
                         using var trn = await _dbContext.Database.BeginTransactionAsync();
@@ -361,7 +361,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Create()
         {
-            if (!_cacheService.CurrentFrameworkAgreement.IsActive)
+            if (!_cacheService.CurrentOrLatestFrameworkAgreement.IsActive)
             {
                 return Forbid();
             }
@@ -377,15 +377,17 @@ namespace Tolk.Web.Controllers
             DateTime nextPanicTime = nowIsWorkingDay ? _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date : panicTime;
 
             var user = await _userService.GetUserWithDefaultSettings(User.GetUserId());
-
+            var currentFrameworkAgreementResponseRuleset = (FrameworkAgreementResponseRuleset)_cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementId;
             var model = new OrderModel()
             {
                 LastTimeForRequiringLatestAnswerBy = panicTime.ToSwedishString("yyyy-MM-dd"),
                 NextLastTimeForRequiringLatestAnswerBy = nextPanicTime.ToSwedishString("yyyy-MM-dd"),
                 CreatedByName = user.FullName,
-                UserDefaultSettings = DefaultSettingsModel.GetModel(user),
+                UserDefaultSettings = DefaultSettingsModel.GetModel(user, currentFrameworkAgreementResponseRuleset),
                 EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)),
-                UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId())
+                UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId()),
+                TravelConditionHours = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionHours,
+                TravelConditionKilometers = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionKilometers
             };
             model.UpdateModelWithDefaultSettings(user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList());
             return View(model);
@@ -396,7 +398,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Add(OrderModel model)
         {
-            if (!_cacheService.CurrentFrameworkAgreement.IsActive)
+            if (!_cacheService.CurrentOrLatestFrameworkAgreement.IsActive)
             {
                 return Forbid();
             }
@@ -446,7 +448,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<ActionResult> Confirm(OrderModel model)
         {
-            var currentFrameworkAgreement = _cacheService.CurrentFrameworkAgreement;
+            var currentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
             if (!currentFrameworkAgreement.IsActive)
             {
                 return PartialView("_ErrorMessage", "Det finns inget aktivt ramavtal!");
@@ -657,7 +659,7 @@ namespace Tolk.Web.Controllers
                             return RedirectToAction(nameof(View), new { id = order.OrderId, errorMessage = "Uppdraget kunde inte avbokas" });
                         }
                         if (request.CanCreateReplacementOrderOnCancel &&
-                            _cacheService.CurrentFrameworkAgreement.IsCurrentFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
+                            _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
                             TimeIsValidForOrderReplacement(order.StartAt))
                         {
                             //Forward the message to replace
@@ -1036,5 +1038,6 @@ namespace Tolk.Web.Controllers
             }
             return list;
         }
+
     }
 }

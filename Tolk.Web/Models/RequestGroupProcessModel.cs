@@ -129,6 +129,8 @@ namespace Tolk.Web.Models
                 RegionName = orderGroup.Region.Name,
                 SpecificCompetenceLevelRequired = orderGroup.SpecificCompetenceLevelRequired,
                 Status = requestGroup.Status,
+                TravelConditionHours = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)requestGroup?.Ranking.FrameworkAgreementId).TravelConditionHours,
+                TravelConditionKilometers = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)requestGroup?.Ranking.FrameworkAgreementId).TravelConditionKilometers
             };
         }
 

@@ -7,6 +7,6 @@
         public const string OrganisationSettings = nameof(OrganisationSettings);
         public const string Holidays = nameof(Holidays);
         public const string CustomerSettings = nameof(CustomerSettings);
-        public const string CurrentFrameworkAgreement = nameof(CurrentFrameworkAgreement);
+        public const string CurrentOrLatestFrameworkAgreement = nameof(CurrentOrLatestFrameworkAgreement);
     }
 }

@@ -122,6 +122,8 @@ namespace Tolk.Web.Models
                     AllOccasions = orderGroup.Orders.Select(o => OrderOccasionDisplayModel.GetModelFromOrder(o)),
                     DisplayDetailedList = true
                 },
+                TravelConditionHours = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)activeRequestGroup?.Ranking.FrameworkAgreementId).TravelConditionHours,
+                TravelConditionKilometers = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)activeRequestGroup?.Ranking.FrameworkAgreementId).TravelConditionKilometers,
 
                 //those values should only be presented if ordergroup should be approved/denied since they could be changed (or display that this is the first occasions cost)?
                 ExpectedTravelCostInfo = activeRequestGroup?.FirstRequestForFirstInterpreter.ExpectedTravelCostInfo,

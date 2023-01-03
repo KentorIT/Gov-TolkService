@@ -38,6 +38,7 @@ namespace Tolk.Web.Controllers
         private readonly ISwedishClock _clock;
         private readonly IdentityErrorDescriber _identityErrorDescriber;
         private readonly INotificationService _notificationService;
+        private readonly CacheService _cacheService;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -49,7 +50,8 @@ namespace Tolk.Web.Controllers
             IOptions<TolkOptions> options,
             ISwedishClock clock,
             IdentityErrorDescriber identityErrorDescriber,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            CacheService cacheService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -61,6 +63,7 @@ namespace Tolk.Web.Controllers
             _clock = clock;
             _identityErrorDescriber = identityErrorDescriber;
             _notificationService = notificationService;
+            _cacheService = cacheService;
         }
 
         public async Task<IActionResult> Index()
@@ -733,7 +736,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<ActionResult> EditDefaultSettings(bool isFirstTimeUser = false)
         {
-            return View(DefaultSettingsModel.GetModel(await GetUserForDefaultSettings(), isFirstTimeUser));
+            return View(DefaultSettingsModel.GetModel(await GetUserForDefaultSettings(), (FrameworkAgreementResponseRuleset)_cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementId, isFirstTimeUser));
         }
 
         [ValidateAntiForgeryToken]

@@ -1825,7 +1825,7 @@ Sammanställning:
             string handledBy = $"Detta ärende hanteras i {Constants.SystemName}.";
             if(frameworkAgreementNumber == null && addContractInfo)
             {
-                frameworkAgreementNumber = _cacheService.CurrentFrameworkAgreement.AgreementNumber;
+                frameworkAgreementNumber = _cacheService.CurrentOrLatestFrameworkAgreement.AgreementNumber;
                 _logger.LogWarning("Email is missing it's frameworkAgreementnumber, using currently active Agreement {agreementNumber}, NotificationType:{notificationType}", frameworkAgreementNumber, notificationType.ToString());
             }
             string contractInfo = $"Avrop från ramavtal för tolkförmedlingstjänster {frameworkAgreementNumber}";            

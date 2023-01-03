@@ -30,7 +30,7 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Index()
         {
-            var currentContract = _cacheService.CurrentFrameworkAgreement;
+            var currentContract = _cacheService.CurrentOrLatestFrameworkAgreement;
             if(currentContract.IsActive && currentContract.FrameworkAgreementResponseRuleset.GetContractDefinitionAttribute() == null)
             {
                 return Forbid();
@@ -50,7 +50,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> List()
         {            
             var brokerFeePrices = _cacheService.BrokerFeeByRegionAndBrokerPriceList;
-            var currentFrameworkAgreement = _cacheService.CurrentFrameworkAgreement;
+            var currentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
             if(!currentFrameworkAgreement.IsActive)
             {
                 // No Active FrameworkAgreement, Show previous? or Forbid?

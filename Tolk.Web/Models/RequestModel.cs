@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 
@@ -183,6 +184,9 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
 
+        public string TravelConditionHours { get; set; }
+        public string TravelConditionKilometers { get; set; }
+
         #region view stuff
 
         [Display(Name = "Tillsatt tolk")]
@@ -208,7 +212,7 @@ namespace Tolk.Web.Models
         #region methods
 
         internal static RequestModel GetModelFromRequest(Request request)
-        {           
+        {
             return new RequestModel
             {
                 Status = request.Status,
@@ -253,7 +257,8 @@ namespace Tolk.Web.Models
                 }).ToList(),
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
                 OrderViewModel = OrderViewModel.GetModelFromOrder(request.Order, request, true, true),
-                LatestAnswerTimeForCustomer = request.LatestAnswerTimeForCustomer,
+                TravelConditionHours = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionHours,
+                TravelConditionKilometers = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionKilometers
             };
         }
 

@@ -66,7 +66,7 @@
                 {
                     <div class="collapse" id="set-expected-travel-costs">
                         <div class="row">
-                            <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
+                            <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över @Model.TravelConditionHours tim restid eller @Model.TravelConditionKilometers km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
                             <div class="col-sm-4">
                                 <form-entry asp-for="ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
                             </div>

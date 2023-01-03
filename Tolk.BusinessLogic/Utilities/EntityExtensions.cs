@@ -16,7 +16,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static IQueryable<OrderAgreementPayload> ListOrderAgreements(this IQueryable<OrderAgreementPayload> entities, int? customerOrganisationId)
             => customerOrganisationId.HasValue ? entities.Where(o => o.Request.Order.CustomerOrganisationId == customerOrganisationId) : entities;
-        
+
 
         public static IQueryable<OrderGroup> CustomerOrderGroups(this IQueryable<OrderGroup> orderGroups, int customerOrganisationId, int userId, IEnumerable<int> customerUnits, bool isCentralAdminOrOrderHandler = false)
         {
@@ -63,6 +63,9 @@ namespace Tolk.BusinessLogic.Utilities
         public static FrameworkAgreement GetFrameworkAgreementByDate(this IQueryable<FrameworkAgreement> agreements, DateTime today)
             => agreements.Where(f => f.FirstValidDate <= today && f.LastValidDate >= today).SingleOrDefault();
 
+        public static FrameworkAgreement GetCurrentOrLatestActiveFrameworkAgreementByDate(this IQueryable<FrameworkAgreement> agreements, DateTime today)
+            => agreements.GetFrameworkAgreementByDate(today) ?? agreements.OrderBy(a => a.LastValidDate).Last();
+
         /// <summary>
         /// Expires due to:
         /// 1. ExpiresAt has passed 
@@ -72,18 +75,18 @@ namespace Tolk.BusinessLogic.Utilities
         /// Also include requests that belong to approved requestgroup if LatestAnswerTimeForCustomer is set (interpreter changed)
         /// </summary>
         public static IQueryable<Request> ExpiredRequests(this IQueryable<Request> requests, DateTimeOffset now)
-            => requests.Where(r => 
-                    (r.RequestGroupId == null || 
+            => requests.Where(r =>
+                    (r.RequestGroupId == null ||
                         (r.RequestGroupId.HasValue && r.LatestAnswerTimeForCustomer.HasValue && r.RequestGroup.Status == RequestStatus.Approved)
                     ) && (
-                        (r.ExpiresAt <= now && 
+                        (r.ExpiresAt <= now &&
                             (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.AcceptedAwaitingInterpreter)
                         ) ||
                         (r.LastAcceptAt <= now &&
                             (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)
                         ) ||
                         (r.Order.StartAt <= now && r.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
-                        (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= now && 
+                        (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= now &&
                             (r.Status == RequestStatus.AnsweredAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                         )
                     )
@@ -137,16 +140,16 @@ namespace Tolk.BusinessLogic.Utilities
         /// 3. Customer has not answered a responded requestgroup within latest answer time
         /// </summary>
         public static IQueryable<RequestGroup> ExpiredRequestGroups(this IQueryable<RequestGroup> requestGroups, DateTimeOffset now)
-            => requestGroups.Where(rg => 
-                (rg.ExpiresAt <= now && 
+            => requestGroups.Where(rg =>
+                (rg.ExpiresAt <= now &&
                     (rg.Status == RequestStatus.Created || rg.Status == RequestStatus.Received || rg.Status == RequestStatus.AcceptedAwaitingInterpreter)
                 ) ||
                 (rg.LastAcceptAt <= now &&
                     (rg.Status == RequestStatus.Created || rg.Status == RequestStatus.Received)
                 ) ||
-                (rg.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= now) && 
+                (rg.OrderGroup.Orders.Any(o => o.Status == OrderStatus.AwaitingDeadlineFromCustomer && o.StartAt <= now) &&
                     rg.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
-                (rg.LatestAnswerTimeForCustomer.HasValue && rg.LatestAnswerTimeForCustomer <= now && 
+                (rg.LatestAnswerTimeForCustomer.HasValue && rg.LatestAnswerTimeForCustomer <= now &&
                     (rg.Status == RequestStatus.AnsweredAwaitingApproval || rg.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                 )
             );
@@ -707,7 +710,7 @@ namespace Tolk.BusinessLogic.Utilities
                    .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                    .Include(r => r.Order).ThenInclude(o => o.Language)
                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-                   .Include(r => r.Ranking).ThenInclude(r => r.Region)                   
+                   .Include(r => r.Ranking).ThenInclude(r => r.Region)
                    .SingleAsync(r => r.RequestId == id);
 
         public static async Task<Request> GetRequestForWebHook(this IQueryable<Request> requests, int id)
@@ -788,7 +791,7 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<FrameworkAgreement> GetFrameworkByOrderId(this IQueryable<Request> requests, int orderId)
             => await requests
                 .Where(r => r.OrderId == orderId)
-                .Select(r => r.Ranking.FrameworkAgreement)                
+                .Select(r => r.Ranking.FrameworkAgreement)
                 .FirstOrDefaultAsync();
 
         public static async Task<Request> GetActiveRequestIncludeProcessingUserByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
@@ -884,7 +887,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<OutboundWebHookCall> GetOutboundWebHookCall(this IQueryable<OutboundWebHookCall> outboundWebHookCalls, int id)
         => await outboundWebHookCalls.Include(c => c.RecipientUser).SingleOrDefaultAsync(c => c.OutboundWebHookCallId == id);
-        
+
         public static async Task<OutboundPeppolMessage> GetOutboundPeppolMessage(this IQueryable<OutboundPeppolMessage> outboundPeppolMessages, int id)
         => await outboundPeppolMessages
             .Include(c => c.OrderAgreementPayload).ThenInclude(o => o.Request).ThenInclude(r => r.Order)
@@ -964,7 +967,7 @@ namespace Tolk.BusinessLogic.Utilities
                         PriceRowType = p.Key.GetCustomName(),
                         Price = p.Count() == 1 ? p.Sum(s => s.TotalPrice) : 0,
                         CalculationBase = p.Count() == 1 ? p.Single()?.PriceCalculationCharge?.ChargePercentage : null,
-                        CalculatedFrom =  EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
+                        CalculatedFrom = EnumHelper.Parent<PriceRowType, PriceRowType?>(p.Key)?.GetCustomName(),
                         PriceListRows = p.Where(l => l.PriceRowType == PriceRowType.InterpreterCompensation || l.PriceRowType == PriceRowType.BrokerFee).Select(l => new PriceRowListModel
                         {
                             PriceListRowType = l.PriceRowType == PriceRowType.BrokerFee ? PriceListRowType.BasePrice.GetCustomName() : l.PriceListRow.PriceListRowType.GetCustomName(),
@@ -989,13 +992,13 @@ namespace Tolk.BusinessLogic.Utilities
             => orders
                 .Include(o => o.ReplacedByOrder)
                 .Include(o => o.ReplacingOrder).ThenInclude(o => o.CreatedByUser)
-                .Include(o => o.CreatedByUser) 
+                .Include(o => o.CreatedByUser)
                 .Include(o => o.ContactPersonUser)
                 .Include(o => o.Region)
                 .Include(o => o.CustomerOrganisation)
                 .Include(o => o.CustomerUnit)
                 .Include(o => o.Language)
-                .Include(o => o.Group);                
+                .Include(o => o.Group);
 
         private static IQueryable<Request> GetRequestsWithBaseIncludes(this IQueryable<Request> requests)
             => requests
@@ -1293,7 +1296,7 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<FailedPeppolMessage> GetFailedPeppolMessagesByPeppolMessageId(this IQueryable<FailedPeppolMessage> failedPeppolMessages, int id)
              => failedPeppolMessages.Where(f => f.OutboundPeppolMessageId == id);
 
-        public static IQueryable<Ranking> GetActiveRankings(this IQueryable<Ranking> rankings, DateTime now,int activeFramweorkAgreementId)
+        public static IQueryable<Ranking> GetActiveRankings(this IQueryable<Ranking> rankings, DateTime now, int activeFramweorkAgreementId)
         => rankings
             .Include(r => r.Broker)
             .Include(r => r.Region)

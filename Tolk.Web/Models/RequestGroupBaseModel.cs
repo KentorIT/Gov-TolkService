@@ -110,5 +110,8 @@ namespace Tolk.Web.Models
         [ClientRequired]
         public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
 
+        public string TravelConditionHours { get; set; }
+        public string TravelConditionKilometers { get; set; }
+
     }
 }

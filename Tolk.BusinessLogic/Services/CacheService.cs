@@ -33,7 +33,7 @@ namespace Tolk.BusinessLogic.Services
             await _cache.RemoveAsync(CacheKeys.OrganisationSettings);
             await _cache.RemoveAsync(CacheKeys.Holidays);
             await _cache.RemoveAsync(CacheKeys.CustomerSettings);
-            await _cache.RemoveAsync(CacheKeys.CurrentFrameworkAgreement);
+            await _cache.RemoveAsync(CacheKeys.CurrentOrLatestFrameworkAgreement);
         }
 
         public async Task Flush(string id)
@@ -41,18 +41,19 @@ namespace Tolk.BusinessLogic.Services
             await _cache.RemoveAsync(id);
         }
 
-        public CurrentFrameworkAgreement CurrentFrameworkAgreement
+        public CurrentOrLatestFrameworkAgreement CurrentOrLatestFrameworkAgreement
         {
             get
             {
-                var currentFrameworkAgreement = _cache.Get(CacheKeys.CurrentFrameworkAgreement).FromByteArray<CurrentFrameworkAgreement>();
+                var currentFrameworkAgreement = _cache.Get(CacheKeys.CurrentOrLatestFrameworkAgreement).FromByteArray<CurrentOrLatestFrameworkAgreement>();
 
                 if (currentFrameworkAgreement == null)
                 {
                     var now = _clock.SwedenNow;
-                    var agreement = _dbContext.FrameworkAgreements.GetFrameworkAgreementByDate(now.Date);
+                    var agreement = _dbContext.FrameworkAgreements.GetCurrentOrLatestActiveFrameworkAgreementByDate(now.Date);
+                    //var agreement = _dbContext.FrameworkAgreements.GetFrameworkAgreementByDate(now.Date);
                     currentFrameworkAgreement = agreement != null ?
-                        new CurrentFrameworkAgreement
+                        new CurrentOrLatestFrameworkAgreement
                         {
                             FrameworkAgreementId = agreement.FrameworkAgreementId,
                             AgreementNumber = agreement.AgreementNumber,
@@ -63,11 +64,11 @@ namespace Tolk.BusinessLogic.Services
                             Description = agreement.Description,
                             BrokerFeeCalculationType = agreement.BrokerFeeCalculationType,
                             FrameworkAgreementResponseRuleset = agreement.FrameworkAgreementResponseRuleset,
-                            IsActive = true
+                            IsActive = agreement.LastValidDate >= now.Date,
                         } : 
-                        new CurrentFrameworkAgreement { IsActive = false };
+                        new CurrentOrLatestFrameworkAgreement { IsActive = false };
 
-                    _cache.Set(CacheKeys.CurrentFrameworkAgreement, currentFrameworkAgreement.ToByteArray(),new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = now.Date.AddDays(1) - now.Date });
+                    _cache.Set(CacheKeys.CurrentOrLatestFrameworkAgreement, currentFrameworkAgreement.ToByteArray(),new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = now.Date.AddDays(1) - now.Date });
                     
                 }                
                 return currentFrameworkAgreement;

@@ -306,7 +306,7 @@ namespace Tolk.Web.Api.Controllers
         [OpenApiIgnore]
         public async Task<ActionResult<IEnumerable<ListItemResponse>>> Brokers()
         {
-            var currentFrameworkAgreement = _cacheService.CurrentFrameworkAgreement;
+            var currentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
             var rankings = await _dbContext.Rankings.GetActiveRankings(_timeService.SwedenNow.DateTime, currentFrameworkAgreement.FrameworkAgreementId).ToListAsync();
             var brokers = await _dbContext.Brokers.GetAllBrokers().ToListAsync();
             return Ok(brokers.Select(b => new BrokerItemResponse

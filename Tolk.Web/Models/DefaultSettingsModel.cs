@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Build.ObjectModelRemoting;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
@@ -84,7 +86,9 @@ namespace Tolk.Web.Models
 
         public bool IsFirstTimeUser { get; set; }
 
-        internal static DefaultSettingsModel GetModel(AspNetUser user, bool isFirstTimeUser = false)
+        public string TravelConditionText { get; set; }
+
+        internal static DefaultSettingsModel GetModel(AspNetUser user, FrameworkAgreementResponseRuleset frameWorkAgrrementVersion, bool isFirstTimeUser = false)
         {
             var creatorIsInterpreterUser = user.GetValue(DefaultSettingsType.CreatorIsInterpreterUser);
             return new DefaultSettingsModel
@@ -102,8 +106,9 @@ namespace Tolk.Web.Models
                 OffSiteVideoContactInformation = user.GetValue(DefaultSettingsType.OffSiteVideoContactInformation),
                 AllowExceedingTravelCost = user.TryGetEnumValue<AllowExceedingTravelCost>(DefaultSettingsType.AllowExceedingTravelCost),
                 InvoiceReference = user.GetValue(DefaultSettingsType.InvoiceReference),
-                CreatorIsInterpreterUser = !string.IsNullOrWhiteSpace(creatorIsInterpreterUser) ? (creatorIsInterpreterUser == "Yes") ? (TrueFalse?)TrueFalse.Yes : (TrueFalse?)TrueFalse.No : null,
+                CreatorIsInterpreterUser = !string.IsNullOrWhiteSpace(creatorIsInterpreterUser) ? (creatorIsInterpreterUser == "Yes") ? TrueFalse.Yes : TrueFalse.No : null,
                 IsFirstTimeUser = isFirstTimeUser,
+                TravelConditionText = GetTravelConditionText(frameWorkAgrrementVersion),
                 SavedOrderRequirements = user.DefaultSettingOrderRequirements.Where(r => r.IsRequired).Select(n => new OrderRequirementModel
                 {
                     UserDefaultSettingOrderRequirementId = n.UserDefaultSettingOrderRequirementId,
@@ -118,6 +123,8 @@ namespace Tolk.Web.Models
                 }).ToList()
             };
         }
+
+        private static string GetTravelConditionText(FrameworkAgreementResponseRuleset r) => $"Vid tolkning med inställelsesätt På plats eller Distans i anvisad lokal per video har förmedlingen rätt att debitera kostnader för tolkens resor upp till ramavtalets gränsvärden på {EnumHelper.GetContractDefinition(r).TravelConditionHours} timmars restid eller {EnumHelper.GetContractDefinition(r).TravelConditionKilometers} km resväg. Resekostnader som överskrider gränsvärdena måste godkännas av myndighet i förväg. Genom att du markerat denna ruta måste förmedlingen ange bedömd resekostnad för tillsatt tolk i sin bekräftelse. Du får ett e-postmeddelande när bekräftelsen kommit. Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen.";
 
     }
 
