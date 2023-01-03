@@ -1045,7 +1045,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             }
         }
         public static FrameworkAgreement[] FrameworkAgreements => new[] {
-            new FrameworkAgreement { FrameworkAgreementId = 1, AgreementNumber= "1234", Description = "", FirstValidDate = new DateTime(2016, 01, 01), LastValidDate = new DateTime(2099, 06, 01), BrokerFeeCalculationType = BrokerFeeCalculationType.ByRegionAndBroker, FrameworkAgreementResponseRuleset = FrameworkAgreementResponseRuleset.VersionOne },
+            new FrameworkAgreement { FrameworkAgreementId = 1, AgreementNumber= "1234", Description = "", FirstValidDate = new DateTime(2016, 01, 01), LastValidDate = new DateTime(2030, 06, 01), BrokerFeeCalculationType = BrokerFeeCalculationType.ByRegionAndBroker, FrameworkAgreementResponseRuleset = FrameworkAgreementResponseRuleset.VersionOne },
+            new FrameworkAgreement { FrameworkAgreementId = 2, AgreementNumber= "4321", Description = "", FirstValidDate = new DateTime(2030, 06, 02), LastValidDate = new DateTime(2099, 06, 01), BrokerFeeCalculationType = BrokerFeeCalculationType.ByRegionGroupAndServiceType, FrameworkAgreementResponseRuleset = FrameworkAgreementResponseRuleset.VersionTwo },
         };
 
         public static Ranking[] RankingsWithContractEnded => new[] {

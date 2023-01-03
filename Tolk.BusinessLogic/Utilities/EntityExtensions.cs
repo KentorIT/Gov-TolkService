@@ -841,12 +841,14 @@ namespace Tolk.BusinessLogic.Utilities
             => await requisitions
                 .Include(r => r.Request).ThenInclude(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.Broker)
+                .Include(r => r.Request).ThenInclude(r => r.Ranking).ThenInclude(o => o.FrameworkAgreement)
                 .SingleOrDefaultAsync(o => o.RequisitionId == id);
 
         public static async Task<Request> GetRequestForAgreement(this IQueryable<Request> requests, int id)
             => await requests
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Include(r => r.Ranking).ThenInclude(o => o.Broker)
+                .Include(r => r.Ranking).ThenInclude(o => o.FrameworkAgreement)
                 .SingleOrDefaultAsync(o => o.RequestId == id);
 
         public static async Task<Requisition> GetActiveRequisitionWithBrokerAndOrderNumber(this IQueryable<Requisition> requisitions, string orderNumber, int brokerId)

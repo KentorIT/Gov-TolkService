@@ -46,52 +46,29 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             var tolkDbContext = CreateTolkDbContext(name);
             var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
-            var mockOrder = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, new DateTimeOffset(2018, 05, 07, 13, 00, 00, new TimeSpan(02, 00, 00)))
-            {
-                OrderId = 8,
-                CustomerReferenceNumber = "EmptyOrder",
-                OrderNumber = "2018-000008",
-                Status = OrderStatus.Requested,
-                Requests = new List<Request>()
-            };
+
             var mockCustomerSettings = new CustomerSetting
             {
                 CustomerOrganisationId = 1,
                 CustomerSettingType = CustomerSettingType.UseOrderAgreements,
                 Value = customerHasOrderAgreementSetting
             };
-            var mockRequest = new Request
+            for (int i = 1; i < 3; i++)
             {
-                RequestId = 1,
-                Status = RequestStatus.Delivered,
-                Order = new Order(mockOrder)
+                var mockOrder = CreateMockOrder(mockCustomerUsers[0], 7 + i, "2018-000008");
+                var mockRequest = CreateMockRequest(mockOrder, (FrameworkAgreementResponseRuleset)i, OrderNumber, requestId: i, rankingId: i, brokerId: i);
+                var mockRequisition = CreateMockRequisition(mockRequest, requisitionId: i);
+
+                if (!tolkDbContext.Requisitions.Any(r => r.RequisitionId == mockRequisition.RequisitionId))
                 {
-                    CustomerOrganisationId = 1,
-                    OrderNumber = OrderNumber,
-                    Status = OrderStatus.RequestRespondedAwaitingApproval,
-                    EndAt = DateTime.Parse("2018-12-10 10:00:00").ToDateTimeOffsetSweden()
-                },
-                Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1 },
-            };
-            var mockRequisition = new Requisition
-            {
-                Message = string.Empty,
-                RequisitionId = 1,
-                Status = RequisitionStatus.Created,
-                SessionStartedAt = new DateTime(2018, 12, 10, 10, 10, 10),
-                SessionEndedAt = new DateTime(2018, 12, 10, 12, 10, 10),
-
-                Request = mockRequest
-            };
-
-            if (!tolkDbContext.Requisitions.Any(r => r.RequisitionId == mockRequisition.RequisitionId))
-            {
-                tolkDbContext.Add(mockRequisition);
+                    tolkDbContext.Add(mockRequisition);
+                }
+                if (!tolkDbContext.Requests.Any(r => r.RequestId == mockRequest.RequestId))
+                {
+                    tolkDbContext.Add(mockRequest);
+                }
             }
-            if (!tolkDbContext.Requests.Any(r => r.RequestId == mockRequest.RequestId))
-            {
-                tolkDbContext.Add(mockRequest);
-            }
+
             if (!tolkDbContext.CustomerSettings.Any(r => r.CustomerOrganisationId == mockCustomerSettings.CustomerOrganisationId))
             {
                 tolkDbContext.Add(mockCustomerSettings);
@@ -107,6 +84,49 @@ namespace Tolk.BusinessLogic.Tests.Services
             tolkDbContext.OrderAgreementPayloads.FromSqlRaw("delete from OrderAgreementPayloads");
             tolkDbContext.SaveChanges();
             return tolkDbContext;
+        }
+
+        private Order CreateMockOrder(AspNetUser mockCostumerUser, int orderId, string orderNumber)
+        {
+            return new Order(mockCostumerUser, null, mockCostumerUser.CustomerOrganisation, new DateTimeOffset(2018, 05, 07, 13, 00, 00, new TimeSpan(02, 00, 00)))
+            {
+                OrderId = orderId,
+                CustomerReferenceNumber = "EmptyOrder",
+                OrderNumber = orderNumber,
+                Status = OrderStatus.Requested,
+                Requests = new List<Request>()
+            };
+        }
+
+        private Request CreateMockRequest(Order mockOrder, FrameworkAgreementResponseRuleset ruleset, string orderNumber, int requestId, int rankingId, int brokerId)
+        {
+            return new Request
+            {
+                RequestId = requestId,
+                Status = RequestStatus.Delivered,
+                Order = new Order(mockOrder)
+                {
+                    CustomerOrganisationId = 1,
+                    OrderNumber = orderNumber,
+                    Status = OrderStatus.RequestRespondedAwaitingApproval,
+                    EndAt = DateTime.Parse("2018-12-10 10:00:00").ToDateTimeOffsetSweden()
+                },
+                Ranking = new Ranking { RankingId = rankingId, Broker = new Broker { BrokerId = brokerId, Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1, FrameworkAgreement = MockEntities.FrameworkAgreements.First(f => f.FrameworkAgreementResponseRuleset == ruleset) },
+            };
+        }
+
+        private Requisition CreateMockRequisition(Request mockRequest, int requisitionId)
+        {
+            return new Requisition
+            {
+                Message = string.Empty,
+                RequisitionId = requisitionId,
+                Status = RequisitionStatus.Created,
+                SessionStartedAt = new DateTime(2018, 12, 10, 10, 10, 10),
+                SessionEndedAt = new DateTime(2018, 12, 10, 12, 10, 10),
+
+                Request = mockRequest
+            };
         }
 
         private TolkDbContext CreateTolkDbContext(string databaseName = "empty")
@@ -164,7 +184,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = CreateOrderAgreementService(tolkDbContext, new StubSwedishClock("2021-10-25 10:00:00"));
             Assert.True(await service.HandleOrderAgreementCreation());
             await tolkDbContext.SaveChangesAsync();
-            Assert.Equal(1, tolkDbContext.OrderAgreementPayloads.Count());
+            Assert.Equal(2, tolkDbContext.OrderAgreementPayloads.Count());
         }
         [Fact]
         public async Task HandleOrderAgreementCreation_CustomerDoesNotUseORderAgreements()
@@ -174,6 +194,44 @@ namespace Tolk.BusinessLogic.Tests.Services
             Assert.True(await service.HandleOrderAgreementCreation());
             await tolkDbContext.SaveChangesAsync();
             Assert.Equal(0, tolkDbContext.OrderAgreementPayloads.Count());
+        }
+
+        [Theory]
+        [InlineData(1, FrameworkAgreementResponseRuleset.VersionOne)]
+        [InlineData(2, FrameworkAgreementResponseRuleset.VersionTwo)]
+        public async Task ContractIDShouldMatchFrameworkAgreementNumber_WhenCreatedFromRequisition(int requsitionId, FrameworkAgreementResponseRuleset ruleset)
+        {
+            using var tolkDbContext = GetContext(DbNameWithData);
+            var service = CreateOrderAgreementService(tolkDbContext);
+            using var memoryStream = new MemoryStream();
+            using var writer = new StreamWriter(memoryStream, Encoding.UTF8);
+            await service.CreateOrderAgreementFromRequisition(requsitionId, writer);
+            memoryStream.Position = 0;
+            StreamReader sr = new StreamReader(memoryStream);
+            var root = XElement.Load(sr);
+            Assert.Equal(MockEntities.FrameworkAgreements.First(f => f.FrameworkAgreementResponseRuleset == ruleset).AgreementNumber, root.Elements()
+                .Where(e => e.Name.LocalName == "Contract")
+                .Elements().Where(e => e.Name.LocalName == "ID")
+                .Select(e => e.Value).Single());
+        }
+
+        [Theory]
+        [InlineData(1, FrameworkAgreementResponseRuleset.VersionOne)]
+        [InlineData(2, FrameworkAgreementResponseRuleset.VersionTwo)]
+        public async Task ContractIDShouldMatchFrameworkAgreementNumber_WhenCreatedFromRequest(int requsitionId, FrameworkAgreementResponseRuleset ruleset)
+        {
+            using var tolkDbContext = GetContext(DbNameWithData);
+            var service = CreateOrderAgreementService(tolkDbContext);
+            using var memoryStream = new MemoryStream();
+            using var writer = new StreamWriter(memoryStream, Encoding.UTF8);
+            var idNumber = await service.CreateOrderAgreementFromRequest(requsitionId, writer);
+            memoryStream.Position = 0;
+            StreamReader sr = new StreamReader(memoryStream);
+            var root = XElement.Load(sr);
+            Assert.Equal(MockEntities.FrameworkAgreements.First(f => f.FrameworkAgreementResponseRuleset == ruleset).AgreementNumber, root.Elements()
+                .Where(e => e.Name.LocalName == "Contract")
+                .Elements().Where(e => e.Name.LocalName == "ID")
+                .Select(e => e.Value).Single());
         }
     }
 }
