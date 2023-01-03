@@ -3,6 +3,7 @@ name: .NET
 on:
   push:
     branches: 
+      - dev
       - Version-2.0
       - deploy
 jobs:
