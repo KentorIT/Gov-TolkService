@@ -1,9 +1,13 @@
 ﻿BEGIN TRANSACTION
-:r dev.CustomerOrganisations.sql
-:r dev.Brokers.sql
-:r dev.Users.sql
-:r dev.Holidays.sql
-:r dev.Languages.sql
-:r dev.PriceListRows.sql
-:r dev.PriceCalculationCharges.sql
+
+:setvar path "C:\git\Gov-TolkService\Tolk.BusinessLogic\BaseData\"
+
+:r $(path)dev.CustomerOrganisations.sql
+:r $(path)dev.Brokers.sql
+:r $(path)dev.Users.sql
+:r $(path)dev.Holidays.sql
+:r $(path)dev.Languages.sql
+:r $(path)dev.PriceListRows.sql
+:r $(path)dev.PriceCalculationCharges.sql
+:r $(path)dev.BrokerFeeByServiceTypePriceListRows.sql
 COMMIT
