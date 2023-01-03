@@ -16,20 +16,24 @@ namespace Tolk.BusinessLogic.Services
         private readonly IDistributedCache _cache;
         private readonly TolkDbContext _dbContext;
         private readonly ITolkBaseOptions _options;
+        private readonly ISwedishClock _clock;
 
-        public CacheService(IDistributedCache cache, TolkDbContext dbContext, ITolkBaseOptions options)
+        public CacheService(IDistributedCache cache, TolkDbContext dbContext, ITolkBaseOptions options, ISwedishClock clock)
         {
             _cache = cache;
             _dbContext = dbContext;
             _options = options;
+            _clock = clock;
         }
 
         public async Task FlushAll()
         {
-            await _cache.RemoveAsync(CacheKeys.BrokerFees);
+            await _cache.RemoveAsync(CacheKeys.BrokerFeesByRegionAndBroker);
+            await _cache.RemoveAsync(CacheKeys.BrokerFeesByRegionGroupAndServiceType);
             await _cache.RemoveAsync(CacheKeys.OrganisationSettings);
             await _cache.RemoveAsync(CacheKeys.Holidays);
             await _cache.RemoveAsync(CacheKeys.CustomerSettings);
+            await _cache.RemoveAsync(CacheKeys.CurrentOrLatestFrameworkAgreement);
         }
 
         public async Task Flush(string id)
@@ -37,16 +41,76 @@ namespace Tolk.BusinessLogic.Services
             await _cache.RemoveAsync(id);
         }
 
-        public IEnumerable<PriceInformationBrokerFee> BrokerFeePriceList
+        public CurrentOrLatestFrameworkAgreement CurrentOrLatestFrameworkAgreement
         {
             get
             {
-                var brokerFees = _cache.Get(CacheKeys.BrokerFees).FromByteArray<IEnumerable<PriceInformationBrokerFee>>();
+                var currentFrameworkAgreement = _cache.Get(CacheKeys.CurrentOrLatestFrameworkAgreement).FromByteArray<CurrentOrLatestFrameworkAgreement>();
+
+                if (currentFrameworkAgreement == null)
+                {
+                    var now = _clock.SwedenNow;
+                    var agreement = _dbContext.FrameworkAgreements.GetCurrentOrLatestActiveFrameworkAgreementByDate(now.Date);
+                    currentFrameworkAgreement = agreement != null ?
+                        new CurrentOrLatestFrameworkAgreement
+                        {
+                            FrameworkAgreementId = agreement.FrameworkAgreementId,
+                            AgreementNumber = agreement.AgreementNumber,
+                            LastValidDate = agreement.LastValidDate,
+                            FirstValidDate = agreement.FirstValidDate,
+                            OriginalLastValidDate = agreement.OriginalLastValidDate,
+                            PossibleAgreementExtensionsInMonths = agreement.PossibleAgreementExtensionsInMonths,
+                            Description = agreement.Description,
+                            BrokerFeeCalculationType = agreement.BrokerFeeCalculationType,
+                            FrameworkAgreementResponseRuleset = agreement.FrameworkAgreementResponseRuleset,
+                            IsActive = agreement.LastValidDate >= now.Date && now.Date >= agreement.FirstValidDate,
+                        } : 
+                        new CurrentOrLatestFrameworkAgreement { IsActive = false };
+
+                    _cache.Set(CacheKeys.CurrentOrLatestFrameworkAgreement, currentFrameworkAgreement.ToByteArray(),new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = now.Date.AddDays(1) - now.Date });
+                    
+                }                
+                return currentFrameworkAgreement;
+            }
+        }
+
+        public IEnumerable<PriceInformationBrokerFee> BrokerFeeByRegionAndBrokerPriceList
+        {
+            get
+            {
+                var brokerFees = _cache.Get(CacheKeys.BrokerFeesByRegionAndBroker).FromByteArray<IEnumerable<PriceInformationBrokerFee>>();
 
                 if (brokerFees == null)
                 {
                     brokerFees = GetBrokerFeePriceList();
-                    _cache.Set(CacheKeys.BrokerFees, brokerFees.ToByteArray());
+                    _cache.Set(CacheKeys.BrokerFeesByRegionAndBroker, brokerFees.ToByteArray());
+                }
+                return brokerFees;
+            }
+        }
+
+        public IEnumerable<BrokerFeeByRegionAndServiceType> BrokerFeeByRegionGroupAndServiceTypePriceList
+        {
+            get
+            {
+                var brokerFees = _cache.Get(CacheKeys.BrokerFeesByRegionGroupAndServiceType).FromByteArray<IEnumerable<BrokerFeeByRegionAndServiceType>>();
+
+                if (brokerFees == null)
+                {
+                    brokerFees = _dbContext.BrokerFeeByServiceTypePriceListRows
+                        .Join(_dbContext.Regions, 
+                            f => f.RegionGroupId,
+                            r => r.RegionGroupId,
+                            (f, r) => new BrokerFeeByRegionAndServiceType
+                    {
+                        BrokerFee = f.Price,
+                        CompetenceLevel = f.CompetenceLevel,
+                        InterpreterLocation = f.InterpreterLocation,
+                        RegionId = r.RegionId,
+                        StartDate = f.FirstValidDate,
+                        EndDate = f.LastValidDate
+                    }).ToList();
+                    _cache.Set(CacheKeys.BrokerFeesByRegionGroupAndServiceType, brokerFees.ToByteArray());
                 }
                 return brokerFees;
             }
@@ -88,7 +152,7 @@ namespace Tolk.BusinessLogic.Services
                             NotificationType = n.NotificationType,
                             RecipientUserId = n.UserId
                         }).ToList().Union(_dbContext.Users
-                        .Where(u => ( u.CustomerOrganisationId != null) && u.IsApiUser)
+                        .Where(u => (u.CustomerOrganisationId != null) && u.IsApiUser)
                         .SelectMany(u => u.NotificationSettings)
                         .Select(n => new OrganisationNotificationSettings
                         {
@@ -117,14 +181,14 @@ namespace Tolk.BusinessLogic.Services
         private List<PriceInformationBrokerFee> GetBrokerFeePriceList()
         {
             List<PriceListRow> prices = _dbContext.PriceListRows.Where(p => p.MaxMinutes == 60 && p.PriceListRowType == PriceListRowType.BasePrice && p.PriceListType == PriceListType.Court).ToList();
-            List<Ranking> ranks = _dbContext.Rankings.ToList();
+            List<Ranking> ranks = _dbContext.Rankings.Where(r => r.FrameworkAgreement.BrokerFeeCalculationType == BrokerFeeCalculationType.ByRegionAndBroker).ToList();
 
             List<PriceInformationBrokerFee> priceListBrokerFee = new List<PriceInformationBrokerFee>();
             foreach (var item in prices)
             {
                 priceListBrokerFee.AddRange(ranks.Select(r => new PriceInformationBrokerFee
                 {
-                    BrokerFee = r.BrokerFee,
+                    BrokerFee = r.BrokerFee.Value,
                     FirstValidDateRanking = r.FirstValidDate,
                     LastValidDateRanking = r.LastValidDate,
                     RankingId = r.RankingId,

@@ -80,7 +80,7 @@ namespace Tolk.Web.Models
                 : orders;
             orders = Status.HasValue
                 ? Status.Value == OrderStatus.ToBeProcessedByCustomer
-                    ? orders.Where(o => o.Status == OrderStatus.RequestResponded || o.Status == OrderStatus.RequestRespondedNewInterpreter)
+                    ? orders.Where(o => o.Status == OrderStatus.RequestRespondedAwaitingApproval || o.Status == OrderStatus.RequestRespondedNewInterpreter)
                 : orders.Where(o => o.Status == Status) : orders;
             orders = BrokerId.HasValue
                 ? orders.Where(o => o.BrokerId == BrokerId) : orders;

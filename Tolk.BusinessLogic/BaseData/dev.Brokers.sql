@@ -29,15 +29,15 @@ VALUES (src.BrokerId, src.Name, src.EmailDomain, src.EmailAddress, src.Organizat
 
 drop table #Brokers
 
-Insert Rankings(BrokerId, RegionId, BrokerFee, Rank, FirstValidDate, LastValidDate)
-Select 1, RegionId, 0.1, 1, '19990101', '99991231' from Regions
+Insert Rankings(BrokerId, RegionId, BrokerFee, Rank, FirstValidDate, LastValidDate, FrameworkAgreementId)
+Select 1, RegionId, 0.1, 1, '19990101', '99991231', 1 from Regions
 
-Insert Rankings(BrokerId, RegionId, BrokerFee, Rank, FirstValidDate, LastValidDate)
-Select 2, RegionId, 0.12, 2, '19990101', '99991231' from Regions
+Insert Rankings(BrokerId, RegionId, BrokerFee, Rank, FirstValidDate, LastValidDate, FrameworkAgreementId)
+Select 2, RegionId, 0.12, 2, '19990101', '99991231', 1 from Regions
 
-Insert Rankings(BrokerId, RegionId, BrokerFee, Rank, FirstValidDate, LastValidDate)
-Select 3, RegionId, 0.14, 3, '19990101', '99991231' from Regions
+Insert Rankings(BrokerId, RegionId, BrokerFee, Rank, FirstValidDate, LastValidDate, FrameworkAgreementId)
+Select 3, RegionId, 0.14, 3, '19990101', '99991231', 1 from Regions
 
-Insert Rankings(BrokerId, RegionId, BrokerFee, Rank, FirstValidDate, LastValidDate)
-Select 4, RegionId, 0.16, 4, '19990101', '99991231' from Regions
+Insert Rankings(BrokerId, RegionId, BrokerFee, Rank, FirstValidDate, LastValidDate, FrameworkAgreementId)
+Select 4, RegionId, 0.16, 4, '19990101', '99991231', 1 from Regions
 

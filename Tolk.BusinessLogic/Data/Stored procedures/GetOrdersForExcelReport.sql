@@ -87,7 +87,9 @@ AS
 		(12, 'Uppdrag avbokat av förmedling'),
 		(15, 'Tillsättning ej besvarad'),
 		(16, 'Sista svarstid ej satt'),
-		(17, 'Uppdrag annullerat, sista svarstid ej satt')
+		(17, 'Uppdrag annullerat, sista svarstid ej satt'),
+		(20, 'Bokningsförfrågan avbruten p.g.a. utgånget ramavtal'),
+		(21, 'Förfrågan bekräftad av förmedling, inväntar tolktillsättning')
 
 	--if customer check roles, if central admin take only admin units
 	DECLARE @onlyUnits BIT = 0;

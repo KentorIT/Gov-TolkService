@@ -28,6 +28,9 @@ namespace Tolk.BusinessLogic.Data
             builder.Entity<Region>()
                 .HasData(Region.Regions);
 
+            builder.Entity<RegionGroup>()
+                .HasData(RegionGroup.RegionGroups);
+
             builder.Entity<Order>()
             .Property(p => p.OrderNumber)
             .HasComputedColumnSql("CAST(YEAR([CreatedAt]) AS NVARCHAR(MAX)) + '-' + CAST(([OrderId]+(100000)) AS NVARCHAR(MAX))");
@@ -670,7 +673,14 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<CustomerStartListRow> CustomerStartListRows { get; set; }
 
         public DbSet<BrokerStartListRow> BrokerStartListRows { get; set; }
+        
         public DbSet<OrderAgreementPayload> OrderAgreementPayloads { get; set; }
+
+        public DbSet<FrameworkAgreement> FrameworkAgreements { get; set; }
+
+        public DbSet<RegionGroup> RegionGroups { get; set; }
+
+        public DbSet<BrokerFeeByServiceTypePriceListRow> BrokerFeeByServiceTypePriceListRows { get; set; }
 
         private static bool isUserStoreInitialized = false;
 

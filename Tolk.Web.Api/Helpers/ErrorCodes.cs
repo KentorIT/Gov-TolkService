@@ -27,5 +27,6 @@ namespace Tolk.Web.Api.Helpers
         public const string CallingUserMissing = nameof(CallingUserMissing);
         public const string OrderNotValid = nameof(OrderNotValid);
         public const string OrderNotInCorrectState = nameof(OrderNotInCorrectState);
+        public const string AllRequirementsMustBeAnsweredOnAccept = nameof(AllRequirementsMustBeAnsweredOnAccept);
     }
 }

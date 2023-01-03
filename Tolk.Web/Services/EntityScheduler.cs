@@ -20,9 +20,11 @@ namespace Tolk.Web.Services
         private readonly ISwedishClock _clock;
         private readonly TolkOptions _options;
 
-        private readonly int timeToRun;
+        private readonly int timeToRunFrameworkAgreementValidation;
+        private readonly int timeToRunDailyJobs;
 
         private DateTimeOffset nextDailyRunTime;
+        private DateTimeOffset nextFrameworkAgreementValidationTime;
 
         private bool nextRunIsNotifications = true;
 
@@ -36,7 +38,8 @@ namespace Tolk.Web.Services
             _clock = clock;
             _options = options?.Value;
 
-            timeToRun = _options.HourToRunDailyJobs;
+            timeToRunFrameworkAgreementValidation = _options.HourToRunFrameworkAgreementValidation;
+            timeToRunDailyJobs = _options.HourToRunDailyJobs;
             if (_clock == null)
             {
                 throw new ArgumentNullException(nameof(clock));
@@ -46,12 +49,20 @@ namespace Tolk.Web.Services
             now -= now.TimeOfDay;
 
             nextDailyRunTime = now - now.TimeOfDay;
-            nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
+            nextDailyRunTime = nextDailyRunTime.AddHours(timeToRunDailyJobs);
 
-            if (_clock.SwedenNow.Hour > timeToRun)
+            if (_clock.SwedenNow.Hour > timeToRunDailyJobs)
             {
                 // Next remind is tomorrow
                 nextDailyRunTime = nextDailyRunTime.AddDays(1);
+            }
+            nextFrameworkAgreementValidationTime = now - now.TimeOfDay;
+            nextFrameworkAgreementValidationTime = nextFrameworkAgreementValidationTime.AddHours(timeToRunFrameworkAgreementValidation);
+
+            if (_clock.SwedenNow.Hour > timeToRunFrameworkAgreementValidation)
+            {
+                // Next framework agreeement validation is tomorrow
+                nextFrameworkAgreementValidationTime = nextFrameworkAgreementValidationTime.AddDays(1);
             }
 
             _logger.LogInformation("Created EntityScheduler instance");
@@ -68,18 +79,32 @@ namespace Tolk.Web.Services
         {
             _logger.LogTrace("EntityScheduler waking up.");
 
-            if ((nextDailyRunTime - _clock.SwedenNow).TotalHours > 25 || nextDailyRunTime.Hour != timeToRun)
+            if ((nextDailyRunTime - _clock.SwedenNow).TotalHours > 25 || nextDailyRunTime.Hour != timeToRunDailyJobs)
             {
                 _logger.LogWarning("nextDailyRunTime set to invalid time, was {0}", nextDailyRunTime);
                 DateTimeOffset now = _clock.SwedenNow;
                 now -= now.TimeOfDay;
                 nextDailyRunTime = now - now.TimeOfDay;
-                nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
+                nextDailyRunTime = nextDailyRunTime.AddHours(timeToRunDailyJobs);
 
-                if (_clock.SwedenNow.Hour > timeToRun)
+                if (_clock.SwedenNow.Hour > timeToRunDailyJobs)
                 {
                     // Next remind is tomorrow
                     nextDailyRunTime = nextDailyRunTime.AddDays(1);
+                }
+            }
+            if ((nextFrameworkAgreementValidationTime - _clock.SwedenNow).TotalHours > 25 || nextFrameworkAgreementValidationTime.Hour != timeToRunFrameworkAgreementValidation)
+            {
+                _logger.LogWarning("nextFrameworkAgreementValidationTime set to invalid time, was {0}", nextFrameworkAgreementValidationTime);
+                DateTimeOffset now = _clock.SwedenNow;
+                now -= now.TimeOfDay;
+                nextFrameworkAgreementValidationTime = nextFrameworkAgreementValidationTime - now.TimeOfDay;
+                nextFrameworkAgreementValidationTime = nextFrameworkAgreementValidationTime.AddHours(timeToRunFrameworkAgreementValidation);
+
+                if (_clock.SwedenNow.Hour > timeToRunFrameworkAgreementValidation)
+                {
+                    // Next agreement check is tomorrow
+                    nextFrameworkAgreementValidationTime = nextFrameworkAgreementValidationTime.AddDays(1);
                 }
             }
 
@@ -116,11 +141,23 @@ namespace Tolk.Web.Services
                     using var serviceScope = _services.CreateScope();
                     Task[] tasksToRun;
 
-                    if (_clock.SwedenNow > nextDailyRunTime)
+                    if (_clock.SwedenNow > nextFrameworkAgreementValidationTime)
+                    {
+                        nextFrameworkAgreementValidationTime = nextFrameworkAgreementValidationTime.AddDays(1);
+                        nextFrameworkAgreementValidationTime -= nextFrameworkAgreementValidationTime.TimeOfDay;
+                        nextFrameworkAgreementValidationTime = nextFrameworkAgreementValidationTime.AddHours(timeToRunFrameworkAgreementValidation);
+                        _logger.LogTrace("Running Framework Aggreement validation, next run on {0}", nextFrameworkAgreementValidationTime);
+
+                        tasksToRun = new Task[]
+                        {
+                            RunAgreementValidation(serviceScope.ServiceProvider),
+                        };
+                    }
+                    else if (_clock.SwedenNow > nextDailyRunTime)
                     {
                         nextDailyRunTime = nextDailyRunTime.AddDays(1);
                         nextDailyRunTime -= nextDailyRunTime.TimeOfDay;
-                        nextDailyRunTime = nextDailyRunTime.AddHours(timeToRun);
+                        nextDailyRunTime = nextDailyRunTime.AddHours(timeToRunDailyJobs);
                         _logger.LogTrace("Running DailyRunTime, next run on {0}", nextDailyRunTime);
 
                         tasksToRun = new Task[]
@@ -156,6 +193,12 @@ namespace Tolk.Web.Services
             }
 
             _logger.LogTrace($"EntityScheduler done, scheduled to wake up in {timeDelayContinousJobs / 1000} seconds again");
+        }
+        private async Task RunAgreementValidation(IServiceProvider provider)
+        {
+            _logger.LogInformation($"Starting {nameof(RunAgreementValidation)}");
+            await provider.GetRequiredService<RequestService>().ValidateFrameworkAgreement();
+            _logger.LogInformation($"Completed {nameof(RunAgreementValidation)}");
         }
 
         private async Task RunDailyJobs(IServiceProvider provider)

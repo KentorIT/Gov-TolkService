@@ -78,7 +78,7 @@ namespace Tolk.Web.Api.Services
             request.Order.Requirements = await _dbContext.OrderRequirements.GetRequirementsForOrder(request.OrderId).ToListAsync();
             request.Order.InterpreterLocations = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToListAsync();
             request.Order.CompetenceRequirements = await _dbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.OrderId).ToListAsync();
-            var priceRows = _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.Order.PriceCalculatedFromCompetenceLevel, null).PriceRows.ToList();
+            var priceRows = _priceCalculationService.GetPrices(request, _timeService.SwedenNow, (CompetenceAndSpecialistLevel)request.Order.PriceCalculatedFromCompetenceLevel, null, null).PriceRows.ToList();
             var calculationCharges = _dbContext.PriceCalculationCharges.GetPriceCalculationChargesByIds(priceRows.Where(p => p.PriceCalculationChargeId.HasValue).Select(p => p.PriceCalculationChargeId.Value).ToList());
             priceRows.Where(p => p.PriceCalculationChargeId.HasValue).ToList().ForEach(p => p.PriceCalculationCharge = new PriceCalculationCharge { ChargePercentage = calculationCharges.Where(c => c.PriceCalculationChargeId == p.PriceCalculationChargeId).FirstOrDefault().ChargePercentage });
 
@@ -110,6 +110,9 @@ namespace Tolk.Web.Api.Services
                 },
                 Region = request.Order.Region.Name,
                 ExpiresAt = request.ExpiresAt,
+                LastAcceptAt = request.LastAcceptAt,
+                RequiredAnswerLevel = EnumHelper.GetCustomName(EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(request.RequestAnswerRuleType)),
+                RequestAnswerRuleType = EnumHelper.GetCustomName(request.RequestAnswerRuleType),
                 Language = new LanguageModel
                 {
                     Key = request.Order.Language?.ISO_639_Code,
@@ -144,9 +147,9 @@ namespace Tolk.Web.Api.Services
                     RequirementId = r.OrderRequirementId,
                     RequirementType = r.RequirementType.GetCustomName()
                 }),
-                CalculatedPriceInformationFromRequest = priceRows.GetPriceInformationModel(request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName(), request.Ranking.BrokerFee),
+                CalculatedPriceInformationFromRequest = priceRows.GetPriceInformationModel(request.Order.PriceCalculatedFromCompetenceLevel.GetCustomName()),
                 CalculatedPriceInformationFromAnswer = request.PriceRows.Any() ?
-                    request.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)request.CompetenceLevel).GetCustomName(), request.Ranking.BrokerFee)
+                    request.PriceRows.GetPriceInformationModel(((CompetenceAndSpecialistLevel)request.CompetenceLevel).GetCustomName())
                     : null,
                 Interpreter = request.Interpreter != null ? new InterpreterModel
                 {
@@ -188,6 +191,7 @@ namespace Tolk.Web.Api.Services
             orderGroup.CompetenceRequirements = await _dbContext.OrderGroupCompetenceRequirements.GetOrderedCompetenceRequirementsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             orderGroup.Requirements = await _dbContext.OrderGroupRequirements.GetRequirementsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             orderGroup.InterpreterLocations = await _dbContext.OrderGroupInterpreterLocations.GetInterpreterLocationsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
+            orderGroup.Orders = await _dbContext.Orders.GetOrdersForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             var orderGroupAttachments = await _dbContext.Attachments.GetAttachmentsForOrderGroup(orderGroup.OrderGroupId).ToListAsync();
             var requestGroupAttachments = await _dbContext.Attachments.GetAttachmentsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
             return new RequestGroupDetailsResponse
@@ -213,6 +217,9 @@ namespace Tolk.Web.Api.Services
                 },
                 Region = orderGroup.Region.Name,
                 ExpiresAt = requestGroup.ExpiresAt,
+                LastAcceptAt = requestGroup.LastAcceptAt,
+                RequiredAnswerLevel = EnumHelper.GetCustomName(EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(requestGroup.RequestAnswerRuleType)),
+                RequestAnswerRuleType = EnumHelper.GetCustomName(requestGroup.RequestAnswerRuleType),
                 Language = new LanguageModel
                 {
                     Key = orderGroup.Language?.ISO_639_Code,

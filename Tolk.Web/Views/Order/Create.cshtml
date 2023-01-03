@@ -178,12 +178,11 @@
                                 <div class="row allow-more-travel-cost">
                                     <div class="col-sm-8 important-info">
                                         Vid tolkning På plats eller Distans i anvisad lokal per video har förmedlingen rätt att debitera kostnader för
-                                        tolkens resor upp till ramavtalets gränsvärden på 2 timmars restid eller 100 km resväg.
+                                        tolkens resor upp till ramavtalets gränsvärden på @Model.TravelConditionHours timmars restid eller @Model.TravelConditionKilometers km resväg.
                                         För resor som överstiger gränsvärdena har myndigheten rätt att få förhandsgodkänna uppgift om bedömd resekostnad.
                                     </div>
-
                                     <div class="col-sm-12">
-                                        <form-entry asp-for="AllowExceedingTravelCost" asp-items="SelectListService.AllowExceedingTravelCost" checked-value="@allowExceedingTravelCost" help-link="@HelpLinkService.GenerateUrl("nybokning_extra_restid")" />
+                                        <form-entry asp-for="AllowExceedingTravelCost" asp-items="SelectListService.AllowExceedingTravelCost" checked-value="@allowExceedingTravelCost" help-link="@HelpLinkService.GenerateUrl("nybokning_extra_restid")" description-override="Vid tolkning med inställelsesätt På plats eller Distans i anvisad lokal per video har förmedlingen rätt att debitera kostnader för tolkens resor upp till ramavtalets gränsvärden på @Model.TravelConditionHours timmars restid eller @Model.TravelConditionKilometers km resväg. Resekostnader som överskrider gränsvärdena måste godkännas av myndighet i förväg. Genom att du markerat denna ruta måste förmedlingen ange bedömd resekostnad för tillsatt tolk i sin bekräftelse. Du får ett e-postmeddelande när bekräftelsen kommit. Om du underkänner bedömd resekostnad går förfrågan vidare till nästa förmedling enligt rangordningen." />
                                         <div id="AllowExceedingTravelCostValidator" class="d-none text-danger body"></div>
                                     </div>
                                     <div class="col-sm-8 important-info allow-more-travel-cost-information">

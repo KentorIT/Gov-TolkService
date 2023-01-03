@@ -32,9 +32,9 @@ namespace Tolk.BusinessLogic.Tests.Models
                 Status = RequestStatus.Approved,
                 Order = new Order(MockOrder)
                 {
-                    Status = OrderStatus.RequestResponded,
+                    Status = OrderStatus.RequestRespondedAwaitingApproval,
                 },
-                Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1 },
+                Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1,FrameworkAgreement = MockEntities.FrameworkAgreements[0]},
             };
             MockRequisition = new Requisition
             {
@@ -69,7 +69,7 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
             Assert.Equal(now.ToString("yyyy-MM-dd"), agreement.IssueDate);
             Assert.Equal(now.ToString("HH:mm:ss"), agreement.IssueTime);
-            Assert.Equal(Constants.ContractNumber, agreement.Contract.ID.Value);
+            Assert.Equal(MockEntities.FrameworkAgreements[0].AgreementNumber, agreement.Contract.ID.Value);
             Assert.Equal(request.Order.InvoiceReference, agreement.CustomerReference);
             Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
             Assert.Equal(request.Order.CustomerOrganisation.OrganisationNumber.ToNotHyphenatedFormat(), agreement.BuyerCustomerParty.Party.EndpointID.Value);
@@ -106,7 +106,7 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
             Assert.Equal(now.ToString("yyyy-MM-dd"), agreement.IssueDate);
             Assert.Equal(now.ToString("HH:mm:ss"), agreement.IssueTime);
-            Assert.Equal(Constants.ContractNumber, agreement.Contract.ID.Value);
+            Assert.Equal(MockEntities.FrameworkAgreements[0].AgreementNumber, agreement.Contract.ID.Value);
             Assert.Equal(requisition.Request.Order.InvoiceReference, agreement.CustomerReference);
             Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
             Assert.Equal(requisition.Request.Order.CustomerOrganisation.OrganisationNumber.ToNotHyphenatedFormat(), agreement.BuyerCustomerParty.Party.EndpointID.Value);

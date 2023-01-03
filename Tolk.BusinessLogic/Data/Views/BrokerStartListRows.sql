@@ -30,6 +30,9 @@ DISTINCT
    ,r.AnswerProcessedAt AnswerProcessedAt
    ,r.CancelledAt
    ,r.ExpiresAt RequestExpiresAt
+   ,r.AcceptedAt
+   ,r.LastAcceptAt
+   ,r.RequestAnswerRuleType
    ,NULL NoOfChildren
    ,NULL NoOfExtraInterpreter
    ,NULL RequisitionStatus
@@ -66,7 +69,7 @@ LEFT JOIN dbo.OrderChangeLogEntries ocle
 	ORDER BY oc.LoggedAt DESC)
 LEFT JOIN OrderChangeConfirmations occ
 	ON ocle.OrderChangeLogEntryId = occ.OrderChangeLogEntryId
-WHERE (r.Status IN (1, 2) 
+WHERE (r.Status IN (1, 2, 23) 
 OR (r.Status IN (8, 10, 16) AND rsc.RequestId IS NULL)
 OR (r.Status IN (5, 12) AND ocle.OrderChangeLogEntryId IS NOT NULL AND occ.OrderChangeLogEntryId IS NULL)
 OR (r.Status = 5 AND o.StartAt < GETDATE() AND r.RequestId NOT IN (SELECT r1.RequestId FROM Requisitions r1))
@@ -104,6 +107,9 @@ DISTINCT
    ,rg.AnswerProcessedAt AnswerProcessedAt
    ,rg.CancelledAt
    ,rg.ExpiresAt RequestExpiresAt
+   ,rg.AcceptedAt
+   ,rg.LastAcceptAt
+   ,rg.RequestAnswerRuleType
    ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId) NoOfChildren
    ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId AND IsExtraInterpreterForOrderId  IS NOT NULL) NoOfExtraInterpreter
    ,NULL RequisitionStatus
@@ -132,7 +138,7 @@ LEFT JOIN dbo.AspNetUsers anu ON rv.ViewedBy = anu.Id
 LEFT JOIN dbo.RequestGroupStatusConfirmations rsc
 	ON rg.RequestGroupId = rsc.RequestGroupId
 		AND rsc.RequestStatus IN (8, 16)
-WHERE (rg.Status IN (1, 2, 4) 
+WHERE (rg.Status IN (1, 2, 4, 23) 
 OR (rg.Status IN (8, 16) AND rsc.RequestGroupId IS NULL))
 UNION
 --Requisitions
@@ -162,6 +168,9 @@ DISTINCT
    ,NULL AnswerProcessedAt
    ,NULL CancelledAt
    ,NULL RequestExpiresAt
+   ,NULL AcceptedAt
+   ,NULL LastAcceptAt
+   ,NULL RequestAnswerRuleType
    ,0 NoOfChildren
    ,0 NoOfExtraInterpreter
    ,r.Status RequisitionStatus
@@ -215,6 +224,9 @@ DISTINCT
    ,NULL AnsweredAt
    ,NULL AnswerProcessedAt
    ,NULL CancelledAt
+   ,NULL AcceptedAt
+   ,NULL LastAcceptAt
+   ,NULL RequestAnswerRuleType
    ,NULL RequestExpiresAt
    ,NULL NoOfChildren
    ,NULL NoOfExtraInterpreter

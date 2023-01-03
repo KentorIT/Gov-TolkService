@@ -44,6 +44,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
             // if only created, use DateTime.Now            
             OrderNumber = order.OrderNumber;
             OrderReference = previousOrderAgreementIndex != null ? new ObjectWithIdModel { ID = new EndPointIDModel { Value = $"{Constants.IdPrefix}{OrderNumber}-{previousOrderAgreementIndex}" } } : new ObjectWithIdModel { ID = new EndPointIDModel { Value = Constants.NotApplicableNotification } };
+            Contract = new ObjectWithIdModel { ID = new EndPointIDModel { Value = requisition.Request.Ranking.FrameworkAgreement.AgreementNumber } };
             SellerSupplierParty = GetSellerSupplierParty(requisition.Request);
             BuyerCustomerParty = GetBuyerCostomerParty(order);
             CustomerReference = order.InvoiceReference;
@@ -59,6 +60,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
             Note = "Created from request";
             OrderNumber = order.OrderNumber;
             OrderReference = new ObjectWithIdModel { ID = new EndPointIDModel { Value = Constants.NotApplicableNotification } };
+            Contract = new ObjectWithIdModel { ID = new EndPointIDModel { Value = request.Ranking.FrameworkAgreement.AgreementNumber } };
             SellerSupplierParty = GetSellerSupplierParty(request);
             BuyerCustomerParty = GetBuyerCostomerParty(order);
             CustomerReference = order.InvoiceReference;
@@ -139,11 +141,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         public ObjectWithIdModel OrderReference { get; set; }
 
         [XmlElement(Namespace = Constants.cac)]
-        public ObjectWithIdModel Contract
-        {
-            get => new ObjectWithIdModel { ID = new EndPointIDModel { Value = Constants.ContractNumber } };
-            set { }
-        }
+        public ObjectWithIdModel Contract { get; set; }
 
         [XmlElement(Namespace = Constants.cac)]
         public OrganizationPartyModel SellerSupplierParty { get; set; }

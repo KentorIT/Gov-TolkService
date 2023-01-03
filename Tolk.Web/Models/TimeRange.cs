@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
@@ -66,5 +67,11 @@ namespace Tolk.Web.Models
                 EndTime = valueSweden.TimeOfDay;
             }
         }
+
+        public TimeSpan Duration => new TimeSpan(EndDateTime.Value.Ticks - StartDateTime.Value.Ticks);
+
+        public string AsSwedishString =>
+            $"{StartDate.ToSwedishString("yyyy-MM-dd")} {StartTime.ToSwedishString("hh\\:mm")}-{EndTime.ToSwedishString("hh\\:mm")}";
+
     }
 }

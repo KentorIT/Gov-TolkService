@@ -92,15 +92,22 @@ namespace Tolk.Web.Controllers
             var request = await _dbContext.Requests.GetRequestById(id);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.View)).Succeeded)
             {
-                //if user tries to view a request with status InterpreterReplaced (email-link) - redirect to latest request for broker
-                if (request.Status == RequestStatus.InterpreterReplaced)
+                //if user tries to view a request with a status in negotiationState ReplacedByOtherEntity - redirect to latest request for broker
+                if (EnumHelper.Parent<RequestStatus, NegotiationState>(request.Status) == NegotiationState.ReplacedByOtherEntity)
                 {
                     id = _dbContext.Requests.OrderBy(r => r.RequestId).Last(r => r.OrderId == request.OrderId && r.Ranking.BrokerId == User.GetBrokerId()).RequestId;
                     return RedirectToAction(nameof(View), new { id });
                 }
                 if (request.IsToBeProcessedByBroker)
                 {
-                    return RedirectToAction(nameof(Process), new { id });
+                    if (request.Order.ReplacingOrderId.HasValue)
+                    {
+                        return RedirectToAction(nameof(ProcessReplacement), new { id });
+                    }
+                    else
+                    {
+                        return RedirectToAction(nameof(Process), new { id });
+                    }
                 }
                 return View(await GetModelForView(request));
             }
@@ -117,6 +124,12 @@ namespace Tolk.Web.Controllers
                     _logger.LogWarning("Wrong status when trying to process request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
                     return RedirectToAction(nameof(View), new { id });
                 }
+                if (request.Order.ReplacingOrderId.HasValue)
+                {
+                    _logger.LogWarning("A replacing request should not be handled by {Method}. RequestId: {request.RequestId}", nameof(Process), request.RequestId);
+                    return RedirectToAction(nameof(View), new { id });
+                }
+
                 if (request.Status == RequestStatus.Created)
                 {
                     _requestService.Acknowledge(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
@@ -128,42 +141,71 @@ namespace Tolk.Web.Controllers
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 model.ExpectedTravelCosts = null;
                 model.AllowProcessing = !request.RequestGroupId.HasValue;
-                if (model.OrderViewModel.ReplacingOrderId.HasValue)
-                {
-                    model.ProcessReplacementRequestViewModel = RequestViewModel.GetModelFromRequest(request, request.Order.AllowExceedingTravelCost);
-                    model.ProcessReplacementRequestViewModel.LanguageAndDialect = model.OrderViewModel.LanguageAndDialect;
-                    model.ProcessReplacementRequestViewModel.RegionName = model.OrderViewModel.RegionName;
-                    model.ProcessReplacementRequestViewModel.TimeRange = model.OrderViewModel.TimeRange;
-                    model.ProcessReplacementRequestViewModel.DisplayMealBreakIncluded = model.OrderViewModel.DisplayMealBreakIncludedText;
-                    model.ProcessReplacementRequestViewModel.IsReplacingOrderRequest = true;
-                    model.ProcessReplacementRequestViewModel.RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId));
-                }
+                model.AllowAccept = request.CanAccept;
+                model.FullAnswer = !request.CanAccept;
                 model.OrderViewModel.UseAttachments = true;
                 return View(model);
             }
             return Forbid();
         }
 
-        public async Task<IActionResult> Change(int id)
+        public async Task<IActionResult> ProcessReplacement(int id)
+        {
+            var request = await _dbContext.Requests.GetRequestById(id);
+            if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
+            {
+                if (!request.IsToBeProcessedByBroker)
+                {
+                    _logger.LogWarning("Wrong status when trying to process replacement request. Status: {request.Status}, RequestId: {request.RequestId}", request.Status, request.RequestId);
+                    return RedirectToAction(nameof(View), new { id });
+                }
+                if (!request.Order.ReplacingOrderId.HasValue)
+                {
+                    _logger.LogWarning("Cannot process this Request as a replacement request, RequestId: {request.RequestId}, RequestId: {request.RequestId}", request.Status, request.RequestId);
+                    return RedirectToAction(nameof(View), new { id });
+                }
+                if (request.Status == RequestStatus.Created)
+                {
+                    _requestService.Acknowledge(request, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    await _dbContext.SaveChangesAsync();
+                }
+
+                RequestModel model = await GetModel(request);
+                model.FileGroupKey = new Guid();
+                model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                model.ExpectedTravelCosts = null;
+                model.ProcessReplacementRequestViewModel = RequestViewModel.GetModelFromRequest(request, request.Order.AllowExceedingTravelCost);
+                model.ProcessReplacementRequestViewModel.LanguageAndDialect = model.OrderViewModel.LanguageAndDialect;
+                model.ProcessReplacementRequestViewModel.RegionName = model.OrderViewModel.RegionName;
+                model.ProcessReplacementRequestViewModel.TimeRange = model.OrderViewModel.TimeRange;
+                model.ProcessReplacementRequestViewModel.DisplayMealBreakIncluded = model.OrderViewModel.DisplayMealBreakIncludedText;
+                model.ProcessReplacementRequestViewModel.IsReplacingOrderRequest = true;
+                model.ProcessReplacementRequestViewModel.RequirementAnswers = await RequestRequirementAnswerModel.GetFromList(_dbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId));
+                model.OrderViewModel.UseAttachments = true;
+                return View(model);
+            }
+            return Forbid();
+        }
+
+        public async Task<IActionResult> ChangeInterpreter(int id)
         {
             var request = await _dbContext.Requests.GetRequestForAcceptById(id);
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && request.CanChangeInterpreter(_clock.SwedenNow))
             {
                 RequestModel model = await GetModel(request);
-                model.Status = RequestStatus.AcceptedNewInterpreterAppointed;
                 model.OldInterpreterId = request.InterpreterBrokerId;
                 model.OtherInterpreterId = await _requestService.GetOtherInterpreterIdForSameOccasion(request);
                 model.FileGroupKey = new Guid();
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 model.LatestAnswerTimeForCustomer = null;
-                return View("Process", model);
+                return View(model);
             }
             return Forbid();
         }
 
         [ValidateAntiForgeryToken]
         [HttpPost]
-        public async Task<IActionResult> Accept(RequestAcceptModel model)
+        public async Task<IActionResult> ChangeInterpreter(RequestAnswerModel model)
         {
             if (ModelState.IsValid)
             {
@@ -171,24 +213,18 @@ namespace Tolk.Web.Controllers
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
-                    if (!request.IsToBeProcessedByBroker && model.Status != RequestStatus.AcceptedNewInterpreterAppointed)
-                    {
-                        return RedirectToAction("Index", "Home", new { ErrorMessage = "Förfrågan är redan behandlad" });
-                    }
-                    else if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed && !request.CanChangeInterpreter(_clock.SwedenNow))
+                    if (!request.CanChangeInterpreter(_clock.SwedenNow))
                     {
                         return RedirectToAction("Index", "Home", new { ErrorMessage = "Det gick inte att byta tolk, kontrollera tiden för uppdragsstart" });
                     }
                     var requirementAnswers = model.RequiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                     {
-                        RequestId = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? 0 : request.RequestId,
                         OrderRequirementId = ra.OrderRequirementId,
                         Answer = ra.Answer,
                         CanSatisfyRequirement = ra.CanMeetRequirement
                     }).ToList();
                     requirementAnswers.AddRange(model.DesiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
                     {
-                        RequestId = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? 0 : request.RequestId,
                         OrderRequirementId = ra.OrderRequirementId,
                         Answer = ra.Answer,
                         CanSatisfyRequirement = ra.CanMeetRequirement
@@ -202,69 +238,230 @@ namespace Tolk.Web.Controllers
                             model.ExpectedTravelCostInfo = null;
                             model.ExpectedTravelCosts = null;
                         }
-                        //if change interpreter or normal accept (no replacementorder)
-                        if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed || (!request.Order.ReplacingOrderId.HasValue && model.Status != RequestStatus.AcceptedNewInterpreterAppointed))
+                        var interpreter = await _interpreterService.GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
+                        try
                         {
-                            var interpreter = await _interpreterService.GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
-                            if (model.Status == RequestStatus.AcceptedNewInterpreterAppointed)
-                            {
-                                try
-                                {
-                                    await _requestService.ChangeInterpreter(
-                                        request,
-                                        _clock.SwedenNow,
-                                        User.GetUserId(),
-                                        User.TryGetImpersonatorId(),
-                                        interpreter,
-                                        model.InterpreterLocation.Value,
-                                        model.InterpreterCompetenceLevel.Value,
-                                        requirementAnswers,
-                                        model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
-                                        model.ExpectedTravelCosts,
-                                        model.ExpectedTravelCostInfo,
-                                        (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
-                                        model.BrokerReferenceNumber
-                                    );
-                                }
-                                catch (InvalidOperationException ex)
-                                {
-                                    _logger.LogError("Change Interpreter for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
-                                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
-                                }
-                            }
-                            else
-                            {
-                                await _requestService.Accept(
-                                    request,
-                                    _clock.SwedenNow,
-                                    User.GetUserId(),
-                                    User.TryGetImpersonatorId(),
-                                    interpreter,
-                                    model.InterpreterLocation.Value,
-                                    model.InterpreterCompetenceLevel.Value,
-                                    requirementAnswers,
-                                    model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
-                                    model.ExpectedTravelCosts,
-                                    model.ExpectedTravelCostInfo,
-                                    (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
-                                    model.BrokerReferenceNumber
-                                );
-                            }
+                            await _requestService.ChangeInterpreter(
+                                request,
+                                _clock.SwedenNow,
+                                User.GetUserId(),
+                                User.TryGetImpersonatorId(),
+                                interpreter,
+                                model.InterpreterCompetenceLevel.Value,
+                                requirementAnswers,
+                                model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
+                                model.ExpectedTravelCosts,
+                                model.ExpectedTravelCostInfo,
+                                (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
+                                model.BrokerReferenceNumber
+                            );
                         }
-                        else
+                        catch (InvalidOperationException ex)
                         {
-                            await _requestService.AcceptReplacement(
-                                 request,
-                                 _clock.SwedenNow,
-                                 User.GetUserId(),
-                                 User.TryGetImpersonatorId(),
-                                 model.InterpreterLocation.Value,
-                                 model.ExpectedTravelCosts,
-                                 model.ExpectedTravelCostInfo,
-                                 (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
-                                 model.BrokerReferenceNumber
-                             );
+                            _logger.LogError("Change Interpreter for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
+                            return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                         }
+                        await _dbContext.SaveChangesAsync();
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        _logger.LogError("Change interpreter for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
+                        return RedirectToAction("Index", "Home", new { errormessage = "Något gick fel i behandlingen av tolkbytet" });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        _logger.LogError("Change interpreter for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
+                        return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                    }
+                    return RedirectToAction("Index", "Home", new { message = "Tolk har bytts ut för uppdraget" });
+                }
+                return Forbid();
+            }
+            return RedirectToAction(nameof(ChangeInterpreter), new { id = model.RequestId });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> ProcessReplacement(RequestAnswerModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var request = await _dbContext.Requests.GetRequestForAcceptById(model.RequestId);
+
+                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded && !request.ReplacingRequestId.HasValue)
+                {
+                    if (!request.IsToBeProcessedByBroker)
+                    {
+                        return RedirectToAction("Index", "Home", new { ErrorMessage = "Förfrågan är redan behandlad" });
+                    }
+                    var requirementAnswers = model.RequiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                    {
+                        RequestId = request.RequestId,
+                        OrderRequirementId = ra.OrderRequirementId,
+                        Answer = ra.Answer,
+                        CanSatisfyRequirement = ra.CanMeetRequirement
+                    }).ToList();
+                    requirementAnswers.AddRange(model.DesiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                    {
+                        RequestId = request.RequestId,
+                        OrderRequirementId = ra.OrderRequirementId,
+                        Answer = ra.Answer,
+                        CanSatisfyRequirement = ra.CanMeetRequirement
+                    }).ToList());
+                    try
+                    {
+                        //if user can choose between phone/video and an interpreter location with travel, user might have set costs, LatestAnswerTimeForCustomer etc
+                        if (model.InterpreterLocation == InterpreterLocation.OffSitePhone || model.InterpreterLocation == InterpreterLocation.OffSiteVideo)
+                        {
+                            model.LatestAnswerTimeForCustomer = null;
+                            model.ExpectedTravelCostInfo = null;
+                            model.ExpectedTravelCosts = null;
+                        }
+                        await _requestService.AcceptReplacement(
+                             request,
+                             _clock.SwedenNow,
+                             User.GetUserId(),
+                             User.TryGetImpersonatorId(),
+                             model.InterpreterLocation.Value,
+                             model.ExpectedTravelCosts,
+                             model.ExpectedTravelCostInfo,
+                             (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
+                             model.BrokerReferenceNumber
+                         );
+                        await _dbContext.SaveChangesAsync();
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        _logger.LogError("Accept replacement for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
+                        return RedirectToAction("Index", "Home", new { errormessage = "Något gick fel i behandlingen av ersättningsuppdraget" });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        _logger.LogError("Accept replacement for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
+                        return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                    }
+                    return RedirectToAction("Index", "Home", new { message = "Svar har skickats" });
+                }
+                return Forbid();
+            }
+            return RedirectToAction(nameof(ProcessReplacement), new { id = model.RequestId });
+
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Answer(RequestAnswerModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var request = await _dbContext.Requests.GetRequestForAcceptById(model.RequestId);
+
+                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
+                {
+                    if (!request.IsToBeProcessedByBroker)
+                    {
+                        return RedirectToAction("Index", "Home", new { ErrorMessage = "Förfrågan är redan behandlad" });
+                    }
+                    var requirementAnswers = model.RequiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                    {
+                        RequestId = request.RequestId,
+                        OrderRequirementId = ra.OrderRequirementId,
+                        Answer = ra.Answer,
+                        CanSatisfyRequirement = ra.CanMeetRequirement
+                    }).ToList();
+                    requirementAnswers.AddRange(model.DesiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                    {
+                        RequestId = request.RequestId,
+                        OrderRequirementId = ra.OrderRequirementId,
+                        Answer = ra.Answer,
+                        CanSatisfyRequirement = ra.CanMeetRequirement
+                    }).ToList());
+                    try
+                    {
+                        //if user can choose between phone/video and an interpreter location with travel, user might have set costs, LatestAnswerTimeForCustomer etc
+                        if (model.InterpreterLocation == InterpreterLocation.OffSitePhone || model.InterpreterLocation == InterpreterLocation.OffSiteVideo)
+                        {
+                            model.LatestAnswerTimeForCustomer = null;
+                            model.ExpectedTravelCostInfo = null;
+                            model.ExpectedTravelCosts = null;
+                        }
+                        var interpreter = await _interpreterService.GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
+                        await _requestService.Answer(
+                            request,
+                            _clock.SwedenNow,
+                            User.GetUserId(),
+                            User.TryGetImpersonatorId(),
+                            interpreter,
+                            model.InterpreterLocation.Value,
+                            model.InterpreterCompetenceLevel.Value,
+                            requirementAnswers,
+                            model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
+                            model.ExpectedTravelCosts,
+                            model.ExpectedTravelCostInfo,
+                            (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
+                            model.BrokerReferenceNumber
+                        );
+                        await _dbContext.SaveChangesAsync();
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        _logger.LogError("Answer for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
+                        return RedirectToAction("Index", "Home", new { errormessage = "Något gick fel i behandlingen av bokningsförfrågan" });
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        _logger.LogError("Answer for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
+                        return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                    }
+                    return RedirectToAction("Index", "Home", new { message = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Tolk har bytts ut för uppdraget" : "Svar har skickats" });
+                }
+                return Forbid();
+            }
+            return RedirectToAction(nameof(Process), new { id = model.RequestId });
+        }
+
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Accept(RequestAcceptModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var request = await _dbContext.Requests.GetRequestForAcceptById(model.RequestId);
+
+                if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
+                {
+                    if (!request.CanAccept)
+                    {
+                        return RedirectToAction("Index", "Home", new { ErrorMessage = "Förfrågan är redan behandlad" });
+                    }
+                    var requirementAnswers = model.RequiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                    {
+                        RequestId = request.RequestId,
+                        OrderRequirementId = ra.OrderRequirementId,
+                        Answer = ra.Answer,
+                        CanSatisfyRequirement = ra.CanMeetRequirement
+                    }).ToList();
+                    requirementAnswers.AddRange(model.DesiredRequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                    {
+                        RequestId = request.RequestId,
+                        OrderRequirementId = ra.OrderRequirementId,
+                        Answer = ra.Answer,
+                        CanSatisfyRequirement = ra.CanMeetRequirement
+                    }).ToList());
+                    try
+                    {
+
+                        await _requestService.Accept(
+                            request,
+                            _clock.SwedenNow,
+                            User.GetUserId(),
+                            User.TryGetImpersonatorId(),
+                            model.InterpreterLocationOnAccept,
+                            model.InterpreterCompetenceLevelOnAccept,
+                            requirementAnswers,
+                            model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
+                            model.BrokerReferenceNumber
+                        );
                         await _dbContext.SaveChangesAsync();
                     }
                     catch (ArgumentException ex)
@@ -277,7 +474,7 @@ namespace Tolk.Web.Controllers
                         _logger.LogError("Accept for request {model.RequestId} failed. Message: {ex.Message}", model.RequestId, ex.Message);
                         return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
                     }
-                    return RedirectToAction("Index", "Home", new { message = model.Status == RequestStatus.AcceptedNewInterpreterAppointed ? "Tolk har bytts ut för uppdraget" : "Svar har skickats" });
+                    return RedirectToAction("Index", "Home", new { message = "Bekräftelse har skickats" });
                 }
                 return Forbid();
             }
@@ -319,6 +516,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Decline(RequestDeclineModel model)
         {
             var request = await _dbContext.Requests.GetRequestWithContactsById(model.DeniedRequestId);
+            request.Requisitions = new List<Requisition>();
 
             if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
             {
@@ -471,6 +669,7 @@ namespace Tolk.Web.Controllers
             return Json(new { success = true });
         }
 
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {
@@ -517,7 +716,8 @@ namespace Tolk.Web.Controllers
             model.OrderViewModel.ActiveRequest = new RequestViewModel
             {
                 Status = request.Status,
-                CreatedAt = model.CreatedAt
+                CreatedAt = model.CreatedAt,
+                FrameworkAgreementNumberOnCreated = request.Ranking.FrameworkAgreement.AgreementNumber
             };
             model.OrderViewModel.UseAttachments = true;
             await _listToModelService.AddInformationFromListsToModel(model.OrderViewModel);
@@ -557,7 +757,7 @@ namespace Tolk.Web.Controllers
             model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
             model.ActiveRequest.AttachmentListModel = model.RequestAttachmentListModel;
             model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
-            model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.RequestedCompetenceLevels);
+            model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.RequestedCompetenceLevels);            
             model.EventLog = new EventLogModel
             {
                 Header = "Bokningshändelser",
@@ -573,7 +773,7 @@ namespace Tolk.Web.Controllers
             {
                 MealBreakIsNotDetucted = request.Order.MealBreakIncluded ?? false,
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(
-                    _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
+                    _priceCalculationService.GetPrices(request, _clock.SwedenNow, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null, null).PriceRows),
                 Header = "Beräknat pris enligt bokningsförfrågan",
                 UseDisplayHideInfo = true
             };

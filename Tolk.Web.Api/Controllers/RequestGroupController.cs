@@ -70,13 +70,13 @@ namespace Tolk.Web.Api.Controllers
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
- 
+
                 var requestGroup = await _dbContext.RequestGroups.GetFullRequestGroupForApiWithBrokerAndOrderNumber(model.OrderGroupNumber, brokerId);
                 if (requestGroup == null)
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotFound);
                 }
-                if (!(requestGroup.Status == RequestStatus.Created || requestGroup.Status == RequestStatus.Received))
+                if (!(requestGroup.IsToBeProcessedByBroker))
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
                 }
@@ -95,7 +95,7 @@ namespace Tolk.Web.Api.Controllers
                 }
                 try
                 {
-                    await _requestService.AcceptGroup(
+                    await _requestService.AnswerGroup(
                         requestGroup,
                         now,
                         user?.Id ?? apiUserId,
@@ -128,6 +128,72 @@ namespace Tolk.Web.Api.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to handle request group answer");
+                return ReturnError(ErrorCodes.UnspecifiedProblem);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att bekräfta att man accepterar det sammanhållna avropets krav, men utan tillsatt tolk")]
+        [OpenApiTag("Request")]
+        public async Task<IActionResult> Accept([FromBody] RequestGroupAcceptModel model)
+        {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
+            try
+            {
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+
+                var requestGroup = await _dbContext.RequestGroups.GetFullRequestGroupForApiWithBrokerAndOrderNumber(model.OrderGroupNumber, brokerId);
+                if (requestGroup == null)
+                {
+                    return ReturnError(ErrorCodes.RequestGroupNotFound);
+                }
+                if (!(requestGroup.CanAccept))
+                {
+                    return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
+                }
+                if (model.Location == null)
+                {
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
+                }
+                var accept = GetAcceptDto(model.InterpreterAcceptModel);
+                InterpreterAcceptDto extraAccept = null;
+                requestGroup.OrderGroup.Orders = await _dbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroup.OrderGroupId).ToListAsync();
+                if (requestGroup.HasExtraInterpreter)
+                {
+                    extraAccept = GetAcceptDto(model.ExtraInterpreterAcceptModel);
+                }
+
+                var now = _timeService.SwedenNow;
+                await _requestService.AcceptGroup(
+                    requestGroup,
+                    now,
+                    user?.Id ?? apiUserId,
+                    user != null ? (int?)apiUserId : null,
+                    EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                    accept,
+                    extraAccept,
+                    //Does not handle attachments yet.
+                    new List<RequestGroupAttachment>(),
+                    model.BrokerReferenceNumber
+                );
+                await _dbContext.SaveChangesAsync();
+                return Ok(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Unexpected error occured when client called RequestGroup/{nameof(Accept)}");
                 return ReturnError(ErrorCodes.UnspecifiedProblem);
             }
         }
@@ -184,7 +250,7 @@ namespace Tolk.Web.Api.Controllers
                 var requestGroup = await _apiOrderService.CheckOrderGroupAndGetRequestGroup(model.OrderGroupNumber, brokerId);
                 //Possibly the user should be added, if not found?? 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                if (!(requestGroup.Status == RequestStatus.Created || requestGroup.Status == RequestStatus.Received))
+                if (!(requestGroup.CanDecline))
                 {
                     return ReturnError(ErrorCodes.RequestGroupNotInCorrectState);
                 }
@@ -391,6 +457,18 @@ namespace Tolk.Web.Api.Controllers
         #endregion
 
         #region private methods
+
+        private static InterpreterAcceptDto GetAcceptDto(InterpreterGroupAcceptModel model) => new InterpreterAcceptDto
+        {
+            CompetenceLevel = EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
+            RequirementAnswers = model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+            {
+                Answer = ra.Answer,
+                CanSatisfyRequirement = ra.CanMeetRequirement,
+                OrderRequirementId = ra.RequirementId,
+            }).ToList(),
+        };
+
 
         //Break out to error generator service...
         private IActionResult ReturnError(string errorCode, string specifiedErrorMessage = null)

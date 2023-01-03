@@ -162,7 +162,7 @@ $(function () {
 
     var checkTimeAtStart = function () {
         var now = new Date($("#now").val());
-        hasToggledLastTimeForRequiringLatestAnswerBy = !(now.getHours() === 13 || now.getHours() === 23);
+        hasToggledLastTimeForRequiringLatestAnswerBy = !(now.getHours() === 13);
     };
 
     var toggleSeveralOccasions = function () {
@@ -396,7 +396,7 @@ $(function () {
 
     $("body").on("change", "#SplitTimeRange_StartDate", function () {
         var now = new Date($("#now").val());
-        if (!hasToggledLastTimeForRequiringLatestAnswerBy && (now.getHours() === 14 || now.getHours() === 0)) {
+        if (!hasToggledLastTimeForRequiringLatestAnswerBy && now.getHours() === 14) {
             $("#LastTimeForRequiringLatestAnswerBy").val($("#NextLastTimeForRequiringLatestAnswerBy").val());
             hasToggledLastTimeForRequiringLatestAnswerBy = true;
         }
@@ -510,6 +510,9 @@ $(function () {
         var minute = $("#LatestAnswerBy_Minute").val();
         if (date !== "" && hour !== "" && minute !== "") {
             var now = new Date($("#now").val());
+            if ((!date.equalsDate(now)) && date < now) {
+                return false;
+            }
             if (date.equalsDate(now)) {
                 var hours = now.getHours();
                 if (hours > Number(hour)) {
@@ -533,6 +536,9 @@ $(function () {
             var startdate = new Date($("#SplitTimeRange_StartDate").val());
             var starthour = $("#SplitTimeRange_StartTimeHour").val();
             var startminute = $("#SplitTimeRange_StartTimeMinutes").val();
+            if (date > startdate) {
+                return false;
+            }
             if (date.equalsDate(new Date(startdate))) {
                 if (Number(hour) > Number(starthour)) {
                     return false;
@@ -544,12 +550,27 @@ $(function () {
         return true;
     };
 
+    var checkIfTimeForLatestAnswerByHasPassed = function () {
+        var now = new Date($("#now").val());
+        if (!hasToggledLastTimeForRequiringLatestAnswerBy && now.getHours() === 14 && (!$("#LatestAnswerBy_Date").is(":visible"))) {
+            $("#LastTimeForRequiringLatestAnswerBy").val($("#NextLastTimeForRequiringLatestAnswerBy").val());
+            hasToggledLastTimeForRequiringLatestAnswerBy = true;
+            $("#LatestAnswerBy").show();
+            LastAnswerByIsShowing = true;
+            return false;
+        }
+        return true;
+    }
+
     var validateStartTime = function () {
         var date = new Date($("#SplitTimeRange_StartDate").val());
         var startHour = $("#SplitTimeRange_StartTimeHour").val();
         var startMinute = $("#SplitTimeRange_StartTimeMinutes").val();
         if (date !== "" && startHour !== "" && startMinute !== "") {
             var now = new Date($("#now").val());
+            if ((!date.equalsDate(now)) && date < now) {
+                return false;
+            }
             if (date.equalsDate(now)) {
                 var hours = now.getHours();
                 if (hours > Number(startHour)) {
@@ -649,7 +670,13 @@ $(function () {
                     validatorMessage("LatestAnswerBy.Date", "Sista svarstid kan inte vara senare än tolkuppdragets starttid, var god ändra detta.");
                     errors++;
                 }
-            } else {
+                //check if passed 14:00
+                if (!checkIfTimeForLatestAnswerByHasPassed()) {
+                    validatorMessage("LatestAnswerBy.Date", "Sista svarstid måste nu anges.");
+                    errors++;
+                }
+            }
+            else {
                 //Check if there is a valid, not yet added, occasion, and if ask if the user wants to add it or not.
                 if (hasValidOccasion()) {
                     if (!confirm("Det finns ett fullständigt tillfälle som inte är tillagt än. Vill du fortsätta?")) {
@@ -683,7 +710,9 @@ $(function () {
                         $("#back").removeAttr("disabled");
                     },
                     error: function (t2) {
-                        alert(t2);
+                        $(".wizard .wizard-step").eq(currentStep).html("Det går inte att avropa tolk vid detta tillfälle");
+                        $('.form-entry-information').tooltip();
+                        $("#back").removeAttr("disabled");
                     }
                 });
             }

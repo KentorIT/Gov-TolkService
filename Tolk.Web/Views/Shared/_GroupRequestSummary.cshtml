@@ -67,21 +67,45 @@
         <div class="row">
             @if (Model.RequestIsAnswered)
             {
+                if (Model.LastAcceptAt.HasValue)
+                {
+                    <div class="col-sm-4">
+                        <display-entry asp-for="AcceptedBy" />
+                    </div>
+                }
                 <div class="col-sm-4">
                     <display-entry asp-for="AnsweredBy" />
                 </div>
             }
-            else if (!Model.RequestIsAnswered && !isBroker)
+            else
             {
-                <div class="col-sm-4">
-                    <display-entry asp-for="ExpiresAt" label-override="Senaste svarstid" />
-                </div>
+                if (Model.Status == RequestStatus.AcceptedAwaitingInterpreter)
+                {
+                    <div class="col-sm-4">
+                        <display-entry asp-for="AcceptedBy" />
+                    </div>
+                }
+                if (!isBroker)
+                {
+                    if (!Model.LastAcceptAt.HasValue || Model.Status == RequestStatus.AcceptedAwaitingInterpreter)
+                    {
+                        <div class="col-sm-4">
+                            <display-entry asp-for="ExpiresAt" label-override="Senaste tid för tillsättning" />
+                        </div>
+                    }
+                    else if (Model.LastAcceptAt.HasValue)
+                    {
+                        <div class="col-sm-4">
+                            <display-entry asp-for="LastAcceptAt" label-override="Senaste bekräftelsetid" />
+                        </div>
+                        <div class="col-sm-4">
+                            <display-entry asp-for="ExpiresAt" label-override="Senaste tid för tillsättning" />
+                        </div>
+                    }
+                }
             }
             <div class="col-sm-4">
-                <display-entry asp-for="Broker" />
-            </div>
-            <div class="col-sm-4">
-                <display-entry asp-for="BrokerOrganizationNumber" />
+                <display-entry asp-for="BrokerInformation" />
             </div>
         </div>
         @if (!hasPossibleChanges)

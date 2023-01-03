@@ -30,12 +30,13 @@ namespace Tolk.BusinessLogic.Tests.Entities
             MockRequisition = new Requisition
             {
                 Status = RequisitionStatus.Created,
+                Message = string.Empty,
                 Request = new Request
                 {
                     Status = RequestStatus.Approved,
                     Order = new Order(MockOrder)
                     {
-                        Status = OrderStatus.RequestResponded,
+                        Status = OrderStatus.RequestRespondedAwaitingApproval,
                     },
                 },
             };
@@ -57,6 +58,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             {
                 TimeWasteNormalTime = timeWasteNormalTime,
                 TimeWasteIWHTime = timeWasteIWHTime,
+                Message = string.Empty
             };
             Assert.Equal(expectedTimeWasteTotalTime, requisition.TimeWasteTotalTime);
         }
@@ -67,6 +69,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var requisition = new Requisition
             {
                 SessionStartedAt = DateTime.Parse("2019-01-31 12:23"),
+                Message = string.Empty
             };
             Assert.Throws<ValidationException>(() => requisition.SessionEndedAt = DateTime.Parse("2019-01-30 12:00"));
         }
@@ -94,14 +97,14 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequisitionStatus.Commented)]
         public void Review_Invalid(RequisitionStatus status)
         {
-            var requisition = new Requisition { Status = status };
+            var requisition = new Requisition { Status = status, Message = string.Empty };
             Assert.Throws<InvalidOperationException>(() => requisition.Review(DateTime.Now, 10, null));
         }
 
         [Fact]
         public void Comment_Valid()
         {
-            var requisition = new Requisition { Status = RequisitionStatus.Created };
+            var requisition = new Requisition { Status = RequisitionStatus.Created, Message = string.Empty };
             var commentTime = DateTime.Parse("2019-01-31 12:31");
             var userId = 10;
             var impersonatorId = (int?)null;
@@ -122,7 +125,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequisitionStatus.Commented)]
         public void Comment_Invalid(RequisitionStatus status)
         {
-            var requisition = new Requisition { Status = status };
+            var requisition = new Requisition { Status = status, Message = string.Empty };
             Assert.Throws<InvalidOperationException>(() => requisition.Comment(DateTime.Now, 10, null, "Test"));
         }
 
@@ -151,7 +154,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequisitionStatus.Commented)]
         public void ConfirmNoReview_Invalid(RequisitionStatus status)
         {
-            var requisition = new Requisition { Status = status };
+            var requisition = new Requisition { Status = status, Message = string.Empty };
             Assert.Throws<InvalidOperationException>(() => requisition.CofirmNoReview(DateTime.Now, 10, null));
         }
 

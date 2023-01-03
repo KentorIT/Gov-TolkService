@@ -117,7 +117,7 @@ namespace Tolk.Web.Api.Controllers
                 }
                 try
                 {
-                    await _requestService.Accept(
+                    await _requestService.Answer(
                         request,
                         now,
                         user?.Id ?? apiUserId,
@@ -154,6 +154,79 @@ namespace Tolk.Web.Api.Controllers
             catch (InvalidApiCallException ex)
             {
                 return ReturnError(ex.ErrorCode);
+            }
+        }
+
+        [HttpPost]
+        [ProducesResponseType(200, Type = typeof(ResponseBase))]
+        [ProducesResponseType(403, Type = typeof(ErrorResponse))]
+        [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
+        [Description("Anropas för att bekräfta att man accepterar avropets krav, men utan tillsatt tolk")]
+        [OpenApiTag("Request")]
+        public async Task<IActionResult> Accept([FromBody] RequestAcceptModel model)
+        {
+            if (model == null)
+            {
+                return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
+            }
+            try
+            {
+                var brokerId = User.TryGetBrokerId().Value;
+                var apiUserId = User.UserId();
+                var order = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
+                if (order.OrderGroupId != null)
+                {
+                    return ReturnError(ErrorCodes.RequestIsPartOfAGroup);
+                }
+                var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
+                var request = await _dbContext.Requests.GetSimpleActiveRequestForApiWithBrokerAndOrderNumber(model.OrderNumber, brokerId);
+                if (request == null)
+                {
+                    return ReturnError(ErrorCodes.RequestNotFound);
+                }
+                if (!request.CanAccept)
+                {
+                    return ReturnError(ErrorCodes.RequestNotInCorrectState);
+                }
+                if (model.Location == null)
+                {
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
+                }
+
+                if (request.Order.SpecificCompetenceLevelRequired && model.CompetenceLevel == null)
+                {
+                    return ReturnError(ErrorCodes.AllRequirementsMustBeAnsweredOnAccept);
+                }
+                var now = _timeService.SwedenNow;
+                await _requestService.Accept(
+                        request,
+                        now,
+                        user?.Id ?? apiUserId,
+                        user != null ? (int?)apiUserId : null,
+                        EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
+                        !string.IsNullOrEmpty(model.CompetenceLevel) ? EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value : null,
+                        model.RequirementAnswers == null ? new List<OrderRequirementRequestAnswer>() :
+                        model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer
+                        {
+                            Answer = ra.Answer,
+                            CanSatisfyRequirement = ra.CanMeetRequirement,
+                            OrderRequirementId = ra.RequirementId,
+                        }).ToList(),
+                        //Does not handle attachments yet.
+                        new List<RequestAttachment>(),
+                        model.BrokerReferenceNumber
+                    );
+                await _dbContext.SaveChangesAsync();
+                return Ok(new ResponseBase());
+            }
+            catch (InvalidApiCallException ex)
+            {
+                return ReturnError(ex.ErrorCode);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Unexpected error occured when client called Request/{nameof(Accept)}");
+                return ReturnError(ErrorCodes.UnspecifiedProblem);
             }
         }
 
@@ -223,6 +296,7 @@ namespace Tolk.Web.Api.Controllers
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
 
                 var request = await _dbContext.Requests.GetActiveRequestForApiWithBrokerAndOrderNumber(model.OrderNumber, User.TryGetBrokerId().Value);
+                request.Requisitions = new List<Requisition>();
                 if (request == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotFound);
@@ -335,9 +409,9 @@ namespace Tolk.Web.Api.Controllers
                     //Possibly the interpreter should be added, if not found?? 
                     return ReturnError(ErrorCodes.InterpreterNotFound);
                 }
-                if (model.Location == null)
+                if (model.Location != null && EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value != (InterpreterLocation)request.InterpreterLocation.Value)
                 {
-                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
+                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location cannot be changed when changing interpreter");
                 }
                 if (model.CompetenceLevel == null)
                 {
@@ -351,7 +425,6 @@ namespace Tolk.Web.Api.Controllers
                         user?.Id ?? apiUserId,
                         (user != null ? (int?)apiUserId : null),
                         interpreter,
-                        EnumHelper.GetEnumByCustomName<InterpreterLocation>(model.Location).Value,
                         EnumHelper.GetEnumByCustomName<CompetenceAndSpecialistLevel>(model.CompetenceLevel).Value,
                         model.RequirementAnswers == null ? new List<OrderRequirementRequestAnswer>() :
                         model.RequirementAnswers.Select(ra => new OrderRequirementRequestAnswer

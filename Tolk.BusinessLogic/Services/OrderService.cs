@@ -25,6 +25,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly VerificationService _verificationService;
         private readonly EmailService _emailService;
         private readonly ITolkBaseOptions _tolkBaseOptions;
+        private readonly CacheService _cacheService;
 
         public OrderService(
             TolkDbContext tolkDbContext,
@@ -36,7 +37,8 @@ namespace Tolk.BusinessLogic.Services
             INotificationService notificationService,
             VerificationService verificationService,
             EmailService emailService,
-            ITolkBaseOptions tolkBaseOptions
+            ITolkBaseOptions tolkBaseOptions,
+            CacheService cacheService
             )
         {
             _tolkDbContext = tolkDbContext;
@@ -49,6 +51,7 @@ namespace Tolk.BusinessLogic.Services
             _verificationService = verificationService;
             _emailService = emailService;
             _tolkBaseOptions = tolkBaseOptions;
+            _cacheService = cacheService;
         }
 
         public async Task HandleAllScheduledTasks()
@@ -143,67 +146,74 @@ namespace Tolk.BusinessLogic.Services
         public async Task CreateRequestGroup(OrderGroup group, RequestGroup expiredRequestGroup = null, DateTimeOffset? latestAnswerBy = null)
         {
             NullCheckHelper.ArgumentCheckNull(group, nameof(CreateRequestGroup), nameof(OrderService));
-            RequestGroup requestGroup = null;
-            DateTimeOffset? expiry = latestAnswerBy ?? CalculateExpiryForNewRequest(group.ClosestStartAt);
-
-            if ((!expiry.HasValue && !group.IsSingleOccasion) || (expiredRequestGroup?.IsTerminalRequest ?? false))
+            var currentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
+            if (!currentFrameworkAgreement.IsActive)
             {
-                //Does not handle no expiry for several occasions order.
-                group.SetStatus(OrderStatus.NoBrokerAcceptedOrder);
                 await TerminateOrderGroup(group);
-                await _tolkDbContext.SaveChangesAsync();
-                return;
-            }
-
-            var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date);
-
-            if (expiredRequestGroup != null)
-            {
-                requestGroup = group.CreateRequestGroup(rankings, expiry, _clock.SwedenNow);
             }
             else
             {
-                requestGroup = group.CreateRequestGroup(rankings, expiry, _clock.SwedenNow, latestAnswerBy.HasValue);
-                //This is the first time a request is created on this order, add the priceinformation too...
-                await _tolkDbContext.SaveChangesAsync();
-                CreatePriceInformation(group);
-            }
+                RequestGroup requestGroup = null;
+                var calculatedExpiry = CalculateExpiryForNewRequest(group.ClosestStartAt, currentFrameworkAgreement.FrameworkAgreementResponseRuleset, latestAnswerBy);
 
-            // Save to get ids for the log message.
-            await _tolkDbContext.SaveChangesAsync();
-
-            if (requestGroup != null)
-            {
-                RequestGroup newRequestGroup = await GetNewRequestGroup(requestGroup.RequestGroupId);
-                if (expiry.HasValue)
+                if ((!calculatedExpiry.ExpiryAt.HasValue && !group.IsSingleOccasion) || (expiredRequestGroup?.IsTerminalRequest ?? false))
                 {
-                    _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",
-                        requestGroup.RequestGroupId, requestGroup.OrderGroupId, requestGroup.Ranking.BrokerId, requestGroup.ExpiresAt);
-                    await _notificationService.RequestGroupCreated(newRequestGroup);
+                    //Does not handle no expiry for several occasions order.
+                    group.SetStatus(OrderStatus.NoBrokerAcceptedOrder);
+                    await TerminateOrderGroup(group);
+                    await _tolkDbContext.SaveChangesAsync();
                     return;
+                }
+                var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date, currentFrameworkAgreement.LastValidDate);
+
+                if (expiredRequestGroup != null)
+                {
+                    requestGroup = group.CreateRequestGroup(rankings, calculatedExpiry, _clock.SwedenNow);
                 }
                 else
                 {
-                    //Note: This is only valid if this is an one occasion, extra interpreter group!
-                    if (group.IsSingleOccasion)
+                    requestGroup = group.CreateRequestGroup(rankings, calculatedExpiry, _clock.SwedenNow, latestAnswerBy.HasValue);
+                    //This is the first time a request is created on this order, add the priceinformation too...
+                    await _tolkDbContext.SaveChangesAsync();
+                    CreatePriceInformation(group, requestGroup.Ranking.FrameworkAgreement.BrokerFeeCalculationType);
+                }
+
+                // Save to get ids for the log message.
+                await _tolkDbContext.SaveChangesAsync();
+
+                if (requestGroup != null)
+                {
+                    RequestGroup newRequestGroup = await GetNewRequestGroup(requestGroup.RequestGroupId);
+                    if (calculatedExpiry.ExpiryAt.HasValue)
                     {
-                        // Request expiry information from customer
-                        group.AwaitDeadlineFromCustomer();
-
-                        await _tolkDbContext.SaveChangesAsync();
-
-                        _logger.LogInformation($"Created request group {requestGroup.RequestGroupId} for order group {requestGroup.OrderGroupId}, but system was unable to calculate expiry.");
-                        _notificationService.RequestGroupCreatedWithoutExpiry(newRequestGroup);
+                        _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",
+                            requestGroup.RequestGroupId, requestGroup.OrderGroupId, requestGroup.Ranking.BrokerId, requestGroup.ExpiresAt);
+                        await _notificationService.RequestGroupCreated(newRequestGroup);
+                        return;
                     }
                     else
                     {
-                        throw new NotImplementedException("Not a valid state!");
+                        //Note: This is only valid if this is an one occasion, extra interpreter group!
+                        if (group.IsSingleOccasion)
+                        {
+                            // Request expiry information from customer
+                            group.AwaitDeadlineFromCustomer();
+
+                            await _tolkDbContext.SaveChangesAsync();
+
+                            _logger.LogInformation($"Created request group {requestGroup.RequestGroupId} for order group {requestGroup.OrderGroupId}, but system was unable to calculate expiry.");
+                            _notificationService.RequestGroupCreatedWithoutExpiry(newRequestGroup);
+                        }
+                        else
+                        {
+                            throw new NotImplementedException("Not a valid state!");
+                        }
                     }
                 }
-            }
-            else
-            {
-                await TerminateOrderGroup(group);
+                else
+                {
+                    await TerminateOrderGroup(group);
+                }
             }
         }
 
@@ -211,25 +221,25 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(CreatePartialRequestGroup), nameof(OrderService));
             NullCheckHelper.ArgumentCheckNull(declinedRequests, nameof(CreatePartialRequestGroup), nameof(OrderService));
-
+            var currentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
             if (requestGroup.IsTerminalRequest)
             {
                 //Possibly a terminatepartial, with its own notification to customer?
                 throw new NotImplementedException("Vet inte riktigt vart vi skall ta vägen om det här händer...");
             }
+            var calculatedExpiry = CalculateExpiryForNewRequest(declinedRequests.ClosestStartAt(), currentFrameworkAgreement.FrameworkAgreementResponseRuleset);
 
-            DateTimeOffset? expiry = CalculateExpiryForNewRequest(declinedRequests.ClosestStartAt());
             OrderGroup group = requestGroup.OrderGroup;
 
-            var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date);
-            RequestGroup partialRequestGroup = group.CreatePartialRequestGroup(declinedRequests, rankings, expiry, _clock.SwedenNow);
+            var rankings = _rankingService.GetActiveRankingsForRegion(group.RegionId, group.ClosestStartAt.Date, currentFrameworkAgreement.LastValidDate);
+            RequestGroup partialRequestGroup = group.CreatePartialRequestGroup(declinedRequests, rankings, calculatedExpiry, _clock.SwedenNow);
             // Save to get ids for the log message.
             await _tolkDbContext.SaveChangesAsync();
 
             if (partialRequestGroup != null)
             {
                 RequestGroup newRequestGroup = await GetNewRequestGroup(partialRequestGroup.RequestGroupId);
-                if (expiry.HasValue)
+                if (calculatedExpiry.ExpiryAt.HasValue)
                 {
                     _logger.LogInformation("Created request group {requestGroupId} for order group {orderGroupId} to {brokerId} with expiry {expiry}",
                         partialRequestGroup.RequestGroupId, partialRequestGroup.OrderGroupId, partialRequestGroup.Ranking.BrokerId, partialRequestGroup.ExpiresAt);
@@ -260,65 +270,74 @@ namespace Tolk.BusinessLogic.Services
         public async Task CreateRequest(Order order, Request expiredRequest = null, DateTimeOffset? latestAnswerBy = null, bool notify = true)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(CreateRequest), nameof(OrderService));
-            Request request = null;
-            DateTimeOffset? expiry = latestAnswerBy ?? CalculateExpiryForNewRequest(order.StartAt);
-            if (order.OrderId > 0)
+            var currentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
+            if (!currentFrameworkAgreement.IsActive)
             {
-                order.Requests = await _tolkDbContext.Requests.GetRequestsForOrder(order.OrderId).ToListAsync();
-            }
-            var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date);//ska vi ha med offset time här?
-
-            if (expiredRequest != null)
-            {
-                // Only create a new request if the previous request was not a flagged as terminal.
-                if (!expiredRequest.IsTerminalRequest)
-                {
-                    request = order.CreateRequest(rankings, expiry, _clock.SwedenNow);
-                }
+                order.Status = OrderStatus.NoBrokerAcceptedOrder;
+                await TerminateOrder(order, notify);
             }
             else
             {
-                request = order.CreateRequest(rankings, expiry, _clock.SwedenNow, latestAnswerBy.HasValue);
-                //This is the first time a request is created on this order, add the priceinformation too...
-                await _tolkDbContext.SaveChangesAsync();
-                CreatePriceInformation(order);
-            }
-
-            // Save to get ids for the log message.
-            await _tolkDbContext.SaveChangesAsync();
-
-            if (request != null)
-            {
-                var newRequest = await _tolkDbContext.Requests.GetRequestForNewRequestById(request.RequestId);
-                if (expiry.HasValue)
+                Request request = null;
+                var calculatedExpiry = CalculateExpiryForNewRequest(order.StartAt, currentFrameworkAgreement.FrameworkAgreementResponseRuleset, latestAnswerBy);
+                if (order.OrderId > 0)
                 {
-                    _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
-                        request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
-                    if (notify)
+                    order.Requests = await _tolkDbContext.Requests.GetRequestsForOrder(order.OrderId).ToListAsync();
+                }
+                var rankings = currentFrameworkAgreement.IsActive ? _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date, currentFrameworkAgreement.LastValidDate) : null;
+                if (expiredRequest != null)
+                {
+                    // Only create a new request if the previous request was not a flagged as terminal.
+                    if (!expiredRequest.IsTerminalRequest)
                     {
-                        await _notificationService.RequestCreated(newRequest);
+                        request = order.CreateRequest(rankings, calculatedExpiry, _clock.SwedenNow);
                     }
                 }
                 else
                 {
-                    // Request expiry information from customer
-                    order.Status = OrderStatus.AwaitingDeadlineFromCustomer;
-                    request.Status = RequestStatus.AwaitingDeadlineFromCustomer;
-                    request.IsTerminalRequest = true;
-
+                    request = order.CreateRequest(rankings, calculatedExpiry, _clock.SwedenNow, latestAnswerBy.HasValue);
+                    //This is the first time a request is created on this order, add the priceinformation too...
                     await _tolkDbContext.SaveChangesAsync();
+                    CreatePriceInformation(order, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType);
+                }
 
-                    _logger.LogInformation($"Created request {request.RequestId} for order {request.OrderId}, but system was unable to calculate expiry.");
-                    if (notify)
+                // Save to get ids for the log message.
+                await _tolkDbContext.SaveChangesAsync();
+
+                if (request != null)
+                {
+                    var newRequest = await _tolkDbContext.Requests.GetRequestForNewRequestById(request.RequestId);
+                    newRequest.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToListAsync();
+                    if (calculatedExpiry.ExpiryAt.HasValue)
                     {
-                        _notificationService.RequestCreatedWithoutExpiry(newRequest);
+                        _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
+                            request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
+                        if (notify)
+                        {
+                            await _notificationService.RequestCreated(newRequest);
+                        }
+                    }
+                    else
+                    {
+                        // Request expiry information from customer
+                        order.Status = OrderStatus.AwaitingDeadlineFromCustomer;
+                        request.Status = RequestStatus.AwaitingDeadlineFromCustomer;
+                        request.IsTerminalRequest = true;
+
+                        await _tolkDbContext.SaveChangesAsync();
+
+                        _logger.LogInformation($"Created request {request.RequestId} for order {request.OrderId}, but system was unable to calculate expiry.");
+                        if (notify)
+                        {
+                            _notificationService.RequestCreatedWithoutExpiry(newRequest);
+                        }
                     }
                 }
-            }
-            else
-            {
-                order.Status = OrderStatus.NoBrokerAcceptedOrder;
-                await TerminateOrder(order, notify);
+                else
+                {
+                    order.Status = OrderStatus.NoBrokerAcceptedOrder;
+                    await TerminateOrder(order, notify);
+                }
             }
         }
 
@@ -331,7 +350,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 throw new InvalidOperationException($"Order {order.OrderId} has no active requests that can be cancelled");
             }
-            var replacingRequest = new Request(request, order.StartAt, _clock.SwedenNow);
+            var replacingRequest = new Request(request, new RequestExpiryResponse { ExpiryAt = order.StartAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedOrder }, _clock.SwedenNow);
             await _tolkDbContext.AddAsync(replacementOrder);
             replacingRequest.Order = replacementOrder;
             await _tolkDbContext.AddAsync(replacingRequest);
@@ -341,7 +360,7 @@ namespace Tolk.BusinessLogic.Services
             replacementOrder.ImpersonatingCreator = impersonatorId;
 
             //Generate new price rows from current times, might be subject to change!!!
-            CreatePriceInformation(replacementOrder);
+            CreatePriceInformation(replacementOrder, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType);
             await _tolkDbContext.SaveChangesAsync();
 
             replacementOrder.Requirements = await _tolkDbContext.OrderRequirementRequestAnswer.GetRequirementAnswersForRequest(request.RequestId).Select(a => new OrderRequirement
@@ -481,13 +500,31 @@ namespace Tolk.BusinessLogic.Services
             request.PriceRows = await _tolkDbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToListAsync();
             request.Requisitions = new List<Requisition>();
             var now = _clock.SwedenNow;
+
             //check if late cancelling, if so we check for mealbreaks
             bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2;
+            List<RequisitionPriceRow> priceRows = null;
+            List<MealBreak> mealbreaks = null;
+            if (request.Status == RequestStatus.Approved && !isReplaced)
+            {
+                (priceRows, mealbreaks) = GetCompensationPriceRowsForCancelledRequest(request, createFullCompensationRequisition);
+            }
+            request.Cancel(now, userId, impersonatorId, message, createFullCompensationRequisition, isReplaced, mealbreaks: mealbreaks, priceRows: priceRows);
 
+            if (!isReplaced)
+            {
+                //Only notify if the order was not replaced
+                _notificationService.OrderCancelledByCustomer(request, createFullCompensationRequisition);
+            }
+            _logger.LogInformation("Order {orderId} cancelled by customer {userId}.", order.OrderId, userId);
+        }
+
+        public (List<RequisitionPriceRow>, List<MealBreak>) GetCompensationPriceRowsForCancelledRequest(Request request, bool createFullCompensationRequisition)
+        {
             var mealbreaks = (createFullCompensationRequisition && (request.Order.MealBreakIncluded ?? false)) ? new List<MealBreak> { new MealBreak { StartAt = request.Order.StartAt.AddHours(2).ToDateTimeOffsetSweden(), EndAt = request.Order.StartAt.AddHours(3).ToDateTimeOffsetSweden() } } : null;
 
-            //if mealbreaks and full compensation we must get correct prices with mealbreaks reducted (else they will be added in Request.Cancel)
-            var priceInformation = (request.Status == RequestStatus.Approved && createFullCompensationRequisition && mealbreaks != null) ? _priceCalculationService.GetPricesRequisition(
+            //if mealbreaks and full compensation we must get correct prices with mealbreaks deducted otherwize make a copy from the request's pricerows.
+            var priceRows = (createFullCompensationRequisition && mealbreaks != null) ? _priceCalculationService.GetPricesRequisition(
                 request.Order.StartAt,
                 request.Order.EndAt,
                 request.Order.StartAt,
@@ -503,15 +540,9 @@ namespace Tolk.BusinessLogic.Services
                 null,
                 request.Order.CreatedAt,
                 mealbreaks
-            ) : null;
-            request.Cancel(now, userId, impersonatorId, message, createFullCompensationRequisition, isReplaced, mealbreaks: mealbreaks, pi: priceInformation);
-
-            if (!isReplaced)
-            {
-                //Only notify if the order was not replaced
-                _notificationService.OrderCancelledByCustomer(request, createFullCompensationRequisition);
-            }
-            _logger.LogInformation("Order {orderId} cancelled by customer {userId}.", order.OrderId, userId);
+            ).PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequisitionPriceRow>(row)).ToList() :
+            request.GenerateRequisitionPriceRows(createFullCompensationRequisition);
+            return (priceRows, mealbreaks);
         }
 
         public async Task CancelOrderGroup(OrderGroup orderGroup, int userId, int? impersonatorId, string message)
@@ -566,48 +597,83 @@ namespace Tolk.BusinessLogic.Services
             await _notificationService.RequestGroupCreated(requestGroup);
         }
 
-        public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl)
+        public DisplayPriceInformation GetOrderPriceinformationForConfirmation(Order order, PriceListType pl, BrokerFeeCalculationType brokerFeeCalculationType)
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(GetOrderPriceinformationForConfirmation), nameof(OrderService));
             CompetenceLevel cl = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel)));
-            int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date)
+            int rankingId = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date, _cacheService.CurrentOrLatestFrameworkAgreement.LastValidDate)
                 .Where(r => !r.Quarantines.Any(q => q.CustomerOrganisationId == order.CustomerOrganisationId && q.ActiveFrom <= _clock.SwedenNow && q.ActiveTo >= _clock.SwedenNow))
                 .OrderBy(r => r.Rank).FirstOrDefault().RankingId;
-            return PriceCalculationService.GetPriceInformationToDisplay(_priceCalculationService.GetPrices(order.StartAt, order.EndAt, cl, pl, rankingId, order.CreatedAt).PriceRows);
+            return PriceCalculationService.GetPriceInformationToDisplay(
+                _priceCalculationService.GetPrices(
+                    order.StartAt,
+                    order.EndAt,
+                    cl,
+                    pl,
+                    rankingId,
+                    order.CreatedAt,
+                    _priceCalculationService.GetCalculatedBrokerFee(order, _clock.SwedenNow, brokerFeeCalculationType, cl, rankingId, order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation))
+                .PriceRows);
         }
 
         /// <summary>
-        /// Takes an orders start time and calculates an expiry time for answering an order request.
+        /// Takes an order's start time and calculates an expiry time for answering an order request.
         /// 
         /// When the appointment starts in too short of a time-frame, the system will not calculate an expiry time and return null. 
         /// When that happens: the user should manually set an expiry time.
         /// </summary>
         /// <param name="startDateTime">Time and date when the appointment starts</param>
         /// <returns>Null if startDateTime is too close in time to automatically calculate an expiry time</returns>
-        public DateTimeOffset? CalculateExpiryForNewRequest(DateTimeOffset startDateTime)
+        public RequestExpiryResponse CalculateExpiryForNewRequest(DateTimeOffset startDateTime, FrameworkAgreementResponseRuleset ruleset, DateTimeOffset? explicitLastAnswerTime = null)
         {
             // Grab current time to not risk it flipping over during execution of the method.
             var swedenNow = _clock.SwedenNow;
-
+            var response = new RequestExpiryResponse
+            {
+                ExpiryAt = explicitLastAnswerTime,
+                LastAcceptedAt = null,
+                RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer
+            };
+            //1. if sweden now is weekend or holiday, move up to first workday, and set 00:00 as time
+            if (!_dateCalculationService.IsWorkingDay(swedenNow.Date))
+            {
+                swedenNow = _dateCalculationService.GetFirstWorkDay(swedenNow.Date).Date.ToDateTimeOffsetSweden();
+            }
             if (swedenNow.Date < startDateTime.Date)
             {
                 var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(swedenNow.Date, startDateTime.Date);
-
-                //if swedenNow is not a workday (calculate that the request "arrives" on next workday)
-                var requestArriveDate = _dateCalculationService.GetFirstWorkDay(swedenNow.Date);
-
-                if (daysInAdvance >= 2)
+                if (ruleset == FrameworkAgreementResponseRuleset.VersionTwo && (daysInAdvance > 20 || (daysInAdvance == 20 && swedenNow.TimeOfDay.Ticks <= startDateTime.TimeOfDay.Ticks)))
                 {
-                    return _dateCalculationService.GetFirstWorkDay(requestArriveDate.AddDays(1)).AddHours(15).ToDateTimeOffsetSweden();
+                    response.RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore;
+                    response.LastAcceptedAt = _dateCalculationService.GetDateForANumberOfWorkdaysinFuture(swedenNow.DateTime, 4).ToDateTimeOffsetSweden().ClearSeconds();
+                    response.ExpiryAt = _dateCalculationService.GetDateForANumberOfWorkdaysAgo(startDateTime.DateTime, 7).ToDateTimeOffsetSweden().ClearSeconds();
+
                 }
-                if (daysInAdvance == 1 && swedenNow.Hour < 14)
+                else if (ruleset == FrameworkAgreementResponseRuleset.VersionTwo && daysInAdvance <= 20 && (daysInAdvance > 10 || (daysInAdvance == 10 && swedenNow.TimeOfDay.Ticks <= startDateTime.TimeOfDay.Ticks)))
                 {
-                    return requestArriveDate.Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
+                    response.RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedMoreThanTenDaysBefore;
+                    response.LastAcceptedAt = _dateCalculationService.GetDateForANumberOfWorkdaysinFuture(swedenNow.DateTime, 2).ToDateTimeOffsetSweden().ClearSeconds();
+                    response.ExpiryAt = _dateCalculationService.GetDateForANumberOfWorkdaysAgo(startDateTime.DateTime, 5).ToDateTimeOffsetSweden().ClearSeconds();
+                }
+                else if (daysInAdvance >= 2 &&
+                        (ruleset == FrameworkAgreementResponseRuleset.VersionOne ||
+                        (ruleset == FrameworkAgreementResponseRuleset.VersionTwo &&
+                            (daysInAdvance < 10 || (daysInAdvance == 10 &&
+                                swedenNow.TimeOfDay.Ticks > startDateTime.TimeOfDay.Ticks))
+                    )))
+                {
+                    response.RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay;
+                    response.ExpiryAt = _dateCalculationService.GetFirstWorkDay(swedenNow.Date.AddDays(1)).AddHours(15).ToDateTimeOffsetSweden();
+                }
+                else if (daysInAdvance == 1 && swedenNow.Hour < 14)
+                {
+                    response.RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedOneDayBefore;
+                    response.ExpiryAt = swedenNow.Date.Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
                 }
             }
 
             // Starts too soon to automatically calculate response expiry time. Customer must define a dead-line manually.
-            return null;
+            return response;
         }
 
         // This is an auxilary method for calculating initial estimate
@@ -816,28 +882,31 @@ namespace Tolk.BusinessLogic.Services
             if (notify)
             {
                 var terminatedOrder = await _tolkDbContext.Orders.GetOrderWithContactsById(order.OrderId);
-                _notificationService.OrderTerminated(terminatedOrder);
+                await _notificationService.OrderTerminated(terminatedOrder);
                 _logger.LogInformation("Could not create another request for order {orderId}, no more available brokers or too close in time, or it should be terminated due to rules",
                     order.OrderId);
             }
         }
 
-        private void CreatePriceInformation(OrderGroup orderGroup)
+        private void CreatePriceInformation(OrderGroup orderGroup, BrokerFeeCalculationType brokerFeeCalculationType)
         {
-            orderGroup.Orders.ForEach(o => CreatePriceInformation(o));
+            orderGroup.Orders.ForEach(o => CreatePriceInformation(o, brokerFeeCalculationType));
         }
 
-        private void CreatePriceInformation(Order order)
+        private void CreatePriceInformation(Order order, BrokerFeeCalculationType brokerFeeCalculationType)
         {
             _logger.LogInformation("Create price rows for Order: {orderId}, Customer: {Name}",
                 order?.OrderId, order?.CustomerOrganisation?.Name);
+            var rankingId = order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId;
+            var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel)));
             var priceInformation = _priceCalculationService.GetPrices(
                 order.StartAt,
                 order.EndAt,
-                EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel))),
+                competenceLevel,
                 order.CustomerOrganisation.PriceListType,
                 order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId,
-                order.CreatedAt);
+                order.CreatedAt,
+                _priceCalculationService.GetCalculatedBrokerFee(order, _clock.SwedenNow, brokerFeeCalculationType, competenceLevel, rankingId, order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation));
             order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));
         }
 

@@ -1,0 +1,147 @@
+﻿@model RequestModel
+@inject SelectListService SelectListService
+@inject HelpLinkService HelpLinkService
+@inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> TolkOptions
+@using Microsoft.Extensions.Options;
+@using Tolk.Web.Services
+@using Tolk.BusinessLogic.Utilities
+@using Tolk.BusinessLogic.Enums
+@{
+    ViewData["Title"] = "Svara på förfrågan om ersättningsuppdrag";
+    var declineHeader = "Tacka nej till ersättningsuppdrag";
+    HelpLinkService.PageName = "formedling-besvara-bokningsforfragan";
+    var headerHelpLink = HelpLinkService.PageName;
+}
+<section aria-label="@ViewData["Title"]">
+    <div class="row">
+        <div class="col-sm-12">
+            @await Html.PartialAsync("_OrderHeader", Model.OrderViewModel)
+            @await Html.PartialAsync("_OrderSummary", Model.OrderViewModel, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", ViewData["title"] }, { "helplink", headerHelpLink } })
+            <div class="row">
+                <div class="col-sm-4">
+                    @if (Model.OrderCalculatedPriceInformationModel != null)
+                    {
+                        await Html.RenderPartialAsync("_PriceInformationDisplay", Model.OrderCalculatedPriceInformationModel);
+                    }
+                </div>
+                <div class="col-sm-4">
+                    &nbsp;
+                </div>
+                <div class="col-sm-4">
+                    <div class="red-border-left">
+                        <display-entry asp-for="ExpiresAt" />
+                    </div>
+                </div>
+            </div>
+            <form method="post">
+                <input asp-for="RequestId" type="hidden" />
+                <input asp-for="OrderId" type="hidden" />
+
+                @await Html.PartialAsync("_RequestSummary", Model.ProcessReplacementRequestViewModel, new ViewDataDictionary(ViewData) { { "isCollapsible", false }, { "header", "Svar på ersatt bokningsförfrågan" }, { "isBroker", true } })
+                <div class="row">
+                    <div class="col-sm-4">
+                        @if (Model.InterpreterLocation.HasValue)
+                        {
+                            <input asp-for="InterpreterLocation" type="hidden" />
+                        }
+                        else
+                        {
+                            <form-entry asp-for="InterpreterLocation" type="select" asp-items="EnumHelper.GetAllDescriptions(Model.OrderViewModel.RankedInterpreterLocations).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
+                        }
+                    </div>
+                </div>
+                @if (Model.OrderViewModel.AllowSettingTravelCosts)
+                {
+                    <div class="collapse" id="set-expected-travel-costs">
+                        <div class="row">
+                            <div class="col-sm-4 important-info">Kunden accepterar överskridande av gränsvärde för resor för detta uppdrag, dvs över @Model.TravelConditionHours tim restid eller @Model.TravelConditionKilometers km reslängd. Ange bedömd resekostnad. Ange 0 om uppdraget inte innebär resor.</div>
+                            <div class="col-sm-4">
+                                <form-entry asp-for="ExpectedTravelCosts" help-link="@HelpLinkService.GenerateUrl("forvantad-resekostnad")" />
+                            </div>
+                            <div class="col-sm-4">
+                                <form-entry asp-for="ExpectedTravelCostInfo" />
+                            </div>
+                        </div>
+                        @if (TolkOptions.Value.EnableSetLatestAnswerTimeForCustomer)
+                        {
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <form-entry asp-for="SetLatestAnswerTimeForCustomer" layout-option="row" asp-items="SelectListService.BoolList" />
+                                    <div id="SetLatestAnswerTimeForCustomerValidator" class="d-none text-danger body">Ange om du vill sätta sista svarstid eller inte</div>
+                                </div>
+                                <div class="col-sm-8 d-none" id="latestAnswerTimeForCustomer">
+                                    <input asp-for="OrderViewModel.StartAt" type="hidden" />
+                                    <form-entry asp-for="LatestAnswerTimeForCustomer" />
+                                    <div id="LatestAnswerTimeForCustomerValidator" class="d-none text-danger body"></div>
+                                    <br /><br />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                <div class="row">
+                    <div class="col-sm-4">
+                        <form-entry asp-for="BrokerReferenceNumber" />
+                    </div>
+                </div>
+
+                @await Html.PartialAsync("_CustomerOrganizationInfo", Model.OrderViewModel)
+                <div class="important-info">Observera att detta uppdrag ersätter tidigare uppdrag @Model.OrderViewModel.ReplacingOrderNumber som avbokats med mindre än 48 timmar kvar. <br /></div>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <a class="btn btn-large btn-warning do-not-check-dirty left-lg-button" id="cancel-go-back">Avbryt <span class="btn-remove-times">&times;</span></a>
+                    </div>
+                    <div class="col-lg-4 center-lg-button">
+                        <button type="button" data-toggle="modal" data-target="#denyMessageDialog" class="btn btn-large btn-danger">Tacka nej till bokning</button>
+                    </div>
+                    <div class="col-lg-4">
+                        <button id="Answer" class="btn btn-large btn-success right-lg-button">Acceptera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                    </div>
+                </div>
+            </form>
+            <span id="basefile" class="d-none">
+                <input asp-for="Files[0].Id" type="hidden" />
+            </span>
+        </div>
+        @await Html.PartialAsync("_UploadFileDialog")
+        <div id="denyMessageDialog" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h2 class="modal-title">@declineHeader</h2>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" asp-action="Decline" class="do-not-check-dirty">
+                            <input id="DeniedRequestId" name="DeniedRequestId" value="@Model.RequestId" type="hidden" />
+                            <form-entry asp-for="DenyMessage" />
+                            <div class="text-danger">
+                                Ersättningsuppdrag kan bara avböjas om det finns sakliga skäl
+                                <br /><br />
+                            </div>
+                            <button type="submit" class="btn btn-default right-md-button do-not-check-dirty">Tacka nej</button>
+                            <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                            <br /><br />
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Request/Process.js" asp-append-version="true"></script>
+        <script src="~/js/RequestView.js" asp-append-version="true"></script>
+        <script src="~/js/Files.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Request/Process.min.js" asp-append-version="true"></script>
+        <script src="~/js/RequestView.min.js" asp-append-version="true"></script>
+        <script src="~/js/Files.min.js" asp-append-version="true"></script>
+    </environment>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

@@ -18,11 +18,11 @@ namespace Tolk.Api.Payloads.ApiPayloads
         [Required]
         public InterpreterModel Interpreter { get; set; }
 
-        [Description("Det inställelsesätt som tolken kommer inställa sig med. Måste vara ett av värdena i [/List/LocationTypes]")]
+        [Description("Det inställelsesätt som tolken kommer inställa sig med. Måste vara ett av värdena i [/List/LocationTypes] och även finnas med i förfrågan")]
         [Required]
         public string Location { get; set; }
 
-        [Description("Den kompetensnivå som tolken har inom det språk som skall tolkas. Måste vara ett av värdena i [/List/CompetenceLevels]")]
+        [Description("Den kompetensnivå som tolken har inom det språk som skall tolkas. Måste vara ett av värdena i [/List/CompetenceLevels] och även finnas med i förfrågan")]
         [Required]
         public string CompetenceLevel { get; set; }
 

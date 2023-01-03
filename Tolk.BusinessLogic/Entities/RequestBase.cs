@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Entities
 {
@@ -95,44 +96,50 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(100)]
         public string BrokerReferenceNumber { get; set; }
 
+        public RequestAnswerRuleType RequestAnswerRuleType { get; set; }
+
+        /// <summary>
+        /// The time (inclusive) when the request needs to be accepted. Only set if <see cref="RequestAnswerRuleType"/> is 1 or 2
+        /// </summary>
+        public DateTimeOffset? LastAcceptAt { get; set; }
+
+        public DateTimeOffset? AcceptedAt { get; set; }
+
+        public int? AcceptedBy { get; set; }
+
+        [ForeignKey(nameof(AcceptedBy))]
+        public AspNetUser AcceptingUser { get; set; }
+
+        public int? ImpersonatingAcceptedBy { get; set; }
+
+        [ForeignKey(nameof(ImpersonatingAcceptedBy))]
+        public AspNetUser ImpersonatingAcceptingUser { get; set; }
+
         #region Status checks
 
-        public bool IsAcceptedOrApproved
-        {
-            get => IsAccepted || Status == RequestStatus.Approved;
-        }
+        public bool IsAcceptedOrApproved 
+            => IsAwaitingApproval || Status == RequestStatus.Approved || Status == RequestStatus.AcceptedAwaitingInterpreter;        
 
-        public bool IsAccepted
-        {
-            get => Status == RequestStatus.Accepted || Status == RequestStatus.AcceptedNewInterpreterAppointed;
-        }
+        public bool IsAwaitingApproval
+            => Status == RequestStatus.AnsweredAwaitingApproval || Status == RequestStatus.AcceptedNewInterpreterAppointed;
 
-        public bool StatusNotToBeDisplayedForBroker
-        {
-            get => Status == RequestStatus.NoDeadlineFromCustomer || Status == RequestStatus.AwaitingDeadlineFromCustomer || Status == RequestStatus.InterpreterReplaced;
-        }
+        public bool CanDecline => IsToBeProcessedByBroker;
 
-        public bool CanDecline
-        {
-            get => IsToBeProcessedByBroker;
-        }
+        public bool CanAccept => LastAcceptAt.HasValue && 
+            EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(RequestAnswerRuleType) == RequiredAnswerLevel.Acceptance && 
+            (Status == RequestStatus.Created || Status == RequestStatus.Received);
 
-        public bool CanApprove
-        {
-            get => IsAccepted;
-        }
+        public bool CanApprove => IsAwaitingApproval;
 
         public bool CanPrint => Status == RequestStatus.Approved || Status == RequestStatus.Delivered;
 
-        public bool CanDeny
-        {
-            get => IsAccepted;
-        }
+        public bool CanDeny  => IsAwaitingApproval;
 
-        public bool IsToBeProcessedByBroker
-        {
-            get => Status == RequestStatus.Created || Status == RequestStatus.Received;
-        }
+        public bool IsToBeProcessedByBroker 
+            => Status == RequestStatus.Created || Status == RequestStatus.Received || Status == RequestStatus.AcceptedAwaitingInterpreter;
+        #endregion
+
+        #region status-changing methods
 
         internal virtual void Received(DateTimeOffset receiveTime, int userId, int? impersonatorId = null)
         {

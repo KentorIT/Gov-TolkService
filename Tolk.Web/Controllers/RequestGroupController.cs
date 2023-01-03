@@ -68,6 +68,11 @@ namespace Tolk.Web.Controllers
             OrderGroup orderGroup = await _dbContext.OrderGroups.GetFullOrderGroupById(requestGroup.OrderGroupId);
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.View)).Succeeded)
             {
+                if (EnumHelper.Parent<RequestStatus, NegotiationState>(requestGroup.Status) == NegotiationState.ReplacedByOtherEntity)
+                {
+                    id = _dbContext.RequestGroups.OrderBy(rg => rg.RequestGroupId).Last(rg => rg.OrderGroupId == requestGroup.OrderGroupId && rg.Ranking.BrokerId == User.GetBrokerId()).RequestGroupId;
+                    return RedirectToAction(nameof(View), new { id });
+                }
                 if (requestGroup.IsToBeProcessedByBroker)
                 {
                     return RedirectToAction(nameof(Process), new { id = requestGroup.RequestGroupId });
@@ -142,7 +147,7 @@ namespace Tolk.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Process(RequestGroupProcessModel model)
+        public async Task<IActionResult> Answer(RequestGroupAnswerModel model)
         {
             var requestGroup = await _dbContext.RequestGroups.GetRequestGroupToProcessById(model.RequestGroupId);
             if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
@@ -173,7 +178,7 @@ namespace Tolk.Web.Controllers
                 {
                     try
                     {
-                        await _requestService.AcceptGroup(
+                        await _requestService.AnswerGroup(
                             requestGroup,
                             _clock.SwedenNow,
                             User.GetUserId(),
@@ -187,6 +192,48 @@ namespace Tolk.Web.Controllers
                         );
                         await _dbContext.SaveChangesAsync();
                         return RedirectToAction("Index", "Home", new { message = "Svar har skickats på sammanhållen bokning" });
+                    }
+                    catch (InvalidOperationException e)
+                    {
+                        _logger.LogError("Process failed for requestgroup, RequestGroupId: {requestGroup.RequestGroupId}, message {e.Message}", requestGroup.RequestGroupId, e.Message);
+                        return RedirectToAction("Index", "Home", new { errormessage = e.Message });
+                    }
+                }
+
+                //Should return to Process if error is of a kind that can be handled in the ui.
+                return View(nameof(Process), model);
+            }
+            return Forbid();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Accept(RequestGroupAcceptModel model)
+        {
+            var requestGroup = await _dbContext.RequestGroups.GetRequestGroupToProcessById(model.RequestGroupId);
+            if ((await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.Accept)).Succeeded)
+            {
+                if (!requestGroup.CanAccept)
+                {
+                    return RedirectToAction("Index", "Home", new { ErrorMessage = "Förfrågan är redan behandlad" });
+                }
+                if (ModelState.IsValid)
+                {
+                    try
+                    {
+                        await _requestService.AcceptGroup(
+                            requestGroup,
+                            _clock.SwedenNow,
+                            User.GetUserId(),
+                            User.TryGetImpersonatorId(),
+                            model.InterpreterLocationOnAccept,
+                            model.InterpreterAcceptModel.AcceptDto,
+                            model.ExtraInterpreterAcceptModel?.AcceptDto,
+                            model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList(),
+                            model.BrokerReferenceNumber
+                        );
+                        await _dbContext.SaveChangesAsync();
+                        return RedirectToAction("Index", "Home", new { message = "Bekräftelse har skickats på sammanhållen bokning" });
                     }
                     catch (InvalidOperationException e)
                     {
@@ -343,13 +390,14 @@ namespace Tolk.Web.Controllers
             await _requestService.AddRequestsWithConfirmationListsToRequestGroup(requestGroup);
             return requestGroup;
         }
+
         private PriceInformationModel GetPriceinformationOrderToDisplay(Request request, List<CompetenceAndSpecialistLevel> requestedCompetenceLevels)
         {
             return new PriceInformationModel
             {
                 MealBreakIsNotDetucted = request.Order.MealBreakIncluded ?? false,
                 PriceInformationToDisplay = PriceCalculationService.GetPriceInformationToDisplay(
-                    _priceCalculationService.GetPrices(request, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null).PriceRows),
+                    _priceCalculationService.GetPrices(request, _clock.SwedenNow, OrderService.SelectCompetenceLevelForPriceEstimation(requestedCompetenceLevels), null, null).PriceRows),
                 Header = "Beräknat pris enligt bokningsförfrågan",
                 UseDisplayHideInfo = true
             };

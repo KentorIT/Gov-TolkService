@@ -153,7 +153,7 @@
                     if (Model.ActiveRequestGroup.HasExtraInterpreter)
                     {
                         <div class="col-sm-12 to-accept-info">
-                            Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas är för första tolk <span class="bold">@Model.ExpectedTravelCosts SEK per tillfälle </span>och för extra tolk <span class="bold">@Model.ExtraInterpreterExpectedTravelCosts SEK per tillfälle</span>. Observera att detta gäller samtliga tillfällen och att det inte är möjligt att godkänna delar av bokningen.
+                            Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över @Model.TravelConditionHours tim restid eller @Model.TravelConditionKilometers km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas är för första tolk <span class="bold">@Model.ExpectedTravelCosts SEK per tillfälle </span>och för extra tolk <span class="bold">@Model.ExtraInterpreterExpectedTravelCosts SEK per tillfälle</span>. Observera att detta gäller samtliga tillfällen och att det inte är möjligt att godkänna delar av bokningen.
                         </div>
                         <div class="col-sm-12">
                             <div class="col-sm-4">
@@ -175,7 +175,7 @@
                     else
                     {
                         <div class="col-sm-12 to-accept-info">
-                            Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas är <span class="bold">@Model.ExpectedTravelCosts SEK per tillfälle</span>. Observera att detta gäller samtliga tillfällen och att det inte är möjligt att godkänna delar av bokningen.
+                            Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över @Model.TravelConditionHours tim restid eller @Model.TravelConditionKilometers km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas är <span class="bold">@Model.ExpectedTravelCosts SEK per tillfälle</span>. Observera att detta gäller samtliga tillfällen och att det inte är möjligt att godkänna delar av bokningen.
                         </div>
                         <div class="col-sm-12">
                             <div class="col-sm-8">

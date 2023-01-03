@@ -11,31 +11,11 @@
     </div>
     @if (!string.IsNullOrEmpty(@Model.ErrorMessage))
     {
-        <div class="row">
-            <div class="col-xs-12">
-                <br />
-                <div class="warning-info-home">
-                    <span class="glyphicon glyphicon-exclamation-sign"></span>
-                    <span role="alert" class="info-message">
-                        @Model.ErrorMessage
-                    </span>
-                </div>
-            </div>
-        </div>
+        @await Html.PartialAsync("_ErrorMessage",@Model.ErrorMessage)
     }
     @if (!string.IsNullOrEmpty(@Model.Message))
     {
-        <div class="row">
-            <div class="col-xs-12">
-                <br />
-                <div class="system-action-info">
-                    <span class="glyphicon glyphicon-ok"></span>
-                    <span role="status" class="info-message">
-                        @Model.Message
-                    </span>
-                </div>
-            </div>
-        </div>
+        @await Html.PartialAsync("_InfoMessage",@Model.Message)       
     }
     <div class="row">
         <div class="col-md-12">

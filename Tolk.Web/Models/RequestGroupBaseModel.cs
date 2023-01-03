@@ -46,8 +46,11 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string CancelMessage { get; set; }
 
-        [Display(Name = "Svara senast")]
+        [Display(Name = "Tillsätt tolk senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
+
+        [Display(Name = "Bekräfta senast")]
+        public DateTimeOffset? LastAcceptAt { get; set; }
 
         public string ColorClassName => CssClassHelper.GetColorClassNameForRequestStatus(Status);
 
@@ -106,6 +109,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Sista tid att besvara tillsättning", Description = "Här har förmedlingen möjlighet att ange en tid för när myndigheten senast ska besvara tillsättningen. Om myndigheten inte svarar inom angiven tid avslutas förfrågan.")]
         [ClientRequired]
         public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
+
+        public string TravelConditionHours { get; set; }
+        public string TravelConditionKilometers { get; set; }
 
     }
 }

@@ -2,15 +2,14 @@ name: .NET
 
 on:
   push:
-    branches: [ "Version-2.0" ]
-  pull_request:
-    branches: [ "Version-2.0" ]
-
+    branches: 
+      - Version-2.0
+      - deploy
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    outputs:
+      full_version_number: ${{ steps.create_version_number.outputs.full_version_number }}
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -18,28 +17,90 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore
-      
+      run: dotnet restore    
     - name: Get commit hash
-        id: vars
-        shell: bash
-        run: |
-            echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-    - name: Read package.json
-    id: package
-    uses: juliangruber/read-file-action@v1
-    with:
-      path: ./VersionNumber.txt
-    - name: Get version number          
-    run: echo "::set-output name=version_number::${{ steps.package.outputs.content }}"
-
+      id: vars
+      shell: bash
+      run: |
+        echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+    - name: Read version number from file
+      id: package
+      uses: juliangruber/read-file-action@v1
+      with:
+        path: ./VersionNumber.txt
     - name: Create version number
-    run: |
-      echo "Sha: ${{ steps.vars.outputs.sha_short }}"
-      echo "Version number: ${{ steps.vars.outputs.version_number }}"
-      echo "Full version number: ${{ steps.vars.outputs.version_number }}.${{github.run_number}}-${{ steps.vars.outputs.sha_short }}"
-    - name: Build
-    
-      run: dotnet build --no-restore
+      id: create_version_number
+      run: |
+        echo "full_version_number=${{ steps.package.outputs.content }}-${{github.run_number}}-${{ steps.vars.outputs.sha_short }}" >> $GITHUB_OUTPUT
+        echo "version_number=${{ steps.package.outputs.content }}-${{github.run_number}}" >> $GITHUB_ENV
+        echo "full_version_number=${{ steps.package.outputs.content }}-${{github.run_number}}-${{ steps.vars.outputs.sha_short }}" >> $GITHUB_ENV
+    - name: Read Version number
+      run: |
+        echo "Full version number saved: ${{ env.full_version_number }}"
+        echo "Version number saved: ${{ env.version_number }}"
+    - name: Build    
+      run: dotnet build -c Release --no-restore --no-incremental -p:VersionPrefix=${{ env.version_number }} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test -c Release --no-build --verbosity normal
+    - name: Create artifacts folder
+      run: |
+        mkdir ${{ github.workspace }}/artifacts
+        mkdir ${{ github.workspace }}/artifacts/Tolk.Web
+        mkdir ${{ github.workspace }}/artifacts/Tolk.Web.Api
+        mkdir ${{ github.workspace }}/artifacts/Tolk.Migration
+    - name: Create web artifact
+      run: dotnet publish ./Tolk.Web/Tolk.Web.csproj -c Release --no-build -o "${{ github.workspace }}/artifacts/Tolk.Web" -p:VersionPrefix=${{ env.version_number }} --version-suffix=${{ steps.vars.outputs.sha_short }}
+    - name: Create api artifact
+      run: dotnet publish ./Tolk.Web.Api/Tolk.Web.Api.csproj -c Release --no-build -o "${{ github.workspace }}/artifacts/Tolk.Web.Api" -p:VersionPrefix=${{ env.version_number }} --version-suffix=${{ steps.vars.outputs.sha_short }}
+    - name: Create migration artifact
+      run: |
+        dotnet tool install --global dotnet-ef
+        dotnet ef migrations script -o "${{ github.workspace }}/artifacts/Tolk.Migration/TolkMigrate.sql" --startup-project "./Tolk.Web/Tolk.Web.csproj" -p "./Tolk.BusinessLogic/Tolk.BusinessLogic.csproj" -i
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      if: github.ref == 'refs/heads/deploy'
+      with:
+        name: package-artifacts
+        path: ${{ github.workspace }}/artifacts/
+        retention-days: 1
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/deploy'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Read release number
+      run: |
+        echo "Full version number saved: ${{ needs.build.outputs.full_version_number }}"
+    - name: Get Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: package-artifacts
+        path: ${{ github.workspace }}/artifacts
+    - name: Create artifacts folder
+      run: |
+        mkdir ${{ github.workspace }}/artifacts/packages
+    - name: Install Octopus CLI
+      uses: OctopusDeploy/install-octopus-cli-action@v1
+      with:
+        version: latest
+    - name: Package Tolk.Web
+      run: |
+        octo pack --id="Tolk.Web" --format="Zip" --version="${{ needs.build.outputs.full_version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Web" --outFolder="${{ github.workspace }}/artifacts/packages/"
+    - name: Package Tolk.Web.Api
+      run: |
+        octo pack --id="Tolk.Web.Api" --format="Zip" --version="${{ needs.build.outputs.full_version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Web.Api" --outFolder="${{ github.workspace }}/artifacts/packages/"
+    - name: Package Tolk.Web.Api
+      run: |
+        octo pack --id="Tolk.Migration" --format="Zip" --version="${{ needs.build.outputs.full_version_number }}" --basePath="${{ github.workspace }}/artifacts/Tolk.Migration" --outFolder="${{ github.workspace }}/artifacts/packages/"
+    - name: Push a package to Octopus Deploy
+      uses: OctopusDeploy/push-package-action@v2
+      env:
+        OCTOPUS_API_KEY: ${{ secrets.OCTOPUSSERVERAPIKEY }}
+        OCTOPUS_HOST: ${{ secrets.OCTOPUSSERVERURL }}
+        OCTOPUS_SPACE: ${{ secrets.OCTOPUSSERVER_SPACE }}
+      with:
+        packages: |
+          ${{ github.workspace }}/artifacts/packages/Tolk.Web.${{ needs.build.outputs.full_version_number }}.zip
+          ${{ github.workspace }}/artifacts/packages/Tolk.Web.Api.${{ needs.build.outputs.full_version_number }}.zip
+          ${{ github.workspace }}/artifacts/packages/Tolk.Migration.${{ needs.build.outputs.full_version_number }}.zip

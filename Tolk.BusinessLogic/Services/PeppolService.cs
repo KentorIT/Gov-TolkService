@@ -76,7 +76,7 @@ namespace Tolk.BusinessLogic.Services
                                 }
                                 else
                                 {
-                                    _logger.LogInformation("Sending peppol message {messageId}");
+                                    _logger.LogInformation("Sending peppol message {messageId}", messageId);
                                     try
                                     {
                                         //send file to peppol sftp
@@ -94,7 +94,7 @@ namespace Tolk.BusinessLogic.Services
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError(ex, "Failure sending peppol message {messageId}");
+                                _logger.LogError(ex, "Failure sending peppol message {messageId}", messageId);
                             }
                             finally
                             {

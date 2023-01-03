@@ -293,6 +293,7 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(View), new { id = model.RequisitionId });
         }
 
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {

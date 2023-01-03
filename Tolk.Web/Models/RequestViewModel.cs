@@ -41,6 +41,10 @@ namespace Tolk.Web.Models
         [DataType(DataType.MultilineText)]
         public string AnsweredBy { get; set; }
 
+        [Display(Name = "Förfrågan bekräftad av")]
+        [DataType(DataType.MultilineText)]
+        public string AcceptedBy { get; set; }
+
         public string AnswerProcessedBy { get; set; }
 
         public string AnswerProcessedAt { get; set; }
@@ -51,6 +55,10 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Förmedlings organisationsnummer")]
         public string BrokerOrganizationNumber { get; set; }
+
+        [Display(Name = "Förmedling")]
+        [DataType(DataType.MultilineText)]
+        public string BrokerInformation => $"{Broker}\n({BrokerOrganizationNumber})";
 
         [Display(Name = "Orsak till avböjande")]
         [DataType(DataType.MultilineText)]
@@ -84,6 +92,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Svara senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 
+        [Display(Name = "Bekräfta senast")]
+        public DateTimeOffset? LastAcceptAt { get; set; }
+
         [Display(Name = "Språk och dialekt")]
         [DataType(DataType.MultilineText)]
         public string LanguageAndDialect { get; set; }
@@ -97,7 +108,7 @@ namespace Tolk.Web.Models
         public string DisplayMealBreakIncluded { get; set; }
 
         //THINGS IN NEED OF VALIDATION!!!!!!!
-        public bool RequestIsAnswered => Status != RequestStatus.InterpreterReplaced && Status != RequestStatus.Created && Status != RequestStatus.Received && RequestId > 0;
+        public bool RequestIsAnswered => Status != RequestStatus.InterpreterReplaced && Status != RequestStatus.Created && Status != RequestStatus.Received && Status != RequestStatus.AcceptedAwaitingInterpreter && RequestId > 0;
         public bool RequestIsDeclinedByBroker => Status == RequestStatus.DeclinedByBroker || Status == RequestStatus.DeniedByTimeLimit;
         public bool AnswerReplacedRequest => Status == RequestStatus.Received && IsReplacingOrderRequest;
 
@@ -142,6 +153,8 @@ namespace Tolk.Web.Models
 
         public int? OtherInterpreterId { get; set; }
 
+        public string FrameworkAgreementNumberOnCreated { get; set; }
+
         #endregion
 
         internal static RequestViewModel GetModelFromRequest(Request request, AllowExceedingTravelCost? allowExceedingTravelCost)
@@ -161,6 +174,8 @@ namespace Tolk.Web.Models
                 RequestId = request.RequestId,
                 CreatedAt = request.CreatedAt,
                 ExpiresAt = request.ExpiresAt,
+                LastAcceptAt = request.LastAcceptAt,
+                AcceptedBy = request.AcceptingUser?.CompleteContactInformation,
                 Interpreter = request.Interpreter?.CompleteContactInformation,
                 IsInterpreterVerified = verificationResult.HasValue ? (bool?)(verificationResult == VerificationResult.Validated) : null,
                 InterpreterVerificationMessage = verificationResult.HasValue ? verificationResult.Value.GetDescription() : null,
@@ -169,7 +184,8 @@ namespace Tolk.Web.Models
                 DisplayExpectedTravelCostInfo = GetDisplayExpectedTravelCostInfo(allowExceedingTravelCost, request.InterpreterLocation ?? 0),
                 LatestAnswerTimeForCustomer = request.LatestAnswerTimeForCustomer,
                 ExpectedTravelCostInfo = request.ExpectedTravelCostInfo,
-                BrokerId = request.Ranking.BrokerId
+                BrokerId = request.Ranking.BrokerId,
+                FrameworkAgreementNumberOnCreated = request.Ranking.FrameworkAgreement.AgreementNumber
             };
         }
 

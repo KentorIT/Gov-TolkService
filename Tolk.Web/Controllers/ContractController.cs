@@ -30,15 +30,33 @@ namespace Tolk.Web.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var currentContract = _cacheService.CurrentOrLatestFrameworkAgreement;
+            if(currentContract.IsActive && currentContract.FrameworkAgreementResponseRuleset.GetContractDefinitionAttribute() == null)
+            {
+                return Forbid();
+            }            
+            return View(currentContract.IsActive ? new DisplayContractModel
+            {
+                AgreementNumber = currentContract.AgreementNumber,
+                Description = currentContract.Description,
+                FirstValidDate = currentContract.FirstValidDate,
+                OriginalLastValidDate = currentContract.OriginalLastValidDate,
+                PossibleAgreementExtensionsInMonths = currentContract.PossibleAgreementExtensionsInMonths,
+                ContractDefinition = currentContract.FrameworkAgreementResponseRuleset.GetContractDefinitionAttribute().ContractDefinition
+            } : null);
         }
 
         [Authorize(Roles = Roles.AppOrSysAdmin)]
         public async Task<IActionResult> List()
-        {
-            var brokerFeePrices = _cacheService.BrokerFeePriceList;
-
-            var rankings = await _dbContext.Rankings.GetActiveRankings(_clock.SwedenNow.DateTime).ToListAsync();
+        {            
+            var brokerFeePrices = _cacheService.BrokerFeeByRegionAndBrokerPriceList;
+            var currentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
+            if(!currentFrameworkAgreement.IsActive)
+            {
+                // No Active FrameworkAgreement, Show previous? or Forbid?
+                return Forbid();
+            }
+            var rankings = await _dbContext.Rankings.GetActiveRankings(_clock.SwedenNow.DateTime, currentFrameworkAgreement.FrameworkAgreementId).ToListAsync();
             var brokers = rankings.Select(r => r.Broker).Distinct().OrderBy(b => b.Name).ToList();
             var regions = rankings.Select(r => r.Region).Distinct().OrderBy(r => r.Name).ToList();
 
@@ -52,7 +70,7 @@ namespace Tolk.Web.Controllers
                         .Select(ra => new BrokerRankModel
                         {
                             RegionName = ra.Region.Name,
-                            BrokerFeePercentage = ra.BrokerFee,
+                            BrokerFeePercentage = ra.BrokerFee.Value,
                             Rank = ra.Rank,
                             BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
                                 p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.PriceToUse)
@@ -69,7 +87,7 @@ namespace Tolk.Web.Controllers
                     .OrderBy(ra => ra.Rank).Select(ra => new BrokerRankModel
                     {
                         BrokerName = ra.Broker.Name,
-                        BrokerFeePercentage = ra.BrokerFee,
+                        BrokerFeePercentage = ra.BrokerFee.Value,
                         Rank = ra.Rank,
                         BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
                                 p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
@@ -79,7 +97,7 @@ namespace Tolk.Web.Controllers
                                 .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                     }).ToList()
                 }),
-                ContractNumber = Constants.ContractNumber
+                ContractNumber = currentFrameworkAgreement.AgreementNumber
             });
         }
     }

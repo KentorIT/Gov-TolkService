@@ -157,7 +157,7 @@ namespace Tolk.Web.Models
 
         public bool AllowSettingTravelCosts => AllowExceedingTravelCost != null && EnumHelper.Parse<TrueFalse>(AllowExceedingTravelCost.SelectedItem.Value) == TrueFalse.Yes;
 
-        public bool AllowEditContactPerson => Status != OrderStatus.CancelledByBroker && Status != OrderStatus.CancelledByCreator && Status != OrderStatus.NoBrokerAcceptedOrder && Status != OrderStatus.ResponseNotAnsweredByCreator && UserCanEditContactPerson;
+        public bool AllowEditContactPerson => Status != OrderStatus.CancelledByBroker && Status != OrderStatus.CancelledByCreator && Status != OrderStatus.NoBrokerAcceptedOrder && Status != OrderStatus.ResponseNotAnsweredByCreator && Status != OrderStatus.TerminatedDueToTerminatedFrameworkAgreement && UserCanEditContactPerson;
 
         public bool AllowUpdate => OrderUpdateIsEnabled && Status == OrderStatus.ResponseAccepted && StartAtIsInFuture && UserCanEdit;
 
@@ -181,7 +181,7 @@ namespace Tolk.Web.Models
 
         private bool AllowProcessingOrderBelongsToGroup => OrderGroupId.HasValue && RequestStatus == BusinessLogic.Enums.RequestStatus.AcceptedNewInterpreterAppointed;
 
-        private bool AllowProcessingOrderNotBelongsToGroup => !OrderGroupId.HasValue && (RequestStatus == BusinessLogic.Enums.RequestStatus.Accepted || RequestStatus == BusinessLogic.Enums.RequestStatus.AcceptedNewInterpreterAppointed);
+        private bool AllowProcessingOrderNotBelongsToGroup => !OrderGroupId.HasValue && (RequestStatus == BusinessLogic.Enums.RequestStatus.AnsweredAwaitingApproval || RequestStatus == BusinessLogic.Enums.RequestStatus.AcceptedNewInterpreterAppointed);
 
         [Display(Name = "Skapa ersättningsuppdrag")]
         public bool AddReplacementOrder { get; set; } = false;
@@ -253,7 +253,7 @@ namespace Tolk.Web.Models
 
         public int? RequisitionId { get; set; }
 
-        internal static OrderViewModel GetModelFromOrder(Order order, Request request, bool displayBrokerReferenceNumber, bool isBroker = false)
+        internal static OrderViewModel GetModelFromOrder(Order order, Request request, bool displayBrokerReferenceNumber, bool isBroker = false, bool isConnectedToCurrentFrameworkAgreement = true)
         {
             var model = new OrderViewModel
             {
@@ -293,13 +293,13 @@ namespace Tolk.Web.Models
                 Description = order.Description,
                 UnitName = order.UnitName,
                 IsCreatorInterpreterUser = order.CreatorIsInterpreterUser,
-                MealbreakIncluded = order.MealBreakIncluded ?? false
+                MealbreakIncluded = order.MealBreakIncluded ?? false,
             };
             if (request != null)
             {
                 model.BrokerReferenceNumber = displayBrokerReferenceNumber ? request.BrokerReferenceNumber : null;
                 model.RequestCanBeCancelled = request.CanCancel;
-                model.RequestCanBeReplaced = request.CanCreateReplacementOrderOnCancel;
+                model.RequestCanBeReplaced = isConnectedToCurrentFrameworkAgreement && request.CanCreateReplacementOrderOnCancel;
                 model.RequestCanBePrinted = request.CanPrint;
                 model.RequestStatus = request.Status;
                 model.BrokerName = request.Ranking.Broker.Name;
@@ -324,6 +324,8 @@ namespace Tolk.Web.Models
                     model.TerminateOnDenial = request.TerminateOnDenial;
 
                 }
+                model.TravelConditionHours = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionHours;
+                model.TravelConditionKilometers = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionKilometers;
             }
             return model;
         }

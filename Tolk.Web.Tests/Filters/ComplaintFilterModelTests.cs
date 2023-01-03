@@ -19,13 +19,13 @@ namespace Tolk.Web.Tests.Filters
 
             complaints = new[]
             {
-                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000000" } }, Status = ComplaintStatus.Confirmed },
-                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000011"} }, Status = ComplaintStatus.Confirmed },
-                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000305"} }, Status = ComplaintStatus.DisputePendingTrial },
-                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000104"} }, Status = ComplaintStatus.TerminatedTrialConfirmedComplaint },
-                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000331"} }, Status = ComplaintStatus.Created },
-                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000502"} }, Status = ComplaintStatus.Created },
-                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000971"} }, Status = ComplaintStatus.Created },
+                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000000" } }, Status = ComplaintStatus.Confirmed, ComplaintMessage = string.Empty },
+                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000011"} }, Status = ComplaintStatus.Confirmed, ComplaintMessage = string.Empty },
+                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000305"} }, Status = ComplaintStatus.DisputePendingTrial, ComplaintMessage = string.Empty },
+                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000104"} }, Status = ComplaintStatus.TerminatedTrialConfirmedComplaint, ComplaintMessage = string.Empty },
+                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000331"} }, Status = ComplaintStatus.Created, ComplaintMessage = string.Empty },
+                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000502"} }, Status = ComplaintStatus.Created, ComplaintMessage = string.Empty },
+                new Complaint { Request = new Request{ Order = new Order(mockCustomerUsers[0], null, mockCustomerUsers[0].CustomerOrganisation, DateTimeOffset.Now){ OrderNumber = "2018-000971"} }, Status = ComplaintStatus.Created, ComplaintMessage = string.Empty },
             };
         }
 

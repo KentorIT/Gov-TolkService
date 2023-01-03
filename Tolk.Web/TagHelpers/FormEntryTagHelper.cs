@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
@@ -60,6 +61,9 @@ namespace Tolk.Web.TagHelpers
 
         [HtmlAttributeName("label-override")]
         public string LabelOverride { get; set; }
+
+        [HtmlAttributeName("description-override")]
+        public string DescriptionOverride { get; set; }
 
         [HtmlAttributeName("help-link")]
         public string HelpLink { get; set; }
@@ -309,7 +313,7 @@ namespace Tolk.Web.TagHelpers
         {
             if (!string.IsNullOrEmpty(For.ModelExplorer.Metadata.Description))
             {
-                writer.WriteLine(InformationSpan.FormatSwedish(For.ModelExplorer.Metadata.Description));
+                writer.WriteLine(InformationSpan.FormatSwedish(DescriptionOverride ?? For.ModelExplorer.Metadata.Description));
             }
         }
 
@@ -416,7 +420,7 @@ namespace Tolk.Web.TagHelpers
             htmlBuilder.AppendHtml(labelBuilder.InnerHtml);
             if (!string.IsNullOrEmpty(For.Metadata.Description))
             {
-                htmlBuilder.AppendHtml(InformationSpan.FormatSwedish(For.Metadata.Description));
+                htmlBuilder.AppendHtml(InformationSpan.FormatSwedish(DescriptionOverride ?? For.Metadata.Description));
             }
             if (!string.IsNullOrEmpty(HelpLink))
             {
@@ -737,8 +741,11 @@ namespace Tolk.Web.TagHelpers
                 {
                     var hiddenValidationField = _htmlGenerator.GenerateHidden(ViewContext, For.ModelExplorer, $"{For.Name}_validator", null, false, null);
                     hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-staywithin", ".time-range-part"));
-                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-msg-staywithin", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "ErrorMessage").TypedValue.Value));
                     hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-otherproperty", (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "OtherRangeProperty").TypedValue.Value));
+                    var rulesetProperty = (string)stayWithinAttribute.NamedArguments.Single(a => a.MemberName == "RulesetProperty").TypedValue.Value;
+                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-rule-rulesetproperty", rulesetProperty));
+                    var ruleset = For.ModelExplorer.Container.GetExplorerForProperty(rulesetProperty).Model as FrameworkAgreementResponseRuleset?;
+                    hiddenValidationField.Attributes.Add(new KeyValuePair<string, string>("data-msg-staywithin", EnumHelper.GetContractDefinition(ruleset).ReplacementError));
                     hiddenValidationField.AddCssClass("force-validation");
                     hiddenValidationField.Attributes.Remove("data-val-required");
                     hiddenValidationField.WriteTo(writer, _htmlEncoder);
@@ -944,7 +951,7 @@ namespace Tolk.Web.TagHelpers
                 {
                     writer.WriteLine(RequiredStarSpan);
                 }
-                writer.WriteLine(InformationSpan.FormatSwedish(For.ModelExplorer.Metadata.Description));
+                writer.WriteLine(InformationSpan.FormatSwedish(DescriptionOverride ?? For.ModelExplorer.Metadata.Description));
                 if (!string.IsNullOrEmpty(HelpLink))
                 {
                     writer.WriteLine(HelpAnchor.FormatSwedish(HelpLink));

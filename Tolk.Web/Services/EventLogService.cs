@@ -63,7 +63,7 @@ namespace Tolk.Web.Services
                 //if previous contact is null, a new contact person is added - get the new contact
                 if (oc.OrderContactPersonHistory.PreviousContactPersonId == null)
                 {
-                    EventLogEntryModel eventRow = GetEventRowForNewContactPerson(oc, order, orderContactPersons,  i + 1);
+                    EventLogEntryModel eventRow = GetEventRowForNewContactPerson(oc, order, orderContactPersons, i + 1);
                     if (eventRow != null)
                     {
                         eventLog.Add(eventRow);
@@ -199,7 +199,7 @@ namespace Tolk.Web.Services
             {
                 if (requests.All(r => r.Status == RequestStatus.DeclinedByBroker || r.Status == RequestStatus.DeniedByTimeLimit))
                 {
-                    var terminatingRequest = requests.OrderBy( r => r.RequestId).Last();
+                    var terminatingRequest = requests.OrderBy(r => r.RequestId).Last();
 
                     // No one accepted order
                     if (terminatingRequest.Order.Status == OrderStatus.NoBrokerAcceptedOrder)
@@ -247,7 +247,6 @@ namespace Tolk.Web.Services
 
             return eventLog;
         }
-
 
         public async Task<IEnumerable<EventLogEntryModel>> GetEventLogForRequisitions(int requestId, string customerName, string brokerName)
         {
@@ -381,7 +380,7 @@ namespace Tolk.Web.Services
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.CreatedAt,
-                    EventDetails = isRequestDetailView ? request.Order?.ReplacingOrder != null ? $"Ersättningsuppdrag inkommet (ersätter { request.Order.ReplacingOrder.OrderNumber })" : "Förfrågan inkommen" : $"Förfrågan skickad till {brokerName}",
+                    EventDetails = isRequestDetailView ? request.Order?.ReplacingOrder != null ? $"Ersättningsuppdrag inkommet (ersätter {request.Order.ReplacingOrder.OrderNumber})" : "Förfrågan inkommen" : $"Förfrågan skickad till {brokerName}",
                     Actor = "Systemet",
                 });
             }
@@ -421,12 +420,36 @@ namespace Tolk.Web.Services
             // Request expired
             if (request.Status == RequestStatus.DeniedByTimeLimit)
             {
-                eventLog.Add(new EventLogEntryModel
+                if (request.LastAcceptAt.HasValue)
                 {
-                    Timestamp = request.ExpiresAt ?? request.Order.StartAt,
-                    EventDetails = "Förfrågan obesvarad, tiden gick ut",
-                    Actor = "Systemet",
-                });
+                    if (request.AcceptedAt.HasValue)
+                    {
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Timestamp = request.ExpiresAt ?? request.Order.StartAt,
+                            EventDetails = "Förfrågan obesvarad efter bekräftelse, tiden gick ut",
+                            Actor = "Systemet",
+                        });
+                    }
+                    else
+                    {
+                        eventLog.Add(new EventLogEntryModel
+                        {
+                            Timestamp = request.LastAcceptAt.Value,
+                            EventDetails = "Förfrågan obesvarad, tiden gick ut",
+                            Actor = "Systemet",
+                        });
+                    }
+                }
+                else
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = request.ExpiresAt ?? request.Order.StartAt,
+                        EventDetails = "Förfrågan obesvarad, tiden gick ut",
+                        Actor = "Systemet",
+                    });
+                }
             }
             else if (request.Status == RequestStatus.NoDeadlineFromCustomer)
             {
@@ -451,7 +474,7 @@ namespace Tolk.Web.Services
                         ActorContactInfo = GetContactinfo(request.AnsweringUser),
                     });
                 }
-                else if (!request.ReplacingRequestId.HasValue)
+                else if (!request.ReplacingRequestId.HasValue || request.ReplacingRequest.Status != RequestStatus.InterpreterReplaced)
                 {
                     eventLog.Add(new EventLogEntryModel
                     {
@@ -462,6 +485,17 @@ namespace Tolk.Web.Services
                         ActorContactInfo = GetContactinfo(request.AnsweringUser),
                     });
                 }
+            }
+            if (request.AcceptedAt.HasValue && !request.ReplacingRequestId.HasValue)
+            {
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = request.AcceptedAt.Value,
+                    EventDetails = $"Förfrågan bekräftad av förmedling",
+                    Actor = request.AcceptingUser.FullName,
+                    Organization = brokerName,
+                    ActorContactInfo = GetContactinfo(request.AcceptingUser),
+                });
             }
             // Request answer processed by customer organization or system
             if (request.AnswerProcessedAt.HasValue)
@@ -492,7 +526,7 @@ namespace Tolk.Web.Services
                 else
                 {
                     //interpreter changed
-                    if (request.ReplacingRequestId.HasValue)
+                    if (request.ReplacingRequestId.HasValue && request.ReplacingRequest.Status == RequestStatus.InterpreterReplaced)
                     {
                         if (request.ProcessingUser != null)
                         {
@@ -600,6 +634,17 @@ namespace Tolk.Web.Services
                         Timestamp = request.CancelledAt.Value,
                         EventDetails = "Uppdrag avbokat av förmedling",
                         Actor = request.CancelledByUser.FullName,
+                        Organization = brokerName,
+                        ActorContactInfo = GetContactinfo(request.CancelledByUser),
+                    });
+                }
+                else if (request.Status == RequestStatus.TerminatedDueToTerminatedFrameworkAgreement)
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Timestamp = request.CancelledAt.Value,
+                        EventDetails = "Förfrågan avbruten p.g.a. utgånget ramavtal",
+                        Actor = "Systemet",
                         Organization = brokerName,
                         ActorContactInfo = GetContactinfo(request.CancelledByUser),
                     });

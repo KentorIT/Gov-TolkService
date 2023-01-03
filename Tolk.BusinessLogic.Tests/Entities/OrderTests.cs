@@ -4,6 +4,7 @@ using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Tests.TestHelpers;
+using Tolk.BusinessLogic.Utilities;
 using Xunit;
 
 namespace Tolk.BusinessLogic.Tests.Entities
@@ -50,30 +51,30 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OnSite, 0)]
         [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
 
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteVideo)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OnSite)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldNotBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldNotBeApproved, 1, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation)]
 
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.No, null, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.No, 1, true, RequestStatus.Approved, InterpreterLocation.OffSitePhone)]
@@ -144,10 +145,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.YesShouldBeApproved, null, true, RequestStatus.Approved, InterpreterLocation.OffSiteDesignatedLocation, 400)]
         // No requests
         [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.No, null, false, null, null)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.No, null, false, null, null)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.No, null, false, null, null)]
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.No, null, false, null, null)]
         [InlineData(OrderStatus.Requested, AllowExceedingTravelCost.YesShouldNotBeApproved, null, false, null, null)]
-        [InlineData(OrderStatus.RequestResponded, AllowExceedingTravelCost.YesShouldNotBeApproved, null, false, null, null)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, AllowExceedingTravelCost.YesShouldNotBeApproved, null, false, null, null)]
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, AllowExceedingTravelCost.YesShouldNotBeApproved, null, false, null, null)]
         public void SetResponseAccepted_Invalid(OrderStatus status, AllowExceedingTravelCost allowExceedingTravelCost, int? replacingOrderId, bool requestExists, RequestStatus? requestStatus, InterpreterLocation? interpreterLocation, decimal travelcost = 0)
         {
@@ -209,7 +210,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         [Theory]
         [InlineData(OrderStatus.Requested, "2019-01-25 10:00:00", 1, null, null)]
-        [InlineData(OrderStatus.RequestResponded, "2019-01-25 10:00:00", 1, null, null)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, "2019-01-25 10:00:00", 1, null, null)]
         [InlineData(OrderStatus.ResponseAccepted, "2019-01-25 10:00:00", 1, null, null)]
         [InlineData(OrderStatus.Delivered, "2019-01-25 10:00:00", 1, null, null)]
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, "2019-01-25 10:00:00", 1, null, null)]
@@ -264,7 +265,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(OrderStatus.DeliveryAccepted, 2)]
         [InlineData(OrderStatus.NoDeadlineFromCustomer, 2)]
         [InlineData(OrderStatus.Requested, 2)]
-        [InlineData(OrderStatus.RequestResponded, 2)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval, 2)]
         [InlineData(OrderStatus.RequestRespondedNewInterpreter, 2)]
         [InlineData(OrderStatus.ToBeProcessedByCustomer, 2)]
         public void ChangeContactPerson_Invalid(OrderStatus invalidStatus, int ContactPersonCustomerOrganizationId)
@@ -288,10 +289,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData("2019-01-02", "2019-01-01", false)]
         public void CreateRequestValid(string expiry, string now, bool isTerminalRequest)
         {
-            DateTime? expiryDate = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null;
+            RequestExpiryResponse  response = new RequestExpiryResponse { ExpiryAt = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null ,RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer  };
             var nowDate = DateTime.Parse(now);
             var order = MockOrders.Last();
-            var request = order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), expiryDate, nowDate, isTerminalRequest);
+            var request = order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), response, nowDate, isTerminalRequest);
             Assert.Equal(RequestStatus.Created, request.Status);
         }
 
@@ -300,10 +301,10 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData("2019-01-01", "2019-01-02", true)]
         public void CreateRequestInValid(string expiry, string now, bool isTerminalRequest)
         {
-            DateTime? expiryDate = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null;
+            RequestExpiryResponse response = new RequestExpiryResponse { ExpiryAt = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null, RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer };
             var nowDate = DateTime.Parse(now);
             var order = MockOrders.Last();
-            Assert.Throws<InvalidOperationException>(() => order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), expiryDate, nowDate, isTerminalRequest));
+            Assert.Throws<InvalidOperationException>(() => order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), response, nowDate, isTerminalRequest));
         }
 
         [Theory]
@@ -317,7 +318,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var order = MockOrders.Last();
             order.CustomerOrganisationId = customer;
             order.RegionId = region;
-            order.CreateRequest(MockEntities.MockRankingsWithQuarantines.Where(r => r.RegionId == region).AsQueryable(), null, new DateTimeOffset(2018, 09, 07, 0, 0, 0, new TimeSpan(02, 00, 00)), false);
+            order.CreateRequest(MockEntities.MockRankingsWithQuarantines.Where(r => r.RegionId == region).AsQueryable(), new RequestExpiryResponse { RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer}, new DateTimeOffset(2018, 09, 07, 0, 0, 0, new TimeSpan(02, 00, 00)), false);
             Assert.Equal(requests, order.Requests.Count);
             Assert.Equal(expectedStatus, order.Status);
         }
@@ -404,7 +405,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(OrderStatus.RequestAwaitingPartialAccept)]
         [InlineData(OrderStatus.NoDeadlineFromCustomer)]
         [InlineData(OrderStatus.Requested)]
-        [InlineData(OrderStatus.RequestResponded)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval)]
         [InlineData(OrderStatus.RequestRespondedNewInterpreter)]
         [InlineData(OrderStatus.ResponseAccepted)]
         [InlineData(OrderStatus.ResponseNotAnsweredByCreator)]

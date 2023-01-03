@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 
@@ -12,7 +13,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public StubSwedishClock(string dateTimeStringLocal)
         {
-            _dateTimeSweden = DateTime.SpecifyKind(DateTime.Parse(dateTimeStringLocal), DateTimeKind.Unspecified).ToDateTimeOffsetSweden();
+            DateTimeFormatInfo dtfi = new CultureInfo("sv-SE").DateTimeFormat;
+            _dateTimeSweden = DateTimeOffset.Parse(dateTimeStringLocal, dtfi).ToDateTimeOffsetSweden();
         }
     }
 }

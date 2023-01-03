@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text;
 
 namespace Tolk.BusinessLogic.Utilities
 {
@@ -6,11 +7,13 @@ namespace Tolk.BusinessLogic.Utilities
     {
         public static string ToSwedishString(this int value)
         {
-            return value.ToString(CultureInfo.GetCultureInfo("sv-SE"));
+            //'\u2212' is a "long" minus sign, that needs to be replaced with the ascii version, to be able to use it everywhere
+            return value.ToString(CultureInfo.GetCultureInfo("sv-SE")).Replace('\u2212', '-');
         }
         public static string ToSwedishString(this int value, string format)
         {
-            return value.ToString(format, CultureInfo.GetCultureInfo("sv-SE"));
+            //'\u2212' is a "long" minus sign, that needs to be replaced with the ascii version, to be able to use it everywhere
+            return value.ToString(format, CultureInfo.GetCultureInfo("sv-SE")).Replace('\u2212', '-');
         }
     }
 }

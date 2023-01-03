@@ -214,7 +214,43 @@ namespace Tolk.Web.Services
                     RequirementType = r.RequirementType,
                 }).ToList(),
             } : null;
-
+            if (model.AllowAccept)
+            {
+                model.InterpreterAcceptModel = new InterpreterAcceptModel
+                {
+                    RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    {
+                        OrderRequirementId = r.OrderGroupRequirementId,
+                        IsRequired = true,
+                        Description = r.Description,
+                        RequirementType = r.RequirementType,
+                    }).ToList(),
+                    DesiredRequirementAnswers = orderGroup.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    {
+                        OrderRequirementId = r.OrderGroupRequirementId,
+                        IsRequired = false,
+                        Description = r.Description,
+                        RequirementType = r.RequirementType,
+                    }).ToList(),
+                };
+                model.ExtraInterpreterAcceptModel = model.HasExtraInterpreter ? new InterpreterAcceptModel
+                {
+                    RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    {
+                        OrderRequirementId = r.OrderGroupRequirementId,
+                        IsRequired = true,
+                        Description = r.Description,
+                        RequirementType = r.RequirementType,
+                    }).ToList(),
+                    DesiredRequirementAnswers = orderGroup.Requirements.Where(r => !r.IsRequired).Select(r => new RequestRequirementAnswerModel
+                    {
+                        OrderRequirementId = r.OrderGroupRequirementId,
+                        IsRequired = false,
+                        Description = r.Description,
+                        RequirementType = r.RequirementType,
+                    }).ToList(),
+                } : null;
+            }
             model.Dialect = orderGroup.Requirements.Any(r => r.RequirementType == RequirementType.Dialect) ? orderGroup.Requirements.Single(r => r.RequirementType == RequirementType.Dialect)?.Description : string.Empty;
 
             var views = await _dbContext.RequestGroupViews.GetActiveViewsForRequestGroup(requestGroupId).ToListAsync();

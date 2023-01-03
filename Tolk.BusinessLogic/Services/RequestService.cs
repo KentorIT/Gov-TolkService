@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
@@ -47,7 +48,7 @@ namespace Tolk.BusinessLogic.Services
             _tolkBaseOptions = tolkBaseOptions;
         }
 
-        public async Task Accept(
+        public async Task Answer(
             Request request,
             DateTimeOffset acceptTime,
             int userId,
@@ -59,33 +60,54 @@ namespace Tolk.BusinessLogic.Services
             List<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts,
             string expectedTravelCostInfo,
-            DateTimeOffset? latestAnswerTimeForCustomer, 
+            DateTimeOffset? latestAnswerTimeForCustomer,
             string brokerReferenceNumber
         )
         {
-            NullCheckHelper.ArgumentCheckNull(request, nameof(Accept), nameof(RequestService));
-            NullCheckHelper.ArgumentCheckNull(interpreter, nameof(Accept), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(request, nameof(Answer), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(interpreter, nameof(Answer), nameof(RequestService));
             //maybe should be moved to AcceptRequest depending on ordergroup requesting each...
             request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
-            CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(Accept));
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel), latestAnswerTimeForCustomer: latestAnswerTimeForCustomer, brokerReferenceNumber);
+            CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(Answer));
+            var resultingRequest = AnswerRequest(request, acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, expectedTravelCosts, expectedTravelCostInfo, await VerifyInterpreter(request.OrderId, interpreter, competenceLevel), latestAnswerTimeForCustomer: latestAnswerTimeForCustomer, brokerReferenceNumber);
             //Create notification
-            switch (request.Status)
+            switch (resultingRequest.Status)
             {
-                case RequestStatus.Accepted:
-                    _notificationService.RequestAccepted(request);
+                case RequestStatus.AnsweredAwaitingApproval:
+                    _notificationService.RequestAnsweredAwaitingApproval(resultingRequest);
                     break;
                 case RequestStatus.Approved:
-                    _notificationService.RequestAnswerAutomaticallyApproved(request);
+                    _notificationService.RequestAnswerAutomaticallyApproved(resultingRequest);
                     break;
                 default:
                     throw new NotImplementedException("NOT OK!!");
             }
         }
 
-        public async Task AcceptGroup(
+        public async Task Accept(
+            Request request,
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            InterpreterLocation interpreterLocation,
+            CompetenceAndSpecialistLevel? competenceLevel,
+            List<OrderRequirementRequestAnswer> requirementAnswers,
+            List<RequestAttachment> attachedFiles,
+            string brokerReferenceNumber
+        )
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(Accept), nameof(RequestService));
+            request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
+            request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
+            request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, brokerReferenceNumber);
+            //Create notification
+            _notificationService.RequestAccepted(request);
+        }
+
+        public async Task AnswerGroup(
             RequestGroup requestGroup,
             DateTimeOffset answerTime,
             int userId,
@@ -98,9 +120,9 @@ namespace Tolk.BusinessLogic.Services
             string brokerReferenceNumber
         )
         {
-            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
-            NullCheckHelper.ArgumentCheckNull(interpreter, nameof(AcceptGroup), nameof(RequestService));
-            CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(AcceptGroup));
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AnswerGroup), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(interpreter, nameof(AnswerGroup), nameof(RequestService));
+            CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(AnswerGroup));
 
             var declinedRequests = new List<Request>();
             await _orderService.AddOrdersWithListsForGroupToProcess(requestGroup.OrderGroup);
@@ -108,7 +130,7 @@ namespace Tolk.BusinessLogic.Services
             bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
             if (hasExtraInterpreter)
             {
-                NullCheckHelper.ArgumentCheckNull(extraInterpreter, nameof(AcceptGroup), nameof(RequestService));
+                NullCheckHelper.ArgumentCheckNull(extraInterpreter, nameof(AnswerGroup), nameof(RequestService));
             }
             ValidateInterpreters(interpreter, extraInterpreter, hasExtraInterpreter);
 
@@ -125,6 +147,7 @@ namespace Tolk.BusinessLogic.Services
             await AddPriceRowsToRequestsInGroup(requestGroup);
             await AddRequirementAnswersToRequestsInGroup(requestGroup);
             requestGroup.Requests.ForEach(r => r.Order = requestGroup.OrderGroup.Orders.Where(o => o.OrderId == r.OrderId).SingleOrDefault());
+            var returnedRequests = new List<Request>();
             foreach (var request in requestGroup.Requests)
             {
                 bool isExtraInterpreterOccasion = request.Order.IsExtraInterpreterForOrderId.HasValue;
@@ -132,7 +155,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     if (extraInterpreter.Accepted)
                     {
-                        AcceptReqestGroupRequest(request,
+                        returnedRequests.Add(AnswerReqestGroupRequest(request,
                             answerTime,
                             userId,
                             impersonatorId,
@@ -142,7 +165,7 @@ namespace Tolk.BusinessLogic.Services
                             extraInterpreterVerificationResult,
                             latestAnswerTimeForCustomer,
                             travelCostsShouldBeApproved
-                       );
+                       ));
                     }
                     else
                     {
@@ -153,7 +176,7 @@ namespace Tolk.BusinessLogic.Services
                 }
                 else
                 {
-                    AcceptReqestGroupRequest(request,
+                    returnedRequests.Add(AnswerReqestGroupRequest(request,
                         answerTime,
                         userId,
                         impersonatorId,
@@ -163,37 +186,129 @@ namespace Tolk.BusinessLogic.Services
                         verificationResult,
                         latestAnswerTimeForCustomer,
                         travelCostsShouldBeApproved
-                    );
+                    ));
                 }
             }
-
+            RequestGroup resultingGroup = null;
             // add the attachments to the group...
-            requestGroup.Accept(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer, latestAnswerTimeForCustomer, brokerReferenceNumber);
+            if (requestGroup.Status == RequestStatus.AcceptedAwaitingInterpreter)
+            {
+                RequestGroup newRequestGroup = new RequestGroup(requestGroup.Ranking, new RequestExpiryResponse { LastAcceptedAt = requestGroup.LastAcceptAt, ExpiryAt = requestGroup.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, answerTime, returnedRequests, isAReplacingRequestGroup: true)
+                {
+                    OrderGroup = requestGroup.OrderGroup
+                };
+                requestGroup.OrderGroup.RequestGroups.Add(newRequestGroup);
 
+                newRequestGroup.AnswerAcceptedRequest(answerTime, userId, impersonatorId, attachedFiles, requestGroup, hasTravelCosts, latestAnswerTimeForCustomer, brokerReferenceNumber);
+                requestGroup.Status = RequestStatus.ReplacedAtAnswerAfterAccept;
+                resultingGroup = newRequestGroup;
+            }
+            else
+            {
+                requestGroup.Answer(answerTime, userId, impersonatorId, attachedFiles, hasTravelCosts, partialAnswer, latestAnswerTimeForCustomer, brokerReferenceNumber);
+                resultingGroup = requestGroup;
+            }
             if (partialAnswer)
             {
                 //Need to split the declined part of the group, and make a separate order- and request group for that, to forward to the next in line. if any...
-                await _orderService.CreatePartialRequestGroup(requestGroup, declinedRequests);
-                if (requestGroup.RequiresApproval(hasTravelCosts))
+                await _orderService.CreatePartialRequestGroup(resultingGroup, declinedRequests);
+                if (resultingGroup.RequiresApproval(hasTravelCosts))
                 {
-                    _notificationService.PartialRequestGroupAnswerAccepted(requestGroup);
+                    _notificationService.PartialRequestGroupAnswerAccepted(resultingGroup);
                 }
                 else
                 {
-                    _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(requestGroup);
+                    _notificationService.PartialRequestGroupAnswerAutomaticallyApproved(resultingGroup);
                 }
             }
             else
             {
                 //2. Set the request group and order group in correct state
-                if (requestGroup.RequiresApproval(hasTravelCosts))
+                if (resultingGroup.RequiresApproval(hasTravelCosts))
                 {
-                    _notificationService.RequestGroupAccepted(requestGroup);
+                    _notificationService.RequestGroupAccepted(resultingGroup);
                 }
                 else
                 {
-                    _notificationService.RequestGroupAnswerAutomaticallyApproved(requestGroup);
+                    _notificationService.RequestGroupAnswerAutomaticallyApproved(resultingGroup);
                 }
+            }
+        }
+
+        public async Task AcceptGroup(
+            RequestGroup requestGroup,
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            InterpreterLocation interpreterLocation,
+            InterpreterAcceptDto accept,
+            InterpreterAcceptDto extraAccept,
+            List<RequestGroupAttachment> attachedFiles,
+            string brokerReferenceNumber
+        )
+        {
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
+            NullCheckHelper.ArgumentCheckNull(accept, nameof(AcceptGroup), nameof(RequestService));
+
+            var declinedRequests = new List<Request>();
+            await _orderService.AddOrdersWithListsForGroupToProcess(requestGroup.OrderGroup);
+            bool isSingleOccasion = requestGroup.OrderGroup.IsSingleOccasion;
+            bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
+            if (hasExtraInterpreter)
+            {
+                NullCheckHelper.ArgumentCheckNull(extraAccept, nameof(AcceptGroup), nameof(RequestService));
+            }
+
+            bool partialAnswer = false;
+
+            requestGroup.Requests = await _tolkDbContext.Requests.GetRequestsForRequestGroup(requestGroup.RequestGroupId).ToListAsync();
+            await AddPriceRowsToRequestsInGroup(requestGroup);
+            await AddRequirementAnswersToRequestsInGroup(requestGroup);
+            requestGroup.Requests.ForEach(r => r.Order = requestGroup.OrderGroup.Orders.Where(o => o.OrderId == r.OrderId).SingleOrDefault());
+            foreach (var request in requestGroup.Requests)
+            {
+                bool isExtraInterpreterOccasion = request.Order.IsExtraInterpreterForOrderId.HasValue;
+                if (isExtraInterpreterOccasion)
+                {
+                    if (extraAccept.Accepted)
+                    {
+                        AcceptReqestGroupRequest(request,
+                            acceptTime,
+                            userId,
+                            impersonatorId,
+                            interpreterLocation,
+                            extraAccept,
+                            Enumerable.Empty<RequestAttachment>().ToList()
+                       );
+                    }
+                    else
+                    {
+                        partialAnswer = true;
+                        await Decline(request, acceptTime, userId, impersonatorId, extraAccept.DeclineMessage, false, false);
+                        declinedRequests.Add(request);
+                    }
+                }
+                else
+                {
+                    AcceptReqestGroupRequest(request,
+                        acceptTime,
+                        userId,
+                        impersonatorId,
+                        interpreterLocation,
+                        accept,
+                        Enumerable.Empty<RequestAttachment>().ToList()
+                    );
+                }
+            }
+            requestGroup.Accept(acceptTime, userId, impersonatorId, attachedFiles, partialAnswer, brokerReferenceNumber);
+
+            if (partialAnswer)
+            {
+                throw new NotImplementedException("Haven't implemented partial accept on groups");
+            }
+            else
+            {
+                _notificationService.RequestGroupAccepted(requestGroup);
             }
         }
 
@@ -231,8 +346,8 @@ namespace Tolk.BusinessLogic.Services
                 impersonatorId,
                 expectedTravelCostInfo,
                 interpreterLocation,
-                _priceCalculationService.GetPrices(request, (CompetenceAndSpecialistLevel)request.CompetenceLevel, expectedTravelCosts),
-                latestAnswerTimeForCustomer, 
+                _priceCalculationService.GetPrices(request, _clock.SwedenNow, (CompetenceAndSpecialistLevel)request.CompetenceLevel, interpreterLocation, expectedTravelCosts),
+                latestAnswerTimeForCustomer,
                 brokerReferenceNumber
             );
             _notificationService.RequestReplamentOrderAccepted(request);
@@ -248,7 +363,22 @@ namespace Tolk.BusinessLogic.Services
             bool createNewRequest = true)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(Decline), nameof(RequestService));
-            request.Decline(declinedAt, userId, impersonatorId, message);
+            List<RequisitionPriceRow> priceRows = null;
+            List<MealBreak> mealbreaks = null;
+            request.Requisitions = new List<Requisition>();
+            if (request.Order.ReplacingOrderId.HasValue)
+            {
+                var replacedRequest = await _tolkDbContext.Requests.GetActiveRequestByOrderId(request.Order.ReplacingOrderId.Value);
+                replacedRequest.PriceRows = await _tolkDbContext.RequestPriceRows.GetPriceRowsForRequest(replacedRequest.RequestId).ToListAsync();
+                //Check if the replacing order has startime before original order's starttime
+                // Or end time after original end time.
+                // If so, a requisition is in order...
+                if (replacedRequest.Order.StartAt > request.Order.StartAt || replacedRequest.Order.EndAt < request.Order.EndAt)
+                {
+                    (priceRows, mealbreaks) = _orderService.GetCompensationPriceRowsForCancelledRequest(replacedRequest, true);
+                }
+            }
+            request.DeclineRequest(declinedAt, userId, impersonatorId, message, mealbreaks, priceRows);
             if (!request.Order.ReplacingOrderId.HasValue)
             {
                 if (createNewRequest)
@@ -298,13 +428,12 @@ namespace Tolk.BusinessLogic.Services
             int userId,
             int? impersonatorId,
             InterpreterBroker interpreter,
-            InterpreterLocation interpreterLocation,
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
             IEnumerable<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts,
             string expectedTravelCostInfo,
-            DateTimeOffset? latestAnswerTimeForCustomer, 
+            DateTimeOffset? latestAnswerTimeForCustomer,
             string brokerReferenceNumber
         )
         {
@@ -312,17 +441,16 @@ namespace Tolk.BusinessLogic.Services
             NullCheckHelper.ArgumentCheckNull(interpreter, nameof(ChangeInterpreter), nameof(RequestService));
             CheckSetLatestAnswerTimeForCustomerValid(latestAnswerTimeForCustomer, nameof(ChangeInterpreter));
             request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
-            request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
             if (interpreter.InterpreterBrokerId == await GetOtherInterpreterIdForSameOccasion(request) && !(interpreter.Interpreter?.IsProtected ?? false))
             {
                 throw new InvalidOperationException("Det går inte att tillsätta samma tolk som redan är tillsatt som extra tolk för samma tillfälle.");
             }
 
-            Request newRequest = new Request(request.Ranking, request.ExpiresAt, changedAt, isChangeInterpreter: true, requestGroup: request.RequestGroup)
+            Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, changedAt, isAReplacingRequest: true, requestGroup: request.RequestGroup)
             {
                 Order = request.Order,
-                Status = RequestStatus.AcceptedNewInterpreterAppointed
+                Status = RequestStatus.AcceptedNewInterpreterAppointed,
             };
             bool noNeedForUserAccept = await NoNeedForUserAccept(request, expectedTravelCosts);
             request.Order.Requests.Add(newRequest);
@@ -332,16 +460,14 @@ namespace Tolk.BusinessLogic.Services
                 //Only check if the selected level is other than other.
                 verificationResult = await _verificationService.VerifyInterpreter(interpreter.OfficialInterpreterId, request.OrderId, competenceLevel);
             }
-
             newRequest.ReplaceInterpreter(changedAt,
                 userId,
                 impersonatorId,
                 interpreter,
-                interpreterLocation,
                 competenceLevel,
                 requirementAnswers,
                 attachedFiles,
-                _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts),
+                _priceCalculationService.GetPrices(request, _clock.SwedenNow, competenceLevel, (InterpreterLocation)request.InterpreterLocation.Value, expectedTravelCosts),
                 noNeedForUserAccept,
                 request,
                 expectedTravelCostInfo,
@@ -451,9 +577,94 @@ namespace Tolk.BusinessLogic.Services
             await _tolkDbContext.SaveChangesAsync();
         }
 
+        public async Task ValidateFrameworkAgreement()
+        {
+            _logger.LogInformation("Start validating current framework agreement");
+            var today = _clock.SwedenNow.Date;
+            // Get the current framework agreement, if any
+            var frameworkAgreement = _tolkDbContext.FrameworkAgreements.GetFrameworkAgreementByDate(today);
+            // If there is no current, or if the new agreement started today, 
+            if (frameworkAgreement is null || frameworkAgreement.FirstValidDate == today)
+            {
+                //Get the agreement that ended yesterday
+                var previousFrameworkAgreement = _tolkDbContext.FrameworkAgreements.GetFrameworkAgreementByDate(today.AddDays(-1));
+                if (previousFrameworkAgreement != null)
+                {
+                    _logger.LogInformation($"The previous framework agreement '{previousFrameworkAgreement.AgreementNumber}' ended yesterday!");
+                    var openRequestStatuses = EnumHelper.GetEnumsWithParent<RequestStatus, NegotiationState>(NegotiationState.UnderNegotiation);
+
+                    var terminatedRequestGroupIds = _tolkDbContext.RequestGroups
+                        .GetRequestGroupsFromTerminatedFrameworkAgreement(previousFrameworkAgreement.FrameworkAgreementId, openRequestStatuses)
+                        .Select(r => r.RequestGroupId).ToList();
+                    _logger.LogInformation("Found {count} request groups to terminate due to ended framework agreement: {expiredRequestIds}",
+                        terminatedRequestGroupIds.Count, string.Join(", ", terminatedRequestGroupIds));
+
+                    foreach (var requestGroupId in terminatedRequestGroupIds)
+                    {
+                        try
+                        {
+                            var terminatedRequestGroup = _tolkDbContext.RequestGroups.GetTerminatedRequestGroup(previousFrameworkAgreement.FrameworkAgreementId, openRequestStatuses, requestGroupId);
+
+                            if (terminatedRequestGroup == null)
+                            {
+                                _logger.LogInformation("Request group {requestGroupId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                    requestGroupId);
+                            }
+                            else
+                            {
+                                terminatedRequestGroup.Requests = _tolkDbContext.Requests.GetRequestsForRequestGroup(terminatedRequestGroup.RequestGroupId).ToList();
+                                _logger.LogInformation("Processing terminated request group {requestId} for Order group {orderGroupId}.",
+                                    terminatedRequestGroup.RequestGroupId, terminatedRequestGroup.OrderGroupId);
+                                _notificationService.RequestGroupTerminatedDueToTerminatedFrameworkAgreement(terminatedRequestGroup);
+                                terminatedRequestGroup.TerminateDueToEndedFrameworkAgreement(_clock.SwedenNow, "Avtalet har upphört", openRequestStatuses);
+                                _tolkDbContext.SaveChanges();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failure processing request group {requestGroupId} on ended framework agreement", requestGroupId);
+                            await SendErrorMail(nameof(ValidateFrameworkAgreement), ex);
+                        }
+                    }
+
+                    var terminatedRequestIds = _tolkDbContext.Requests
+                        .GetRequestsFromTerminatedFrameworkAgreement(previousFrameworkAgreement.FrameworkAgreementId, openRequestStatuses)
+                        .Select(r => r.RequestId).ToList();
+                    _logger.LogInformation("Found {count} requests to terminate due to ended framework agreement: {expiredRequestIds}",
+                        terminatedRequestIds.Count, string.Join(", ", terminatedRequestIds));
+
+                    foreach (var requestId in terminatedRequestIds)
+                    {
+                        try
+                        {
+                            var terminatedRequest = _tolkDbContext.Requests.GetTerminatedRequest(previousFrameworkAgreement.FrameworkAgreementId, openRequestStatuses, requestId);
+                            if (terminatedRequest == null)
+                            {
+                                _logger.LogInformation("Request {requestId} was in list to be processed, but doesn't match criteria when re-read from database - skipping.",
+                                    requestId);
+                            }
+                            else
+                            {
+                                _logger.LogInformation("Processing terminated request {requestId} for Order {orderId}.",
+                                    terminatedRequest.RequestId, terminatedRequest.OrderId);
+                                _notificationService.RequestTerminatedDueToTerminatedFrameworkAgreement(terminatedRequest);
+                                terminatedRequest.TerminateDueToEndedFrameworkAgreement(_clock.SwedenNow, "Avtalet har upphört", openRequestStatuses);
+                                _tolkDbContext.SaveChanges();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failure processing request {requestId} on ended framework agreement", requestId);
+                            await SendErrorMail(nameof(ValidateFrameworkAgreement), ex);
+                        }
+                    }
+                }
+            }
+        }
+
         public async Task SendEmailRemindersNonApprovedRequests()
         {
-            _logger.LogInformation("Start sending reminder emails for non answered responded rquests");
+            _logger.LogInformation("Start sending reminder emails for non answered responded requests");
             var notApprovedRequests = await _tolkDbContext.Requests.NonAnsweredRespondedRequestsToBeReminded(_clock.SwedenNow).ToListAsync();
             foreach (Request request in notApprovedRequests)
             {
@@ -557,17 +768,48 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, string brokerReferenceNumber, bool overrideRequireAccept = false)
+        private Request AnswerRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterBroker interpreter, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, decimal? expectedTravelCosts, string expectedTravelCostInfo, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, string brokerReferenceNumber, bool overrideRequireAccept = false)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(AnswerRequest), nameof(RequestService));
+            //Get prices
+            var prices = _priceCalculationService.GetPrices(request, _clock.SwedenNow, competenceLevel, interpreterLocation, expectedTravelCosts);
+            if (request.Status == RequestStatus.AcceptedAwaitingInterpreter)
+            {
+                Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, acceptTime, isAReplacingRequest: true, requestGroup: request.RequestGroup)
+                {
+                    Order = request.Order,
+                    Status = RequestStatus.AcceptedNewInterpreterAppointed
+                };
+                request.Order.Requests.Add(newRequest);
+
+                newRequest.AnswerAcceptedRequest(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, request, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult);
+                request.Status = RequestStatus.ReplacedAtAnswerAfterAccept;
+                return newRequest;
+            }
+            else
+            {
+                request.Answer(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult, overrideRequireAccept);
+                return request;
+            }
+        }
+
+        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel? competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, string brokerReferenceNumber)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
             //Get prices
-            var prices = _priceCalculationService.GetPrices(request, competenceLevel, expectedTravelCosts);
-            request.Accept(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult, overrideRequireAccept);
+            var competenceLevelForPriceCalculation = competenceLevel ?? OrderService.SelectCompetenceLevelForPriceEstimation(request.Order.CompetenceRequirements?.Select(item => item.CompetenceLevel));
+            var prices = _priceCalculationService.GetPrices(request, _clock.SwedenNow, competenceLevelForPriceCalculation, interpreterLocation, null);
+            request.Accept(acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, brokerReferenceNumber);
         }
 
-        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
+        private Request AnswerReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
         {
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, string.Empty, overrideRequireAccept);
+            return AnswerRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, string.Empty, overrideRequireAccept);
+        }
+
+        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, InterpreterAcceptDto accept, List<RequestAttachment> attachedFiles)
+        {
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreterLocation, accept.CompetenceLevel, ReplaceIds(request.Order.Requirements, accept.RequirementAnswers).ToList(), attachedFiles, string.Empty);
         }
 
         private static IEnumerable<OrderRequirementRequestAnswer> ReplaceIds(List<OrderRequirement> requirements, IEnumerable<OrderRequirementRequestAnswer> requirementAnswers)
@@ -616,7 +858,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 requests = await _tolkDbContext.Requests.GetRequestsForOrder(request.Order.ExtraInterpreterOrder.OrderId).ToListAsync();
             }
-            return requests?.Where(r => r.Status == RequestStatus.Accepted || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
+            return requests?.Where(r => r.Status == RequestStatus.AnsweredAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed || r.Status == RequestStatus.Approved).SingleOrDefault()?.InterpreterBrokerId;
         }
 
         public async Task<RequestGroup> AddRequestsWithConfirmationListsToRequestGroup(RequestGroup requestGroup)

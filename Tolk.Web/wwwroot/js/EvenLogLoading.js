@@ -5,6 +5,7 @@ $(function () {
         var $child = $(this).find(".table-responsive");
         $.ajax({
             url: $url,
+            headers: { "RequestVerificationToken": getAntiForgeryToken() },
             type: 'POST',
             dataType: 'html',
             success: function (data) {

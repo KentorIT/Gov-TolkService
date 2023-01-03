@@ -38,17 +38,7 @@
                 }
                 @if (!string.IsNullOrEmpty(@Model.ErrorMessage))
                 {
-                    <div class="row">
-                        <div class="col-xs-12">
-                            <br />
-                            <div class="warning-info-home">
-                                <span class="glyphicon glyphicon-exclamation-sign"></span>
-                                <span role="alert" class="info-message">
-                                    @Model.ErrorMessage
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                    @await Html.PartialAsync("_ErrorMessage",@Model.ErrorMessage)
                 }
                 @if (!string.IsNullOrEmpty(@Model.InfoMessage))
                 {
@@ -178,7 +168,7 @@
             </div>
         </div>
         <div class="row">
-            @if (Model.ActiveRequestIsAnswered && (Model.RequestStatus == RequestStatus.Accepted || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && Model.RequestedCompetenceLevels.Any() && !Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
+            @if (Model.ActiveRequestIsAnswered && (Model.RequestStatus == RequestStatus.AnsweredAwaitingApproval || Model.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && Model.RequestedCompetenceLevels.Any() && !Model.RequestedCompetenceLevels.Contains(Model.InterpreterCompetenceLevel.Value))
             {
                 <div class="col-sm-12 important-info">
                     Observera att tolkens kompetensnivå skiljer sig från önskad kompetensnivå
@@ -187,7 +177,7 @@
             @if (Model.AllowProcessing)
             {
                 <div class="col-sm-12 to-accept-info">
-                    Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över 2 tim restid eller 100 km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas uppgår till: <span class="bold">@Model.ExpectedTravelCosts SEK</span>
+                    Myndighet har accepterat överskridande av gränsvärde för resor för detta uppdrag, dvs över @Model.TravelConditionHours tim restid eller @Model.TravelConditionKilometers km reslängd. Den bedömda resekostnaden (exkl. moms) som angivits av förmedlingen och ska godkännas uppgår till: <span class="bold">@Model.ExpectedTravelCosts SEK</span>
                 </div>
                 <div class="col-sm-12">
                     <div class="col-sm-8">
@@ -244,7 +234,7 @@
                     </form>
                 </div>
             }
-            else if (Model.OrderGroupId.HasValue && Model.Status == OrderStatus.RequestResponded)
+            else if (Model.OrderGroupId.HasValue && Model.Status == OrderStatus.RequestRespondedAwaitingApproval)
             {
                 <div class="row col-sm-12">
                     <div class="col-sm-12 to-accept-info">
@@ -345,9 +335,6 @@
 </div>
 @if (Model.AllowEditContactPerson)
 {
-
-
-
     <div id="EditContactPerson" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <!-- Modal content-->
@@ -374,7 +361,6 @@
             </div>
         </div>
     </div>
-    
 }
 @section Scripts {
     <environment include="Development">

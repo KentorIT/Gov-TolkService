@@ -140,14 +140,22 @@ namespace Tolk.BusinessLogic.Utilities
                 .Where(t => !IsObsolete(t) && (filterValues == null || filterValues.Contains(t)))
                 .Select(v => new EnumValue<TEnum>(v, type.GetMember(v.ToString()).GetEnumDescription()));
         }
+        public static IEnumerable<TEnum> GetEnumsWithParent<TEnum, TParentEnum>(TParentEnum parent)
+            where TParentEnum : struct
+        {
+            var type = typeof(TEnum);
+            type = Nullable.GetUnderlyingType(type) ?? type;
 
-        public static IEnumerable<EnumDescription<TEnum>> GetAllFullDescriptions<TEnum>(IEnumerable<TEnum> filterValues = null)
+            return Enum.GetValues(type).OfType<TEnum>().Where(t => parent.Equals(Parent<TEnum, TParentEnum>(t)));
+        }
+
+        public static IEnumerable<EnumDescription<TEnum>> GetAllFullDescriptions<TEnum>(IEnumerable<TEnum> filterValues = null, bool onlyApiDescriptions = true)
         {
             var type = typeof(TEnum);
             type = Nullable.GetUnderlyingType(type) ?? type;
 
             return Enum.GetValues(type).OfType<TEnum>()
-                .Where(t => !IsObsolete(t) && UseInApi(t) &&
+                .Where(t => !IsObsolete(t) && (UseInApi(t) || !onlyApiDescriptions) &&
                     (filterValues == null || filterValues.Contains(t)))
                 .Select(v => new EnumDescription<TEnum>(v,
                     type.GetMember(v.ToString()).GetEnumDescription(),
@@ -202,6 +210,11 @@ namespace Tolk.BusinessLogic.Utilities
         public static T Parse<T>(string value)
         {
             return (T)Enum.Parse(typeof(T), value);
+        }
+
+        public static ContractDefinitionAttribute GetContractDefinition<TEnum>(TEnum value)
+        {
+            return GetAttributeProperty<ContractDefinitionAttribute, TEnum> (value);            
         }
     }
 }

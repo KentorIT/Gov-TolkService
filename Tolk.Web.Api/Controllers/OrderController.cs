@@ -88,9 +88,7 @@ namespace Tolk.Web.Api.Controllers
                     return Ok(new CreateOrderResponse
                     {
                         OrderNumber = order.OrderNumber,
-                        PriceInformation = order.PriceRows.GetPriceInformationModel(
-                            order.PriceCalculatedFromCompetenceLevel.GetCustomName(),
-                            (await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId)).Ranking.BrokerFee),
+                        PriceInformation = order.PriceRows.GetPriceInformationModel(order.PriceCalculatedFromCompetenceLevel.GetCustomName()),
 
                     });
                 }

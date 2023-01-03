@@ -81,7 +81,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public RequestGroup ActiveUnAnsweredRequestGroup => RequestGroups.SingleOrDefault(r => r.IsToBeProcessedByBroker);
 
-        public RequestGroup ActiveRequestToBeProcessedForCustomer => RequestGroups.SingleOrDefault(r => r.IsAccepted);
+        public RequestGroup ActiveRequestToBeProcessedForCustomer => RequestGroups.SingleOrDefault(r => r.IsAwaitingApproval);
 
         public Order FirstOrder => Orders?.OrderBy(o => o.StartAt).FirstOrDefault();
 
@@ -110,7 +110,7 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
-        public RequestGroup CreateRequestGroup(IEnumerable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        public RequestGroup CreateRequestGroup(IEnumerable<Ranking> rankings, RequestExpiryResponse newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             var ranking = GetNextRanking(rankings, newRequestCreationTime);
             if (ranking == null)
@@ -127,7 +127,7 @@ namespace Tolk.BusinessLogic.Entities
                 Orders.Select(o => o.CreateRequest(ranking, newRequestExpiry, newRequestCreationTime, isTerminalRequest)).ToList(),
                 isTerminalRequest
             );
-
+            SetStatus(OrderStatus.Requested);
             RequestGroups.Add(requestGroup);
 
             return requestGroup;
@@ -159,7 +159,7 @@ namespace Tolk.BusinessLogic.Entities
             return requestGroup;
         }
 
-        public RequestGroup CreatePartialRequestGroup(IEnumerable<Request> declinedRequests, IEnumerable<Ranking> rankings, DateTimeOffset? newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
+        public RequestGroup CreatePartialRequestGroup(IEnumerable<Request> declinedRequests, IEnumerable<Ranking> rankings, RequestExpiryResponse newRequestExpiry, DateTimeOffset newRequestCreationTime, bool isTerminalRequest = false)
         {
             var brokersWithRequestGroups = RequestGroups.Select(r => r.Ranking.BrokerId);
             

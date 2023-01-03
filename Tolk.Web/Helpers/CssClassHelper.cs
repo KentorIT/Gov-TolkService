@@ -6,9 +6,9 @@ namespace Tolk.Web.Helpers
     {
         public static string GetColorClassNameForOrderStatus(OrderStatus status)
         {
-            return (status == OrderStatus.NoBrokerAcceptedOrder || status == OrderStatus.CancelledByCreator || status == OrderStatus.CancelledByBroker || status == OrderStatus.ResponseNotAnsweredByCreator || status == OrderStatus.NoDeadlineFromCustomer) ? "red-border-left"
+            return (status == OrderStatus.NoBrokerAcceptedOrder || status == OrderStatus.CancelledByCreator || status == OrderStatus.CancelledByBroker || status == OrderStatus.ResponseNotAnsweredByCreator || status == OrderStatus.NoDeadlineFromCustomer || status == OrderStatus.TerminatedDueToTerminatedFrameworkAgreement) ? "red-border-left"
                 : (status == OrderStatus.Delivered || status == OrderStatus.ResponseAccepted) ? "green-border-left"
-                : (status == OrderStatus.RequestResponded || status == OrderStatus.RequestRespondedNewInterpreter || status == OrderStatus.AwaitingDeadlineFromCustomer) ? "yellow-border-left"
+                : (status == OrderStatus.RequestRespondedAwaitingApproval || status == OrderStatus.RequestRespondedNewInterpreter || status == OrderStatus.AwaitingDeadlineFromCustomer) ? "yellow-border-left"
                 : "blue-border-left";
         }
 
@@ -19,9 +19,9 @@ namespace Tolk.Web.Helpers
 
         public static string GetColorClassNameForRequestStatus(RequestStatus status)
         {
-            return (status == RequestStatus.CancelledByBroker || status == RequestStatus.CancelledByCreator || status == RequestStatus.CancelledByCreatorWhenApproved || status == RequestStatus.DeniedByCreator || status == RequestStatus.DeniedByTimeLimit || status == RequestStatus.ResponseNotAnsweredByCreator || status == RequestStatus.DeclinedByBroker || status == RequestStatus.NoDeadlineFromCustomer) ? "red-border-left"
+            return (status == RequestStatus.CancelledByBroker || status == RequestStatus.CancelledByCreator || status == RequestStatus.CancelledByCreatorWhenApproved || status == RequestStatus.DeniedByCreator || status == RequestStatus.DeniedByTimeLimit || status == RequestStatus.ResponseNotAnsweredByCreator || status == RequestStatus.DeclinedByBroker || status == RequestStatus.NoDeadlineFromCustomer || status == RequestStatus.TerminatedDueToTerminatedFrameworkAgreement) ? "red-border-left"
                 : (status == RequestStatus.Approved || status == RequestStatus.Delivered) ? "green-border-left"
-                : (status == RequestStatus.Accepted || status == RequestStatus.AcceptedNewInterpreterAppointed || status == RequestStatus.AwaitingDeadlineFromCustomer) ? "yellow-border-left"
+                : (status == RequestStatus.AnsweredAwaitingApproval || status == RequestStatus.AcceptedNewInterpreterAppointed || status == RequestStatus.AwaitingDeadlineFromCustomer) ? "yellow-border-left"
                 : "blue-border-left";
         }
 
@@ -46,7 +46,7 @@ namespace Tolk.Web.Helpers
 
         public static string GetColorClassNameForStartListItem(StartListItemStatus status)
         {
-            return (status == StartListItemStatus.ComplaintEvent || status == StartListItemStatus.RequestArrived || status == StartListItemStatus.RequestReceived || status == StartListItemStatus.RequisitonArrived || status == StartListItemStatus.ReplacementOrderRequestReceived || status == StartListItemStatus.ReplacementOrderRequestArrived || status == StartListItemStatus.RequestGroupReceived || status == StartListItemStatus.RequestGroupArrived) ? "blue-border-left"
+            return (status == StartListItemStatus.ComplaintEvent || status == StartListItemStatus.RequestArrived || status == StartListItemStatus.RequestReceived || status == StartListItemStatus.RequestAccepted || status == StartListItemStatus.RequestGroupAccepted || status == StartListItemStatus.RequisitonArrived || status == StartListItemStatus.ReplacementOrderRequestReceived || status == StartListItemStatus.ReplacementOrderRequestArrived || status == StartListItemStatus.RequestGroupReceived || status == StartListItemStatus.RequestGroupArrived) ? "blue-border-left"
                 : (status == StartListItemStatus.RequisitionCommented || status == StartListItemStatus.OrderCancelled || status == StartListItemStatus.OrderNotAnswered || status == StartListItemStatus.RequestDenied || status == StartListItemStatus.ReplacementOrderNotAnswered || status == StartListItemStatus.OrderGroupNotAnswered || status == StartListItemStatus.RequestGroupDenied || status == StartListItemStatus.RespondedRequestNotAnswered || status == StartListItemStatus.RespondedRequestGroupNotAnswered) ? "red-border-left"
                 : (status == StartListItemStatus.OrderApproved || status == StartListItemStatus.RequisitionToBeCreated) ? "green-border-left"
                 : (status == StartListItemStatus.RequisitionAwaited || status == StartListItemStatus.OrderCreated || status == StartListItemStatus.ReplacementOrderCreated || status == StartListItemStatus.RequisitionCreated || status == StartListItemStatus.OrderGroupCreated) ? "gray-border-left"

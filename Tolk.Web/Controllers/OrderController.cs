@@ -87,17 +87,16 @@ namespace Tolk.Web.Controllers
                 }
             });
         }
-
+        
         public async Task<IActionResult> View(int id, string message = null, string errorMessage = null)
         {
             var order = await _dbContext.Orders.GetFullOrderById(id);
 
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
-                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);
-
-                var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator));
-
+                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);  
+                bool isConnectedToCurrentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId);
+                var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator), false, isConnectedToCurrentFrameworkAgreement);              
                 model.UserCanEdit = (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.UserCanCancelOrder = (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
                 model.UserCanEditContactPerson = (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded;
@@ -115,7 +114,10 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
+                    _logger.LogWarning("Order is missing an active request OrderId: {id}", id);
                     model.ActiveRequest = new RequestViewModel();
+                    var frameworkAgreement = await _dbContext.Requests.GetFrameworkByOrderId(id);
+                    model.ActiveRequest.FrameworkAgreementNumberOnCreated = frameworkAgreement.AgreementNumber;
                 }
                 model.ActiveRequest.RegionName = model.RegionName;
                 model.ActiveRequest.TimeRange = model.TimeRange;
@@ -144,14 +146,17 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(int replacingOrderId, string cancelMessage)
         {
+
             Order order = await _dbContext.Orders.GetFullOrderById(replacingOrderId);
 
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
             {
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(replacingOrderId);
-                if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
+                if (request.CanCreateReplacementOrderOnCancel &&
+                    _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
+                    TimeIsValidForOrderReplacement(order.StartAt))
                 {
-                    return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()))));
+                    return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()), _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset)));
                 }
                 else
                 {
@@ -172,7 +177,9 @@ namespace Tolk.Web.Controllers
                 if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.Replace)).Succeeded)
                 {
                     var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
-                    if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
+                    if (request.CanCreateReplacementOrderOnCancel &&
+                        _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
+                        TimeIsValidForOrderReplacement(order.StartAt))
                     {
                         using var trn = await _dbContext.Database.BeginTransactionAsync();
                         // add a few lists, used when copying in constructor
@@ -310,8 +317,10 @@ namespace Tolk.Web.Controllers
                         }
                         await _dbContext.SaveChangesAsync();
                         order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
+                        // Note: this discard-fetch will add request to the order entity being tracked by EF
+                        _ = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);                        
                         //Note: This retrieves the locations to the order object as well...
-                        _ = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(model.OrderId).ToListAsync();
+                        _ = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(model.OrderId).ToListAsync();                        
                         if (orderFieldsUpdated || attachmentChanged)
                         {
                             _notificationService.OrderUpdated(order, attachmentChanged, orderFieldsUpdated);
@@ -333,6 +342,7 @@ namespace Tolk.Web.Controllers
             return RedirectToAction(nameof(View), new { id = model.OrderId, errorMessage = "Det gick inte att ändra bokningen." });
         }
 
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> GetEventLog(int id)
         {
@@ -351,26 +361,33 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Create()
         {
+            if (!_cacheService.CurrentOrLatestFrameworkAgreement.IsActive)
+            {
+                return Forbid();
+            }
             var now = _clock.SwedenNow.DateTime;
             var firstWorkDay = _dateCalculationService.GetFirstWorkDay(now).Date;
             var panicTime = _dateCalculationService.GetFirstWorkDay(firstWorkDay).Date;
-            if (now.Hour >= 14)
+            var nowIsWorkingDay = _dateCalculationService.IsWorkingDay(now);
+            if (nowIsWorkingDay && now.Hour >= 14)
             {
-                //Add day if after 14...
+                //Add day if after 14 if order creation is a working day...
                 panicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
             }
-            DateTime nextPanicTime = _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date;
+            DateTime nextPanicTime = nowIsWorkingDay ? _dateCalculationService.GetFirstWorkDay(panicTime.AddDays(1).Date).Date : panicTime;
 
             var user = await _userService.GetUserWithDefaultSettings(User.GetUserId());
-
+            var currentFrameworkAgreementResponseRuleset = (FrameworkAgreementResponseRuleset)_cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementId;
             var model = new OrderModel()
             {
                 LastTimeForRequiringLatestAnswerBy = panicTime.ToSwedishString("yyyy-MM-dd"),
                 NextLastTimeForRequiringLatestAnswerBy = nextPanicTime.ToSwedishString("yyyy-MM-dd"),
                 CreatedByName = user.FullName,
-                UserDefaultSettings = DefaultSettingsModel.GetModel(user),
+                UserDefaultSettings = DefaultSettingsModel.GetModel(user, currentFrameworkAgreementResponseRuleset),
                 EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)),
-                UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId())
+                UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId()),
+                TravelConditionHours = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionHours,
+                TravelConditionKilometers = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionKilometers
             };
             model.UpdateModelWithDefaultSettings(user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList());
             return View(model);
@@ -381,6 +398,10 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Add(OrderModel model)
         {
+            if (!_cacheService.CurrentOrLatestFrameworkAgreement.IsActive)
+            {
+                return Forbid();
+            }
             if (model.SeveralOccasions)
             {
                 ModelState.Remove("SplitTimeRange.StartDate");
@@ -427,82 +448,95 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<ActionResult> Confirm(OrderModel model)
         {
-            Order order = await CreateNewOrder();
-            PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
-            OrderViewModel updatedModel = null;
-            var firstOccasion = model.FirstOccasion;
-            string warningOrderTimeInfo = string.Empty;
-            model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
-            updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
-            if (model.IsMultipleOrders)
+            var currentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
+            if (!currentFrameworkAgreement.IsActive)
             {
-                updatedModel.OrderOccasionDisplayModels = await GetGroupOrders(model, pricelistType);
-                updatedModel.SeveralOccasions = true;
-                updatedModel.WarningOrderGroupCloseInTime = CheckOrderGroupCloseInTime(updatedModel.OrderOccasionDisplayModels);
-                warningOrderTimeInfo = CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels);
-                updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ?
-                    CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true) :
-                    $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true)}";
+                return PartialView("_ErrorMessage", "Det finns inget aktivt ramavtal!");
             }
-            else
+            try
             {
-                //get pricelisttype for customer and get calculated price
-                updatedModel.OrderCalculatedPriceInformationModel = new PriceInformationModel
+                Order order = await CreateNewOrder();
+                PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
+                OrderViewModel updatedModel = null;
+                var firstOccasion = model.FirstOccasion;
+                string warningOrderTimeInfo = string.Empty;
+                model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
+                updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
+                if (model.IsMultipleOrders)
                 {
-                    MealBreakIsNotDetucted = order.MealBreakIncluded ?? false,
-                    Header = "Beräknat preliminärt pris",
-                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(order, pricelistType),
-                    UseDisplayHideInfo = true,
-                    Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
-                };
-                warningOrderTimeInfo = CheckReasonableDurationTime(order.StartAt.DateTime, order.EndAt.DateTime);
-                updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? CheckOrderOccasionFarAway(order.StartAt.DateTime) :
-                    $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(order.StartAt.DateTime)}";
-                updatedModel.DisplayMealBreakIncludedText = order.MealBreakTextToDisplay;
-            }
-            var customerUnit = model.CustomerUnitId.HasValue && model.CustomerUnitId > 0 ? _dbContext.CustomerUnits
-                .Single(cu => cu.CustomerUnitId == model.CustomerUnitId) : null;
-
-            order.CustomerUnit = customerUnit;
-
-            updatedModel.RegionName = _dbContext.Regions
-                .Single(r => r.RegionId == model.RegionId).Name;
-
-            updatedModel.CustomerUnitName = model.CustomerUnitId.HasValue ?
-                model.CustomerUnitId == 0 ? "Bokningen ska inte kopplas till någon enhet" :
-                customerUnit.Name : "Du tillhör ingen enhet i systemet";
-            Language language = _dbContext.Languages
-                .Single(l => l.LanguageId == model.LanguageId);
-
-            updatedModel.LanguageName = order.OtherLanguage ?? language.Name;
-            updatedModel.LatestAnswerBy = model.LatestAnswerBy;
-            updatedModel.WarningOrderRequiredCompetenceInfo = CheckOrderCompetenceRequirements(order, language);
-            updatedModel.UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId());
-            if (order.Attachments?.Count > 0)
-            {
-                List<FileModel> attachments = new List<FileModel>();
-                foreach (int attId in order.Attachments.Select(a => a.AttachmentId))
-                {
-                    Attachment a = _dbContext.Attachments.Single(f => f.AttachmentId == attId);
-                    attachments.Add(new FileModel { FileName = a.FileName, Id = a.AttachmentId, Size = a.Blob.Length });
+                    updatedModel.OrderOccasionDisplayModels = await GetGroupOrders(model, pricelistType, currentFrameworkAgreement.BrokerFeeCalculationType);
+                    updatedModel.SeveralOccasions = true;
+                    updatedModel.WarningOrderGroupCloseInTime = CheckOrderGroupCloseInTime(updatedModel.OrderOccasionDisplayModels);
+                    warningOrderTimeInfo = CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels);
+                    updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ?
+                        CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true) :
+                        $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true)}";
                 }
-                updatedModel.AttachmentListModel = new AttachmentListModel
+                else
                 {
-                    AllowDelete = false,
-                    AllowDownload = true,
-                    AllowUpload = false,
-                    Title = "Bifogade filer",
-                    DisplayFiles = attachments
-                };
+                    //get pricelisttype for customer and get calculated price
+                    updatedModel.OrderCalculatedPriceInformationModel = new PriceInformationModel
+                    {
+                        MealBreakIsNotDetucted = order.MealBreakIncluded ?? false,
+                        Header = "Beräknat preliminärt pris",
+                        PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(order, pricelistType, currentFrameworkAgreement.BrokerFeeCalculationType),
+                        UseDisplayHideInfo = true,
+                        Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
+                    };
+                    warningOrderTimeInfo = CheckReasonableDurationTime(order.StartAt.DateTime, order.EndAt.DateTime);
+                    updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? CheckOrderOccasionFarAway(order.StartAt.DateTime) :
+                        $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(order.StartAt.DateTime)}";
+                    updatedModel.DisplayMealBreakIncludedText = order.MealBreakTextToDisplay;
+                }
+                var customerUnit = model.CustomerUnitId.HasValue && model.CustomerUnitId > 0 ? _dbContext.CustomerUnits
+                    .Single(cu => cu.CustomerUnitId == model.CustomerUnitId) : null;
+
+                order.CustomerUnit = customerUnit;
+
+                updatedModel.RegionName = _dbContext.Regions
+                    .Single(r => r.RegionId == model.RegionId).Name;
+
+                updatedModel.CustomerUnitName = model.CustomerUnitId.HasValue ?
+                    model.CustomerUnitId == 0 ? "Bokningen ska inte kopplas till någon enhet" :
+                    customerUnit.Name : "Du tillhör ingen enhet i systemet";
+                Language language = _dbContext.Languages
+                    .Single(l => l.LanguageId == model.LanguageId);
+
+                updatedModel.LanguageName = order.OtherLanguage ?? language.Name;
+                updatedModel.LatestAnswerBy = model.LatestAnswerBy;
+                updatedModel.WarningOrderRequiredCompetenceInfo = CheckOrderCompetenceRequirements(order, language);
+                updatedModel.UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId());
+                if (order.Attachments?.Count > 0)
+                {
+                    List<FileModel> attachments = new List<FileModel>();
+                    foreach (int attId in order.Attachments.Select(a => a.AttachmentId))
+                    {
+                        Attachment a = _dbContext.Attachments.Single(f => f.AttachmentId == attId);
+                        attachments.Add(new FileModel { FileName = a.FileName, Id = a.AttachmentId, Size = a.Blob.Length });
+                    }
+                    updatedModel.AttachmentListModel = new AttachmentListModel
+                    {
+                        AllowDelete = false,
+                        AllowDownload = true,
+                        AllowUpload = false,
+                        Title = "Bifogade filer",
+                        DisplayFiles = attachments
+                    };
+                }
+                var user = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single();
+                updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
+                updatedModel.CreatedBy = order.ContactInformation;
+                updatedModel.CustomerName = user.CustomerOrganisation.Name;
+                updatedModel.CustomerOrganisationNumber = user.CustomerOrganisation.OrganisationNumber;
+                updatedModel.CustomerPeppolId = user.CustomerOrganisation.PeppolId;
+                updatedModel.CompetenceIsRequired = order.SpecificCompetenceLevelRequired;
+                return PartialView(nameof(Confirm), updatedModel);
             }
-            var user = _userManager.Users.Where(u => u.Id == User.GetUserId()).Single();
-            updatedModel.ContactPerson = order.ContactPersonId.HasValue ? _userManager.Users.Where(u => u.Id == order.ContactPersonId).Single().CompleteContactInformation : string.Empty;
-            updatedModel.CreatedBy = order.ContactInformation;
-            updatedModel.CustomerName = user.CustomerOrganisation.Name;
-            updatedModel.CustomerOrganisationNumber = user.CustomerOrganisation.OrganisationNumber;
-            updatedModel.CustomerPeppolId = user.CustomerOrganisation.PeppolId;
-            updatedModel.CompetenceIsRequired = order.SpecificCompetenceLevelRequired;
-            return PartialView(nameof(Confirm), updatedModel);
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in {nameof(Confirm)}", ex);
+                return PartialView("_ErrorMessage", "Något gick fel vid sammanställningen av avropet!");
+            }
         }
 
         [Authorize(Policy = Policies.Customer)]
@@ -624,7 +658,9 @@ namespace Tolk.Web.Controllers
                         {
                             return RedirectToAction(nameof(View), new { id = order.OrderId, errorMessage = "Uppdraget kunde inte avbokas" });
                         }
-                        if (request.CanCreateReplacementOrderOnCancel && TimeIsValidForOrderReplacement(order.StartAt))
+                        if (request.CanCreateReplacementOrderOnCancel &&
+                            _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
+                            TimeIsValidForOrderReplacement(order.StartAt))
                         {
                             //Forward the message to replace
                             return RedirectToAction(nameof(Replace), new { replacingOrderId = model.OrderId, cancelMessage = model.CancelMessage });
@@ -740,7 +776,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
         {
-            var order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
+            var order = await _dbContext.Orders.GetFullOrderById(model.OrderId);                     
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded)
             {
                 var oldContactPerson = order.ContactPersonUser;
@@ -750,6 +786,8 @@ namespace Tolk.Web.Controllers
                 }
                 _orderService.ChangeContactPerson(order, model.ContactPersonId, User.GetUserId(), User.TryGetImpersonatorId());
                 await _dbContext.SaveChangesAsync();
+                // Note: this discard-fetch will add request to the order entity being tracked by EF
+                _ = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                 _notificationService.OrderContactPersonChanged(order, oldContactPerson);
                 if ((await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
                 {
@@ -942,7 +980,7 @@ namespace Tolk.Web.Controllers
             return orders;
         }
 
-        private async Task<IEnumerable<OrderOccasionDisplayModel>> GetGroupOrders(OrderModel model, PriceListType pricelistType)
+        private async Task<IEnumerable<OrderOccasionDisplayModel>> GetGroupOrders(OrderModel model, PriceListType pricelistType, BrokerFeeCalculationType brokerFeeCalculationType)
         {
             var occasions = new List<OrderOccasionDisplayModel>();
             foreach (var occasion in model.UniqueOrdersFromOccasions)
@@ -954,7 +992,7 @@ namespace Tolk.Web.Controllers
                 {
                     MealBreakIsNotDetucted = occasion.MealBreakIncluded ?? false,
                     Header = "Beräknat preliminärt pris",
-                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType),
+                    PriceInformationToDisplay = _orderService.GetOrderPriceinformationForConfirmation(groupOrder, pricelistType, brokerFeeCalculationType),
                     UseDisplayHideInfo = true,
                     Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
                 };
@@ -1000,5 +1038,6 @@ namespace Tolk.Web.Controllers
             }
             return list;
         }
+
     }
 }

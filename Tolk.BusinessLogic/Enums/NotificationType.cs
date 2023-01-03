@@ -190,18 +190,18 @@ namespace Tolk.BusinessLogic.Enums
         RequestAssignmentTimePassed = 25,
 
         [Description("Beställning fullständigt besvarad")]
-        [CustomName("order_accepted", false)]
+        [CustomName("order_answered_and_approved", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
-        OrderAccepted = 26,
+        OrderAnsweredAndApproved = 26,
 
         [Description("Beställning besvarad, inväntar godkännande av beställare")]
         [CustomName("order_answered", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
-        OrderAnswered = 27,
+        OrderAnsweredAwaitingApproval = 27,
 
         [Description("Beställning avböjd av förmedling")]
         [CustomName("order_declined", false)]
@@ -228,9 +228,6 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Peppol)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
         OrderAgreementRepalced = 31,
-
-
-
 
 
         //Additional
@@ -390,5 +387,40 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.User)]
         PasswordReset = 56,
+
+        [Description("Avslutat avrop på grund av ramavtalets slut")]
+        [CustomName("order_terminated_due_to_terminated_framework_agreement", false)]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [NotificationConsumerType(NotificationConsumerType.Broker)]
+        [NotificationConsumerType(NotificationConsumerType.Customer)]
+        OrderTerminatedDueToTerminatedFrameworkAgreement = 57,
+
+        [Description("Avslutat sammanhållen förfrågan på grund av ramavtalets slut")]
+        [CustomName("order_group_terminated_due_to_terminated_framework_agreement", false)]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [NotificationConsumerType(NotificationConsumerType.Broker)]
+        [NotificationConsumerType(NotificationConsumerType.Customer)]
+        OrderGroupTerminatedDueToTerminatedFrameworkAgreement = 58,
+
+        [Description("Förfrågan skapad, kräver endast bekräftelse initialt, med egen tid för tillsättningen av tolk")]
+        [CustomName("request_created_requires_acceptance_only")]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [AvailableNotificationChannel(NotificationChannel.Webhook)]
+        [NotificationConsumerType(NotificationConsumerType.Broker)]
+        RequestCreatedForAcceptance = 59,
+
+        [Description("Sammanhållen förfrågan skapad, kräver endast bekräftelse, med egen tid för tillsättningen av tolk")]
+        [CustomName("request_group_created_requires_acceptance_only")]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [AvailableNotificationChannel(NotificationChannel.Webhook)]
+        [NotificationConsumerType(NotificationConsumerType.Broker)]
+        RequestGroupCreatedForAcceptance = 60,
+
+        [Description("Beställning besvarad, inväntar godkännande av beställare")]
+        [CustomName("order_accepted", false)]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [NotificationConsumerType(NotificationConsumerType.Customer)]
+        OrderAccepted = 61,
+
     }
 }

@@ -16,25 +16,23 @@ namespace Tolk.BusinessLogic.Utilities
             using (var hash = new Rfc2898DeriveBytes(passwordHash, Encoding.ASCII.GetBytes(saltKey)))
             {
                 byte[] keyBytes = hash.GetBytes(256 / 8);
-                using (var symmetricKey = new RijndaelManaged() { Mode = CipherMode.CBC, Padding = PaddingMode.Zeros })
+                using Aes symmetricKey = GetSymmetricey();
+                var encryptor = symmetricKey.CreateEncryptor(keyBytes, Encoding.ASCII.GetBytes(VIKey));
+
+                byte[] cipherTextBytes;
+
+                using (var memoryStream = new MemoryStream())
                 {
-                    var encryptor = symmetricKey.CreateEncryptor(keyBytes, Encoding.ASCII.GetBytes(VIKey));
-
-                    byte[] cipherTextBytes;
-
-                    using (var memoryStream = new MemoryStream())
+                    using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
                     {
-                        using (var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write))
-                        {
-                            cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
-                            cryptoStream.FlushFinalBlock();
-                            cipherTextBytes = memoryStream.ToArray();
-                            cryptoStream.Close();
-                        }
-                        memoryStream.Close();
+                        cryptoStream.Write(plainTextBytes, 0, plainTextBytes.Length);
+                        cryptoStream.FlushFinalBlock();
+                        cipherTextBytes = memoryStream.ToArray();
+                        cryptoStream.Close();
                     }
-                    return Convert.ToBase64String(cipherTextBytes);
+                    memoryStream.Close();
                 }
+                return Convert.ToBase64String(cipherTextBytes);
             }
         }
 
@@ -44,20 +42,27 @@ namespace Tolk.BusinessLogic.Utilities
             using (var hash = new Rfc2898DeriveBytes(PasswordHash, Encoding.ASCII.GetBytes(SaltKey)))
             {
                 byte[] keyBytes = hash.GetBytes(256 / 8);
-                using (var symmetricKey = new RijndaelManaged() { Mode = CipherMode.CBC, Padding = PaddingMode.Zeros })
-                {
+                using Aes symmetricKey = GetSymmetricey();
 
-                    var decryptor = symmetricKey.CreateDecryptor(keyBytes, Encoding.ASCII.GetBytes(VIKey));
-                    var memoryStream = new MemoryStream(cipherTextBytes);
-                    var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
-                    byte[] plainTextBytes = new byte[cipherTextBytes.Length];
+                var decryptor = symmetricKey.CreateDecryptor(keyBytes, Encoding.ASCII.GetBytes(VIKey));
+                var memoryStream = new MemoryStream(cipherTextBytes);
+                var cryptoStream = new CryptoStream(memoryStream, decryptor, CryptoStreamMode.Read);
+                byte[] plainTextBytes = new byte[cipherTextBytes.Length];
 
-                    int decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
-                    memoryStream.Close();
-                    cryptoStream.Close();
-                    return Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount).TrimEnd("\0".ToCharArray());
-                }
+                int decryptedByteCount = cryptoStream.Read(plainTextBytes, 0, plainTextBytes.Length);
+                memoryStream.Close();
+                cryptoStream.Close();
+                return Encoding.UTF8.GetString(plainTextBytes, 0, decryptedByteCount).TrimEnd("\0".ToCharArray());
             }
+        }
+
+        private static Aes GetSymmetricey()
+        {
+            var symmetricKey = Aes.Create("AesManaged");
+            symmetricKey.Mode = CipherMode.CBC;
+            symmetricKey.Padding = PaddingMode.Zeros;
+            return symmetricKey;
         }
     }
 }
+

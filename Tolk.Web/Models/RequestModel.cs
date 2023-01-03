@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
 
@@ -77,6 +78,14 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolkens kompetensnivå")]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
+        [ClientRequired]
+        [Display(Name = "Tolkens kompetensnivå", Description = "Ni behöver sätta vilken kompetensnivå tolken kommer ha.")]
+        public CompetenceAndSpecialistLevel? InterpreterCompetenceLevelOnAccept { get; set; }
+
+        [ClientRequired]
+        [Display(Name = "Inställelsesätt")]
+        public InterpreterLocation? InterpreterLocationOnAccept { get; set; }
+
         [Required]
         [Display(Name = "Tolk", Description = "I de fall tillsatt tolk har skyddad identitet skall inte tolkens namn eller kontaktuppgifter finnas i bekräftelsen. Använd i dessa fall valet ”Tolk med skyddade personuppgifter”. Överlämna tolkens uppgifter på annat sätt i enlighet med era säkerhetsrutiner")]
         public int? InterpreterId { get; set; }
@@ -141,13 +150,21 @@ namespace Tolk.Web.Models
         [Display(Name = "Inkommen")]
         public DateTimeOffset? CreatedAt { get; set; }
 
-        [Display(Name = "Svara senast")]
+        [Display(Name = "Bekräfta senast")]
+        public DateTimeOffset? LastAcceptAt { get; set; }
+
+        [Display(Name = "Tillsätt tolk senast")]
         public DateTimeOffset? ExpiresAt { get; set; }
 
         [Display(Name = "Förmedlingens bokningsnummer", Description = "Här kan ni som förmedling ange ett eget bokningsnummer att koppla till bokningen.")]
         public string BrokerReferenceNumber { get; set; }
 
         public bool AllowProcessing { get; set; } = true;
+
+        public bool AllowAccept { get; set; } = true;
+
+        [Display(Name = "Tillsätt tolk direkt", Description = "Detta är en förfrågan med lång framförhållning, där ni som förmedling inte behöver tillsätta tolk i första svaret. Men om ni gör det så kommer det anses som en fullständig tillsättning, vilket gör att ni inte behöver tillsätta tolken senare.")]
+        public bool FullAnswer { get; set; } = true;
 
         public bool DisplayExpectedTravelCostInfo { get; set; }
 
@@ -166,6 +183,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Sista tid att besvara tillsättning", Description = "Här har förmedlingen möjlighet att ange en tid för när myndigheten senast ska besvara tillsättningen. Om myndigheten inte svarar inom angiven tid avslutas förfrågan.")]
         [ClientRequired]
         public DateTimeOffset? LatestAnswerTimeForCustomer { get; set; }
+
+        public string TravelConditionHours { get; set; }
+        public string TravelConditionKilometers { get; set; }
 
         #region view stuff
 
@@ -192,7 +212,7 @@ namespace Tolk.Web.Models
         #region methods
 
         internal static RequestModel GetModelFromRequest(Request request)
-        {           
+        {
             return new RequestModel
             {
                 Status = request.Status,
@@ -203,6 +223,7 @@ namespace Tolk.Web.Models
                 RequestGroupStatus = request.RequestGroup?.Status,
                 RequestId = request.RequestId,
                 CreatedAt = request.CreatedAt,
+                LastAcceptAt = request.LastAcceptAt,
                 ExpiresAt = request.ExpiresAt,
                 BrokerReferenceNumber = request.BrokerReferenceNumber,
                 Interpreter = request.Interpreter?.CompleteContactInformation,
@@ -236,7 +257,8 @@ namespace Tolk.Web.Models
                 }).ToList(),
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
                 OrderViewModel = OrderViewModel.GetModelFromOrder(request.Order, request, true, true),
-                LatestAnswerTimeForCustomer = request.LatestAnswerTimeForCustomer,
+                TravelConditionHours = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionHours,
+                TravelConditionKilometers = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionKilometers
             };
         }
 

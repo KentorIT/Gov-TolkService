@@ -10,7 +10,7 @@ namespace Tolk.BusinessLogic.Services
         public static string CreateSalt(int size)
         {
             //Generate a cryptographic random number.
-            using RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+            using var rng = RandomNumberGenerator.Create();
             byte[] buff = new byte[size];
             rng.GetBytes(buff);
             return Convert.ToBase64String(buff);
@@ -19,7 +19,7 @@ namespace Tolk.BusinessLogic.Services
         public static string GenerateHash(string input, string salt)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(input + salt);
-            using SHA256Managed sHA256ManagedString = new SHA256Managed();
+            using var sHA256ManagedString = SHA256.Create();
             byte[] hash = sHA256ManagedString.ComputeHash(bytes);
             return Convert.ToBase64String(hash);
         }

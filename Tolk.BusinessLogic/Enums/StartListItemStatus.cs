@@ -93,5 +93,11 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Bokningsförfrågan ändrad av myndighet")]
         OrderChanged = 30,
+
+        [Description("Bokningsförfrågan bekräftad, inväntar tolktillsättning")]
+        RequestAccepted = 31,
+
+        [Description("Sammanhållen bokningsförfrågan bekräftad, inväntar tolktillsättning")]
+        RequestGroupAccepted = 32,
     }
 }

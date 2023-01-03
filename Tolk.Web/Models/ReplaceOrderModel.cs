@@ -36,11 +36,13 @@ namespace Tolk.Web.Models
 
         public string CancelMessage { get; set; }
 
+        public FrameworkAgreementResponseRuleset FrameworkAgreementResponseRuleset { get; set; }
+
         [Display(Name = "Datum och tid för ersättning", Description = "Datum och tid för tolkuppdraget.")]
-        [StayWithinOriginalRange(ErrorMessage = "Uppdraget måste ske inom tiden för det ersatta uppdraget", OtherRangeProperty = nameof(ReplacedTimeRange))]
+        [StayWithinOriginalRange(ErrorMessage = "Uppdraget måste ske inom tiden för det ersatta uppdraget", OtherRangeProperty = nameof(ReplacedTimeRange), RulesetProperty = nameof(FrameworkAgreementResponseRuleset))]
         public TimeRange TimeRange { get; set; }
 
-        internal static ReplaceOrderModel GetModelFromOrder(Order order, string cancelMessage, string brokerName, bool useAttachments)
+        internal static ReplaceOrderModel GetModelFromOrder(Order order, string cancelMessage, string brokerName, bool useAttachments, FrameworkAgreementResponseRuleset responseRuleset)
         {
             var model = new ReplaceOrderModel
             {
@@ -79,7 +81,8 @@ namespace Tolk.Web.Models
                 },
                 Description = order.Description,
                 UnitName = order.UnitName,
-                UseAttachments = useAttachments
+                UseAttachments = useAttachments,
+                FrameworkAgreementResponseRuleset = responseRuleset
             };
             return model;
         }
