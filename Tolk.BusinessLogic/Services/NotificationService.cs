@@ -1587,11 +1587,6 @@ Sammanställning:
             CreateEmail(new[] { recipient }, subject, plainBody, string.IsNullOrEmpty(htmlBody) ? HtmlHelper.ToHtmlBreak(plainBody) : htmlBody, notificationType,frameWorkAgreementNumber, isBrokerMail, addContractInfo);
         }
 
-        //public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true)
-        //{
-        //    CreateEmail(new[] { recipient }, subject, plainBody, string.IsNullOrEmpty(htmlBody) ? HtmlHelper.ToHtmlBreak(plainBody) : htmlBody, notificationType, "TEST", isBrokerMail, addContractInfo);
-        //}
-
         public void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, int replacingEmailId, int resentByUserId)
         {
             _dbContext.Add(new OutboundEmail(
@@ -1825,8 +1820,8 @@ Sammanställning:
             string handledBy = $"Detta ärende hanteras i {Constants.SystemName}.";
             if(frameworkAgreementNumber == null && addContractInfo)
             {
-                frameworkAgreementNumber = _cacheService.CurrentOrLatestFrameworkAgreement.AgreementNumber;
-                _logger.LogWarning("Email is missing it's frameworkAgreementnumber, using currently active Agreement {agreementNumber}, NotificationType:{notificationType}", frameworkAgreementNumber, notificationType.ToString());
+                frameworkAgreementNumber = "";
+                _logger.LogWarning("Email is missing it's frameworkAgreementnumber and it was expected, NotificationType:{notificationType}", notificationType.ToString());
             }
             string contractInfo = $"Avrop från ramavtal för tolkförmedlingstjänster {frameworkAgreementNumber}";            
 

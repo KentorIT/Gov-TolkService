@@ -102,7 +102,8 @@ namespace Tolk.BusinessLogic.Services
                             $"Verifieringen av språklistan mot Tellus misslyckades!",
                             message,
                             null,
-                            NotificationType.GetLaguagesFromTellusFailed
+                            NotificationType.GetLaguagesFromTellusFailed,
+                            addContractInfo:false
                         );
                     }
                     return new ValidateTellusLanguageListResult
@@ -183,7 +184,8 @@ namespace Tolk.BusinessLogic.Services
                             $"Hämtningen av språkkompetenser från Tellus misslyckades!",
                             $"Här kan du testa att köra en hämtning direkt ifrån tjänsten:\n\n{_tolkBaseOptions.TolkWebBaseUrl}Language/UpdateCompetences",
                             null,
-                            NotificationType.GetCompetencesFromTellusFailed
+                            NotificationType.GetCompetencesFromTellusFailed,
+                            addContractInfo: false
                         );
                     }
                     _logger.LogWarning($"Hämtningen av språkkompetenser från Tellus misslyckades, med status {result.Status}");
