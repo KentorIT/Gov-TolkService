@@ -1080,7 +1080,7 @@ namespace Tolk.Web.Controllers
             {
                 return StartListItemStatus.RespondedRequestGroupNotAnswered;
             }
-            if (requestStatus == RequestStatus.ResponseNotAnsweredByCreator && isGroup)
+            if (requestStatus == RequestStatus.ResponseNotAnsweredByCreator && !isGroup)
             {
                 return StartListItemStatus.RespondedRequestNotAnswered;
             }
