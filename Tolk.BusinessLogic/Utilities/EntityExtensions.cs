@@ -605,6 +605,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<RequestGroup> GetRequestGroupToView(this IQueryable<RequestGroup> groups, int id)
            => await groups.GetRequestGroupsWithUsers()
+                .Include(g => g.Ranking).ThenInclude(r => r.FrameworkAgreement)
                 .Include(g => g.OrderGroup).ThenInclude(o => o.CreatedByUser)
                 .Include(g => g.OrderGroup).ThenInclude(o => o.Language)
                 .Include(g => g.OrderGroup).ThenInclude(o => o.Region)
