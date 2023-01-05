@@ -309,7 +309,7 @@ namespace Tolk.BusinessLogic.Utilities
                 );
 
         public static IQueryable<Request> GetRequestsForOrder(this IQueryable<Request> requests, int id)
-            => requests.Include(r => r.Ranking).Where(r => r.OrderId == id);
+            => requests.Include(r => r.Ranking).ThenInclude(ra => ra.FrameworkAgreement).Where(r => r.OrderId == id);
 
         public static IQueryable<Request> GetRequestsForOrderForEventLog(this IQueryable<Request> requests, int id, int? brokerId = null)
         {

@@ -271,20 +271,27 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(order, nameof(CreateRequest), nameof(OrderService));
             var currentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
-            if (!currentFrameworkAgreement.IsActive)
+            FrameworkAgreement orderFrameworkAgreement = null;
+
+            Request request = null;
+            order.Requests = await _tolkDbContext.Requests.GetRequestsForOrder(order.OrderId).ToListAsync();
+            if (order.Requests.Any())
+            {
+                orderFrameworkAgreement = order.Requests.Last().Ranking.FrameworkAgreement;
+            }
+            //if not first request - check if agreement connected to order is active, if not terminate
+            if ((orderFrameworkAgreement != null && !orderFrameworkAgreement.IsActive(_clock.SwedenNow)) ||
+               //else check if current agreement is active, if not terminate
+               (orderFrameworkAgreement == null && !currentFrameworkAgreement.IsActive))
             {
                 order.Status = OrderStatus.NoBrokerAcceptedOrder;
                 await TerminateOrder(order, notify);
             }
+            //else check if new request can be created
             else
             {
-                Request request = null;
                 var calculatedExpiry = CalculateExpiryForNewRequest(order.StartAt, currentFrameworkAgreement.FrameworkAgreementResponseRuleset, latestAnswerBy);
-                if (order.OrderId > 0)
-                {
-                    order.Requests = await _tolkDbContext.Requests.GetRequestsForOrder(order.OrderId).ToListAsync();
-                }
-                var rankings = currentFrameworkAgreement.IsActive ? _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date, currentFrameworkAgreement.LastValidDate) : null;
+                var rankings = _rankingService.GetActiveRankingsForRegion(order.RegionId, order.StartAt.Date, currentFrameworkAgreement.LastValidDate);
                 if (expiredRequest != null)
                 {
                     // Only create a new request if the previous request was not a flagged as terminal.

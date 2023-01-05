@@ -31,6 +31,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public FrameworkAgreementResponseRuleset FrameworkAgreementResponseRuleset { get; set; }
 
+        public bool IsActive(DateTimeOffset now) => LastValidDate >= now.Date && now.Date >= FirstValidDate;
+
         #region navigation properites
 
         public List<Ranking> Rankings { get; private set; }
