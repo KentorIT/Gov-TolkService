@@ -564,6 +564,7 @@ namespace Tolk.Web.Controllers
                 var model = new OrderSentModel
                 {
                     OrderNumber = order.OrderNumber,
+                    StartAt = order.StartAt,
                     OrderCalculatedPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.OrderPriceRows.GetPriceRowsForOrder(id).ToListAsync(), PriceInformationType.Order, order.MealBreakIncluded ?? false)
                 };
                 model.OrderCalculatedPriceInformationModel.Header = "Preliminärt pris";

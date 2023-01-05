@@ -1,0 +1,31 @@
+﻿@inject Tolk.BusinessLogic.Services.ISwedishClock Clock
+@using Tolk.Web.Models
+<div>
+    <p>För förfrågningar som görs senast tjugo (20), respektive tio (10) dagar kan dessa uppgifter uteslutas vid bekräftelse</p>
+    <ul>
+        <li>Tolkens tolknummer/namn</li>
+        <li>Tolkens kontaktuppgifter</li>
+        <li>Tolkens restid och resekostnader</li>
+        <li>Tolkens kompetensnivå, förutsatt att det inte är ett krav</li>
+    </ul>
+    <p>Dessa uppgifter måste bekräftas vid ett senare tillfälle</p>
+</div>
+<ul>
+    <li>
+        Förfrågningar som görs senast tjugo (20) arbetsdagar före tolktillfället
+        <ul>
+            <li>Ska Bekräftas senast kl.@Clock.SwedenNow.ToString("HH:mm") fyra (4) arbetsdagar efter förfrågan gjorts</li>
+            <li>Ev. Tolkuppgifter ska bekräftas senast kl. @Model.ToString("HH:mm") sju (7) arbetsdagar innan uppdragsstart</li>
+        </ul>
+    </li>
+    <li>
+        Förfrågningar som görs senast tio (10) arbetsdagar före tolktillfället
+        <ul>
+            <li>Ska Bekräftas senast kl.@Clock.SwedenNow.ToString("HH:mm") två (2) arbetsdagar efter förfrågan gjorts</li>
+            <li>Ev. Tolkuppgifter ska bekräftas senast kl. @Model.ToString("HH:mm") fem (5) arbetsdagar innan uppdragsstart</li>
+        </ul>
+    </li>
+    <li>Förfrågningar som görs senast två (2) arbetsdagar före tolktillfället ska besvaras senast kl. 15.00 nästa arbetsdag</li>
+    <li>Förfrågningar som görs senast kl 14:00 arbetsdagen före tolktillfället ska besvaras senast kl 16:30 samma dag</li>
+    <li>Förfrågningar som görs efter kl 14:00 arbetsdagen före uppdragsstart, eller samma arbetsdag som uppdragsstart, skall besvaras senast enligt avroparen angiven senaste svarstid</li>
+</ul>

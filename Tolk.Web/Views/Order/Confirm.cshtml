@@ -1,5 +1,7 @@
 ﻿@model OrderViewModel
 @inject HelpLinkService HelpLinkService
+@inject Tolk.BusinessLogic.Services.CacheService CacheService
+@using Tolk.BusinessLogic.Enums
 @using Tolk.BusinessLogic.Utilities
 @using Tolk.Web.Services
 @{
@@ -24,12 +26,18 @@
         <div class="row">
             <div class="col-sm-4"></div>
             <div class="col-sm-8 important-info">
-                Tidsramar efter mottagande av bokningsförfrågan:
-                <ul>
-                    <li>Förfrågningar som görs senast två arbetsdagar före tolktillfället ska besvaras senast kl. 15.00 nästa arbetsdag</li>
-                    <li>Förfrågningar som görs senast kl 14:00 arbetsdagen före tolktillfället ska besvaras senast kl 16:30 samma dag</li>
-                    <li>Förfrågningar som görs efter kl 14:00 arbetsdagen före uppdragsstart, eller samma arbetsdag som uppdragsstart, skall besvaras senast enligt avroparen angiven senaste svarstid</li>
-                </ul>
+                Tidsramar efter mottagande av bokningsförfrågan:             
+                @switch (CacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset)
+                {
+                    case FrameworkAgreementResponseRuleset.VersionOne:
+                        @await Html.PartialAsync("_AgreementVersionOneTimeRules")
+                        break;
+                    case FrameworkAgreementResponseRuleset.VersionTwo:
+                        @await Html.PartialAsync("_AgreementVersionTwoTimeRules",@Model.TimeRange.StartDateTime)
+                        break;
+                    default:
+                        break;
+                }
             </div>
         </div>
         @if (!string.IsNullOrEmpty(Model.WarningOrderTimeInfo))
