@@ -4,6 +4,7 @@ Detta är en avropstjänst för tolkar. Tjänsten är utvecklad för Kammarkollegiet o
 
 ## Utvecklingsmiljö
 - Visual Studio 2022 
+- [Web Compiler 2022+](https://marketplace.visualstudio.com/items?itemName=Failwyn.WebCompiler64)
 - [.NET Core SDK för 6.0](https://www.microsoft.com/net/download/windows)
 
 ## Licens
