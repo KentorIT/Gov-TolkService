@@ -1820,7 +1820,7 @@ Sammanställning:
             string handledBy = $"Detta ärende hanteras i {Constants.SystemName}.";
             if(frameworkAgreementNumber == null && addContractInfo)
             {
-                frameworkAgreementNumber = "";
+                frameworkAgreementNumber = string.Empty;
                 _logger.LogWarning("Email is missing it's frameworkAgreementnumber and it was expected, NotificationType:{notificationType}", notificationType.ToString());
             }
             string contractInfo = $"Avrop från ramavtal för tolkförmedlingstjänster {frameworkAgreementNumber}";            

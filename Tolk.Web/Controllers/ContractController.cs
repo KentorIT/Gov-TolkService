@@ -78,7 +78,7 @@ namespace Tolk.Web.Controllers
             var cachedAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
             if(cachedAgreement.FrameworkAgreementId == frameworkAgreementId || frameworkAgreementId == -1)
             {
-                return _cacheService.CurrentOrLatestFrameworkAgreement;
+                return cachedAgreement;
             }
             else
             {

@@ -3,7 +3,7 @@
 @using Tolk.BusinessLogic.Enums
 @inject HelpLinkService HelpLinkService
 @{
-    ViewData["Title"] = $"Information om ramavtal {Model.ContractListByRegionAndBrokerModel?.ConnectedFrameworkAgreement.AgreementNumber ?? Model.ContractListByRegionGroupAndServiceModel.ConnectedFrameworkAgreement.AgreementNumber?? ""}";
+    ViewData["Title"] = $"Information om ramavtal {Model.ContractListByRegionAndBrokerModel?.ConnectedFrameworkAgreement.AgreementNumber ?? Model.ContractListByRegionGroupAndServiceModel.ConnectedFrameworkAgreement.AgreementNumber ?? string.Empty}";
     HelpLinkService.PageName = "ramavtal";
 }
 <section aria-label="@ViewData["Title"]">
