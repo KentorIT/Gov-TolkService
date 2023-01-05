@@ -20,6 +20,16 @@
         break;  
     }
 
+    
+    <br/>
+    <h4>Avtal</h4>
+    @foreach (var agreement in Model.FrameworkAgreementList)
+    {
+        <p>
+            <a asp-controller="Contract" asp-action="List" asp-route-frameworkAgreementId=@agreement.FrameWorkAgreementId>@agreement.FrameWorkAgreementNumber</a>        
+        </p>
+    }
+
 </section>
 @section Scripts {
     <environment include="Development">

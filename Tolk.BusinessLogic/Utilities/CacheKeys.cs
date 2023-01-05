@@ -8,5 +8,6 @@
         public const string Holidays = nameof(Holidays);
         public const string CustomerSettings = nameof(CustomerSettings);
         public const string CurrentOrLatestFrameworkAgreement = nameof(CurrentOrLatestFrameworkAgreement);
+        public const string FrameworkAgreementList = nameof(FrameworkAgreementList);
     }
 }

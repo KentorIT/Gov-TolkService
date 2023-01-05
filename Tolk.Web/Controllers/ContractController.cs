@@ -48,9 +48,10 @@ namespace Tolk.Web.Controllers
         }
 
         [Authorize(Roles = Roles.AppOrSysAdmin)]
-        public async Task<IActionResult> List()
+        public async Task<IActionResult> List(int frameworkAgreementId = -1)
         {
-            var currentOrLatestFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
+            var currentOrLatestFrameworkAgreement = await GetFrameworkAgreement(frameworkAgreementId);
+            var frameworkAgreementList = _cacheService.FrameworkAgreementList;
             if (!currentOrLatestFrameworkAgreement.IsActive && currentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset.GetContractDefinitionAttribute() == null)
             {
                 // No Active FrameworkAgreement, Show previous? or Forbid?
@@ -68,9 +69,38 @@ namespace Tolk.Web.Controllers
                 default:
                     break;
             }
-
+            contractListWrapperModel.FrameworkAgreementList = frameworkAgreementList;
             return View(contractListWrapperModel);
         }
+
+        private async Task<CurrentOrLatestFrameworkAgreement> GetFrameworkAgreement(int frameworkAgreementId)
+        {            
+            var cachedAgreement = _cacheService.CurrentOrLatestFrameworkAgreement;
+            if(cachedAgreement.FrameworkAgreementId == frameworkAgreementId || frameworkAgreementId == -1)
+            {
+                return _cacheService.CurrentOrLatestFrameworkAgreement;
+            }
+            else
+            {
+                var agreement = await _dbContext.FrameworkAgreements.FirstOrDefaultAsync(fa => fa.FrameworkAgreementId == frameworkAgreementId);
+                var now = _clock.SwedenNow;
+                return agreement != null ?
+                           new CurrentOrLatestFrameworkAgreement
+                           {
+                               FrameworkAgreementId = agreement.FrameworkAgreementId,
+                               AgreementNumber = agreement.AgreementNumber,
+                               LastValidDate = agreement.LastValidDate,
+                               FirstValidDate = agreement.FirstValidDate,
+                               OriginalLastValidDate = agreement.OriginalLastValidDate,
+                               PossibleAgreementExtensionsInMonths = agreement.PossibleAgreementExtensionsInMonths,
+                               Description = agreement.Description,
+                               BrokerFeeCalculationType = agreement.BrokerFeeCalculationType,
+                               FrameworkAgreementResponseRuleset = agreement.FrameworkAgreementResponseRuleset,
+                               IsActive = agreement.LastValidDate >= now.Date && now.Date >= agreement.FirstValidDate,
+                           } :
+                           new CurrentOrLatestFrameworkAgreement { IsActive = false };
+            }
+        }       
 
         private async Task<ContractListWrapperModel> GetContractListByRegionGroupAndServiceType(CurrentOrLatestFrameworkAgreement frameworkAgreement)
         {
