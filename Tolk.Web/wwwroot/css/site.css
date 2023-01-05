@@ -1780,11 +1780,6 @@ ol.breadcrumb > li + li:before {
   margin: 0 auto;
   width: 21cm;
 }
-div.pricing-position-sticky {
-    position: sticky;
-    top: 10em;
-    z-index:100;
-}
 @media print {
   .glyphicon-print {
     display: none;
@@ -1792,4 +1787,9 @@ div.pricing-position-sticky {
   .btn {
     display: none;
   }
+}
+div.pricing-position-sticky {
+  position: sticky;
+  top: 10em;
+  z-index: 100;
 }
