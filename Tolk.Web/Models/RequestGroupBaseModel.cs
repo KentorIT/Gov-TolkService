@@ -113,5 +113,6 @@ namespace Tolk.Web.Models
         public string TravelConditionHours { get; set; }
         public string TravelConditionKilometers { get; set; }
 
+        public string FrameworkAgreementNumberOnCreated { get; set; }
     }
 }

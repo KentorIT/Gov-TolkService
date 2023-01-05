@@ -92,7 +92,7 @@ namespace Tolk.Web.Models
 
         public bool ExtraInterpreterRequestIsDeclinedByBroker => ExtraInterpreterStatus == RequestStatus.DeclinedByBroker || ExtraInterpreterStatus == RequestStatus.DeniedByTimeLimit;
 
-        public OrderBaseModel OrderGroupModel { get; set; }
+        public OrderBaseModel OrderGroupModel { get; set; }        
 
         #region methods
 
@@ -212,7 +212,8 @@ namespace Tolk.Web.Models
                 Status = requestGroup.Status,
                 ExtraInterpreterStatus = requestExtraInterpreter?.Status,
                 OrderStatus = orderGroup.Status,
-                BrokerReferenceNumber = displayBrokerReferenceNumber ? requestGroup.BrokerReferenceNumber : null
+                BrokerReferenceNumber = displayBrokerReferenceNumber ? requestGroup.BrokerReferenceNumber : null,
+                FrameworkAgreementNumberOnCreated = request.Ranking.FrameworkAgreement.AgreementNumber
             };
         }
 

@@ -14,8 +14,7 @@
         public const string IdPrefix = "KamK-ID ";
         public const string CustomizationId = "urn:fdc:peppol.eu:poacc:trns:order_agreement:3";
         public const string ProfileId = "urn:fdc:peppol.eu:poacc:bis:order_agreement:3";
-        public const string Currency = "SEK";
-        public const string ContractNumber = "23.3-9066-16";
+        public const string Currency = "SEK";        
 
         public const string cbc = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2";
         public const string cac = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2";
