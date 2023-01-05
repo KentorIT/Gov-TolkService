@@ -15,6 +15,7 @@ namespace Tolk.Web.Models
         public IEnumerable<string> CompetenceDescriptions { get; set; }
 
         public string RegionName { get; set; }
+        public string RegionGroup { get; set; }
 
     }
 }

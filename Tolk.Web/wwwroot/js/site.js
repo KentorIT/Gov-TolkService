@@ -190,6 +190,9 @@ $(function () {
         info: false,
         searching: false,
         sorting: false,
+        targets: 'no-sort',
+        bSort: false,
+        order:[],
         language: {
             url: "//cdn.datatables.net/plug-ins/1.10.19/i18n/Swedish.json"
         }

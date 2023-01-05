@@ -1788,3 +1788,8 @@ ol.breadcrumb > li + li:before {
     display: none;
   }
 }
+div.pricing-position-sticky {
+  position: sticky;
+  top: 10em;
+  z-index: 100;
+}

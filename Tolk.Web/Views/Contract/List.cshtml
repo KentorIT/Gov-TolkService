@@ -1,146 +1,35 @@
-﻿@model ContractListModel
+﻿@model ContractListWrapperModel
 @using Tolk.Web.Services
+@using Tolk.BusinessLogic.Enums
 @inject HelpLinkService HelpLinkService
 @{
-    ViewData["Title"] = "Information om ramavtal " + Model.ContractNumber;
+    ViewData["Title"] = $"Information om ramavtal {Model.ContractListByRegionAndBrokerModel?.ConnectedFrameworkAgreement.AgreementNumber ?? Model.ContractListByRegionGroupAndServiceModel.ConnectedFrameworkAgreement.AgreementNumber?? ""}";
     HelpLinkService.PageName = "ramavtal";
 }
 <section aria-label="@ViewData["Title"]">
-    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
-    <div class="row">
-        <br />
-        <div class="col-sm-12 in" id="link-display-reg">
-            <a class="a-region-contract big-link" href="#region">Visa avtalsinformation per län <span class="font-size-14 glyphicon glyphicon-menu-right"></span></a>
-            <br /><br />
-        </div>
-        <div class="col-sm-12 in" id="link-display-brok">
-            <a class="a-broker-contract big-link" href="#broker">Visa avtalsinformation per förmedling <span class="font-size-14 glyphicon glyphicon-menu-right"></span></a>
-            <br /><br />
-        </div>
-        <div class="col-md-12 collapse" id="contract-per-region">
-            @if (Model.ItemsPerRegion.Any())
-            {
-                <h2>Avtalsinformation per län</h2>
-                <div class="table-responsive table-datatable">
-                    <table class="table sortable-only-table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Län</th>
-                                <th>Rangordning</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.ItemsPerRegion)
-                            {
-                                <tr>
-                                    <td class="gray-border-bottom gray-border-left bold">@item.Region</td>
-                                    <td class="gray-border-bottom gray-border-right">
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th class="align-top">Rang &nbsp; &nbsp; </th>
-                                                    <th class="align-top">Förmedling &nbsp; &nbsp;</th>
-                                                    <th class="align-top">Förmedlingsavgift % &nbsp; &nbsp;</th>
-                                                    <th class="align-top">
-                                                        Förmedlingsavgift per kompetensnivå i SEK <br />
-                                                        <span class="normal-weight">
-                                                            @foreach (var cd in item.Brokers.First().CompetenceDescriptions)
-                                                            {
-                                                                <span> @cd &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                                                            }
-                                                        </span>
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach (var b in item.Brokers)
-                                                {
-                                                    <tr class="gray-border-top">
-                                                        <td>@b.Rank</td>
-                                                        <td>@b.BrokerName &nbsp; &nbsp;</td>
-                                                        <td>@b.BrokerFeePercentage</td>
-                                                        <td>
-                                                            @foreach (var p in b.BrokerFeesPerCompetenceLevel)
-                                                            {
-                                                                <span> @p &nbsp; </span>
-                                                            }
-                                                        </td>
-                                                    </tr>
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </div>
-        <div class="col-md-12 collapse" id="contract-per-broker">
-            @if (Model.ItemsPerBroker.Any())
-            {
-                <h2>Avtalsinformation per förmedling</h2>
-                <div class="table-responsive table-datatable">
-                    <table class="table sortable-only-table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Förmedling</th>
-                                <th>Region med rangordning</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.ItemsPerBroker)
-                            {
-                                @if (item.RegionRankings.Any())
-                                {
-                                    <tr>
-                                        <td class="gray-border-bottom gray-border-left bold">@item.Broker</td>
-                                        <td class="gray-border-bottom gray-border-right">
-                                            <table>
-                                                <thead>
-                                                    <tr>
-                                                        <th class="align-top">Län &nbsp; &nbsp; </th>
-                                                        <th class="align-top">Rang &nbsp; &nbsp; </th>
-                                                        <th class="align-top">Förmedlingsavgift % &nbsp; &nbsp;</th>
-                                                        <th class="align-top">
-                                                            Förmedlingsavgift per kompetensnivå i SEK <br />
-                                                            <span class="normal-weight">
-                                                                @foreach (var cd in item.RegionRankings.First().CompetenceDescriptions)
-                                                                {
-                                                                    <span> @cd &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                                                                }
-                                                            </span>
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @foreach (var b in item.RegionRankings)
-                                                    {
-                                                        <tr class="gray-border-top">
-                                                            <td>@b.RegionName &nbsp; &nbsp; </td>
-                                                            <td>@b.Rank &nbsp; &nbsp;</td>
-                                                            <td>@b.BrokerFeePercentage</td>
-                                                            <td>
-                                                                @foreach (var p in b.BrokerFeesPerCompetenceLevel)
-                                                                {
-                                                                    <span> @p &nbsp; </span>
-                                                                }
-                                                            </td>
-                                                        </tr>
-                                                    }
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </div>
-    </div>
+    <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>  
+    @switch (Model.ListType)
+    {
+        case BrokerFeeCalculationType.ByRegionAndBroker :
+            @await Html.PartialAsync($"_{BrokerFeeCalculationType.ByRegionAndBroker}",Model.ContractListByRegionAndBrokerModel)
+            break;
+        case BrokerFeeCalculationType.ByRegionGroupAndServiceType :
+            @await Html.PartialAsync($"_{BrokerFeeCalculationType.ByRegionGroupAndServiceType}",Model.ContractListByRegionGroupAndServiceModel)
+            break;
+        default:
+        break;  
+    }
+
+    
+    <br/>
+    <h4>Avtal</h4>
+    @foreach (var agreement in Model.FrameworkAgreementList)
+    {
+        <p>
+            <a asp-controller="Contract" asp-action="List" asp-route-frameworkAgreementId=@agreement.FrameWorkAgreementId>@agreement.FrameWorkAgreementNumber</a>        
+        </p>
+    }
+
 </section>
 @section Scripts {
     <environment include="Development">

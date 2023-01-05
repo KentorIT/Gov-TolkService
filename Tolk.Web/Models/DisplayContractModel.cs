@@ -14,6 +14,7 @@ namespace Tolk.Web.Models
         public DateTime OriginalLastValidDate { get; set; }        
         public int PossibleAgreementExtensionsInMonths { get; set; }
         public DateTime LastPossibleValidDate => OriginalLastValidDate.AddMonths(PossibleAgreementExtensionsInMonths);
+        public bool IsActive { get; set; }
 
         public ContractDefinition ContractDefinition { get; set; }
     }

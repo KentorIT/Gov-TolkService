@@ -34,6 +34,7 @@ namespace Tolk.BusinessLogic.Services
             await _cache.RemoveAsync(CacheKeys.Holidays);
             await _cache.RemoveAsync(CacheKeys.CustomerSettings);
             await _cache.RemoveAsync(CacheKeys.CurrentOrLatestFrameworkAgreement);
+            await _cache.RemoveAsync(CacheKeys.FrameworkAgreementList);
         }
 
         public async Task Flush(string id)
@@ -71,6 +72,26 @@ namespace Tolk.BusinessLogic.Services
                     
                 }                
                 return currentFrameworkAgreement;
+            }
+        }
+
+        public IEnumerable<FrameworkAgreementNumberIdModel> FrameworkAgreementList
+        {
+            get
+            {
+                var frameworkAgreementList = _cache.Get(CacheKeys.FrameworkAgreementList).FromByteArray<IEnumerable<FrameworkAgreementNumberIdModel>>();
+
+                if (frameworkAgreementList == null)
+                {
+                    var now = _clock.SwedenNow;
+                    frameworkAgreementList = _dbContext.FrameworkAgreements.Where(f => f.FirstValidDate <= now).Select(f => new FrameworkAgreementNumberIdModel
+                    {
+                        FrameWorkAgreementId = f.FrameworkAgreementId,
+                        FrameWorkAgreementNumber = f.AgreementNumber
+                    });
+                    _cache.Set(CacheKeys.FrameworkAgreementList, frameworkAgreementList.ToByteArray());
+                }
+                return frameworkAgreementList;
             }
         }
 
