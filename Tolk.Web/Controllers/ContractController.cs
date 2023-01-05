@@ -167,10 +167,14 @@ namespace Tolk.Web.Controllers
                           BrokerFeePercentage = ra.BrokerFee.Value,
                           Rank = ra.Rank,
                           BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
-                              p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.PriceToUse)
+                                ((frameworkAgreement.IsActive && p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow) ||
+                                (!frameworkAgreement.IsActive && p.EndDatePriceList == frameworkAgreement.LastValidDate)))
+                                    .OrderBy(p => p.PriceToUse)
                               .Select(p => p.PriceToUse.ToSwedishString("#,0.00")).ToList(),
                           CompetenceDescriptions = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
-                             p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
+                                ((frameworkAgreement.IsActive && p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow) ||
+                                (!frameworkAgreement.IsActive && p.EndDatePriceList == frameworkAgreement.LastValidDate)))
+                                    .OrderBy(p => p.CompetenceLevel)
                               .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                       }).ToList()
                   }),
@@ -184,10 +188,11 @@ namespace Tolk.Web.Controllers
                           BrokerFeePercentage = ra.BrokerFee.Value,
                           Rank = ra.Rank,
                           BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
-                                  p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
+                                    ((frameworkAgreement.IsActive && p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow) ||
+                                    (!frameworkAgreement.IsActive && p.EndDatePriceList == frameworkAgreement.LastValidDate)))
                                   .Select(p => p.PriceToUse.ToSwedishString("#,0.00")).ToList(),
                           CompetenceDescriptions = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
-                                  p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
+                                  p.StartDate <= _clock.SwedenNow && p.EndDatePriceList > _clock.SwedenNow).OrderBy(p => p.CompetenceLevel)
                                   .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                       }).ToList()
                   }),
