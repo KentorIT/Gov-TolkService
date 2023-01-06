@@ -1139,6 +1139,7 @@ namespace Tolk.Web.Controllers
             {
                 var emailSettings = settings.SingleOrDefault(s => s.NotificationType == val.Value && s.NotificationChannel == NotificationChannel.Email);
                 var webhookSettings = settings.SingleOrDefault(s => s.NotificationType == val.Value && s.NotificationChannel == NotificationChannel.Webhook);
+                var availableNotificationChannels = val.Value.GetAvailableNotificationChannels();
                 yield return new NotificationSettingsModel
                 {
                     Type = val.Value,
@@ -1146,8 +1147,8 @@ namespace Tolk.Web.Controllers
                     SpecificEmail = emailSettings?.ConnectionInformation,
                     UseWebHook = webhookSettings != null,
                     WebHookReceipentAddress = webhookSettings?.ConnectionInformation,
-                    DisplayEmail = val.Value.GetAvailableNotificationChannels().Any(nc => nc == NotificationChannel.Email),
-                    DisplayWebhook = val.Value.GetAvailableNotificationChannels().Any(nc => nc == NotificationChannel.Webhook)
+                    DisplayEmail = availableNotificationChannels.Any(nc => nc == NotificationChannel.Email),
+                    DisplayWebhook = availableNotificationChannels.Any(nc => nc == NotificationChannel.Webhook)
                 };
             }
         }
