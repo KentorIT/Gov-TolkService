@@ -634,51 +634,55 @@ namespace Tolk.BusinessLogic.Services
         public RequestExpiryResponse CalculateExpiryForNewRequest(DateTimeOffset startDateTime, FrameworkAgreementResponseRuleset ruleset, DateTimeOffset? explicitLastAnswerTime = null)
         {
             // Grab current time to not risk it flipping over during execution of the method.
-            var swedenNow = _clock.SwedenNow;
+            var closestWorkingDayCreatedTime = _clock.SwedenNow;
+            var closestWorkingDayStartAtTime = startDateTime.DateTime.ToDateTimeOffsetSweden();
             var response = new RequestExpiryResponse
             {
                 ExpiryAt = explicitLastAnswerTime,
                 LastAcceptedAt = null,
                 RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer
             };
-            //1. if sweden now is weekend or holiday, move up to first workday, and set 00:00 as time
-            if (!_dateCalculationService.IsWorkingDay(swedenNow.Date))
+            //1. if sweden now/created time is weekend or holiday, move up to first workday, and set 00:00 as time
+            if (!_dateCalculationService.IsWorkingDay(closestWorkingDayCreatedTime.Date))
             {
-                swedenNow = _dateCalculationService.GetFirstWorkDay(swedenNow.Date).Date.ToDateTimeOffsetSweden();
+                closestWorkingDayCreatedTime = _dateCalculationService.GetFirstWorkDay(closestWorkingDayCreatedTime.Date).Date.ToDateTimeOffsetSweden();
             }
-            if (swedenNow.Date < startDateTime.Date)
+            //2. if start time for order is weekend or holiday, move back to last workday, add a day and then set 00:00 as time
+            if (!_dateCalculationService.IsWorkingDay(closestWorkingDayStartAtTime.Date))
             {
-                var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(swedenNow.Date, startDateTime.Date);
-                if (ruleset == FrameworkAgreementResponseRuleset.VersionTwo && (daysInAdvance > 20 || (daysInAdvance == 20 && swedenNow.TimeOfDay.Ticks <= startDateTime.TimeOfDay.Ticks)))
+                closestWorkingDayStartAtTime = _dateCalculationService.GetLastWorkDay(closestWorkingDayStartAtTime.Date).AddDays(1).Date.ToDateTimeOffsetSweden();
+            }
+            if (closestWorkingDayCreatedTime.Date < closestWorkingDayStartAtTime.Date)
+            {
+                var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(closestWorkingDayCreatedTime.Date, closestWorkingDayStartAtTime.Date);
+                if (ruleset == FrameworkAgreementResponseRuleset.VersionTwo && (daysInAdvance > 20 || (daysInAdvance == 20 && closestWorkingDayCreatedTime.TimeOfDay.Ticks <= closestWorkingDayStartAtTime.TimeOfDay.Ticks)))
                 {
                     response.RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore;
-                    response.LastAcceptedAt = _dateCalculationService.GetDateForANumberOfWorkdaysinFuture(swedenNow.DateTime, 4).ToDateTimeOffsetSweden().ClearSeconds();
-                    response.ExpiryAt = _dateCalculationService.GetDateForANumberOfWorkdaysAgo(startDateTime.DateTime, 7).ToDateTimeOffsetSweden().ClearSeconds();
-
+                    response.LastAcceptedAt = _dateCalculationService.GetDateForANumberOfWorkdaysinFuture(closestWorkingDayCreatedTime.DateTime, 4).ToDateTimeOffsetSweden().ClearSeconds();
+                    response.ExpiryAt = _dateCalculationService.GetDateForANumberOfWorkdaysAgo(closestWorkingDayStartAtTime.DateTime, 7).ToDateTimeOffsetSweden().ClearSeconds();
                 }
-                else if (ruleset == FrameworkAgreementResponseRuleset.VersionTwo && daysInAdvance <= 20 && (daysInAdvance > 10 || (daysInAdvance == 10 && swedenNow.TimeOfDay.Ticks <= startDateTime.TimeOfDay.Ticks)))
+                else if (ruleset == FrameworkAgreementResponseRuleset.VersionTwo && daysInAdvance <= 20 && (daysInAdvance > 10 || (daysInAdvance == 10 && closestWorkingDayCreatedTime.TimeOfDay.Ticks <= closestWorkingDayStartAtTime.TimeOfDay.Ticks)))
                 {
                     response.RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedMoreThanTenDaysBefore;
-                    response.LastAcceptedAt = _dateCalculationService.GetDateForANumberOfWorkdaysinFuture(swedenNow.DateTime, 2).ToDateTimeOffsetSweden().ClearSeconds();
-                    response.ExpiryAt = _dateCalculationService.GetDateForANumberOfWorkdaysAgo(startDateTime.DateTime, 5).ToDateTimeOffsetSweden().ClearSeconds();
+                    response.LastAcceptedAt = _dateCalculationService.GetDateForANumberOfWorkdaysinFuture(closestWorkingDayCreatedTime.DateTime, 2).ToDateTimeOffsetSweden().ClearSeconds();
+                    response.ExpiryAt = _dateCalculationService.GetDateForANumberOfWorkdaysAgo(closestWorkingDayStartAtTime.DateTime, 5).ToDateTimeOffsetSweden().ClearSeconds();
                 }
                 else if (daysInAdvance >= 2 &&
                         (ruleset == FrameworkAgreementResponseRuleset.VersionOne ||
                         (ruleset == FrameworkAgreementResponseRuleset.VersionTwo &&
                             (daysInAdvance < 10 || (daysInAdvance == 10 &&
-                                swedenNow.TimeOfDay.Ticks > startDateTime.TimeOfDay.Ticks))
+                                closestWorkingDayCreatedTime.TimeOfDay.Ticks > closestWorkingDayStartAtTime.TimeOfDay.Ticks))
                     )))
                 {
                     response.RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay;
-                    response.ExpiryAt = _dateCalculationService.GetFirstWorkDay(swedenNow.Date.AddDays(1)).AddHours(15).ToDateTimeOffsetSweden();
+                    response.ExpiryAt = _dateCalculationService.GetFirstWorkDay(closestWorkingDayCreatedTime.Date.AddDays(1)).AddHours(15).ToDateTimeOffsetSweden();
                 }
-                else if (daysInAdvance == 1 && swedenNow.Hour < 14)
+                else if (daysInAdvance == 1 && closestWorkingDayCreatedTime.Hour < 14)
                 {
                     response.RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedOneDayBefore;
-                    response.ExpiryAt = swedenNow.Date.Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
+                    response.ExpiryAt = closestWorkingDayCreatedTime.Date.Add(new TimeSpan(16, 30, 0)).ToDateTimeOffsetSweden();
                 }
             }
-
             // Starts too soon to automatically calculate response expiry time. Customer must define a dead-line manually.
             return response;
         }
