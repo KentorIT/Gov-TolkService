@@ -1524,10 +1524,11 @@ Sammanställning:
             NullCheckHelper.ArgumentCheckNull(request, nameof(RequestTerminatedDueToTerminatedFrameworkAgreement), nameof(NotificationService));
             string orderNumber = request.Order.OrderNumber;
             var frameworkAgreementNumber = request.Ranking.FrameworkAgreement.AgreementNumber;
+            string lastValidDate = GetLastValidDateForFrameworkAgreementToMailText(request.Ranking.FrameworkAgreement.LastValidDate);
             NotificationType notificationType = NotificationType.OrderTerminatedDueToTerminatedFrameworkAgreement;
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
-                var body = $"Bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut 31/1-23. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
+                var body = $"Bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut {lastValidDate}. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
                 CreateEmail(GetRecipientsFromOrder(request.Order),
                     $"Bokningsförfrågan {orderNumber} har avbrutits på grund av att ramavtalet löpt ut",
                     body + GoToOrderPlain(request.Order.OrderId),
@@ -1539,7 +1540,7 @@ Sammanställning:
             var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, notificationType, NotificationChannel.Email);
             if (email != null)
             {
-                var body = $"Bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut 31/1-23. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
+                var body = $"Bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut {lastValidDate}. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
                 CreateEmail(email.ContactInformation,
                     $"Bokningsförfrågan {orderNumber} har avbrutits på grund av att ramavtalet löpt ut",
                     body + GoToRequestPlain(request.RequestId),
@@ -1556,10 +1557,11 @@ Sammanställning:
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupTerminatedDueToTerminatedFrameworkAgreement), nameof(NotificationService));
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
             string frameworkAgreementNumber = requestGroup.Ranking.FrameworkAgreement.AgreementNumber;
+            string lastValidDate = GetLastValidDateForFrameworkAgreementToMailText(requestGroup.Ranking.FrameworkAgreement.LastValidDate);
             NotificationType notificationType = NotificationType.OrderGroupTerminatedDueToTerminatedFrameworkAgreement;
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
-                var body = $"Sammanhållen bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut 31/1-23. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
+                var body = $"Sammanhållen bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut {lastValidDate}. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
                 CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
                     $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av att ramavtalet löpt ut",
                     body + GoToOrderGroupPlain(requestGroup.OrderGroupId),
@@ -1571,7 +1573,7 @@ Sammanställning:
             var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, notificationType, NotificationChannel.Email);
             if (email != null)
             {
-                var body = $"Sammanhållen bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut 31/1-23. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
+                var body = $"Sammanhållen bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut {lastValidDate}. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
                 CreateEmail(email.ContactInformation,
                     $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av att ramavtalet löpt ut",
                     body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
@@ -1581,6 +1583,8 @@ Sammanställning:
                 );
             }
         }
+
+        private static string GetLastValidDateForFrameworkAgreementToMailText(DateTime lastValidDate) => $"{lastValidDate.Date.Day}/{lastValidDate.Date.Month}-{lastValidDate.Date.Year.ToString()[2..]}";
 
         public void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType,string frameWorkAgreementNumber = null, bool isBrokerMail = false, bool addContractInfo = true)
         {
