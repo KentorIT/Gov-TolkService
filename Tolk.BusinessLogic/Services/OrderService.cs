@@ -636,6 +636,7 @@ namespace Tolk.BusinessLogic.Services
             // Grab current time to not risk it flipping over during execution of the method.
             var closestWorkingDayCreatedTime = _clock.SwedenNow;
             var closestWorkingDayStartAtTime = startDateTime.DateTime.ToDateTimeOffsetSweden();
+            var closestWorkingDayBeforeStart = startDateTime.Date;
             var response = new RequestExpiryResponse
             {
                 ExpiryAt = explicitLastAnswerTime,
@@ -647,14 +648,15 @@ namespace Tolk.BusinessLogic.Services
             {
                 closestWorkingDayCreatedTime = _dateCalculationService.GetFirstWorkDay(closestWorkingDayCreatedTime.Date).Date.ToDateTimeOffsetSweden();
             }
-            //2. if start time for order is weekend or holiday, move back to last workday, add a day and then set 00:00 as time
-            if (!_dateCalculationService.IsWorkingDay(closestWorkingDayStartAtTime.Date))
+            //2. if start time for order is weekend or holiday, move back to last workday, add a day and then set 00:00 as time (this will actually be a non working day 00:00)
+            if (!_dateCalculationService.IsWorkingDay(closestWorkingDayBeforeStart))
             {
-                closestWorkingDayStartAtTime = _dateCalculationService.GetLastWorkDay(closestWorkingDayStartAtTime.Date).AddDays(1).Date.ToDateTimeOffsetSweden();
+                closestWorkingDayBeforeStart = _dateCalculationService.GetLastWorkDay(closestWorkingDayBeforeStart).Date;
+                closestWorkingDayStartAtTime = _dateCalculationService.GetLastWorkDay(closestWorkingDayBeforeStart).AddDays(1).Date.ToDateTimeOffsetSweden();
             }
             if (closestWorkingDayCreatedTime.Date < closestWorkingDayStartAtTime.Date)
             {
-                var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(closestWorkingDayCreatedTime.Date, closestWorkingDayStartAtTime.Date);
+                var daysInAdvance = _dateCalculationService.GetWorkDaysBetween(closestWorkingDayCreatedTime.Date, closestWorkingDayBeforeStart);
                 if (ruleset == FrameworkAgreementResponseRuleset.VersionTwo && (daysInAdvance > 20 || (daysInAdvance == 20 && closestWorkingDayCreatedTime.TimeOfDay.Ticks <= closestWorkingDayStartAtTime.TimeOfDay.Ticks)))
                 {
                     response.RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore;
