@@ -1527,9 +1527,9 @@ Sammanställning:
             NotificationType notificationType = NotificationType.OrderTerminatedDueToTerminatedFrameworkAgreement;
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
-                var body = $"Bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
+                var body = $"Bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut 31/1-23. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
                 CreateEmail(GetRecipientsFromOrder(request.Order),
-                    $"Bokningsförfrågan {orderNumber} har avbrutits på grund av avslutat ramavtal",
+                    $"Bokningsförfrågan {orderNumber} har avbrutits på grund av att ramavtalet löpt ut",
                     body + GoToOrderPlain(request.Order.OrderId),
                     HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
                     notificationType,
@@ -1539,9 +1539,9 @@ Sammanställning:
             var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, notificationType, NotificationChannel.Email);
             if (email != null)
             {
-                var body = $"Bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
+                var body = $"Bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut 31/1-23. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
                 CreateEmail(email.ContactInformation,
-                    $"Bokningsförfrågan {orderNumber} har avbrutits på grund av avslutat ramavtal",
+                    $"Bokningsförfrågan {orderNumber} har avbrutits på grund av att ramavtalet löpt ut",
                     body + GoToRequestPlain(request.RequestId),
                     HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
                     notificationType,                    
@@ -1559,9 +1559,9 @@ Sammanställning:
             NotificationType notificationType = NotificationType.OrderGroupTerminatedDueToTerminatedFrameworkAgreement;
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
-                var body = $"Sammanhållen bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
+                var body = $"Sammanhållen bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut 31/1-23. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
                 CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup),
-                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av avslutat ramavtal",
+                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av att ramavtalet löpt ut",
                     body + GoToOrderGroupPlain(requestGroup.OrderGroupId),
                     HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroupId),
                     notificationType,
@@ -1571,9 +1571,9 @@ Sammanställning:
             var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, notificationType, NotificationChannel.Email);
             if (email != null)
             {
-                var body = $"Sammanhållen bokningsförfrågan har avslutats eftersom ramavtalet är avslutat";
+                var body = $"Sammanhållen bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut 31/1-23. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
                 CreateEmail(email.ContactInformation,
-                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av avslutat ramavtal",
+                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av att ramavtalet löpt ut",
                     body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
                     HtmlHelper.ToHtmlBreak(body) + GoToRequestGroupButton(requestGroup.RequestGroupId),
                     notificationType,
