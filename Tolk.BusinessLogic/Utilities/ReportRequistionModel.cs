@@ -44,6 +44,7 @@ namespace Tolk.BusinessLogic.Utilities
                     WaisteTimeIWH = r.TimeWasteIWHTime ?? 0,
                     TaxCard = r.InterpretersTaxCard,
                     ReportPerson = r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ? "Systemet" : !isBroker ? r.ProcessedUser != null ? r.ProcessedUser.FullName : string.Empty : r.CreatedByUser.FullName,
+                    AgreementNumber = r.Request.Ranking.FrameworkAgreement.AgreementNumber
                 }).ToList(),
                 RequisitionPrices = requisitionPrices.GroupBy(r => r.RequisitionId).Select(rp => new ReportPriceModel
                 {

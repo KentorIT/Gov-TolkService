@@ -34,7 +34,8 @@ namespace Tolk.BusinessLogic.Utilities
                     BrokerName = r.Request.Ranking.Broker.Name,
                     InterpreterId = r.Request.Interpreter != null ? r.Request.Interpreter.OfficialInterpreterId ?? string.Empty : string.Empty,
                     InterpreterLocation = r.Request.InterpreterLocation,
-                    CompetenceLevel = r.Request.CompetenceLevel
+                    CompetenceLevel = r.Request.CompetenceLevel,
+                    AgreementNumber = r.Request.Ranking.FrameworkAgreement.AgreementNumber
                 }).ToList()
             };
             return model;

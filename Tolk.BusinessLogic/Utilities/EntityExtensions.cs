@@ -1260,14 +1260,16 @@ namespace Tolk.BusinessLogic.Utilities
                 c.CreatedAt.Date >= start.Date && c.CreatedAt.Date <= end.Date
                 && (organisationId.HasValue ? c.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
                 && (customerUnits == null || (c.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(c.Request.Order.CustomerUnitId.Value)))
-                && (brokerId == null || c.Request.Ranking.BrokerId == brokerId));
+                && (brokerId == null || c.Request.Ranking.BrokerId == brokerId))
+                .Include(c => c.Request).ThenInclude(re => re.Ranking).ThenInclude(ra => ra.FrameworkAgreement);
 
         public static IQueryable<Requisition> GetRequisitionsForReports(this IQueryable<Requisition> requisitions, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits, int? brokerId)
            => requisitions.Where(r =>
                 r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date && r.ReplacedByRequisitionId == null
                 && (organisationId.HasValue ? r.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
                 && (customerUnits == null || (r.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(r.Request.Order.CustomerUnitId.Value)))
-                && (brokerId == null || r.Request.Ranking.BrokerId == brokerId));
+                && (brokerId == null || r.Request.Ranking.BrokerId == brokerId))
+                .Include(r => r.Request).ThenInclude(re => re.Ranking).ThenInclude(ra => ra.FrameworkAgreement);
 
         public static IQueryable<RequisitionPriceRow> GetRequisitionPriceRowsForRequisitionReport(this IQueryable<RequisitionPriceRow> requisitionPriceRows, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits, int? brokerId)
            => requisitionPriceRows.Where(r =>

@@ -48,6 +48,7 @@ namespace Tolk.BusinessLogic.Utilities
         public string OrderCreatorEmail { get; set; }
 
         public string InvoiceReference { get; set; }
+        public string AgreementNumber { get; set; }
 
     }
 }

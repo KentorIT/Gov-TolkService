@@ -17,7 +17,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.11")
+                .HasAnnotation("ProductVersion", "6.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -521,7 +521,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<int?>("ReplacingOrderId")
                         .HasColumnType("int");
 
-                    b.Property<int>("RequestAnswerRuleType")
+                    b.Property<int?>("RequestAnswerRuleType")
                         .HasColumnType("int");
 
                     b.Property<DateTimeOffset?>("RequestExpiresAt")
