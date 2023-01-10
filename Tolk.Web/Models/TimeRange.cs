@@ -68,7 +68,7 @@ namespace Tolk.Web.Models
             }
         }
 
-        public TimeSpan Duration => new TimeSpan(EndDateTime.Value.Ticks - StartDateTime.Value.Ticks);
+        public TimeSpan Duration => (EndDateTime.HasValue && StartDateTime.HasValue) ? new(EndDateTime.Value.Ticks - StartDateTime.Value.Ticks) : new TimeSpan();
 
         public string AsSwedishString =>
             $"{StartDate.ToSwedishString("yyyy-MM-dd")} {StartTime.ToSwedishString("hh\\:mm")}-{EndTime.ToSwedishString("hh\\:mm")}";
