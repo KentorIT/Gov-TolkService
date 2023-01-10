@@ -323,7 +323,8 @@ namespace Tolk.BusinessLogic.Services
                     CustomerUnitName = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("Enhet")),
                     Department = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("Avdelning")),
                     InvoiceReference = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("Fakturareferens")),
-                    OrderCreatorEmail = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("E-postadress"))
+                    OrderCreatorEmail = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("E-postadress")),
+                    AgreementNumber = reader.GetString(reader.GetOrdinal("Avtalsnummer"))
                 };
                 orderRows.Add(row);
             }
@@ -411,6 +412,8 @@ namespace Tolk.BusinessLogic.Services
                     CreateColumnsForCustomer(rowsWorksheet, rows, ref columnLetter, rows.FirstOrDefault() is ReportOrderRow);
                     break;
             }
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Avtalsnummer";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AgreementNumber);
             rowsWorksheet.Row(1).Style.Font.Bold = true;
             rowsWorksheet.Columns().AdjustToContents();
             MemoryStream memoryStream = new MemoryStream();
@@ -616,7 +619,8 @@ namespace Tolk.BusinessLogic.Services
                         OrderRequirements = reportOrder.Requirements.Where(r => r.OrderId == o.OrderId && r.RequirementType != RequirementType.Dialect && r.IsRequired).Count(),
                         OrderDesiredRequirements = reportOrder.Requirements.Where(r => r.OrderId == o.OrderId && r.RequirementType != RequirementType.Dialect && !r.IsRequired).Count(),
                         FulfilledOrderDesiredRequirements = reportOrder.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && !r.IsRequired && reportOrder.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && ra.RequestId == o.RequestId)).Count(),
-                        FulfilledOrderRequirements = reportOrder.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && r.IsRequired && reportOrder.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && ra.RequestId == o.RequestId)).Count()
+                        FulfilledOrderRequirements = reportOrder.Requirements.Where(r => r.RequirementType != RequirementType.Dialect && r.IsRequired && reportOrder.RequirementAnswers.Any(ra => ra.OrderRequirementId == r.OrderRequirementId && ra.CanSatisfyRequirement && ra.RequestId == o.RequestId)).Count(),
+                        AgreementNumber = o.AgreementNumber
                     }).ToList().OrderBy(row => row.OrderNumber);
         }
 
@@ -652,7 +656,8 @@ namespace Tolk.BusinessLogic.Services
                         TaxCard = r.TaxCard.HasValue ? r.TaxCard.Value.GetDescription() : string.Empty,
                         ReferenceNumber = r.ReferenceNumber,
                         InterpreterLocation = r.InterpreterLocation.HasValue ? ((InterpreterLocation)r.InterpreterLocation.Value).GetDescription() : string.Empty,
-                        AllowExceedingTravelCost = r.AllowExceedingTravelCost.HasValue ? isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(r.AllowExceedingTravelCost.Value).GetDescription() : r.AllowExceedingTravelCost.Value.GetDescription() : string.Empty
+                        AllowExceedingTravelCost = r.AllowExceedingTravelCost.HasValue ? isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(r.AllowExceedingTravelCost.Value).GetDescription() : r.AllowExceedingTravelCost.Value.GetDescription() : string.Empty,
+                        AgreementNumber = r.AgreementNumber
                     }).ToList().OrderBy(row => row.OrderNumber);
         }
 
@@ -680,7 +685,8 @@ namespace Tolk.BusinessLogic.Services
                         Department = c.Department,
                         ReferenceNumber = c.ReferenceNumber,
                         InterpreterLocation = c.InterpreterLocation.HasValue ? ((InterpreterLocation)c.InterpreterLocation.Value).GetDescription() : string.Empty,
-                        AllowExceedingTravelCost = c.AllowExceedingTravelCost.HasValue ? isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(c.AllowExceedingTravelCost.Value).GetDescription() : c.AllowExceedingTravelCost.Value.GetDescription() : string.Empty
+                        AllowExceedingTravelCost = c.AllowExceedingTravelCost.HasValue ? isBroker ? EnumHelper.Parent<AllowExceedingTravelCost, TrueFalse>(c.AllowExceedingTravelCost.Value).GetDescription() : c.AllowExceedingTravelCost.Value.GetDescription() : string.Empty,
+                        AgreementNumber = c.AgreementNumber
                     }).ToList().OrderBy(row => row.OrderNumber);
         }
 
