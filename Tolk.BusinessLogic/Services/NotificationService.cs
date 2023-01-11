@@ -1537,17 +1537,21 @@ Sammanställning:
                     frameworkAgreementNumber
                 );
             }
-            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, notificationType, NotificationChannel.Email);
-            if (email != null)
+            //for broker - do not notify if request has status AwaitingDeadlineFromCustomer (broker has not received request yet)
+            if (request.Status != RequestStatus.AwaitingDeadlineFromCustomer)
             {
-                var body = $"Bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut {lastValidDate}. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
-                CreateEmail(email.ContactInformation,
-                    $"Bokningsförfrågan {orderNumber} har avbrutits på grund av att ramavtalet löpt ut",
-                    body + GoToRequestPlain(request.RequestId),
-                    HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
-                    notificationType,                    
-                    frameworkAgreementNumber
-                );
+                var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, notificationType, NotificationChannel.Email);
+                if (email != null)
+                {
+                    var body = $"Bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut {lastValidDate}. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
+                    CreateEmail(email.ContactInformation,
+                        $"Bokningsförfrågan {orderNumber} har avbrutits på grund av att ramavtalet löpt ut",
+                        body + GoToRequestPlain(request.RequestId),
+                        HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
+                        notificationType,
+                        frameworkAgreementNumber
+                    );
+                }
             }
         }
 
@@ -1570,17 +1574,21 @@ Sammanställning:
                     frameworkAgreementNumber
                 );
             }
-            var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, notificationType, NotificationChannel.Email);
-            if (email != null)
+            //for broker - do not notify if requestgroup has status AwaitingDeadlineFromCustomer (broker has not received requestGroup yet)
+            if (requestGroup.Status != RequestStatus.AwaitingDeadlineFromCustomer)
             {
-                var body = $"Sammanhållen bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut {lastValidDate}. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
-                CreateEmail(email.ContactInformation,
-                    $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av att ramavtalet löpt ut",
-                    body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
-                    HtmlHelper.ToHtmlBreak(body) + GoToRequestGroupButton(requestGroup.RequestGroupId),
-                    notificationType,
-                    frameworkAgreementNumber
-                );
+                var email = GetOrganisationNotificationSettings(requestGroup.Ranking.BrokerId, notificationType, NotificationChannel.Email);
+                if (email != null)
+                {
+                    var body = $"Sammanhållen bokningsförfrågan har avbrutits eftersom ramavtalet löpte ut {lastValidDate}. Läs mer information på https://www.avropa.se/avropstjanst-tolk/.";
+                    CreateEmail(email.ContactInformation,
+                        $"Sammanhållen bokningsförfrågan {orderGroupNumber} har avbrutits på grund av att ramavtalet löpt ut",
+                        body + GoToRequestGroupPlain(requestGroup.RequestGroupId),
+                        HtmlHelper.ToHtmlBreak(body) + GoToRequestGroupButton(requestGroup.RequestGroupId),
+                        notificationType,
+                        frameworkAgreementNumber
+                    );
+                }
             }
         }
 
