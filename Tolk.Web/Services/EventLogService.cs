@@ -646,7 +646,6 @@ namespace Tolk.Web.Services
                         EventDetails = "Förfrågan avbruten p.g.a. utgånget ramavtal",
                         Actor = "Systemet",
                         Organization = brokerName,
-                        ActorContactInfo = GetContactinfo(request.CancelledByUser),
                     });
                 }
                 // Order replaced, just in detailed view (for broker)
