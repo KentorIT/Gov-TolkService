@@ -1,7 +1,4 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using Org.BouncyCastle.Asn1.Ocsp;
-using Renci.SshNet.Messages;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -224,7 +221,7 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Request group {RequestGroupId} is {Status}. Only reuquests under negotiation can be terminated due to ended framework agreement");
             }
             Requests.ForEach(r => r.TerminateDueToEndedFrameworkAgreement(terminatedAt, terminationMessage, terminatableStatuses));
-            Status = RequestStatus.TerminatedDueToTerminatedFrameworkAgreement;
+            Status = NewStatusWhenRequestIsTerminatedDueToEndedFrameworkAgreement;  
             CancelledAt = terminatedAt;
             CancelMessage = terminationMessage;
             OrderGroup.Status = OrderStatus.TerminatedDueToTerminatedFrameworkAgreement;

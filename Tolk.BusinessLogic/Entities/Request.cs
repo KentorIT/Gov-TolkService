@@ -744,7 +744,7 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Order {OrderId} has already passed its start time. Orders that have started can not be terminated due to ended framework agreement");
             }
 
-            Status = RequestStatus.TerminatedDueToTerminatedFrameworkAgreement;
+            Status = NewStatusWhenRequestIsTerminatedDueToEndedFrameworkAgreement;
             CancelledAt = terminatedAt;
             CancelMessage = terminationMessage;
             Order.Status = OrderStatus.TerminatedDueToTerminatedFrameworkAgreement;
