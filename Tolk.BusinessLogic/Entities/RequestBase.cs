@@ -137,6 +137,10 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool IsToBeProcessedByBroker 
             => Status == RequestStatus.Created || Status == RequestStatus.Received || Status == RequestStatus.AcceptedAwaitingInterpreter;
+
+        public RequestStatus NewStatusWhenRequestIsTerminatedDueToEndedFrameworkAgreement  
+            => Status == RequestStatus.AwaitingDeadlineFromCustomer ? RequestStatus.NoDeadlineFromCustomer : RequestStatus.TerminatedDueToTerminatedFrameworkAgreement;
+
         #endregion
 
         #region status-changing methods

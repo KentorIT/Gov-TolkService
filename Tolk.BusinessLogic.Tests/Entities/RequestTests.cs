@@ -2841,12 +2841,12 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             var terminatedAt = DateTime.Now;
             var message = "Nu blev det stopp";
-
+            var newStatus = request.NewStatusWhenRequestIsTerminatedDueToEndedFrameworkAgreement;
             request.TerminateDueToEndedFrameworkAgreement(terminatedAt, message, openRequestStatuses);
 
             Assert.Equal(terminatedAt, request.CancelledAt);
             Assert.Equal(message, request.CancelMessage);
-            Assert.Equal(RequestStatus.TerminatedDueToTerminatedFrameworkAgreement, request.Status);
+            Assert.Equal(newStatus, request.Status);
             Assert.Equal(OrderStatus.TerminatedDueToTerminatedFrameworkAgreement, request.Order.Status);
         }
 

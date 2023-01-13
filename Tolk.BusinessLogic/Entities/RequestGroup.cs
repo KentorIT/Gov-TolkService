@@ -221,7 +221,7 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"Request group {RequestGroupId} is {Status}. Only reuquests under negotiation can be terminated due to ended framework agreement");
             }
             Requests.ForEach(r => r.TerminateDueToEndedFrameworkAgreement(terminatedAt, terminationMessage, terminatableStatuses));
-            Status = RequestStatus.TerminatedDueToTerminatedFrameworkAgreement;
+            Status = NewStatusWhenRequestIsTerminatedDueToEndedFrameworkAgreement;  
             CancelledAt = terminatedAt;
             CancelMessage = terminationMessage;
             OrderGroup.Status = OrderStatus.TerminatedDueToTerminatedFrameworkAgreement;
