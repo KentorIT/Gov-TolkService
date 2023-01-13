@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Api.Helpers;
@@ -42,5 +43,8 @@ namespace Tolk.Web.Api.Services
         public int WorkDaysGracePeriodBeforeOrderAgreementCreation => _options.WorkDaysGracePeriodBeforeOrderAgreementCreation;
 
         public string ExcludedNotificationTypesForCustomer => _options.ExcludedNotificationTypesForCustomer;
+
+        public TolkDbContext GetContext() => throw new System.NotImplementedException($"{nameof(GetContext)} should not be used from api");
+
     }
 }

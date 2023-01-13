@@ -1,4 +1,5 @@
-﻿using Tolk.BusinessLogic.Utilities;
+﻿using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -18,5 +19,6 @@ namespace Tolk.BusinessLogic.Services
         bool EnableSetLatestAnswerTimeForCustomer { get; }
         bool EnableCustomerApi { get; }
         string ExcludedNotificationTypesForCustomer { get; }
+        TolkDbContext GetContext();
     }
 }

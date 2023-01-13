@@ -808,7 +808,7 @@ namespace Tolk.Web.Controllers
                     {
                         return RedirectToAction("Index", "Home", new { errorMessage = "Denna bokning behöver inte få sista svarstid satt." });
                     }
-                    await _orderService.SetRequestExpiryManually(request, latestAnswerBy, User.GetUserId(), User.TryGetImpersonatorId());
+                    _orderService.SetRequestExpiryManually(request, latestAnswerBy, User.GetUserId(), User.TryGetImpersonatorId());
                     await _dbContext.SaveChangesAsync();
                 }
                 catch (InvalidOperationException ex)

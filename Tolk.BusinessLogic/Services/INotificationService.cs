@@ -32,7 +32,6 @@ namespace Tolk.BusinessLogic.Services
         void RequestCancelledByBroker(Request request);
         void RequestChangedInterpreter(Request request);
         void RequestChangedInterpreterAccepted(Request request, InterpereterChangeAcceptOrigin changeOrigin = InterpereterChangeAcceptOrigin.User);
-        Task RequestCreated(Request request);
         void RequestCreatedWithoutExpiry(Request request);
         void RequestDeclinedByBroker(Request request);
         void RequestGroupAccepted(RequestGroup requestGroup);

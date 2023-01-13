@@ -30,8 +30,6 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public async Task OrderReplacementCreated(int replacedRequestId, int newRequestId) { }
 
-        public async Task RequestCreated(Request request) { }
-
         public async Task RequestGroupCreated(RequestGroup requestGroup) { }
 
         public async Task RequisitionReviewed(Requisition requisition) { }

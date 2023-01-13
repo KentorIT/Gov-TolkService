@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using DocumentFormat.OpenXml.Drawing;
+using Microsoft.Extensions.Options;
+using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
@@ -42,5 +44,7 @@ namespace Tolk.BusinessLogic.Services
 
         public string ExcludedNotificationTypesForCustomer => _options.ExcludedNotificationTypesForCustomer;
 
+        //Only use this when the context needs to be separated from the session based context.
+        public TolkDbContext GetContext() => _options.GetContext();
     }
 }

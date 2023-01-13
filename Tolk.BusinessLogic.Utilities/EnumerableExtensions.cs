@@ -62,5 +62,10 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return EnumHelper.GetContractDefinition<T>(item);
         }
+
+        public static bool ShouldExtraContactGetNotification<T>(this T item, NotificationConsumerType type) where T : struct
+        {
+            return EnumHelper.GetAvailableNotificationConsumerTypeAttributes<T>(item).Where(t => t.NotificationConsumerType == type).SingleOrDefault()?.NotifyContactPerson ?? false;
+        }
     }
 }

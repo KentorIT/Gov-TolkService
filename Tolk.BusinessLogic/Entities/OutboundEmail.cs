@@ -14,9 +14,12 @@ namespace Tolk.BusinessLogic.Entities
             string plainBody,
             string htmlBody,
             DateTimeOffset createdAt,
-            NotificationType notificationType,
+            NotificationType notificationType,            
             int? replacingEmailId = null,
-            int? resentByUserId = null)
+            int? resentByUserId = null,
+            int? recipientUserId = null,
+            int? recipientCustomerUnitId = null
+            )
             : base(createdAt)
         {
             Recipient = recipient;
@@ -26,6 +29,8 @@ namespace Tolk.BusinessLogic.Entities
             ReplacingEmailId = replacingEmailId;
             ResentByUserId = resentByUserId;
             NotificationType = notificationType;
+            RecipientUserId = recipientUserId;
+            RecipientCustomerUnitId = recipientCustomerUnitId;
         }
 
         public int OutboundEmailId { get; private set; }
@@ -47,6 +52,16 @@ namespace Tolk.BusinessLogic.Entities
         public int? ResentByUserId { get; set; }
 
         public NotificationType NotificationType { get; private set; }
+        
+        public int? RecipientUserId { get; private set; }
+
+        [ForeignKey(nameof(RecipientUserId))]
+        public AspNetUser RecipientUser { get; set; }
+
+        public int? RecipientCustomerUnitId { get; private set; }
+
+        [ForeignKey(nameof(RecipientUserId))]
+        public CustomerUnit RecipientCustomerUnit { get; set; }
 
         [ForeignKey(nameof(ReplacingEmailId))]
         [InverseProperty(nameof(ReplacedByEmail))]

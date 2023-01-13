@@ -515,6 +515,14 @@ namespace Tolk.BusinessLogic.Data
                 .HasIndex(o => new { o.RequestId, o.Index })
                 .IsUnique();
 
+            builder.Entity<RequestNotificationEmail>()
+                .HasKey(rn => new { rn.RequestNotificationId, rn.OutboundEmailId});
+
+
+            builder.Entity<RequestNotificationWebhook>()
+                .HasKey(rn => new { rn.RequestNotificationId, rn.OutboundWebhookId });
+
+
             //Views
             builder.Entity<OrderListRow>().HasNoKey().ToView(nameof(OrderListRows));
             builder.Entity<RequestListRow>().HasNoKey().ToView(nameof(RequestListRows));
@@ -679,6 +687,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<FrameworkAgreement> FrameworkAgreements { get; set; }
 
         public DbSet<RegionGroup> RegionGroups { get; set; }
+
+        public DbSet<RequestNotification> RequestNotifications { get; set; }
 
         public DbSet<BrokerFeeByServiceTypePriceListRow> BrokerFeeByServiceTypePriceListRows { get; set; }
 

@@ -321,7 +321,18 @@ namespace Tolk.BusinessLogic.Services
                             request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
                         if (notify)
                         {
-                            await _notificationService.RequestCreated(newRequest);
+                            var answerLevel = EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(newRequest.RequestAnswerRuleType);
+                            switch (answerLevel)
+                            {
+                                case RequiredAnswerLevel.Full:
+                                    newRequest.AddNotification(NotificationType.RequestCreated, _clock.SwedenNow);
+                                    break;
+                                case RequiredAnswerLevel.Acceptance:
+                                    newRequest.AddNotification(NotificationType.RequestCreatedForAcceptance, _clock.SwedenNow);
+                                    break;
+                                default:
+                                    throw new NotSupportedException();
+                            }
                         }
                     }
                     else
@@ -575,7 +586,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public async Task SetRequestExpiryManually(Request request, DateTimeOffset expiry, int userId, int? impersonatingUserId)
+        public void SetRequestExpiryManually(Request request, DateTimeOffset expiry, int userId, int? impersonatingUserId)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(SetRequestExpiryManually), nameof(OrderService));
             if (request.Status != RequestStatus.AwaitingDeadlineFromCustomer)
@@ -589,7 +600,7 @@ namespace Tolk.BusinessLogic.Services
 
             // Log and notify
             _logger.LogInformation($"Expiry {expiry} manually set on request {request.RequestId}");
-            await _notificationService.RequestCreated(request);
+            request.AddNotification(NotificationType.RequestCreated, _clock.SwedenNow);
         }
 
         public async Task SetRequestGroupExpiryManually(RequestGroup requestGroup, DateTimeOffset expiry, int userId, int? impersonatingUserId)

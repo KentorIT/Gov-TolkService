@@ -127,6 +127,16 @@ namespace Tolk.Web.Services
                     //Separate these, to get a better parallellism for the notifications
                     // They fail to run together with the other Continous jobs, due to recurring deadlocks around the email table...
 
+                    using var serviceScope = _services.CreateScope();
+                    Task[] tasksToRun = new Task[]
+                    {
+                            CreateNotificationPayloads(serviceScope.ServiceProvider),
+                    };
+                    if (!Task.WaitAll(tasksToRun, allotedTimeAllTasks))
+                    {
+                        throw new InvalidOperationException($"All tasks instances didn't complete execution within the allotted time: {allotedTimeAllTasks / 1000} seconds");
+                    }
+
                     List<Task> tasksToRunNotifications = new List<Task>
                     {
                         Task.Factory.StartNew(() => _services.GetRequiredService<EmailService>().SendEmails(), CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Current),
@@ -199,6 +209,14 @@ namespace Tolk.Web.Services
             _logger.LogInformation($"Starting {nameof(RunAgreementValidation)}");
             await provider.GetRequiredService<RequestService>().ValidateFrameworkAgreement();
             _logger.LogInformation($"Completed {nameof(RunAgreementValidation)}");
+        }
+
+
+        private async Task CreateNotificationPayloads(IServiceProvider provider)
+        {
+            _logger.LogInformation($"Starting {nameof(CreateNotificationPayloads)}");
+            await provider.GetRequiredService<NotificationService>().CreatePendingNotificationPayloads();
+            _logger.LogInformation($"Completed {nameof(CreateNotificationPayloads)}");
         }
 
         private async Task RunDailyJobs(IServiceProvider provider)

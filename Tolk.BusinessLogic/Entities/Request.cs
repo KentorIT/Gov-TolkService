@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Entities
 {
-    public class Request : RequestBase
+    public class Request : RequestBase, INotifyableEntity
     {
         #region constructors
 
@@ -155,6 +156,8 @@ namespace Tolk.BusinessLogic.Entities
         public Request ReplacedByRequest { get; set; }
 
         public List<OrderAgreementPayload> OrderAgreementPayloads { get; set; }
+
+        public List<RequestNotification> Notifications { get; set; }
 
         #endregion
 
@@ -790,6 +793,8 @@ namespace Tolk.BusinessLogic.Entities
                 }).ToList();
         }
 
+        public void AddNotification(NotificationType notificationType, DateTimeOffset createdAt)
+            => Notifications.Add(new RequestNotification(notificationType, createdAt));
 
         #endregion
 
