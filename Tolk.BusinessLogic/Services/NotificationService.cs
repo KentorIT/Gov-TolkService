@@ -116,6 +116,7 @@ namespace Tolk.BusinessLogic.Services
                     {
                         NotificationConsumerType.Broker => request.Ranking.BrokerId,
                         NotificationConsumerType.Customer => request.Order.CustomerOrganisationId,
+                        _ => throw new NotImplementedException(),
                     };
                     OrganisationNotificationSettings notificationSettings = GetOrganisationNotificationSettings(consumerId, notification.NotificationType, channel, consumerType);
 
@@ -128,7 +129,7 @@ namespace Tolk.BusinessLogic.Services
                                 var recipientUsers = consumerType switch
                                 {
                                     NotificationConsumerType.Broker => new[] { notificationSettings.RecipientUserId },
-                                    NotificationConsumerType.Customer => 
+                                    NotificationConsumerType.Customer =>
                                     GetUserRecipientsFromOrder(request.Order, notification.NotificationType.ShouldExtraContactGetNotification(consumerType)),
                                     _ => throw new NotImplementedException(),
                                 };
@@ -138,11 +139,14 @@ namespace Tolk.BusinessLogic.Services
                                     NotificationConsumerType.Customer => GetCustomerUnitRecipientsFromOrder(request.Order),
                                     _ => throw new NotImplementedException(),
                                 };
-
+                                var texts = GetRequestNotificationEmailTexts(request, notification.NotificationType);
+                                texts.SenderPrepend = _senderPrepend;
+                                texts.IsBrokerEmail = consumerType == NotificationConsumerType.Broker;
+                                texts.AddContractInfo = true;
                                 notification.Emails.AddRange(CreateOutboundEmail(
                                     recipientUsers,
                                     recipientCustomerUnits,
-                                    GetRequestNotificationEmailTexts(request, notification.NotificationType),
+                                    texts,
                                     notification.NotificationType,
                                     true
                                 ).Select(e => new RequestNotificationEmail { OutboundEmail = e }));
@@ -150,7 +154,12 @@ namespace Tolk.BusinessLogic.Services
                             case NotificationChannel.Webhook:
                                 notification.Webhooks.Add(new RequestNotificationWebhook
                                 {
-                                    OutboundWebhook = CreateOutboundWebHookCall(await GetRequestModel(request), notificationSettings)
+                                    OutboundWebhook = new(
+                                        notificationSettings.ContactInformation,
+                                        (await GetRequestNotificationWebhookPayload(request, notification.NotificationType)).AsJson(),
+                                        notificationSettings.NotificationType,
+                                        _clock.SwedenNow,
+                                        notificationSettings.RecipientUserId)
                                 });
                                 break;
                         }
@@ -165,6 +174,13 @@ namespace Tolk.BusinessLogic.Services
         {
             NotificationType.RequestCreated => GetRequestCreatedEmailTexts(request),
             NotificationType.RequestCreatedForAcceptance => GetRequestCreatedForAcceptanceEmailTexts(request),
+            _ => throw new NotSupportedException("The notificationtype could not be sent via a request BLABLA BLA"),
+        };
+        private async Task<WebHookPayloadBaseModel> GetRequestNotificationWebhookPayload(Request request, NotificationType notificationType)
+        => notificationType switch
+        {
+            NotificationType.RequestCreated or NotificationType.RequestCreatedForAcceptance =>
+                await GetRequestModel(request),
             _ => throw new NotSupportedException("The notificationtype could not be sent via a request BLABLA BLA"),
         };
 
@@ -251,23 +267,18 @@ Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där be
 
         private IEnumerable<OutboundEmail> CreateOutboundEmail(IEnumerable<int> recipientUserIds, IEnumerable<int> recipientCustomerUnitIds, EmailTexts texts, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true)
         {
-            string noReply = "Detta e-postmeddelande går inte att svara på.";
-            string handledBy = $"Detta ärende hanteras i {Constants.SystemName}.";
             if (texts.FrameworkAgreementNumber == null && addContractInfo)
             {
                 texts.FrameworkAgreementNumber = string.Empty;
                 _logger.LogWarning("Email is missing it's frameworkAgreementnumber and it was expected, NotificationType:{notificationType}", notificationType.ToString());
             }
-            string contractInfo = $"Avrop från ramavtal för tolkförmedlingstjänster {texts.FrameworkAgreementNumber}";
-
-            //NOTE: DOES NOT HANDLE UNITS!!
             foreach (var recipient in _dbContext.Users.Where(u => recipientUserIds.Contains(u.Id)).Select(u => new { u.Email, UserId = u.Id }))
             {
                 yield return new OutboundEmail(
                     recipient.Email,
-                    _senderPrepend + texts.Subject,
-                    $"{texts.BodyPlain}\n\n{noReply}" + (isBrokerMail ? $"\n\n{handledBy}" : "") + (addContractInfo ? $"\n\n{contractInfo}" : ""),
-                    $"{texts.BodyHtml}<br/><br/>{noReply}" + (isBrokerMail ? $"<br/><br/>{handledBy}" : "") + (addContractInfo ? $"<br/><br/>{contractInfo}" : ""),
+                    texts.FormattedSubject,
+                    texts.FormattedBodyPlain,
+                    texts.FormattedBodyPlain,
                     _clock.SwedenNow,
                     notificationType,
                     recipientUserId: recipient.UserId
@@ -277,9 +288,9 @@ Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där be
             {
                 yield return new OutboundEmail(
                     recipient.Email,
-                    _senderPrepend + texts.Subject,
-                    $"{texts.BodyPlain}\n\n{noReply}" + (isBrokerMail ? $"\n\n{handledBy}" : "") + (addContractInfo ? $"\n\n{contractInfo}" : ""),
-                    $"{texts.BodyHtml}<br/><br/>{noReply}" + (isBrokerMail ? $"<br/><br/>{handledBy}" : "") + (addContractInfo ? $"<br/><br/>{contractInfo}" : ""),
+                    texts.FormattedSubject,
+                    texts.FormattedBodyPlain,
+                    texts.FormattedBodyPlain,
                     _clock.SwedenNow,
                     notificationType,
                     recipientCustomerUnitId: recipient.CustomerUnitId
@@ -2118,14 +2129,6 @@ Sammanställning:
                 userId));
             _dbContext.SaveChanges();
         }
-
-        private OutboundWebHookCall CreateOutboundWebHookCall(WebHookPayloadBaseModel payload, OrganisationNotificationSettings settings)
-        => new OutboundWebHookCall(
-                settings.ContactInformation,
-                payload.AsJson(),
-                settings.NotificationType,
-                _clock.SwedenNow,
-                settings.RecipientUserId);
 
         private string GoToOrderPlain(int orderId, HtmlHelper.ViewTab tab = HtmlHelper.ViewTab.Default, bool enableOrderPrint = false)
         {
