@@ -56,7 +56,7 @@
                                                 <tr class="gray-border-top">
                                                     <td>@b.Rank</td>
                                                     <td>@b.BrokerName &nbsp; &nbsp;</td>
-                                                    <td>@b.BrokerFeePercentage</td>
+                                                    <td>@b.BrokerFeePercentage.ToString("P")</td>
                                                     <td>
                                                         @foreach (var p in b.BrokerFeesPerCompetenceLevel)
                                                         {
@@ -118,7 +118,7 @@
                                                     <tr class="gray-border-top">
                                                         <td>@b.RegionName &nbsp; &nbsp; </td>
                                                         <td>@b.Rank &nbsp; &nbsp;</td>
-                                                        <td>@b.BrokerFeePercentage</td>
+                                                        <td>@b.BrokerFeePercentage.ToString("P")</td>
                                                         <td>
                                                             @foreach (var p in b.BrokerFeesPerCompetenceLevel)
                                                             {

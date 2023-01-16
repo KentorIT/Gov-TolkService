@@ -65,6 +65,13 @@ $(function () {
         $("#Answer").disableOnSubmit();
     });
 
+    $("#Change").closest("form").on("submit", function () {
+        if (!validateSetLatestAnswerTimeForCustomer() || !validateLatestAnswerTimeWithinValidTimeSpan()) {
+            return false;
+        };
+        $("#Change").disableOnSubmit();
+    });
+
     $("body").on("click", "#Accept", function () {
         var $form = $(this).closest("form");
         var $action = $form.prop("action");
