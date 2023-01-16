@@ -315,6 +315,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     var newRequest = await _tolkDbContext.Requests.GetRequestForNewRequestById(request.RequestId);
                     newRequest.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToListAsync();
+                    newRequest.Notifications = await _tolkDbContext.RequestNotifications.GetNotificationsForRequest(newRequest.RequestId).ToListAsync();
                     if (calculatedExpiry.ExpiryAt.HasValue)
                     {
                         _logger.LogInformation("Created request {requestId} for order {orderId} to {brokerId} with expiry {expiry}",
@@ -586,7 +587,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public void SetRequestExpiryManually(Request request, DateTimeOffset expiry, int userId, int? impersonatingUserId)
+        public async Task SetRequestExpiryManually(Request request, DateTimeOffset expiry, int userId, int? impersonatingUserId)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(SetRequestExpiryManually), nameof(OrderService));
             if (request.Status != RequestStatus.AwaitingDeadlineFromCustomer)
@@ -597,6 +598,7 @@ namespace Tolk.BusinessLogic.Services
             request.Order.Status = OrderStatus.Requested;
             request.Status = RequestStatus.Created;
             request.RequestUpdateLatestAnswerTime = new RequestUpdateLatestAnswerTime { UpdatedAt = _clock.SwedenNow, UpdatedBy = userId, ImpersonatorUpdatedBy = impersonatingUserId };
+            request.Notifications = await _tolkDbContext.RequestNotifications.GetNotificationsForRequest(request.RequestId).ToListAsync();
 
             // Log and notify
             _logger.LogInformation($"Expiry {expiry} manually set on request {request.RequestId}");

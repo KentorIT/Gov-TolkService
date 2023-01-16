@@ -419,6 +419,10 @@ namespace Tolk.BusinessLogic.Utilities
             }
             return list;
         }
+        public static IQueryable<RequestNotification> GetNotificationsForRequest(this IQueryable<RequestNotification> notifications, int id)
+            => notifications.Where(o => o.RequestId == id);
+
+        
 
         #endregion
 
@@ -1316,6 +1320,16 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<Request> GetRequestToUpdateExpiryByOrderId(this IQueryable<Request> requests, int orderId)
             => await requests.GetRequestsWithBaseIncludesAndRegionAndLanguage()
                 .SingleOrDefaultAsync(r => r.OrderId == orderId && r.Status == RequestStatus.AwaitingDeadlineFromCustomer);
+
+        public static async Task<Request> GetRequestForNotificationById(this IQueryable<Request> requests, int id)
+            => await requests.GetRequestsWithBaseIncludesAndRegionAndLanguage()
+            .SingleOrDefaultAsync(r => r.RequestId == id);
+
+        public static IQueryable<RequestNotificationEmail> GetEmailsForRequestNotification(this IQueryable<RequestNotificationEmail> emails, int id)
+            =>  emails.Where(r => r.RequestNotificationId == id);
+
+        public static IQueryable<RequestNotificationWebhook> GetWebhooksForRequestNotification(this IQueryable<RequestNotificationWebhook> webhooks, int id)
+            =>  webhooks.Where(r => r.RequestNotificationId == id);
 
         public static async Task<Request> GetRequestForNewRequestById(this IQueryable<Request> requests, int id)
             => await requests.GetRequestsWithBaseIncludesAndRegionAndLanguage()

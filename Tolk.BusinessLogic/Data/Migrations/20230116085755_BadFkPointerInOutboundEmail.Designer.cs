@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
@@ -11,9 +12,10 @@ using Tolk.BusinessLogic.Data;
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230116085755_BadFkPointerInOutboundEmail")]
+    partial class BadFkPointerInOutboundEmail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -820,9 +822,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerStartListRow", b =>
                 {
-                    b.Property<DateTimeOffset?>("AcceptedAt")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<DateTimeOffset?>("AnsweredAt")
                         .HasColumnType("datetimeoffset");
 
@@ -1141,6 +1140,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Property<DateTime>("OriginalLastValidDate")
                         .HasColumnType("date");
+
+                    b.Property<int>("PossibleAgreementExtensionsInMonths")
+                        .HasColumnType("int");
 
                     b.HasKey("FrameworkAgreementId");
 

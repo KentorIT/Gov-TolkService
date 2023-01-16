@@ -66,9 +66,11 @@ namespace Tolk.BusinessLogic.Services
                     var notification = await context.RequestNotifications
                         .Where(n => n.RequestNotificationId == id && n.Status == NotificationStatus.CreatingPayload)
                         .SingleAsync(n => n.RequestNotificationId == id);
+                    notification.Emails = await context.RequestNotificationEmails.GetEmailsForRequestNotification(id).ToListAsync();
+                    notification.Webhooks = await context.RequestNotificationWebhooks.GetWebhooksForRequestNotification(id).ToListAsync();
                     try
                     {
-                        var request = await context.Requests.GetRequestWithContactsById(notification.RequestId);
+                        var request = await context.Requests.GetRequestForNotificationById(notification.RequestId);
                         if (await CreateNotificationPayloads(notification, request))
                         {
                             notification.Status = NotificationStatus.PayloadCreated;
@@ -100,7 +102,7 @@ namespace Tolk.BusinessLogic.Services
             //Requisition
             //User
             //System-mail, dont know how these are carried
-            _ => throw new NotSupportedException("BLABLABLA"),
+            _ => throw new NotSupportedException($"{nameof(entity)} is not of a supported type in {nameof(NotificationService)}.{nameof(CreateNotificationPayloads)}"),
         };
 
         private async Task<bool> CreateRequestNotificationPayloads(Request request, RequestNotification notification)
@@ -116,7 +118,7 @@ namespace Tolk.BusinessLogic.Services
                     {
                         NotificationConsumerType.Broker => request.Ranking.BrokerId,
                         NotificationConsumerType.Customer => request.Order.CustomerOrganisationId,
-                        _ => throw new NotImplementedException(),
+                        _ => throw new NotSupportedException($"{nameof(consumerType)} is not of a supported NotificationConsumerType in {nameof(NotificationService)}.{nameof(CreateRequestNotificationPayloads)}"),
                     };
                     OrganisationNotificationSettings notificationSettings = GetOrganisationNotificationSettings(consumerId, notification.NotificationType, channel, consumerType);
 
@@ -128,16 +130,16 @@ namespace Tolk.BusinessLogic.Services
                             case NotificationChannel.Email:
                                 var recipientUsers = consumerType switch
                                 {
-                                    NotificationConsumerType.Broker => new[] { notificationSettings.RecipientUserId },
+                                    NotificationConsumerType.Broker => new[] { new EmailRecipient { Id = notificationSettings.RecipientUserId, Email = notificationSettings.ContactInformation } },
                                     NotificationConsumerType.Customer =>
                                     GetUserRecipientsFromOrder(request.Order, notification.NotificationType.ShouldExtraContactGetNotification(consumerType)),
-                                    _ => throw new NotImplementedException(),
+                                    _ => throw new NotSupportedException($"{nameof(consumerType)} is not of a supported NotificationConsumerType in {nameof(NotificationService)}.{nameof(CreateRequestNotificationPayloads)}"),
                                 };
                                 var recipientCustomerUnits = consumerType switch
                                 {
-                                    NotificationConsumerType.Broker => Enumerable.Empty<int>(),
+                                    NotificationConsumerType.Broker => Enumerable.Empty<EmailRecipient>(),
                                     NotificationConsumerType.Customer => GetCustomerUnitRecipientsFromOrder(request.Order),
-                                    _ => throw new NotImplementedException(),
+                                    _ => throw new NotSupportedException($"{nameof(consumerType)} is not of a supported NotificationConsumerType in {nameof(NotificationService)}.{nameof(CreateRequestNotificationPayloads)}"),
                                 };
                                 var texts = GetRequestNotificationEmailTexts(request, notification.NotificationType);
                                 texts.SenderPrepend = _senderPrepend;
@@ -162,6 +164,8 @@ namespace Tolk.BusinessLogic.Services
                                         notificationSettings.RecipientUserId)
                                 });
                                 break;
+                            default:
+                                throw new NotSupportedException($"{nameof(channel)} is not of a supported NotificationChannel in {nameof(NotificationService)}.{nameof(CreateRequestNotificationPayloads)}");
                         }
                     }
                 }
@@ -174,14 +178,15 @@ namespace Tolk.BusinessLogic.Services
         {
             NotificationType.RequestCreated => GetRequestCreatedEmailTexts(request),
             NotificationType.RequestCreatedForAcceptance => GetRequestCreatedForAcceptanceEmailTexts(request),
-            _ => throw new NotSupportedException("The notificationtype could not be sent via a request BLABLA BLA"),
+            _ => throw new NotSupportedException($"{nameof(notificationType)} is not of a supported NotificationType in {nameof(NotificationService)}.{nameof(GetRequestNotificationEmailTexts)}"),
         };
+
         private async Task<WebHookPayloadBaseModel> GetRequestNotificationWebhookPayload(Request request, NotificationType notificationType)
         => notificationType switch
         {
             NotificationType.RequestCreated or NotificationType.RequestCreatedForAcceptance =>
                 await GetRequestModel(request),
-            _ => throw new NotSupportedException("The notificationtype could not be sent via a request BLABLA BLA"),
+            _ => throw new NotSupportedException($"{nameof(notificationType)} is not of a supported NotificationType in {nameof(NotificationService)}.{nameof(GetRequestNotificationWebhookPayload)}"),
         };
 
         private EmailTexts GetRequestCreatedEmailTexts(Request request)
@@ -245,56 +250,56 @@ Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där be
             };
         }
 
-        private static IEnumerable<int> GetUserRecipientsFromOrder(Order order, bool sendToContactPerson = false)
+        private static IEnumerable<EmailRecipient> GetUserRecipientsFromOrder(Order order, bool sendToContactPerson = false)
         {
             if (!order.CustomerUnitId.HasValue)
             {
-                yield return order.CreatedBy;
+                yield return new EmailRecipient { Id = order.CreatedBy, Email = order.CreatedByUser.Email };
             }
             if (sendToContactPerson && order.ContactPersonId.HasValue)
             {
-                yield return order.ContactPersonId.Value;
+                yield return new EmailRecipient { Id = order.ContactPersonId.Value, Email = order.ContactPersonUser.Email };
             }
         }
 
-        private static IEnumerable<int> GetCustomerUnitRecipientsFromOrder(Order order)
+        private static IEnumerable<EmailRecipient> GetCustomerUnitRecipientsFromOrder(Order order)
         {
             if (order.CustomerUnitId.HasValue)
             {
-                yield return order.CustomerUnitId.Value;
+                yield return new EmailRecipient { Id = order.CustomerUnitId.Value, Email = order.CustomerUnit.Email };
             }
         }
 
-        private IEnumerable<OutboundEmail> CreateOutboundEmail(IEnumerable<int> recipientUserIds, IEnumerable<int> recipientCustomerUnitIds, EmailTexts texts, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true)
+        private IEnumerable<OutboundEmail> CreateOutboundEmail(IEnumerable<EmailRecipient> recipientUsers, IEnumerable<EmailRecipient> recipientCustomerUnits, EmailTexts texts, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true)
         {
             if (texts.FrameworkAgreementNumber == null && addContractInfo)
             {
                 texts.FrameworkAgreementNumber = string.Empty;
                 _logger.LogWarning("Email is missing it's frameworkAgreementnumber and it was expected, NotificationType:{notificationType}", notificationType.ToString());
             }
-            foreach (var recipient in _dbContext.Users.Where(u => recipientUserIds.Contains(u.Id)).Select(u => new { u.Email, UserId = u.Id }))
+            foreach (var recipient in recipientUsers)
             {
                 yield return new OutboundEmail(
                     recipient.Email,
                     texts.FormattedSubject,
                     texts.FormattedBodyPlain,
-                    texts.FormattedBodyPlain,
+                    texts.FormattedBodyHtml,
                     _clock.SwedenNow,
                     notificationType,
-                    recipientUserId: recipient.UserId
+                    recipientUserId: recipient.Id
                 );
             }
-            foreach (var recipient in _dbContext.CustomerUnits.Where(u => recipientCustomerUnitIds.Contains(u.CustomerUnitId)).Select(u => new { u.Email, u.CustomerUnitId }))
+            foreach (var recipient in recipientCustomerUnits)
             {
                 yield return new OutboundEmail(
-                    recipient.Email,
-                    texts.FormattedSubject,
-                    texts.FormattedBodyPlain,
-                    texts.FormattedBodyPlain,
-                    _clock.SwedenNow,
-                    notificationType,
-                    recipientCustomerUnitId: recipient.CustomerUnitId
-                );
+                        recipient.Email,
+                        texts.FormattedSubject,
+                        texts.FormattedBodyPlain,
+                        texts.FormattedBodyHtml,
+                        _clock.SwedenNow,
+                        notificationType,
+                        recipientCustomerUnitId: recipient.Id
+                    );
             }
         }
 

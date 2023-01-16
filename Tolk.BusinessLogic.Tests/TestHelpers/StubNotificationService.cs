@@ -114,5 +114,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void RequestGroupTerminatedDueToTerminatedFrameworkAgreement(RequestGroup requestGroup) { }
 
         public void RequestAccepted(Request request) { }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async Task CreatePendingNotificationPayloads() { }
     }
 }

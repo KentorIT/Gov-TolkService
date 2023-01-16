@@ -690,6 +690,10 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<RequestNotification> RequestNotifications { get; set; }
 
+        public DbSet<RequestNotificationEmail> RequestNotificationEmails { get; set; }
+
+        public DbSet<RequestNotificationWebhook> RequestNotificationWebhooks { get; set; }
+
         public DbSet<BrokerFeeByServiceTypePriceListRow> BrokerFeeByServiceTypePriceListRows { get; set; }
 
         private static bool isUserStoreInitialized = false;

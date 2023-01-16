@@ -215,7 +215,7 @@ namespace Tolk.Web.Services
         private async Task CreateNotificationPayloads(IServiceProvider provider)
         {
             _logger.LogInformation($"Starting {nameof(CreateNotificationPayloads)}");
-            await provider.GetRequiredService<NotificationService>().CreatePendingNotificationPayloads();
+            await provider.GetRequiredService<INotificationService>().CreatePendingNotificationPayloads();
             _logger.LogInformation($"Completed {nameof(CreateNotificationPayloads)}");
         }
 

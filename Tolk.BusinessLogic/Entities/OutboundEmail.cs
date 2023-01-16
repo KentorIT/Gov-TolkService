@@ -60,7 +60,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public int? RecipientCustomerUnitId { get; private set; }
 
-        [ForeignKey(nameof(RecipientUserId))]
+        [ForeignKey(nameof(RecipientCustomerUnitId))]
         public CustomerUnit RecipientCustomerUnit { get; set; }
 
         [ForeignKey(nameof(ReplacingEmailId))]
