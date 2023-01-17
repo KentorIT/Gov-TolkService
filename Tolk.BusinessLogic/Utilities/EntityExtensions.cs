@@ -1303,13 +1303,15 @@ namespace Tolk.BusinessLogic.Utilities
         => rankings
             .Include(r => r.Broker)
             .Include(r => r.Region)
-            .Where(ra => ra.FirstValidDate <= now && ra.LastValidDate > now && ra.FrameworkAgreementId == activeFramweorkAgreementId);
+            .Where(ra => ra.FirstValidDate <= now && ra.LastValidDate > now &&
+                   ra.FrameworkAgreementId == activeFramweorkAgreementId);
 
-        public static IQueryable<Ranking> GetLatestRankingsForFrameworkAgreement(this IQueryable<Ranking> rankings, int frameworkAgreementId,DateTime nowOrLastValid)
+        public static IQueryable<Ranking> GetLatestRankingsForFrameworkAgreement(this IQueryable<Ranking> rankings, int frameworkAgreementId, DateTime nowOrLastValid)
             => rankings
                 .Include(r => r.Broker)
                 .Include(r => r.Region).ThenInclude(re => re.RegionGroup)
-                .Where(ra => ra.FrameworkAgreementId == frameworkAgreementId && ra.FirstValidDate <= nowOrLastValid && ra.LastValidDate >= nowOrLastValid);
+                .Where(ra => ra.FrameworkAgreementId == frameworkAgreementId &&
+                ra.FirstValidDate <= nowOrLastValid && ra.LastValidDate >= nowOrLastValid);
 
         public static async Task<Request> GetRequestToUpdateExpiryByOrderId(this IQueryable<Request> requests, int orderId)
             => await requests.GetRequestsWithBaseIncludesAndRegionAndLanguage()
