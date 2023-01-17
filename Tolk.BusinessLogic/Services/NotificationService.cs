@@ -10,6 +10,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Models;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
@@ -130,14 +131,14 @@ namespace Tolk.BusinessLogic.Services
                             case NotificationChannel.Email:
                                 var recipientUsers = consumerType switch
                                 {
-                                    NotificationConsumerType.Broker => new[] { new EmailRecipient { Id = notificationSettings.RecipientUserId, Email = notificationSettings.ContactInformation } },
+                                    NotificationConsumerType.Broker => new[] { new EmailRecipientModel { Id = notificationSettings.RecipientUserId, Email = notificationSettings.ContactInformation } },
                                     NotificationConsumerType.Customer =>
                                     GetUserRecipientsFromOrder(request.Order, notification.NotificationType.ShouldExtraContactGetNotification(consumerType)),
                                     _ => throw new NotSupportedException($"{nameof(consumerType)} is not of a supported NotificationConsumerType in {nameof(NotificationService)}.{nameof(CreateRequestNotificationPayloads)}"),
                                 };
                                 var recipientCustomerUnits = consumerType switch
                                 {
-                                    NotificationConsumerType.Broker => Enumerable.Empty<EmailRecipient>(),
+                                    NotificationConsumerType.Broker => Enumerable.Empty<EmailRecipientModel>(),
                                     NotificationConsumerType.Customer => GetCustomerUnitRecipientsFromOrder(request.Order),
                                     _ => throw new NotSupportedException($"{nameof(consumerType)} is not of a supported NotificationConsumerType in {nameof(NotificationService)}.{nameof(CreateRequestNotificationPayloads)}"),
                                 };
@@ -173,7 +174,7 @@ namespace Tolk.BusinessLogic.Services
             return notificationCreated;
         }
 
-        private EmailTexts GetRequestNotificationEmailTexts(Request request, NotificationType notificationType)
+        private EmailTextsModel GetRequestNotificationEmailTexts(Request request, NotificationType notificationType)
         => notificationType switch
         {
             NotificationType.RequestCreated => GetRequestCreatedEmailTexts(request),
@@ -189,10 +190,10 @@ namespace Tolk.BusinessLogic.Services
             _ => throw new NotSupportedException($"{nameof(notificationType)} is not of a supported NotificationType in {nameof(NotificationService)}.{nameof(GetRequestNotificationWebhookPayload)}"),
         };
 
-        private EmailTexts GetRequestCreatedEmailTexts(Request request)
+        private EmailTextsModel GetRequestCreatedEmailTexts(Request request)
         {
             Order order = request.Order;
-            return new EmailTexts
+            return new EmailTextsModel
             {
                 Subject = $"Ny bokningsförfrågan registrerad: {order.OrderNumber}",
                 BodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}\n\nObservera att alla svar kopplat till förfrågan måte lämnas via avropstjänsten.\n\n" +
@@ -217,10 +218,10 @@ namespace Tolk.BusinessLogic.Services
             };
         }
 
-        private EmailTexts GetRequestCreatedForAcceptanceEmailTexts(Request request)
+        private EmailTextsModel GetRequestCreatedForAcceptanceEmailTexts(Request request)
         {
             var order = request.Order;
-            return new EmailTexts
+            return new EmailTextsModel
             {
                 Subject = $"Ny bokningsförfrågan registrerad som kräver initial bekräftelse: {order.OrderNumber}",
                 BodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}\n\nObservera att alla svar kopplat till förfrågan måte lämnas via avropstjänsten.\n\n" +
@@ -250,27 +251,27 @@ Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där be
             };
         }
 
-        private static IEnumerable<EmailRecipient> GetUserRecipientsFromOrder(Order order, bool sendToContactPerson = false)
+        private static IEnumerable<EmailRecipientModel> GetUserRecipientsFromOrder(Order order, bool sendToContactPerson = false)
         {
             if (!order.CustomerUnitId.HasValue)
             {
-                yield return new EmailRecipient { Id = order.CreatedBy, Email = order.CreatedByUser.Email };
+                yield return new EmailRecipientModel { Id = order.CreatedBy, Email = order.CreatedByUser.Email };
             }
             if (sendToContactPerson && order.ContactPersonId.HasValue)
             {
-                yield return new EmailRecipient { Id = order.ContactPersonId.Value, Email = order.ContactPersonUser.Email };
+                yield return new EmailRecipientModel { Id = order.ContactPersonId.Value, Email = order.ContactPersonUser.Email };
             }
         }
 
-        private static IEnumerable<EmailRecipient> GetCustomerUnitRecipientsFromOrder(Order order)
+        private static IEnumerable<EmailRecipientModel> GetCustomerUnitRecipientsFromOrder(Order order)
         {
             if (order.CustomerUnitId.HasValue)
             {
-                yield return new EmailRecipient { Id = order.CustomerUnitId.Value, Email = order.CustomerUnit.Email };
+                yield return new EmailRecipientModel { Id = order.CustomerUnitId.Value, Email = order.CustomerUnit.Email };
             }
         }
 
-        private IEnumerable<OutboundEmail> CreateOutboundEmail(IEnumerable<EmailRecipient> recipientUsers, IEnumerable<EmailRecipient> recipientCustomerUnits, EmailTexts texts, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true)
+        private IEnumerable<OutboundEmail> CreateOutboundEmail(IEnumerable<EmailRecipientModel> recipientUsers, IEnumerable<EmailRecipientModel> recipientCustomerUnits, EmailTextsModel texts, NotificationType notificationType, bool isBrokerMail = false, bool addContractInfo = true)
         {
             if (texts.FrameworkAgreementNumber == null && addContractInfo)
             {
