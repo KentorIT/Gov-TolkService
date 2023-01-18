@@ -155,7 +155,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     if (extraInterpreter.Accepted)
                     {
-                        returnedRequests.Add(AnswerReqestGroupRequest(request,
+                        returnedRequests.Add(AnswerRequestGroupRequest(request,
                             answerTime,
                             userId,
                             impersonatorId,
@@ -176,7 +176,7 @@ namespace Tolk.BusinessLogic.Services
                 }
                 else
                 {
-                    returnedRequests.Add(AnswerReqestGroupRequest(request,
+                    returnedRequests.Add(AnswerRequestGroupRequest(request,
                         answerTime,
                         userId,
                         impersonatorId,
@@ -272,7 +272,7 @@ namespace Tolk.BusinessLogic.Services
                 {
                     if (extraAccept.Accepted)
                     {
-                        AcceptReqestGroupRequest(request,
+                        AcceptRequestGroupRequest(request,
                             acceptTime,
                             userId,
                             impersonatorId,
@@ -290,7 +290,7 @@ namespace Tolk.BusinessLogic.Services
                 }
                 else
                 {
-                    AcceptReqestGroupRequest(request,
+                    AcceptRequestGroupRequest(request,
                         acceptTime,
                         userId,
                         impersonatorId,
@@ -802,12 +802,12 @@ namespace Tolk.BusinessLogic.Services
             request.Accept(acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, brokerReferenceNumber);
         }
 
-        private Request AnswerReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
+        private Request AnswerRequestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
         {
             return AnswerRequest(request, acceptTime, userId, impersonatorId, interpreter.Interpreter, interpreterLocation, interpreter.CompetenceLevel, ReplaceIds(request.Order.Requirements, interpreter.RequirementAnswers).ToList(), attachedFiles, interpreter.ExpectedTravelCosts, interpreter.ExpectedTravelCostInfo, verificationResult, latestAnswerTimeForCustomer, string.Empty, overrideRequireAccept);
         }
 
-        private void AcceptReqestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, InterpreterAcceptDto accept, List<RequestAttachment> attachedFiles)
+        private void AcceptRequestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, InterpreterAcceptDto accept, List<RequestAttachment> attachedFiles)
         {
             AcceptRequest(request, acceptTime, userId, impersonatorId, interpreterLocation, accept.CompetenceLevel, ReplaceIds(request.Order.Requirements, accept.RequirementAnswers).ToList(), attachedFiles, string.Empty);
         }
