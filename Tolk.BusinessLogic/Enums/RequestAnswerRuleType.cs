@@ -11,7 +11,7 @@ namespace Tolk.BusinessLogic.Enums
         RequestCreatedMoreThanTwentyDaysBefore = 1,
 
         [CustomName("more_than_ten_workdays_before_occasion")]
-        [Description("Förfrågan inkom mer än tjugo dagar innan tillfället. Bekräftelse krävs inom fyra helgfira vardagar, och tolk måste tillsättas mer än sju helgfira vardagar innan tillfällets start. Om förfrågan skapas på en helgdag så anses förfrågan ha skapas direkt efter midnatt första följande helgfria vardag.")]
+        [Description("Förfrågan inkom mer än tio dagar innan tillfället. Bekräftelse krävs inom två helgfira vardagar, och tolk måste tillsättas mer än fem helgfira vardagar innan tillfällets start. Om förfrågan skapas på en helgdag så anses förfrågan ha skapas direkt efter midnatt första följande helgfria vardag.")]
         [Parent(RequiredAnswerLevel.Acceptance)]
         RequestCreatedMoreThanTenDaysBefore = 2,
 
