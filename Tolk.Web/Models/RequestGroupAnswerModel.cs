@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.Web.Models
 {
-    public class RequestGroupAnswerModel : RequestGroupAcceptModel, IModel
+    public class RequestGroupAnswerModel : IModel
     {
-        public InterpreterLocation? InterpreterLocation { get; set; }
+        public int RequestGroupId { get; set; }
+
+        [Required]
+        public InterpreterLocation InterpreterLocation { get; set; }
 
         public RadioButtonGroup SetLatestAnswerTimeForCustomer { get; set; }
 
@@ -14,5 +19,9 @@ namespace Tolk.Web.Models
         public InterpreterAnswerModel InterpreterAnswerModel { get; set; }
 
         public InterpreterAnswerModel ExtraInterpreterAnswerModel { get; set; }
+
+        public string BrokerReferenceNumber { get; set; }
+
+        public List<FileModel> Files { get; set; }
     }
 }

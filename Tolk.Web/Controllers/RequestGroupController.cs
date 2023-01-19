@@ -183,7 +183,7 @@ namespace Tolk.Web.Controllers
                             _clock.SwedenNow,
                             User.GetUserId(),
                             User.TryGetImpersonatorId(),
-                            model.InterpreterLocation.Value,
+                            model.InterpreterLocation,
                             interpreterModel,
                             extrainterpreterModel,
                             model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList(),
