@@ -1,5 +1,7 @@
 ﻿@model DisplayContractModel
+@using Microsoft.Extensions.Options;
 @using Tolk.BusinessLogic;
+@inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
 @{
     ViewData["Title"] = $"Om ramavtalet för tolkförmedlingstjänster {Model?.AgreementNumber}";
 }
@@ -33,7 +35,13 @@
                 </p>                      
         </div>
         <div class="col-sm-8">
-            <a href="https://www.avropa.se/ramavtal/ramavtalsomraden/Ovriga-tjanster/tolkformedlingstjanster/" target="_blank">https://www.avropa.se/ramavtal/ramavtalsomraden/Ovriga-tjanster/tolkformedlingstjanster/</a>
+            @if(Model.IsActive)
+            {
+                <a href=@Options.Value.ExternalLinks.ActiveAgreementInfo target="_blank">@Options.Value.ExternalLinks.ActiveAgreementInfo</a>                
+            } else
+            {
+                <a href=@Options.Value.ExternalLinks.ExpiredAgreementInfo target="_blank">@Options.Value.ExternalLinks.ExpiredAgreementInfo</a>
+            }
         </div>
     </div>
 </section>
