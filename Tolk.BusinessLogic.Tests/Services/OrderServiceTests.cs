@@ -63,6 +63,21 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
+        //fredag efter 14 till söndag => panik
+        [InlineData("2023-01-20 19:05:00 +01:00", "2023-01-22 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionOne, null, null, RequestAnswerRuleType.ResponseSetByCustomer)]
+        [InlineData("2023-01-20 19:05:00 +01:00", "2023-01-22 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionTwo, null, null, RequestAnswerRuleType.ResponseSetByCustomer)]
+        //fredag innan 14 till söndag => panik
+        [InlineData("2023-01-20 10:05:00 +01:00", "2023-01-22 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionOne, null, null, RequestAnswerRuleType.ResponseSetByCustomer)]
+        [InlineData("2023-01-20 10:05:00 +01:00", "2023-01-22 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionTwo, null, null, RequestAnswerRuleType.ResponseSetByCustomer)]
+        //torsdag efter 14 till söndag => panik
+        [InlineData("2023-01-19 19:05:00 +01:00", "2023-01-22 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionOne, null, null, RequestAnswerRuleType.ResponseSetByCustomer)]
+        [InlineData("2023-01-19 19:05:00 +01:00", "2023-01-22 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionTwo, null, null, RequestAnswerRuleType.ResponseSetByCustomer)]
+        //torsdag innan 14 till söndag => 16:30
+        [InlineData("2023-01-19 10:05:00 +01:00", "2023-01-22 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionOne, "2023-01-19 16:30:00 +01:00", null, RequestAnswerRuleType.RequestCreatedOneDayBefore)]
+        [InlineData("2023-01-19 10:05:00 +01:00", "2023-01-22 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionTwo, "2023-01-19 16:30:00 +01:00", null, RequestAnswerRuleType.RequestCreatedOneDayBefore)]
+        //onsdag till söndag => 15:00
+        [InlineData("2023-01-18 10:05:00 +01:00", "2023-01-22 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionOne, "2023-01-19 15:00:00 +01:00", null, RequestAnswerRuleType.AnswerRequiredNextDay)]
+        [InlineData("2023-01-18 10:05:00 +01:00", "2023-01-22 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionTwo, "2023-01-19 15:00:00 +01:00", null, RequestAnswerRuleType.AnswerRequiredNextDay)]
         //lördag till måndag => panik
         [InlineData("2022-11-05 19:05:00 +01:00", "2022-11-07 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionOne, null, null, RequestAnswerRuleType.ResponseSetByCustomer)]
         [InlineData("2022-11-05 19:05:00 +01:00", "2022-11-07 11:25:00 +01:00", FrameworkAgreementResponseRuleset.VersionTwo, null, null, RequestAnswerRuleType.ResponseSetByCustomer)]
