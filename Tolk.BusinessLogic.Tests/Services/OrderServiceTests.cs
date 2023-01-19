@@ -33,19 +33,6 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
         private OrderService CreateOrderService(TolkDbContext dbContext, string now = "2018-12-12 00:00:00")
         {
-            // OrderService(
-            //TolkDbContext tolkDbContext,
-            //ISwedishClock clock,
-            //RankingService rankingService,
-            //DateCalculationService dateCalculationService,
-            //PriceCalculationService priceCalculationService,
-            //ILogger < OrderService > logger,
-            //INotificationService notificationService,
-            //VerificationService verificationService,
-            // EmailService emailService,
-            //ITolkBaseOptions tolkBaseOptions,
-            //CacheService cacheService
-            //)
             var clock = new StubSwedishClock(now);
             IDistributedCache cache = Mock.Of<IDistributedCache>();
             TolkBaseOptionsService optionService = new TolkBaseOptionsService(Options.Create(new TolkOptions() { RoundPriceDecimals = true }));
