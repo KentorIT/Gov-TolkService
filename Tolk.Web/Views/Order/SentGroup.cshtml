@@ -91,7 +91,7 @@
                     @await Html.PartialAsync("_AgreementVersionOneTimeRules")
                     break;
                 case FrameworkAgreementResponseRuleset.VersionTwo:
-                    @await Html.PartialAsync("_AgreementVersionTwoTimeRules",@Model.OrderOccasionDisplayModels.First().OccasionStartDateTime)
+                    @await Html.PartialAsync("_AgreementVersionTwoTimeRules")
                     break;
                 default:
                     break;
