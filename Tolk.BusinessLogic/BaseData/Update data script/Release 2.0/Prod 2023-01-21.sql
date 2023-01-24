@@ -2,6 +2,7 @@
 --sätt lastValidDate (sista dagen avtalet ska gälla)
 DECLARE @lastValidDate DATETIME = '2023-01-31'
 
+--42 rader
 UPDATE rankings SET LastValidDate = @lastValidDate WHERE 
 LastValidDate > GETDATE()
 
@@ -20,6 +21,9 @@ WHERE FrameworkAgreementId = 1;
 
 --add notification setting for brokers ApiUser for 
 --only brokers that have active rankings
+
+
+--5 st 
 
 --57 order_terminated_due_to_terminated_framework_agreement
 INSERT INTO UserNotificationSettings (UserId, NotificationChannel, NotificationType)
