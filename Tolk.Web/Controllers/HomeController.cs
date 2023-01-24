@@ -842,6 +842,7 @@ namespace Tolk.Web.Controllers
                     Status = GetStartListStatusForBroker((RequestStatus)rg.RequestGroupStatus, 0, true),
                     LatestDate = rg.RequestGroupIsToBeProcessedByBroker ? (rg.RequestExpiresAt.HasValue ? (DateTime?)rg.RequestExpiresAt.Value.DateTime : null) : null,
                     ViewedByUser = GetViewedByUserName(rg, userId),
+                    RequestAcceptAt = rg.LastAcceptAt.HasValue ? (DateTime?)rg.LastAcceptAt.Value.DateTime : null,
                     RequestAcceptedAt = rg.AcceptedAt.HasValue ? (DateTime?)rg.AcceptedAt.Value.DateTime : null,
                     LinkOverride = $"/RequestGroup/View",
                     IsSingleOccasion = rg.IsSingleOccasion,
