@@ -475,7 +475,7 @@ namespace Tolk.Web.Controllers
             try
             {
                 sentOrders = _dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, false, false)
-                    .Where(o => o.RowType == StartListRowType.Order && o.OrderStatus == OrderStatus.Requested
+                    .Where(o => o.RowType == StartListRowType.Order && (o.OrderStatus == OrderStatus.Requested || o.OrderStatus == OrderStatus.RequestAcceptedAwaitingInterpreter)
                     && o.EndAt > _clock.SwedenNow)
                     .Select(o => new StartListItemModel
                     {
@@ -486,7 +486,8 @@ namespace Tolk.Web.Controllers
                         CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
                         LanguageName = o.LanguageName,
                         OrderNumber = o.OrderNumber,
-                        Status = o.ReplacingOrderId.HasValue ? StartListItemStatus.ReplacementOrderCreated : StartListItemStatus.OrderCreated
+                        RequestAcceptedAt = o.AcceptedAt.HasValue ? (DateTime?)o.AcceptedAt.Value.DateTime : null,
+                        Status = o.ReplacingOrderId.HasValue ? StartListItemStatus.ReplacementOrderCreated : (o.OrderStatus == OrderStatus.Requested ? StartListItemStatus.OrderCreated : StartListItemStatus.OrderAccepted)
                     }).ToList();
             }
             catch (Exception ex)
@@ -499,7 +500,7 @@ namespace Tolk.Web.Controllers
                 if (_options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)))
                 {
                     sentOrders.AddRange(_dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, includeOrderGroupOrders: true)
-                    .Where(og => og.RowType == StartListRowType.OrderGroup && og.OrderGroupStatus == OrderStatus.Requested && og.EndAt > _clock.SwedenNow).ToList()
+                    .Where(og => og.RowType == StartListRowType.OrderGroup && (og.OrderStatus == OrderStatus.Requested || og.OrderStatus == OrderStatus.RequestAcceptedAwaitingInterpreter) && og.EndAt > _clock.SwedenNow).ToList()
                     .Select(og => new StartListItemModel
                     {
                         OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
@@ -510,7 +511,8 @@ namespace Tolk.Web.Controllers
                         LinkOverride = "/OrderGroup/View",
                         LanguageName = og.LanguageName,
                         OrderNumber = og.OrderGroupNumber,
-                        Status = StartListItemStatus.OrderGroupCreated,
+                        RequestAcceptedAt = og.AcceptedAt.HasValue ? (DateTime?)og.AcceptedAt.Value.DateTime : null,
+                        Status = og.OrderStatus == OrderStatus.Requested ? StartListItemStatus.OrderGroupCreated : StartListItemStatus.OrderGroupAccepted,
                         IsSingleOccasion = og.IsSingleOccasion,
                         HasExtraInterpreter = og.HasExtraInterpreter,
                     }));
@@ -520,7 +522,6 @@ namespace Tolk.Web.Controllers
             {
                 _logger.LogError(ex, $"Unexpected error occured for Sent ordergroups in method {nameof(CustomerWaitingListItems)}");
             }
-
 
             return sentOrders;
         }

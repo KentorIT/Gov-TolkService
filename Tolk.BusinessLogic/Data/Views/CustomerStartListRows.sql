@@ -28,6 +28,7 @@ DISTINCT
    ,r.LatestAnswerTimeForCustomer
    ,r.AnswerDate 'AnsweredAt'
    ,r.CancelledAt
+   ,r.AcceptedAt
    ,r.ExpiresAt 'RequestExpiresAt'
    ,r.CreatedAt 'LastRequestCreatedUpdatedAt'
    ,NULL 'NoOfChildren'
@@ -87,6 +88,7 @@ DISTINCT
    ,rg.LatestAnswerTimeForCustomer
    ,rg.AnswerDate 'AnsweredAt'
    ,rg.CancelledAt
+   ,rg.AcceptedAt
    ,rg.ExpiresAt 'RequestExpiresAt'
    ,rg.CreatedAt 'LastRequestCreatedUpdatedAt'
    ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId) 'NoOfChildren'
@@ -141,6 +143,7 @@ DISTINCT
    ,NULL 'LatestAnswerTimeForCustomer'
    ,NULL 'AnsweredAt'
    ,NULL 'CancelledAt'
+   ,NULL 'AcceptedAt'
    ,NULL 'RequestExpiresAt'
    ,NULL 'LastRequestCreatedUpdatedAt'
    ,NULL 'NoOfChildren'
@@ -189,6 +192,7 @@ DISTINCT
    ,NULL 'LatestAnswerTimeForCustomer'
    ,c.AnsweredAt
    ,NULL 'CancelledAt'
+   ,NULL 'AcceptedAt'
    ,NULL 'RequestExpiresAt'
    ,NULL 'LastRequestCreatedUpdatedAt'
    ,0 'NoOfChildren'
