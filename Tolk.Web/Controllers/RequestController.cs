@@ -231,13 +231,7 @@ namespace Tolk.Web.Controllers
                     }).ToList());
                     try
                     {
-                        //if user can choose between phone/video and an interpreter location with travel, user might have set costs, LatestAnswerTimeForCustomer etc
-                        if (model.InterpreterLocation == InterpreterLocation.OffSitePhone || model.InterpreterLocation == InterpreterLocation.OffSiteVideo)
-                        {
-                            model.LatestAnswerTimeForCustomer = null;
-                            model.ExpectedTravelCostInfo = null;
-                            model.ExpectedTravelCosts = null;
-                        }
+                        model.ClearPropertiesBySelectedLocation();
                         var interpreter = await _interpreterService.GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
                         try
                         {
@@ -310,13 +304,7 @@ namespace Tolk.Web.Controllers
                     }).ToList());
                     try
                     {
-                        //if user can choose between phone/video and an interpreter location with travel, user might have set costs, LatestAnswerTimeForCustomer etc
-                        if (model.InterpreterLocation == InterpreterLocation.OffSitePhone || model.InterpreterLocation == InterpreterLocation.OffSiteVideo)
-                        {
-                            model.LatestAnswerTimeForCustomer = null;
-                            model.ExpectedTravelCostInfo = null;
-                            model.ExpectedTravelCosts = null;
-                        }
+                        model.ClearPropertiesBySelectedLocation();
                         await _requestService.AcceptReplacement(
                              request,
                              _clock.SwedenNow,
@@ -378,13 +366,7 @@ namespace Tolk.Web.Controllers
                     }).ToList());
                     try
                     {
-                        //if user can choose between phone/video and an interpreter location with travel, user might have set costs, LatestAnswerTimeForCustomer etc
-                        if (model.InterpreterLocation == InterpreterLocation.OffSitePhone || model.InterpreterLocation == InterpreterLocation.OffSiteVideo)
-                        {
-                            model.LatestAnswerTimeForCustomer = null;
-                            model.ExpectedTravelCostInfo = null;
-                            model.ExpectedTravelCosts = null;
-                        }
+                        model.ClearPropertiesBySelectedLocation();
                         var interpreter = await _interpreterService.GetInterpreter(model.InterpreterId.Value, model.GetNewInterpreterInformation(), request.Ranking.BrokerId);
                         await _requestService.Answer(
                             request,

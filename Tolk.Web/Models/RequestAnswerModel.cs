@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Tolk.BusinessLogic.Enums;
+using E = Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 
@@ -11,7 +11,7 @@ namespace Tolk.Web.Models
         public int RequestId { get; set; }
 
         [ClientRequired]
-        public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
+        public E.CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
         [ClientRequired]
         public int? InterpreterId { get; set; }
@@ -32,7 +32,7 @@ namespace Tolk.Web.Models
 
         public string BrokerReferenceNumber { get; set; }
 
-        public RequestStatus Status { get; set; }
+        public E.RequestStatus Status { get; set; }
 
         public RadioButtonGroup SetLatestAnswerTimeForCustomer { get; set; }
 
@@ -41,7 +41,7 @@ namespace Tolk.Web.Models
         public List<FileModel> Files { get; set; }
 
         [ClientRequired]
-        public InterpreterLocation? InterpreterLocation { get; set; }
+        public E.InterpreterLocation? InterpreterLocation { get; set; }
 
         public InterpreterInformation GetNewInterpreterInformation()
         {
@@ -54,5 +54,17 @@ namespace Tolk.Web.Models
                 OfficialInterpreterId = NewInterpreterOfficialInterpreterId
             };
         }
+
+        public void ClearPropertiesBySelectedLocation()
+        {
+            //if user can choose between phone/video and an interpreter location with travel, user might have set costs, LatestAnswerTimeForCustomer etc
+            if (InterpreterLocation == E.InterpreterLocation.OffSitePhone || InterpreterLocation == E.InterpreterLocation.OffSiteVideo)
+            {
+                LatestAnswerTimeForCustomer = null;
+                ExpectedTravelCostInfo = null;
+                ExpectedTravelCosts = null;
+            }
+        }
+
     }
 }
