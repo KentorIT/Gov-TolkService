@@ -1,20 +1,13 @@
-﻿using DocumentFormat.OpenXml.Drawing;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using System.Globalization;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
@@ -53,7 +46,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 _cache);
         }
 
-        private TolkDbContext CreateTolkDbContext(string databaseName = "empty")
+        private static TolkDbContext CreateTolkDbContext(string databaseName = "empty")
         {
             var options = new DbContextOptionsBuilder<TolkDbContext>()
                 .UseInMemoryDatabase(databaseName)
@@ -153,6 +146,60 @@ namespace Tolk.BusinessLogic.Tests.Services
             {
                 result.LastAcceptedAt.Should().BeNull();
             }
+        }
+
+        [Theory]
+        [InlineData("2022-05-02 10:13:12 +01:00", "2022-05-02 00:00:00 +02:00")] //ordinary weekday before 14:00 => same day
+        [InlineData("2022-05-02 16:13:12 +01:00", "2022-05-03 00:00:00 +02:00")] //ordinary weekday after 14:00  => next workday
+        [InlineData("2022-05-06 10:13:12 +01:00", "2022-05-08 00:00:00 +02:00")] //Friday before 14:00 => set to Sunday
+        [InlineData("2022-05-06 14:13:12 +01:00", "2022-05-09 00:00:00 +02:00")] //Friday after 14:00 => set to next workday (Monday)
+        [InlineData("2022-05-07 14:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Saturday => set to Monday
+        [InlineData("2022-05-08 10:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Sunday before 14:00 => set to Monday
+        [InlineData("2022-05-08 14:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Sunday after 14:00 => set to Monday
+        [InlineData("2022-05-25 10:00:01 +01:00", "2022-05-26 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") before 14:00 => also include holiday
+        [InlineData("2022-05-25 14:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
+        [InlineData("2022-05-26 10:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") before 14:00 => set to Sunday
+        [InlineData("2022-05-26 14:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
+        public void GetLastTimeForRequiringLatestAnswerByTest(string orderDate, string expectedLastTimeForRequiringLatestAnswerByTest)
+        {
+            DateTimeFormatInfo dtfi = new CultureInfo("sv-SE").DateTimeFormat;
+            DateTimeOffset orderTime = DateTimeOffset.Parse(orderDate, dtfi);
+            DateTimeOffset expectedLastTimeForRequiringLatestAnswerBy = DateTimeOffset.Parse(expectedLastTimeForRequiringLatestAnswerByTest, dtfi);
+            using var tolkDbContext = CreateTolkDbContext();
+            tolkDbContext.AddRange(MockEntities.Holidays.Where(newHoliday =>
+            !tolkDbContext.Holidays.Select(existingHoliday => existingHoliday.Date).Contains(newHoliday.Date)));
+            tolkDbContext.SaveChanges();
+            var service = CreateOrderService(tolkDbContext, orderDate);
+            var result = service.GetLastTimeForRequiringLatestAnswerBy(orderTime.DateTime);
+            result.ToDateTimeOffsetSweden().Should().Be(expectedLastTimeForRequiringLatestAnswerBy);
+        }
+
+        [Theory]
+        [InlineData("2022-05-02 10:13:12 +01:00", "2022-05-03 00:00:00 +02:00")] //ordinary weekday before 14:00 => next workday
+        [InlineData("2022-05-02 16:13:12 +01:00", "2022-05-03 00:00:00 +02:00")] //ordinary weekday after 14:00 => next workday
+        [InlineData("2022-05-06 10:13:12 +01:00", "2022-05-09 00:00:00 +02:00")] //Friday before 14:00 => set to Monday
+        [InlineData("2022-05-06 14:13:12 +01:00", "2022-05-09 00:00:00 +02:00")] //Friday after 14:00 => set to Monday
+        [InlineData("2022-05-07 12:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Saturday before 14:00 => set to Monday
+        [InlineData("2022-05-07 15:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Saturday after 14:00 => set to Monday
+        [InlineData("2022-05-08 10:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Sunday before 14:00 => set to Monday
+        [InlineData("2022-05-08 14:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Sunday after 14:00 => set to Monday
+        [InlineData("2022-05-25 10:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") before 14:00 => also include holiday
+        [InlineData("2022-05-25 14:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
+        [InlineData("2022-05-26 10:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") before 14:00 => set to Sunday
+        [InlineData("2022-05-26 14:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
+        public void GetNextLastTimeForRequiringLatestAnswerByTest(string orderDate, string expectedNextLastTimeForRequiringLatestAnswerByTest)
+        {
+            DateTimeFormatInfo dtfi = new CultureInfo("sv-SE").DateTimeFormat;
+            DateTimeOffset orderTime = DateTimeOffset.Parse(orderDate, dtfi);
+            DateTimeOffset expectedNextLastTimeForRequiringLatestAnswerBy = DateTimeOffset.Parse(expectedNextLastTimeForRequiringLatestAnswerByTest, dtfi);
+            using var tolkDbContext = CreateTolkDbContext();
+            tolkDbContext.AddRange(MockEntities.Holidays.Where(newHoliday =>
+            !tolkDbContext.Holidays.Select(existingHoliday => existingHoliday.Date).Contains(newHoliday.Date)));
+            tolkDbContext.SaveChanges();
+            var service = CreateOrderService(tolkDbContext, orderDate);
+            var lastTimeForRequiringLatestAnswerBy = service.GetLastTimeForRequiringLatestAnswerBy(orderTime.DateTime);
+            var result = service.GetNextLastTimeForRequiringLatestAnswerBy(lastTimeForRequiringLatestAnswerBy, orderTime.DateTime);
+            result.ToDateTimeOffsetSweden().Should().Be(expectedNextLastTimeForRequiringLatestAnswerBy);
         }
     }
 }

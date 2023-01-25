@@ -366,31 +366,13 @@ namespace Tolk.Web.Controllers
                 return Forbid();
             }
             var now = _clock.SwedenNow.DateTime;
-
-            //lastTimeForRequiringLatestAnswerBy - set to now date, if now is not working day set the first working day after now
-            var lastTimeForRequiringLatestAnswerBy = _dateCalculationService.GetFirstWorkDay(now).Date;
-            var nowIsWorkingDay = _dateCalculationService.IsWorkingDay(now);
-            //if a workday after 14:00 set to next work day
-            if (nowIsWorkingDay && now.Hour >= 14)
-            {
-                //Add day if after 14 if order creation is a working day...
-                lastTimeForRequiringLatestAnswerBy = _dateCalculationService.GetFirstWorkDay(lastTimeForRequiringLatestAnswerBy.AddDays(1).Date).Date;
-            }
-            //if lastTimeForRequiringLatestAnswerBy is just before a non working day, get the last non working day before first working day
-            var isLastTimeForRequiringLatestAnswerBy = !_dateCalculationService.IsWorkingDay(lastTimeForRequiringLatestAnswerBy.AddDays(1));
-            if (isLastTimeForRequiringLatestAnswerBy)
-            {
-                lastTimeForRequiringLatestAnswerBy = _dateCalculationService.GetFirstWorkDay(lastTimeForRequiringLatestAnswerBy.AddDays(1).Date).Date.AddDays(-1);
-            }
-            //if clock passes 14:00 during order creation - render nextLastTimeForRequiringLatestAnswerBy for js-script 
-            DateTime nextLastTimeForRequiringLatestAnswerBy = nowIsWorkingDay ? _dateCalculationService.GetFirstWorkDay(lastTimeForRequiringLatestAnswerBy.AddDays(1).Date).Date : lastTimeForRequiringLatestAnswerBy;
-
+            var lastTimeForRequiringLatestAnswerBy = _orderService.GetLastTimeForRequiringLatestAnswerBy(now);
             var user = await _userService.GetUserWithDefaultSettings(User.GetUserId());
             var currentFrameworkAgreementResponseRuleset = (FrameworkAgreementResponseRuleset)_cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementId;
             var model = new OrderModel()
             {
                 LastTimeForRequiringLatestAnswerBy = lastTimeForRequiringLatestAnswerBy.ToSwedishString("yyyy-MM-dd"),
-                NextLastTimeForRequiringLatestAnswerBy = nextLastTimeForRequiringLatestAnswerBy.ToSwedishString("yyyy-MM-dd"),
+                NextLastTimeForRequiringLatestAnswerBy = _orderService.GetNextLastTimeForRequiringLatestAnswerBy(lastTimeForRequiringLatestAnswerBy, now).ToSwedishString("yyyy-MM-dd"),
                 CreatedByName = user.FullName,
                 UserDefaultSettings = DefaultSettingsModel.GetModel(user, currentFrameworkAgreementResponseRuleset),
                 EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)),

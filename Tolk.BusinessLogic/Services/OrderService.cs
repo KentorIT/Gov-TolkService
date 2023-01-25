@@ -689,6 +689,34 @@ namespace Tolk.BusinessLogic.Services
             return response;
         }
 
+        /// <summary>
+        /// Used for UI validation, when to require last answer by time from customer
+        /// </summary>
+        public DateTime GetLastTimeForRequiringLatestAnswerBy(DateTime now)
+        {
+            var lastTimeForRequiringLatestAnswerBy = _dateCalculationService.GetFirstWorkDay(now).Date;
+            var dateIsWorkingDay = _dateCalculationService.IsWorkingDay(now);
+            //if a workday after 14:00 set to next work day
+            if (dateIsWorkingDay && now.Hour >= 14)
+            {
+                //Add day if after 14 if order creation is a working day...
+                lastTimeForRequiringLatestAnswerBy = _dateCalculationService.GetFirstWorkDay(lastTimeForRequiringLatestAnswerBy.AddDays(1).Date).Date;
+            }
+            //if lastTimeForRequiringLatestAnswerBy is just before a non working day, get the last non working day before first working day
+            var isLastTimeForRequiringLatestAnswerBy = !_dateCalculationService.IsWorkingDay(lastTimeForRequiringLatestAnswerBy.AddDays(1));
+            return isLastTimeForRequiringLatestAnswerBy ? _dateCalculationService.GetFirstWorkDay(lastTimeForRequiringLatestAnswerBy.AddDays(1).Date).Date.AddDays(-1) : lastTimeForRequiringLatestAnswerBy;
+        }
+
+        /// <summary>
+        /// Used for UI validation, if clock passes 14:00 during order creation set the next last answer by time from customer
+        /// </summary>
+        public DateTime GetNextLastTimeForRequiringLatestAnswerBy(DateTime lastTimeForRequiringLatestAnswerBy, DateTime now)
+        {
+            //should onnly by increased if time is before 14:00 and the order is created a workday (else it should be the same date as lastTimeForRequiringLatestAnswerBy)
+            //if a workday and before 14:00 GetLastTimeForRequiringLatestAnswerBy for the same day but after 14:00
+            return (now.Hour >= 14 || !_dateCalculationService.IsWorkingDay(now)) ? lastTimeForRequiringLatestAnswerBy : GetLastTimeForRequiringLatestAnswerBy(lastTimeForRequiringLatestAnswerBy.Date.AddHours(14));
+        }
+
         // This is an auxilary method for calculating initial estimate
         public static CompetenceAndSpecialistLevel SelectCompetenceLevelForPriceEstimation(IEnumerable<CompetenceAndSpecialistLevel> list)
         {

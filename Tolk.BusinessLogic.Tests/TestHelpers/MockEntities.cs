@@ -736,6 +736,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
             new Holiday() { Name = "", Date = new DateTime(2020, 06, 06), DateType = DateType.Holiday},
             new Holiday() { Name = "", Date = new DateTime(2019, 12, 23), DateType = DateType.DayBeforeBigHoliday},
             new Holiday() { Name = "", Date = new DateTime(2020, 12, 27), DateType = DateType.DayAfterBigHoliday},
+            new Holiday() { Name = "", Date = new DateTime(2022, 05, 26), DateType = DateType.Holiday},
             new Holiday() { Name = "", Date = new DateTime(2022, 06, 06), DateType = DateType.DayAfterBigHoliday},
             new Holiday() { Name = "", Date = new DateTime(2022, 06, 06), DateType = DateType.Holiday},
             new Holiday() { Name = "", Date = new DateTime(2025, 06, 06), DateType = DateType.DayBeforeBigHoliday},
