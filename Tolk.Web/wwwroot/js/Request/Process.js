@@ -72,6 +72,13 @@ $(function () {
         $("#Change").disableOnSubmit();
     });
 
+    $("#Decline").closest("form").on("submit", function () {  
+        if (!validateDeclineMessageExist()) {
+            return false;
+        }   
+        $("#Decline").disableOnSubmit();
+    });
+
     $("body").on("click", "#Accept", function () {
         var $form = $(this).closest("form");
         var $action = $form.prop("action");
@@ -133,6 +140,15 @@ $(function () {
         }
         return true;
     };
+
+    function validateDeclineMessageExist()
+    {
+        if ($("#DenyMessage").val().length > 0) {
+            return true;
+        }
+        return false;
+    }
+
 
     var setLatestAnswerDateTimeSpan = function () {
         if ($("#OrderViewModel_StartAt").val() !== undefined) {
