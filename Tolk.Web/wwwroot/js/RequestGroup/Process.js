@@ -135,6 +135,13 @@
         return true;
     };
 
+    function validateDeclineMessageExist() {
+        if ($("#DenyMessage").val().length > 0) {
+            return true;
+        }
+        return false;
+    }
+
     var setLatestAnswerDateTimeSpan = function () {
         if ($("#OccasionList_FirstStartDateTime").val() !== undefined) {
             var startTime = new Date($("#OccasionList_FirstStartDateTime").val().replace(" ", "T").replace(" ", ""));
@@ -197,6 +204,13 @@
             return false;
         };
         $("#Answer").disableOnSubmit();
+    });
+
+    $("#Decline").closest("form").on("submit", function () {
+        if (!validateDeclineMessageExist()) {
+            return false;
+        }
+        $("#Decline").disableOnSubmit();
     });
 
     $('#InterpreterLocation').change(function () {
