@@ -25,6 +25,8 @@ namespace Tolk.Web.Api.Helpers
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.RequestGroupNotInCorrectState, ErrorMessage = "The request group or the underlying order group was not in a correct state." },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.RequestIsPartOfAGroup, ErrorMessage = "The provided order is part of an order group. I cannot be accepted, acknowledged or declined separately" },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.AllRequirementsMustBeAnsweredOnAccept, ErrorMessage = "All requirement on a request must be accepted on accept." },
+                    new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.AcceptIsNotAllowedOnTheRequest, ErrorMessage = "The request is not allowed for initial accept, it must be fully answered directly." },
+                    new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.AcceptIsNotAllowedOnTheRequestGroup, ErrorMessage = "The request group is not allowed for initial accept, it must be fully answered directly." },
                };
         
         public static List<ErrorResponse> CustomerApiErrorResponses =>

@@ -1038,7 +1038,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var impersonatorId = (int?)null;
             var cancelMessage = "Neh";
             var expectedRequestStatus = request.Status == RequestStatus.Approved && !isReplaced ? RequestStatus.CancelledByCreatorWhenApproved : RequestStatus.CancelledByCreator;
-            request.Cancel(cancelledAt, userId, impersonatorId, cancelMessage, createFullCompensationRequisition, isReplaced, priceRows:  !isReplaced ? request.GenerateRequisitionPriceRows(createFullCompensationRequisition) : null);
+            request.Cancel(cancelledAt, userId, impersonatorId, cancelMessage, createFullCompensationRequisition, isReplaced, priceRows: !isReplaced ? request.GenerateRequisitionPriceRows(createFullCompensationRequisition) : null);
 
             Assert.Equal(expectedRequestStatus, request.Status);
             Assert.Equal(OrderStatus.CancelledByCreator, request.Order.Status);
@@ -2757,14 +2757,17 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         //Accept
         [Theory]
-        [InlineData(RequestStatus.Created)]
-        [InlineData(RequestStatus.Received)]
-        public void Accept_Valid(RequestStatus status)
+        [InlineData(RequestStatus.Created, RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore)]
+        [InlineData(RequestStatus.Received, RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore)]
+        [InlineData(RequestStatus.Created, RequestAnswerRuleType.RequestCreatedMoreThanTenDaysBefore)]
+        [InlineData(RequestStatus.Received, RequestAnswerRuleType.RequestCreatedMoreThanTenDaysBefore)]
+        public void Accept_Valid(RequestStatus status, RequestAnswerRuleType ruleType)
         {
             var request = new Request()
             {
                 Status = status,
-                Order = new Order(MockOrder)
+                Order = new Order(MockOrder),
+                RequestAnswerRuleType = ruleType
             };
             var expectedRequestStatus = RequestStatus.AcceptedAwaitingInterpreter;
             var acceptedAt = DateTime.Now;
@@ -2782,34 +2785,20 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Equal(brokerReferenceNumber, request.BrokerReferenceNumber);
         }
 
-        [Fact]
-        public void Accept_InvalidLocation()
+        [Theory]
+        [InlineData(RequestAnswerRuleType.AnswerRequiredNextDay)]
+        [InlineData(RequestAnswerRuleType.ReplacedInterpreter)]
+        [InlineData(RequestAnswerRuleType.ReplacedOrder)]
+        [InlineData(RequestAnswerRuleType.RequestCreatedOneDayBefore)]
+        [InlineData(RequestAnswerRuleType.ResponseSetByCustomer)]
+        public void Accept_InvalidRequestAnswerRuleType(RequestAnswerRuleType ruleType)
         {
             var order = new Order(MockOrder);
-            order.InterpreterLocations = new List<OrderInterpreterLocation> { new OrderInterpreterLocation { Rank = 1, InterpreterLocation = InterpreterLocation.OnSite } };
             var request = new Request()
             {
                 Status = RequestStatus.Created,
-                Order = order
-            };
-            var acceptedAt = DateTime.Now;
-            var userId = 10;
-            var brokerReferenceNumber = "bra nummer";
-
-
-            Assert.Throws<InvalidOperationException>(() => request.Accept(acceptedAt, userId, null, InterpreterLocation.OffSitePhone, null, new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(), new PriceInformation { PriceRows = new List<PriceRowBase>() }, brokerReferenceNumber));
-        }
-
-        [Fact]
-        public void Accept_InvalidCompetenceLevel()
-        {
-            var order = new Order(MockOrder);
-            order.SpecificCompetenceLevelRequired = true;
-            order.CompetenceRequirements = new List<OrderCompetenceRequirement> { new OrderCompetenceRequirement { CompetenceLevel = CompetenceAndSpecialistLevel.AuthorizedInterpreter, Rank = 1 } };
-            var request = new Request()
-            {
-                Status = RequestStatus.Created,
-                Order = order
+                Order = order,
+                RequestAnswerRuleType = ruleType
             };
             var acceptedAt = DateTime.Now;
             var userId = 10;
@@ -2818,6 +2807,25 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var interpreterLocation = MockOrder.InterpreterLocations.First().InterpreterLocation;
 
             Assert.Throws<InvalidOperationException>(() => request.Accept(acceptedAt, userId, null, interpreterLocation, null, new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(), new PriceInformation { PriceRows = new List<PriceRowBase>() }, brokerReferenceNumber));
+        }
+
+        [Fact]
+        public void Accept_InvalidLocation()
+        {
+            var order = new Order(MockOrder);
+            order.InterpreterLocations = new List<OrderInterpreterLocation> { new OrderInterpreterLocation { Rank = 1, InterpreterLocation = InterpreterLocation.OnSite } };
+            var request = new Request()
+            {
+                Status = RequestStatus.Created,
+                Order = order,
+                RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore
+            };
+            var acceptedAt = DateTime.Now;
+            var userId = 10;
+            var brokerReferenceNumber = "bra nummer";
+
+
+            Assert.Throws<InvalidOperationException>(() => request.Accept(acceptedAt, userId, null, InterpreterLocation.OffSitePhone, null, new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(), new PriceInformation { PriceRows = new List<PriceRowBase>() }, brokerReferenceNumber));
         }
 
         [Theory]

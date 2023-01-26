@@ -188,6 +188,10 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestNotInCorrectState);
                 }
+                if (!request.IsAnswerLevelAccept)
+                {
+                    return ReturnError(ErrorCodes.AcceptIsNotAllowedOnTheRequest);
+                }
                 if (model.Location == null)
                 {
                     return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");

@@ -125,9 +125,10 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanDecline => IsToBeProcessedByBroker;
 
-        public bool CanAccept => LastAcceptAt.HasValue && 
-            EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(RequestAnswerRuleType) == RequiredAnswerLevel.Acceptance && 
-            (Status == RequestStatus.Created || Status == RequestStatus.Received);
+        public bool CanAccept => Status == RequestStatus.Created || Status == RequestStatus.Received;
+
+        public bool IsAnswerLevelAccept =>
+            EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(RequestAnswerRuleType) == RequiredAnswerLevel.Acceptance;
 
         public bool CanApprove => IsAwaitingApproval;
 

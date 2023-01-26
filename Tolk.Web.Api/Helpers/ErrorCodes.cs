@@ -28,5 +28,7 @@ namespace Tolk.Web.Api.Helpers
         public const string OrderNotValid = nameof(OrderNotValid);
         public const string OrderNotInCorrectState = nameof(OrderNotInCorrectState);
         public const string AllRequirementsMustBeAnsweredOnAccept = nameof(AllRequirementsMustBeAnsweredOnAccept);
+        public const string AcceptIsNotAllowedOnTheRequest = nameof(AcceptIsNotAllowedOnTheRequest);
+        public const string AcceptIsNotAllowedOnTheRequestGroup = nameof(AcceptIsNotAllowedOnTheRequestGroup);
     }
 }

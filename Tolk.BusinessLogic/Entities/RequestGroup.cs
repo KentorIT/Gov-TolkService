@@ -302,7 +302,11 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (!CanAccept)
             {
-                throw new InvalidOperationException($"Det gick inte att bekräfta på sammanhållen förfrågan med boknings-id {OrderGroup.OrderGroupNumber}, den har redan blivit besvarad");
+                throw new InvalidOperationException($"Det gick inte att bekräfta på sammanhållen förfrågan med boknings-id {OrderGroup.OrderGroupNumber}, den har redan blivit behandlad");
+            }
+            if (!IsAnswerLevelAccept)
+            {
+                throw new InvalidOperationException($"Det gick inte att bekräfta på sammanhållen förfrågan med boknings-id {OrderGroup.OrderGroupNumber}, den kräver fullt svar direkt");
             }
             if (partialAnswer)
             {

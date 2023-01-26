@@ -293,7 +293,53 @@ namespace Tolk.BusinessLogic.Tests.Entities
             requestGroup.SetStatus(status, false);
             Assert.Throws<InvalidOperationException>(() => requestGroup.Answer(DateTime.Now, 10, null, Enumerable.Empty<RequestGroupAttachment>().ToList(), false, false, null, null));
         }
-#warning add test for accept
+
+        //Accept
+        [Theory]
+        [InlineData(false, RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore)]
+        [InlineData(true, RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore)]
+        [InlineData(false, RequestAnswerRuleType.RequestCreatedMoreThanTenDaysBefore)]
+        [InlineData(true, RequestAnswerRuleType.RequestCreatedMoreThanTenDaysBefore)]
+        public void Accept_Valid(bool receive, RequestAnswerRuleType ruleType)
+        {
+            var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTGROUPALLOWEXCEEDINGJUSTCREATED");
+            var requestGroup = orderGroup.RequestGroups.First();
+            requestGroup.RequestAnswerRuleType = ruleType;
+            var acceptAt = DateTime.Now;
+            var userId = 10;
+            var impersonatorId = (int?)null;
+
+            if (receive)
+            {
+                requestGroup.Received(acceptAt, userId, impersonatorId);
+            }
+            requestGroup.Accept(acceptAt, userId, impersonatorId, Enumerable.Empty<RequestGroupAttachment>().ToList(), false, "12345");
+
+            Assert.Equal(OrderStatus.RequestAcceptedAwaitingInterpreter, requestGroup.OrderGroup.Status);
+            Assert.Equal(RequestStatus.AcceptedAwaitingInterpreter, requestGroup.Status);
+            Assert.Equal(acceptAt, requestGroup.AcceptedAt);
+            Assert.Equal(userId, requestGroup.AcceptedBy);
+            Assert.Null(requestGroup.AnswerDate);
+            Assert.Null(requestGroup.AnsweredBy);
+            Assert.Null( requestGroup.AnswerProcessedAt);
+            Assert.Equal(impersonatorId, requestGroup.ImpersonatingAnsweredBy);
+        }
+
+        [Theory]
+        [InlineData(RequestAnswerRuleType.AnswerRequiredNextDay)]
+        [InlineData(RequestAnswerRuleType.ReplacedInterpreter)]
+        [InlineData(RequestAnswerRuleType.ReplacedOrder)]
+        [InlineData(RequestAnswerRuleType.RequestCreatedOneDayBefore)]
+        [InlineData(RequestAnswerRuleType.ResponseSetByCustomer)]
+        public void Accept_InvalidRequestAnswerRuleType(RequestAnswerRuleType ruleType)
+        {
+            var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTGROUPALLOWEXCEEDINGJUSTCREATED");
+            var requestGroup = orderGroup.RequestGroups.First();
+            requestGroup.RequestAnswerRuleType = ruleType;
+
+            Assert.Throws<InvalidOperationException>(() => requestGroup.Accept(DateTime.Now, 10, null, Enumerable.Empty<RequestGroupAttachment>().ToList(), false, "12345"));
+        }
+
         [Theory]
         [InlineData(RequestStatus.AcceptedAwaitingInterpreter)]
         [InlineData(RequestStatus.AnsweredAwaitingApproval)]
@@ -315,7 +361,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTSJUSTCREATED");
             var requestGroup = orderGroup.RequestGroups.First();
             requestGroup.SetStatus(status, false);
-            Assert.Throws<InvalidOperationException>(() => requestGroup.Accept(DateTime.Now, 10,null, Enumerable.Empty<RequestGroupAttachment>().ToList(), false, null));
+            Assert.Throws<InvalidOperationException>(() => requestGroup.Accept(DateTime.Now, 10, null, Enumerable.Empty<RequestGroupAttachment>().ToList(), false, null));
         }
 
         [Fact]

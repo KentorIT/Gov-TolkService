@@ -380,6 +380,10 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Det gick inte att bekräfta förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
             }
+            if (!IsAnswerLevelAccept)
+            {
+                throw new InvalidOperationException($"Det gick inte att bekräfta på förfrågan med boknings-id {Order.OrderNumber}, den kräver fullt svar direkt");
+            }
             if (Order.ReplacingOrderId.HasValue)
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
