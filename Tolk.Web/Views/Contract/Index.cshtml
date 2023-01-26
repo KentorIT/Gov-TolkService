@@ -1,6 +1,7 @@
 ﻿@model DisplayContractModel
 @using Microsoft.Extensions.Options;
 @using Tolk.BusinessLogic;
+@using Tolk.BusinessLogic.Enums;
 @inject IOptions<Tolk.BusinessLogic.Helpers.TolkOptions> Options
 @{
     ViewData["Title"] = $"Om ramavtalet för tolkförmedlingstjänster {Model?.AgreementNumber}";
@@ -21,12 +22,17 @@
                 <p>
                     @Model.ContractDefinition.ExcludedServices
                 </p>
-                <p>
-                    Ramavtalen är giltiga från och med @Model.FirstValidDate.ToString("yyyy-MM-dd") till och med @Model.OriginalLastValidDate.ToString("yyyy-MM-dd") och kan förlängas på initiativ av Kammarkollegiet i upp till @Model.PossibleAgreementExtensionsInMonths månader, det vill säga maximalt till och med @Model.LastPossibleValidDate.ToString("yyyy-MM-dd").
-                </p>
-                <p>
-                    @Model.ContractDefinition.RankingRules
-                </p>
+            @switch (Model.FrameworkAgreementResponseRuleset)
+            {
+                case FrameworkAgreementResponseRuleset.VersionOne:
+                    @await Html.PartialAsync($"_{FrameworkAgreementResponseRuleset.VersionOne}SpecificRuleset",Model)
+                    break;
+                case FrameworkAgreementResponseRuleset.VersionTwo:
+                    @await Html.PartialAsync($"_{FrameworkAgreementResponseRuleset.VersionTwo}SpecificRuleset",Model)
+                    break;
+                default:
+                    break;
+            }
                 <p>
                     @Model.ContractDefinition.GeneralTerms
                 </p>

@@ -41,9 +41,10 @@ namespace Tolk.Web.Controllers
                 Description = currentOrLatestFrameworkAgreement.Description,
                 FirstValidDate = currentOrLatestFrameworkAgreement.FirstValidDate,
                 OriginalLastValidDate = currentOrLatestFrameworkAgreement.OriginalLastValidDate,
-                PossibleAgreementExtensionsInMonths = currentOrLatestFrameworkAgreement.PossibleAgreementExtensionsInMonths,
+                LastValidDate = currentOrLatestFrameworkAgreement.LastValidDate,                
                 ContractDefinition = currentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset.GetContractDefinitionAttribute().ContractDefinition,
-                IsActive = currentOrLatestFrameworkAgreement.IsActive
+                IsActive = currentOrLatestFrameworkAgreement.IsActive,
+                FrameworkAgreementResponseRuleset = currentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset
             });
         }
 
@@ -91,8 +92,7 @@ namespace Tolk.Web.Controllers
                                AgreementNumber = agreement.AgreementNumber,
                                LastValidDate = agreement.LastValidDate,
                                FirstValidDate = agreement.FirstValidDate,
-                               OriginalLastValidDate = agreement.OriginalLastValidDate,
-                               PossibleAgreementExtensionsInMonths = agreement.PossibleAgreementExtensionsInMonths,
+                               OriginalLastValidDate = agreement.OriginalLastValidDate,                               
                                Description = agreement.Description,
                                BrokerFeeCalculationType = agreement.BrokerFeeCalculationType,
                                FrameworkAgreementResponseRuleset = agreement.FrameworkAgreementResponseRuleset,
