@@ -86,8 +86,8 @@ namespace Tolk.Web.Models
             Order order = requestGroup.Requests.First().Order;
             return new RequestGroupProcessModel
             {
-                AllowAccept = requestGroup.CanAccept,
-                FullAnswer = !requestGroup.CanAccept,
+                AllowAccept = requestGroup.AllowAccept,
+                FullAnswer = !requestGroup.AllowAccept,
                 AllowDeclineExtraInterpreter = allowDeclineExtraInterpreter,
                 OrderGroupId = requestGroup.OrderGroupId,
                 RequestGroupId = requestGroup.RequestGroupId,

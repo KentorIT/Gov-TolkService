@@ -130,6 +130,8 @@ namespace Tolk.BusinessLogic.Entities
         public bool IsAnswerLevelAccept =>
             EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(RequestAnswerRuleType) == RequiredAnswerLevel.Acceptance;
 
+        public bool AllowAccept => IsAnswerLevelAccept && CanAccept && LastAcceptAt.HasValue;
+
         public bool CanApprove => IsAwaitingApproval;
 
         public bool CanPrint => Status == RequestStatus.Approved || Status == RequestStatus.Delivered;

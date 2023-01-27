@@ -141,8 +141,8 @@ namespace Tolk.Web.Controllers
                 model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
                 model.ExpectedTravelCosts = null;
                 model.AllowProcessing = !request.RequestGroupId.HasValue;
-                model.AllowAccept = request.CanAccept;
-                model.FullAnswer = !request.CanAccept;
+                model.AllowAccept = request.AllowAccept;
+                model.FullAnswer = !request.AllowAccept;
                 model.OrderViewModel.UseAttachments = true;
                 return View(model);
             }
