@@ -138,7 +138,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         private CacheService CreateCacheService(TolkDbContext dbContext)
         {
             IDistributedCache cache = new Mock<IDistributedCache>().Object;
-            TolkBaseOptionsService optionService = new TolkBaseOptionsService(Options.Create(new TolkOptions() { RoundPriceDecimals = true }));
+            TolkBaseOptionsService optionService = new(Options.Create(new TolkOptions() { RoundPriceDecimals = true }));
             return new CacheService(cache, dbContext, optionService, _clock);
         }
 
@@ -157,7 +157,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(new[] { 100.82, 100.67, 100.8951 }, -0.39)]
         public void GetRoundedPriceRowWithManyRows(double[] prices, decimal actual)
         {
-            List<PriceRowBase> priceRows = new List<PriceRowBase>();
+            List<PriceRowBase> priceRows = new();
             foreach (decimal price in prices)
             {
                 priceRows.Add(GetPriceRow(price));
@@ -447,55 +447,55 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2018-10-10 13:00:00", "2018-10-10 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_2_5H_Court_Comp1, 1, "2018-10-10 14:00:00", "2018-10-10 14:30:00")]//3h assignment - 30m mealbreak = 2.5h comp 
-        [InlineData("2018-10-10 17:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2, "2018-10-10 17:45:00", "2018-10-10 18:15:00")]//3h assignment - 30m mealbreak = 2.5h comp, 2h iwh-15m iwh mealbreak = 1h45m = 4* 30m
-        [InlineData("2018-10-10 17:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 3), 2, "2018-10-10 17:45:00", "2018-10-10 18:30:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp, 2h iwh-30m iwh mealbreak = 1h30m = 3* 30m
-        [InlineData("2018-10-10 17:00:00", "2018-10-10 21:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2, "2018-10-10 19:00:00", "2018-10-10 20:00:00")]//4h assignment -1h mealbreak = 3h comp (3h iwh - 1h mealbreak = 2h iwh time = 4 * 30m)
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 2), 2, "2018-10-10 18:20:00", "2018-10-10 18:40:00")]//1h work IWH just 20 min pause no change in compensation
-        [InlineData("2018-10-10 18:30:00", "2018-10-10 19:50:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 2), 2, "2018-10-10 18:20:00", "2018-10-10 18:40:00")]//1h 20m assignment - 20m mealbreak = 1h comp (1h 20m iwh - 20m mealbreak = 1h iwh time = 2 * 30m)
-        [InlineData("2018-10-10 23:45:00", "2018-10-11 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 3), 2, "2018-10-10 23:50:00", "2018-10-11 00:30:00")]//2h assignment - 40m mealbreak = 1-1.5h comp (2h iwh - 40m mealbreak = 1.5h iwh time = 3 * 30m)
-        [InlineData("2018-10-10 20:00:00", "2018-10-11 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 19 + Price_OverMaxTime_Court_Comp1 * 12), 3, "2018-10-10 23:00:00", "2018-10-11 00:30:00")]//13h assignment - 90m mealbreak = 11.5h 5.5h + 12*overmax comp (11h iwh - 90m mealbreak = 9.5h iwh time = 19 * 30m)
-        public void InterpreterCompensationWithOneMealBreak(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1)
+        [InlineData("2018-10-10 13:00:00", "2018-10-10 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, Price_2_5H_Court_Comp1, 1, "2018-10-10 14:00:00", "2018-10-10 14:30:00")]//3h assignment - 30m mealbreak = 2.5h comp 
+        [InlineData("2018-10-10 17:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2, "2018-10-10 17:45:00", "2018-10-10 18:15:00")]//3h assignment - 30m mealbreak = 2.5h comp, 2h iwh-15m iwh mealbreak = 1h45m = 4* 30m
+        [InlineData("2018-10-10 17:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 3), 2, "2018-10-10 17:45:00", "2018-10-10 18:30:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp, 2h iwh-30m iwh mealbreak = 1h30m = 3* 30m
+        [InlineData("2018-10-10 17:00:00", "2018-10-10 21:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_3H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2, "2018-10-10 19:00:00", "2018-10-10 20:00:00")]//4h assignment -1h mealbreak = 3h comp (3h iwh - 1h mealbreak = 2h iwh time = 4 * 30m)
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 2), 2, "2018-10-10 18:20:00", "2018-10-10 18:40:00")]//1h work IWH just 20 min pause no change in compensation
+        [InlineData("2018-10-10 18:30:00", "2018-10-10 19:50:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 2), 2, "2018-10-10 18:20:00", "2018-10-10 18:40:00")]//1h 20m assignment - 20m mealbreak = 1h comp (1h 20m iwh - 20m mealbreak = 1h iwh time = 2 * 30m)
+        [InlineData("2018-10-10 23:45:00", "2018-10-11 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 3), 2, "2018-10-10 23:50:00", "2018-10-11 00:30:00")]//2h assignment - 40m mealbreak = 1-1.5h comp (2h iwh - 40m mealbreak = 1.5h iwh time = 3 * 30m)
+        [InlineData("2018-10-10 20:00:00", "2018-10-11 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_5_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 19 + Price_OverMaxTime_Court_Comp1 * 12), 3, "2018-10-10 23:00:00", "2018-10-11 00:30:00")]//13h assignment - 90m mealbreak = 11.5h 5.5h + 12*overmax comp (11h iwh - 90m mealbreak = 9.5h iwh time = 19 * 30m)
+        public void InterpreterCompensationWithOneMealBreak(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
             //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            List<PriceRowBase> requestPriceRows = new()
                 {
                     { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
                 };
-            List<MealBreak> mealbreaks = new List<MealBreak>
+            List<MealBreak> mealbreaks = new()
                 {
                     new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
                 };
             var cache = CreateCacheService(tolkdbContext);
-            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
+            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
             pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
             pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
         }
 
 
         [Theory]
-        [InlineData("2018-10-10 13:00:00", "2018-10-10 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_2_5H_Court_Comp1, 1, "2018-10-10 14:00:00", "2018-10-10 14:30:00", "2018-10-10 15:30:00", "2018-10-10 15:45:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp 
-        [InlineData("2018-10-10 16:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2, "2018-10-10 16:45:00", "2018-10-10 17:15:00", "2018-10-10 17:45:00", "2018-10-10 18:15:00")]//4h assignment - 1h mealbreak = 3h comp, 2h iwh-15m iwh mealbreak = 1h45m = 4* 30m
-        [InlineData("2018-10-10 17:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 3), 2, "2018-10-10 17:45:00", "2018-10-10 18:30:00", "2018-10-10 18:45:00", "2018-10-10 19:10:00")]//3h assignment - 1h10m mealbreak = 1h50m => 2h comp, 2h iwh-55m iwh mealbreak = 1h05m = 3* 30m
-        [InlineData("2018-10-10 17:00:00", "2018-10-10 23:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 8), 2, "2018-10-10 19:00:00", "2018-10-10 20:00:00", "2018-10-10 21:45:00", "2018-10-10 22:05:00")]//6h assignment - 1h20m mealbreak = 4h40m 5h comp (5h iwh - 1h 20m mealbreak = 3h 40m iwh time = 8 * 30m)
-        [InlineData("2018-10-10 23:00:00", "2018-10-11 03:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_4H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 8), 2, "2018-10-10 23:20:00", "2018-10-10 23:40:00", "2018-10-11 01:45:00", "2018-10-11 02:20:00")]//4h45m assignment - 55m mealbreak = 3h50m 4h comp (4h45m iwh - 55m mealbreak = 3h50m iwh time = 8 * 30m)
-        [InlineData("2018-10-10 20:00:00", "2018-10-11 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 19 + Price_OverMaxTime_Court_Comp1 * 11), 3, "2018-10-10 23:00:00", "2018-10-11 00:30:00", "2018-10-11 06:45:00", "2018-10-11 07:15:00")]//13h assignment - 2h mealbreak = 11h 5.5h + 11*overmax comp (11h iwh - 1h 45m mealbreak = 9.25h iwh time = 19 * 30m)
-        public void InterpreterCompensationWithTwoMealBreaks(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1, string startMealbreak2, string endMealbreak2)
+        [InlineData("2018-10-10 13:00:00", "2018-10-10 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, Price_2_5H_Court_Comp1, 1, "2018-10-10 14:00:00", "2018-10-10 14:30:00", "2018-10-10 15:30:00", "2018-10-10 15:45:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp 
+        [InlineData("2018-10-10 16:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_3H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 4), 2, "2018-10-10 16:45:00", "2018-10-10 17:15:00", "2018-10-10 17:45:00", "2018-10-10 18:15:00")]//4h assignment - 1h mealbreak = 3h comp, 2h iwh-15m iwh mealbreak = 1h45m = 4* 30m
+        [InlineData("2018-10-10 17:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 3), 2, "2018-10-10 17:45:00", "2018-10-10 18:30:00", "2018-10-10 18:45:00", "2018-10-10 19:10:00")]//3h assignment - 1h10m mealbreak = 1h50m => 2h comp, 2h iwh-55m iwh mealbreak = 1h05m = 3* 30m
+        [InlineData("2018-10-10 17:00:00", "2018-10-10 23:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 8), 2, "2018-10-10 19:00:00", "2018-10-10 20:00:00", "2018-10-10 21:45:00", "2018-10-10 22:05:00")]//6h assignment - 1h20m mealbreak = 4h40m 5h comp (5h iwh - 1h 20m mealbreak = 3h 40m iwh time = 8 * 30m)
+        [InlineData("2018-10-10 23:00:00", "2018-10-11 03:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_4H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 8), 2, "2018-10-10 23:20:00", "2018-10-10 23:40:00", "2018-10-11 01:45:00", "2018-10-11 02:20:00")]//4h45m assignment - 55m mealbreak = 3h50m 4h comp (4h45m iwh - 55m mealbreak = 3h50m iwh time = 8 * 30m)
+        [InlineData("2018-10-10 20:00:00", "2018-10-11 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_5_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 19 + Price_OverMaxTime_Court_Comp1 * 11), 3, "2018-10-10 23:00:00", "2018-10-11 00:30:00", "2018-10-11 06:45:00", "2018-10-11 07:15:00")]//13h assignment - 2h mealbreak = 11h 5.5h + 11*overmax comp (11h iwh - 1h 45m mealbreak = 9.25h iwh time = 19 * 30m)
+        public void InterpreterCompensationWithTwoMealBreaks(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1, string startMealbreak2, string endMealbreak2)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
             //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            List<PriceRowBase> requestPriceRows = new()
                 {
                     { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
                 };
-            List<MealBreak> mealbreaks = new List<MealBreak>
+            List<MealBreak> mealbreaks = new()
                 {
                     new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
                     new MealBreak { StartAt = DateTime.Parse(startMealbreak2).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak2).ToDateTimeOffsetSweden() },
                 };
             var cache = CreateCacheService(tolkdbContext);
-            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
+            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
             pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
             pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
         }
@@ -505,31 +505,31 @@ namespace Tolk.BusinessLogic.Tests.Services
         //2018-10-14 sunday
         //2018-10-15 monday
         [Theory]
-        [InlineData("2018-10-12 22:00:00", "2018-10-13 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4 + Price_IWH_30M__Court_Comp1 * 4), 3, "2018-10-12 23:40:00", "2018-10-13 00:20:00")]//4h assignment - 40m mealbreak = 3.5h comp, normal iwh 2h - 20m = 1h40m 4*30m, weekend iwh 2h - 20m = 1h40m 4*30m
-        [InlineData("2018-10-12 22:00:00", "2018-10-13 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4 + Price_IWH_30M__Court_Comp1 * 3), 3, "2018-10-12 23:30:00", "2018-10-13 00:10:00")]//4h assignment - 40m mealbreak = 3.5h comp, normal iwh 2h - 30m = 1h30m 3*30m, weekend iwh 2h - 10m = 1h50m 4*30m
-        [InlineData("2018-10-13 13:00:00", "2018-10-13 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 5), 2, "2018-10-13 14:00:00", "2018-10-13 14:30:00")]//3h assignment - 30m mealbreak = 2.5h comp, weekendiwh 3-0,5 = 5*30m
-        [InlineData("2018-10-13 17:00:00", "2018-10-13 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 5), 2, "2018-10-13 17:45:00", "2018-10-13 18:15:00")]//3h assignment - 30m mealbreak = 2.5h comp, 3h-30m weekend iwh mealbreak = = 5*30m
-        [InlineData("2018-10-13 17:00:00", "2018-10-13 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 5), 2, "2018-10-13 17:45:00", "2018-10-13 18:30:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp,  2.25h iwh weekend 5*30m
-        [InlineData("2018-10-13 17:00:00", "2018-10-13 21:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6), 2, "2018-10-13 19:00:00", "2018-10-13 20:00:00")]//4h assignment -1h mealbreak = 3h comp (3h iwh weekend 6 * 30m)
-        [InlineData("2018-10-14 18:00:00", "2018-10-14 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 2), 2, "2018-10-14 18:20:00", "2018-10-14 18:40:00")]//1h assignment just 20 min pause no change in compensation
-        [InlineData("2018-10-14 18:30:00", "2018-10-14 19:50:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 2), 2, "2018-10-14 18:40:00", "2018-10-14 19:00:00")]//1h 20m assignment - 20m mealbreak = 1h comp (1h 20m iwh - 20m mealbreak = 1h iwh weekend time = 2 * 30m)
-        [InlineData("2018-10-14 23:45:00", "2018-10-15 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 1 + Price_IWH_30M__Court_Comp1 * 3), 3, "2018-10-14 23:50:00", "2018-10-15 00:30:00")]//2h assignment - 40m mealbreak = 1-1.5h comp (15m iwh weekend - 5m mealbreak = 10m iwh weekend 1 * 30m) 1h 45m iwh time -30m = 3 * 30m)
-        [InlineData("2018-10-13 20:00:00", "2018-10-14 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 23 + Price_OverMaxTime_Court_Comp1 * 12), 3, "2018-10-13 23:00:00", "2018-10-14 00:30:00")]//13h assignment - 90m mealbreak = 11.5h 5.5h + 12*overmax comp (13h iwh - 90m mealbreak = 11.5h iwh time = 23 * 30m)
-        [InlineData("2018-10-14 20:00:00", "2018-10-15 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6 + Price_OverMaxTime_Court_Comp1 * 12 + Price_IWH_30M__Court_Comp1 * 13), 4, "2018-10-14 23:00:00", "2018-10-15 00:30:00")]//13h assignment - 90m mealbreak = 11.5h 5.5h + 12*overmax comp (4h iwh weekend - 60m mealbreak = 3h iwh time = 6 * 30m, 7h iwh - 30m mealbreak = 6.5h iwh time = 13 * 30m)
-        public void InterpreterCompensationWeekendWithOneMealBreak(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1)
+        [InlineData("2018-10-12 22:00:00", "2018-10-13 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_3_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4 + Price_IWH_30M__Court_Comp1 * 4), 3, "2018-10-12 23:40:00", "2018-10-13 00:20:00")]//4h assignment - 40m mealbreak = 3.5h comp, normal iwh 2h - 20m = 1h40m 4*30m, weekend iwh 2h - 20m = 1h40m 4*30m
+        [InlineData("2018-10-12 22:00:00", "2018-10-13 02:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_3_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 4 + Price_IWH_30M__Court_Comp1 * 3), 3, "2018-10-12 23:30:00", "2018-10-13 00:10:00")]//4h assignment - 40m mealbreak = 3.5h comp, normal iwh 2h - 30m = 1h30m 3*30m, weekend iwh 2h - 10m = 1h50m 4*30m
+        [InlineData("2018-10-13 13:00:00", "2018-10-13 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 5), 2, "2018-10-13 14:00:00", "2018-10-13 14:30:00")]//3h assignment - 30m mealbreak = 2.5h comp, weekendiwh 3-0,5 = 5*30m
+        [InlineData("2018-10-13 17:00:00", "2018-10-13 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 5), 2, "2018-10-13 17:45:00", "2018-10-13 18:15:00")]//3h assignment - 30m mealbreak = 2.5h comp, 3h-30m weekend iwh mealbreak = = 5*30m
+        [InlineData("2018-10-13 17:00:00", "2018-10-13 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 5), 2, "2018-10-13 17:45:00", "2018-10-13 18:30:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp,  2.25h iwh weekend 5*30m
+        [InlineData("2018-10-13 17:00:00", "2018-10-13 21:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_3H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6), 2, "2018-10-13 19:00:00", "2018-10-13 20:00:00")]//4h assignment -1h mealbreak = 3h comp (3h iwh weekend 6 * 30m)
+        [InlineData("2018-10-14 18:00:00", "2018-10-14 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 2), 2, "2018-10-14 18:20:00", "2018-10-14 18:40:00")]//1h assignment just 20 min pause no change in compensation
+        [InlineData("2018-10-14 18:30:00", "2018-10-14 19:50:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 2), 2, "2018-10-14 18:40:00", "2018-10-14 19:00:00")]//1h 20m assignment - 20m mealbreak = 1h comp (1h 20m iwh - 20m mealbreak = 1h iwh weekend time = 2 * 30m)
+        [InlineData("2018-10-14 23:45:00", "2018-10-15 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 1 + Price_IWH_30M__Court_Comp1 * 3), 3, "2018-10-14 23:50:00", "2018-10-15 00:30:00")]//2h assignment - 40m mealbreak = 1-1.5h comp (15m iwh weekend - 5m mealbreak = 10m iwh weekend 1 * 30m) 1h 45m iwh time -30m = 3 * 30m)
+        [InlineData("2018-10-13 20:00:00", "2018-10-14 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_5_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 23 + Price_OverMaxTime_Court_Comp1 * 12), 3, "2018-10-13 23:00:00", "2018-10-14 00:30:00")]//13h assignment - 90m mealbreak = 11.5h 5.5h + 12*overmax comp (13h iwh - 90m mealbreak = 11.5h iwh time = 23 * 30m)
+        [InlineData("2018-10-14 20:00:00", "2018-10-15 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_5_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6 + Price_OverMaxTime_Court_Comp1 * 12 + Price_IWH_30M__Court_Comp1 * 13), 4, "2018-10-14 23:00:00", "2018-10-15 00:30:00")]//13h assignment - 90m mealbreak = 11.5h 5.5h + 12*overmax comp (4h iwh weekend - 60m mealbreak = 3h iwh time = 6 * 30m, 7h iwh - 30m mealbreak = 6.5h iwh time = 13 * 30m)
+        public void InterpreterCompensationWeekendWithOneMealBreak(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
             //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            List<PriceRowBase> requestPriceRows = new()
                 {
                     { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
                 };
-            List<MealBreak> mealbreaks = new List<MealBreak>
+            List<MealBreak> mealbreaks = new()
                 {
                     new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
                 };
             var cache = CreateCacheService(tolkdbContext);
-            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
+            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
             pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
             pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
         }
@@ -538,28 +538,28 @@ namespace Tolk.BusinessLogic.Tests.Services
         //(2018, 04, 02), DateType = DateType.BigHolidayFullDay},
         //(2018, 04, 03), DateType = DateType.DayAfterBigHoliday},
         [Theory]
-        [InlineData("2018-04-02 13:00:00", "2018-04-02 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 5), 2, "2018-04-02 14:00:00", "2018-04-02 14:30:00")]//3h assignment - 30m mealbreak = 2.5h comp, BigHolidayIWH 3-0,5 = 5*30m
-        [InlineData("2018-04-02 17:00:00", "2018-04-02 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 5), 2, "2018-04-02 17:45:00", "2018-04-02 18:15:00")]//3h assignment - 30m mealbreak = 2.5h comp, 3h-30m BigHolidayIWH mealbreak = = 5*30m
-        [InlineData("2018-04-03 14:00:00", "2018-04-03 17:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_2_5H_Court_Comp1, 1, "2018-04-03 13:45:00", "2018-04-03 14:30:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp
-        [InlineData("2018-04-02 17:00:00", "2018-04-02 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 5), 2, "2018-04-02 17:45:00", "2018-04-02 18:30:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp + 5 * BigHolidayIWH
-        [InlineData("2018-04-03 17:00:00", "2018-04-03 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 3), 2, "2018-04-03 17:45:00", "2018-04-03 18:30:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp + 2h iwh-30m mealbreak 3 * normal iwh 
-        [InlineData("2018-04-01 23:45:00", "2018-04-02 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 3), 2, "2018-04-01 23:50:00", "2018-04-02 00:30:00")]//2h assignment - 40m mealbreak = 1-1.5h comp (3 BigHolidayIWH * 30m)
-        [InlineData("2018-04-02 23:45:00", "2018-04-03 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 3), 2, "2018-04-02 23:50:00", "2018-04-03 00:30:00")]//2h assignment - 40m mealbreak = 1-1.5h comp (3 BigHolidayIWH * 30m)
-        [InlineData("2018-04-02 20:00:00", "2018-04-03 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 19 + Price_OverMaxTime_Court_Comp1 * 12), 3, "2018-04-02 23:00:00", "2018-04-03 00:30:00")]//13h assignment - 90m mealbreak = 11.5h 5.5h + 12*overmax comp (11h iwhBH - 90m mealbreak = 9.5h BigHolidayIWH time = 19 * 30m)
-        public void InterpreterCompensationBigHolidayWithOneMealBreak(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1)
+        [InlineData("2018-04-02 13:00:00", "2018-04-02 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 5), 2, "2018-04-02 14:00:00", "2018-04-02 14:30:00")]//3h assignment - 30m mealbreak = 2.5h comp, BigHolidayIWH 3-0,5 = 5*30m
+        [InlineData("2018-04-02 17:00:00", "2018-04-02 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 5), 2, "2018-04-02 17:45:00", "2018-04-02 18:15:00")]//3h assignment - 30m mealbreak = 2.5h comp, 3h-30m BigHolidayIWH mealbreak = = 5*30m
+        [InlineData("2018-04-03 14:00:00", "2018-04-03 17:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, Price_2_5H_Court_Comp1, 1, "2018-04-03 13:45:00", "2018-04-03 14:30:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp
+        [InlineData("2018-04-02 17:00:00", "2018-04-02 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 5), 2, "2018-04-02 17:45:00", "2018-04-02 18:30:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp + 5 * BigHolidayIWH
+        [InlineData("2018-04-03 17:00:00", "2018-04-03 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 3), 2, "2018-04-03 17:45:00", "2018-04-03 18:30:00")]//3h assignment - 45m mealbreak = 2.25h => 2.5h comp + 2h iwh-30m mealbreak 3 * normal iwh 
+        [InlineData("2018-04-01 23:45:00", "2018-04-02 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 3), 2, "2018-04-01 23:50:00", "2018-04-02 00:30:00")]//2h assignment - 40m mealbreak = 1-1.5h comp (3 BigHolidayIWH * 30m)
+        [InlineData("2018-04-02 23:45:00", "2018-04-03 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 3), 2, "2018-04-02 23:50:00", "2018-04-03 00:30:00")]//2h assignment - 40m mealbreak = 1-1.5h comp (3 BigHolidayIWH * 30m)
+        [InlineData("2018-04-02 20:00:00", "2018-04-03 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_5_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 19 + Price_OverMaxTime_Court_Comp1 * 12), 3, "2018-04-02 23:00:00", "2018-04-03 00:30:00")]//13h assignment - 90m mealbreak = 11.5h 5.5h + 12*overmax comp (11h iwhBH - 90m mealbreak = 9.5h BigHolidayIWH time = 19 * 30m)
+        public void InterpreterCompensationBigHolidayWithOneMealBreak(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
             //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            List<PriceRowBase> requestPriceRows = new()
                 {
                     { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
                 };
-            List<MealBreak> mealbreaks = new List<MealBreak>
+            List<MealBreak> mealbreaks = new()
                 {
                     new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
                 };
             var cache = CreateCacheService(tolkdbContext);
-            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
+            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
             pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
             pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
         }
@@ -568,30 +568,30 @@ namespace Tolk.BusinessLogic.Tests.Services
         //2018-10-14 sunday
         //2018-10-15 monday
         [Theory]
-        [InlineData("2018-10-13 13:00:00", "2018-10-13 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_3H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6), 2, "2018-10-13 14:00:00", "2018-10-13 14:10:00", "2018-10-13 14:20:00", "2018-10-13 14:30:00")]//3h assignment - 20m mealbreak = 3h comp, weekendiwh 2h 40m = 6*30m
-        [InlineData("2018-10-13 17:00:00", "2018-10-13 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 5), 2, "2018-10-13 17:45:00", "2018-10-13 18:10:00", "2018-10-13 19:45:00", "2018-10-13 19:55:00")]//3h assignment - 35m mealbreak = 2.5h comp, 3h-35m weekend iwh mealbreak = = 5*30m
-        [InlineData("2018-10-13 17:00:00", "2018-10-13 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 3), 2, "2018-10-13 17:45:00", "2018-10-13 18:30:00", "2018-10-13 19:10:00", "2018-10-13 19:55:00")]//3h assignment - 90m mealbreak = 1.5h => 1.5h comp,  3h -90m =1.5h iwh weekend 3*30m
-        [InlineData("2018-10-13 17:00:00", "2018-10-13 21:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 3), 2, "2018-10-13 18:00:00", "2018-10-13 20:00:00", "2018-10-13 20:15:00", "2018-10-13 20:45:00")]//4h assignment -2.5h mealbreak = 1.5h comp (1.5h iwh weekend 3 * 30m)
-        [InlineData("2018-10-14 18:00:00", "2018-10-14 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 2), 2, "2018-10-14 18:20:00", "2018-10-14 18:25:00", "2018-10-14 18:40:00", "2018-10-14 18:45:00")]//1h assignment just 10 min pause no change in compensation
-        [InlineData("2018-10-14 18:30:00", "2018-10-14 19:50:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 2), 2, "2018-10-14 18:40:00", "2018-10-14 18:45:00", "2018-10-14 19:10:00", "2018-10-14 19:40:00")]//1h 20m assignment - 35m mealbreak = 1h comp (1h 20m iwh - 35m mealbreak = 45m iwh weekend time = 2 * 30m)
-        [InlineData("2018-10-14 23:45:00", "2018-10-15 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 1 + Price_IWH_30M__Court_Comp1 * 3), 3, "2018-10-14 23:50:00", "2018-10-15 00:30:00", "2018-10-15 00:45:00", "2018-10-15 00:55:00")]//2h assignment - 50m mealbreak = 1-1.5h comp (15m iwh weekend - 5m mealbreak = 10m iwh weekend 1 * 30m) 1h 45m -40miwh time = 3 * 30m)
-        [InlineData("2018-10-13 20:00:00", "2018-10-14 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 22 + Price_OverMaxTime_Court_Comp1 * 11), 3, "2018-10-13 23:00:00", "2018-10-14 00:30:00", "2018-10-14 06:30:00", "2018-10-14 07:15:00")]//13h assignment - 2h 15m mealbreak = 10.75h 5.5h + 11*overmax comp (13h iwh - 2h 15m mealbreak = 10.75h iwh time = 22 * 30m)
-        [InlineData("2018-10-14 20:00:00", "2018-10-15 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6 + Price_OverMaxTime_Court_Comp1 * 11 + Price_IWH_30M__Court_Comp1 * 13), 4, "2018-10-14 23:00:00", "2018-10-15 00:30:00", "2018-10-15 06:45:00", "2018-10-15 07:15:00")]//13h assignment - 2h mealbreak = 11h 5.5h + 11*overmax comp (4h iwh weekend - 60m mealbreak = 3h iwh time = 6 * 30m, 7h iwh - 30+15m mealbreak = 6:25h iwh time = 13 * 30m)
-        public void InterpreterCompensationWeekendWithTwoMealBreaks(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1, string startMealbreak2, string endMealbreak2)
+        [InlineData("2018-10-13 13:00:00", "2018-10-13 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_3H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6), 2, "2018-10-13 14:00:00", "2018-10-13 14:10:00", "2018-10-13 14:20:00", "2018-10-13 14:30:00")]//3h assignment - 20m mealbreak = 3h comp, weekendiwh 2h 40m = 6*30m
+        [InlineData("2018-10-13 17:00:00", "2018-10-13 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 5), 2, "2018-10-13 17:45:00", "2018-10-13 18:10:00", "2018-10-13 19:45:00", "2018-10-13 19:55:00")]//3h assignment - 35m mealbreak = 2.5h comp, 3h-35m weekend iwh mealbreak = = 5*30m
+        [InlineData("2018-10-13 17:00:00", "2018-10-13 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 3), 2, "2018-10-13 17:45:00", "2018-10-13 18:30:00", "2018-10-13 19:10:00", "2018-10-13 19:55:00")]//3h assignment - 90m mealbreak = 1.5h => 1.5h comp,  3h -90m =1.5h iwh weekend 3*30m
+        [InlineData("2018-10-13 17:00:00", "2018-10-13 21:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 3), 2, "2018-10-13 18:00:00", "2018-10-13 20:00:00", "2018-10-13 20:15:00", "2018-10-13 20:45:00")]//4h assignment -2.5h mealbreak = 1.5h comp (1.5h iwh weekend 3 * 30m)
+        [InlineData("2018-10-14 18:00:00", "2018-10-14 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 2), 2, "2018-10-14 18:20:00", "2018-10-14 18:25:00", "2018-10-14 18:40:00", "2018-10-14 18:45:00")]//1h assignment just 10 min pause no change in compensation
+        [InlineData("2018-10-14 18:30:00", "2018-10-14 19:50:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 2), 2, "2018-10-14 18:40:00", "2018-10-14 18:45:00", "2018-10-14 19:10:00", "2018-10-14 19:40:00")]//1h 20m assignment - 35m mealbreak = 1h comp (1h 20m iwh - 35m mealbreak = 45m iwh weekend time = 2 * 30m)
+        [InlineData("2018-10-14 23:45:00", "2018-10-15 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 1 + Price_IWH_30M__Court_Comp1 * 3), 3, "2018-10-14 23:50:00", "2018-10-15 00:30:00", "2018-10-15 00:45:00", "2018-10-15 00:55:00")]//2h assignment - 50m mealbreak = 1-1.5h comp (15m iwh weekend - 5m mealbreak = 10m iwh weekend 1 * 30m) 1h 45m -40miwh time = 3 * 30m)
+        [InlineData("2018-10-13 20:00:00", "2018-10-14 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_5_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 22 + Price_OverMaxTime_Court_Comp1 * 11), 3, "2018-10-13 23:00:00", "2018-10-14 00:30:00", "2018-10-14 06:30:00", "2018-10-14 07:15:00")]//13h assignment - 2h 15m mealbreak = 10.75h 5.5h + 11*overmax comp (13h iwh - 2h 15m mealbreak = 10.75h iwh time = 22 * 30m)
+        [InlineData("2018-10-14 20:00:00", "2018-10-15 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_5_5H_Court_Comp1 + Price_IWH_Weekend_30M__Court_Comp1 * 6 + Price_OverMaxTime_Court_Comp1 * 11 + Price_IWH_30M__Court_Comp1 * 13), 4, "2018-10-14 23:00:00", "2018-10-15 00:30:00", "2018-10-15 06:45:00", "2018-10-15 07:15:00")]//13h assignment - 2h mealbreak = 11h 5.5h + 11*overmax comp (4h iwh weekend - 60m mealbreak = 3h iwh time = 6 * 30m, 7h iwh - 30+15m mealbreak = 6:25h iwh time = 13 * 30m)
+        public void InterpreterCompensationWeekendWithTwoMealBreaks(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1, string startMealbreak2, string endMealbreak2)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
             //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            List<PriceRowBase> requestPriceRows = new()
                 {
                     { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
                 };
-            List<MealBreak> mealbreaks = new List<MealBreak>
+            List<MealBreak> mealbreaks = new()
                 {
                     new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() },
                     new MealBreak { StartAt = DateTime.Parse(startMealbreak2).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak2).ToDateTimeOffsetSweden() },
                 };
             var cache = CreateCacheService(tolkdbContext);
-            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
+            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
             pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
             pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
         }
@@ -600,19 +600,19 @@ namespace Tolk.BusinessLogic.Tests.Services
         //(2018, 03, 30), DateType = DateType.BigHolidayFullDay},
         //(2018, 04, 02), DateType = DateType.BigHolidayFullDay},
         [Theory]
-        [InlineData("2018-04-02 13:00:00", "2018-04-02 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 5), 2, "2018-04-02 14:00:00", "2018-04-02 14:30:00", "2018-04-02 15:00:00", "2018-04-02 15:10:00")]//3h assignment - 40m mealbreak = 2.5h comp, BigHolidayIWH 3-40m = 5*30m
-        [InlineData("2018-04-02 17:00:00", "2018-04-02 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 5), 2, "2018-04-02 17:45:00", "2018-04-02 18:00:00", "2018-04-02 19:00:00", "2018-04-02 19:15:00")]//3h assignment - 30m mealbreak = 2.5h comp, 3h-30m BigHolidayIWH mealbreak = = 5*30m
-        [InlineData("2018-03-29 14:00:00", "2018-03-29 17:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, Price_2H_Court_Comp1, 1, "2018-03-29 13:45:00", "2018-03-29 14:30:00", "2018-03-29 15:00:00", "2018-03-29 15:30:00")]//3h assignment - 1h mealbreak = 2h => 2h comp
-        [InlineData("2018-03-29 17:00:00", "2018-03-29 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 3), 2, "2018-03-29 17:45:00", "2018-03-29 18:30:00", "2018-03-29 19:15:00", "2018-03-29 19:20:00")]//3h assignment - 50m mealbreak = 2.25h => 2.5h -35m = 1h 25m BigHolidayIWH comp = 3 * BigHolidayIWH
-        [InlineData("2018-03-29 04:00:00", "2018-03-29 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_4_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 5), 2, "2018-03-29 04:45:00", "2018-03-29 05:15:00", "2018-03-29 07:50:00", "2018-03-29 08:10:00")]//5h assignment - 50m mealbreak = 4.25h => 4.5h 3h-30m = 2.5h Normal IWH comp = 5*30m
-        [InlineData("2018-03-29 23:45:00", "2018-03-30 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_1H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 2), 2, "2018-03-29 23:50:00", "2018-03-30 00:30:00", "2018-03-30 00:50:00", "2018-03-30 01:10:00")]//2h assignment - 60m mealbreak = 1h comp (2 BigHolidayIWH * 30m)
-        [InlineData("2018-03-29 20:00:00", "2018-03-30 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 23 + Price_OverMaxTime_Court_Comp1 * 12), 3, "2018-03-29 23:50:00", "2018-03-30 00:30:00", "2018-03-30 06:50:00", "2018-03-30 08:05:00")]//13h assignment - 1h55m mealbreak 11h5m  12*overmax comp, 11h 05m BHIWH = 23 * 30m
-        [InlineData("2018-04-02 20:00:00", "2018-04-03 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, (Price_5_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 19 + Price_OverMaxTime_Court_Comp1 * 11), 3, "2018-04-02 23:00:00", "2018-04-03 00:30:00", "2018-04-03 06:40:00", "2018-04-03 07:30:00")]//13h assignment - 2h20m mealbreak = 10h 40m   11*overmax comp (11h iwhBH - 1h50m mealbreak = 9h 10m BigHolidayIWH time = 19 * 30m)
-        public void InterpreterCompensationBigHolidayWithTwoMealBreaks(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1, string startMealbreak2, string endMealbreak2)
+        [InlineData("2018-04-02 13:00:00", "2018-04-02 16:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 5), 2, "2018-04-02 14:00:00", "2018-04-02 14:30:00", "2018-04-02 15:00:00", "2018-04-02 15:10:00")]//3h assignment - 40m mealbreak = 2.5h comp, BigHolidayIWH 3-40m = 5*30m
+        [InlineData("2018-04-02 17:00:00", "2018-04-02 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 5), 2, "2018-04-02 17:45:00", "2018-04-02 18:00:00", "2018-04-02 19:00:00", "2018-04-02 19:15:00")]//3h assignment - 30m mealbreak = 2.5h comp, 3h-30m BigHolidayIWH mealbreak = = 5*30m
+        [InlineData("2018-03-29 14:00:00", "2018-03-29 17:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, Price_2H_Court_Comp1, 1, "2018-03-29 13:45:00", "2018-03-29 14:30:00", "2018-03-29 15:00:00", "2018-03-29 15:30:00")]//3h assignment - 1h mealbreak = 2h => 2h comp
+        [InlineData("2018-03-29 17:00:00", "2018-03-29 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_2_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 3), 2, "2018-03-29 17:45:00", "2018-03-29 18:30:00", "2018-03-29 19:15:00", "2018-03-29 19:20:00")]//3h assignment - 50m mealbreak = 2.25h => 2.5h -35m = 1h 25m BigHolidayIWH comp = 3 * BigHolidayIWH
+        [InlineData("2018-03-29 04:00:00", "2018-03-29 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_4_5H_Court_Comp1 + Price_IWH_30M__Court_Comp1 * 5), 2, "2018-03-29 04:45:00", "2018-03-29 05:15:00", "2018-03-29 07:50:00", "2018-03-29 08:10:00")]//5h assignment - 50m mealbreak = 4.25h => 4.5h 3h-30m = 2.5h Normal IWH comp = 5*30m
+        [InlineData("2018-03-29 23:45:00", "2018-03-30 01:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_1H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 2), 2, "2018-03-29 23:50:00", "2018-03-30 00:30:00", "2018-03-30 00:50:00", "2018-03-30 01:10:00")]//2h assignment - 60m mealbreak = 1h comp (2 BigHolidayIWH * 30m)
+        [InlineData("2018-03-29 20:00:00", "2018-03-30 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_5_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 23 + Price_OverMaxTime_Court_Comp1 * 12), 3, "2018-03-29 23:50:00", "2018-03-30 00:30:00", "2018-03-30 06:50:00", "2018-03-30 08:05:00")]//13h assignment - 1h55m mealbreak 11h5m  12*overmax comp, 11h 05m BHIWH = 23 * 30m
+        [InlineData("2018-04-02 20:00:00", "2018-04-03 09:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, (Price_5_5H_Court_Comp1 + Price_IWH_BigHoliday_30M__Court_Comp1 * 19 + Price_OverMaxTime_Court_Comp1 * 11), 3, "2018-04-02 23:00:00", "2018-04-03 00:30:00", "2018-04-03 06:40:00", "2018-04-03 07:30:00")]//13h assignment - 2h20m mealbreak = 10h 40m   11*overmax comp (11h iwhBH - 1h50m mealbreak = 9h 10m BigHolidayIWH time = 19 * 30m)
+        public void InterpreterCompensationBigHolidayWithTwoMealBreaks(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, decimal actualPrice, int noOfrows, string startMealbreak1, string endMealbreak1, string startMealbreak2, string endMealbreak2)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
             //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            List<PriceRowBase> requestPriceRows = new()
                 {
                     { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
                 };
@@ -622,7 +622,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                     new MealBreak { StartAt = DateTime.Parse(startMealbreak2).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak2).ToDateTimeOffsetSweden() },
                 };
             var cache = CreateCacheService(tolkdbContext);
-            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
+            PriceInformation pi = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, out bool userequestrows, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
             pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
             pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Should().Be(noOfrows, "number of rows {0}", noOfrows);
         }
@@ -656,28 +656,28 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, "", "", false)]//no mealbreak, the requisition times should get more (4 *30m iwh)
-        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, "2018-10-10 16:00:00", "2018-10-10 16:30:00", false)]//30m mealbreak non iwh times => requisition times get more (4* 30m iwh) 
-        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, "2018-10-10 16:00:00", "2018-10-10 17:00:00", false)]//1h mealbreak non iwh times => requisition times get more (4* 30m iwh) 
-        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, "2018-10-10 18:00:00", "2018-10-10 18:30:00", true)]//30m mealbreak iwh times reduces iwh time with 1*30m => request is better payed
-        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, "2018-10-10 18:00:00", "2018-10-10 19:00:00", true)]//1h mealbreak iwh times reduces iwh time with 2* 30m => request is better payed
-        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, "2018-10-10 17:30:00", "2018-10-10 19:30:00", true)]//2h mealbreak 90m iwh times reduces iwh time with 3* 30m => request is better payed
-        public void UseRequestPricerowsWithMealbreaks(string requestStartAt, string requestEndAt, string requisitionStartAt, string requisitionEndAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, string startMealbreak1, string endMealbreak1, bool useRequestRows)
+        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, "", "", false)]//no mealbreak, the requisition times should get more (4 *30m iwh)
+        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, "2018-10-10 16:00:00", "2018-10-10 16:30:00", false)]//30m mealbreak non iwh times => requisition times get more (4* 30m iwh) 
+        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, "2018-10-10 16:00:00", "2018-10-10 17:00:00", false)]//1h mealbreak non iwh times => requisition times get more (4* 30m iwh) 
+        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, "2018-10-10 18:00:00", "2018-10-10 18:30:00", true)]//30m mealbreak iwh times reduces iwh time with 1*30m => request is better payed
+        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, "2018-10-10 18:00:00", "2018-10-10 19:00:00", true)]//1h mealbreak iwh times reduces iwh time with 2* 30m => request is better payed
+        [InlineData("2018-10-10 12:00:00", "2018-10-10 18:00:00", "2018-10-10 15:00:00", "2018-10-10 20:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, "2018-10-10 17:30:00", "2018-10-10 19:30:00", true)]//2h mealbreak 90m iwh times reduces iwh time with 3* 30m => request is better payed
+        public void UseRequestPricerowsWithMealbreaks(string requestStartAt, string requestEndAt, string requisitionStartAt, string requisitionEndAt, PriceListType listType, CompetenceLevel competenceLevel, string startMealbreak1, string endMealbreak1, bool useRequestRows)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
             //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            List<PriceRowBase> requestPriceRows = new()
                 {
                     { GetPriceRowBaseForTest(requestStartAt, requestEndAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) },
                     { GetPriceRowBaseForTest(requestStartAt, requestEndAt, PriceRowType.InterpreterCompensation, (decimal)Price_2H_Court_Comp1) }
                 };
-            List<MealBreak> mealbreaks = new List<MealBreak>();
+            List<MealBreak> mealbreaks = new();
             if (!string.IsNullOrEmpty(startMealbreak1))
             {
                 mealbreaks.Add(new MealBreak { StartAt = DateTime.Parse(startMealbreak1).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endMealbreak1).ToDateTimeOffsetSweden() });
             }
             var cache = CreateCacheService(tolkdbContext);
-            _ = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(requisitionStartAt).ToDateTimeOffsetSweden(), DateTime.Parse(requisitionEndAt).ToDateTimeOffsetSweden(), DateTime.Parse(requestStartAt).ToDateTimeOffsetSweden(), DateTime.Parse(requestEndAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
+            _ = new PriceCalculationService(tolkdbContext, cache).GetPricesRequisition(DateTime.Parse(requisitionStartAt).ToDateTimeOffsetSweden(), DateTime.Parse(requisitionEndAt).ToDateTimeOffsetSweden(), DateTime.Parse(requestStartAt).ToDateTimeOffsetSweden(), DateTime.Parse(requestEndAt).ToDateTimeOffsetSweden(), competenceLevel, listType, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate), mealbreaks);
             useRequestRowsToCompare.Should().Be(useRequestRows, "useRequestRows should be {0}", useRequestRows);
         }
 
@@ -854,7 +854,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         public void SocialInsurancePriceRow(string startAt, string endAt, decimal interpreterPrice, decimal actualPrice)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
-            List<PriceRowBase> priceRows = new List<PriceRowBase>
+            List<PriceRowBase> priceRows = new ()
                 {
                     { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.InterpreterCompensation, interpreterPrice) }
                 };
@@ -894,60 +894,62 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, 300, 1)]//1h nwt, complevel 1
-        public void TravelCostRow(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, bool useRequestRows, decimal actualOutlay, int noOfrows)
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false, 300, 1)]//1h nwt, complevel 1
+        public void TravelCostRow(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, bool useRequestRows, decimal actualOutlay, int noOfrows)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
             //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
-                {
+            List<PriceRowBase> requestPriceRows = new()
+            {
                     { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
                 };
-            PriceInformation pi = new PriceCalculationService(tolkdbContext, CreateCacheService(tolkdbContext)).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, actualOutlay, null, DateTime.Parse(DefaultOrderCreatedDate));
+            PriceInformation pi = new PriceCalculationService(tolkdbContext, CreateCacheService(tolkdbContext)).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, out bool useRequestRowsToCompare, null, null, requestPriceRows, actualOutlay, null, DateTime.Parse(DefaultOrderCreatedDate));
             pi.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.Outlay).Sum(pr => pr.TotalPrice).Should().Be(actualOutlay, "total price should be {0}", actualOutlay);
             pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.Outlay).Should().Be(noOfrows, "number of rows {0}", noOfrows);
+            //no travelcost rows only outlay rows should be created for requisition
+            pi.PriceRows.Count(pr => pr.PriceRowType == PriceRowType.TravelCost).Should().Be(0);
             useRequestRowsToCompare.Should().Be(useRequestRows, "cause useRequestRows should be {0}", useRequestRows);
         }
 
         [Theory]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1, 31, 0, 1)]//31m nwt
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1, 60, 0, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1 * 2, 90, 0, 1)]//90m nwt
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1 + Price_IWH_LostTime_30M__Court_Comp1, 31, 30, 2)]//30m iwh
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, (Price_LostTime_60M__Court_Comp1 + (Price_IWH_LostTime_30M__Court_Comp1 * 2)), 60, 60, 2)]//60m iwh
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, ((Price_LostTime_60M__Court_Comp1 * 2) + (Price_IWH_LostTime_30M__Court_Comp1 * 3)), 90, 90, 2)]//90m iwh
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, Price_LostTime_60M__Court_Comp1 + Price_IWH_LostTime_30M__Court_Comp1, 31, 15, 2)]//31m nwt 15m iwh
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, ((Price_LostTime_60M__Court_Comp1 * 2) + Price_IWH_LostTime_30M__Court_Comp1), 90, 20, 2)]//90m nwt 20m iwh
-        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false, ((Price_LostTime_60M__Court_Comp1 * 2) + (Price_IWH_LostTime_30M__Court_Comp1 * 2)), 90, 40, 2)]//90m 40iwh
-        public void LostTimeRows(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, bool useRequestRows, decimal actualPrice, int lostTime, int iwhLostTime, int noOfrows)
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false, Price_LostTime_60M__Court_Comp1, 31, 0, 1)]//31m nwt
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false, Price_LostTime_60M__Court_Comp1, 60, 0, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 11:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false, Price_LostTime_60M__Court_Comp1 * 2, 90, 0, 1)]//90m nwt
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false, Price_LostTime_60M__Court_Comp1 + Price_IWH_LostTime_30M__Court_Comp1, 31, 30, 2)]//30m iwh
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false, (Price_LostTime_60M__Court_Comp1 + (Price_IWH_LostTime_30M__Court_Comp1 * 2)), 60, 60, 2)]//60m iwh
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false, ((Price_LostTime_60M__Court_Comp1 * 2) + (Price_IWH_LostTime_30M__Court_Comp1 * 3)), 90, 90, 2)]//90m iwh
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false, Price_LostTime_60M__Court_Comp1 + Price_IWH_LostTime_30M__Court_Comp1, 31, 15, 2)]//31m nwt 15m iwh
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false, ((Price_LostTime_60M__Court_Comp1 * 2) + Price_IWH_LostTime_30M__Court_Comp1), 90, 20, 2)]//90m nwt 20m iwh
+        [InlineData("2018-10-10 18:00:00", "2018-10-10 19:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false, ((Price_LostTime_60M__Court_Comp1 * 2) + (Price_IWH_LostTime_30M__Court_Comp1 * 2)), 90, 40, 2)]//90m 40iwh
+        public void LostTimeRows(string startAt, string endAt, PriceListType listType, CompetenceLevel competenceLevel, bool useRequestRows, decimal actualPrice, int lostTime, int iwhLostTime, int noOfrows)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
             //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            List<PriceRowBase> requestPriceRows = new()
                 {
                     { GetPriceRowBaseForTest(startAt, endAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) }
                 };
-            PriceInformation pi = new PriceCalculationService(tolkdbContext, CreateCacheService(tolkdbContext)).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, lostTime, iwhLostTime, requestPriceRows, actualPrice, null, DateTime.Parse(DefaultOrderCreatedDate));
+            PriceInformation pi = new PriceCalculationService(tolkdbContext, CreateCacheService(tolkdbContext)).GetPricesRequisition(DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), DateTime.Parse(startAt).ToDateTimeOffsetSweden(), DateTime.Parse(endAt).ToDateTimeOffsetSweden(), competenceLevel, listType, out bool useRequestRowsToCompare, lostTime, iwhLostTime, requestPriceRows, actualPrice, null, DateTime.Parse(DefaultOrderCreatedDate));
             pi.PriceRows.Where(pr => pr.PriceListRow != null && (pr.PriceListRow.PriceListRowType == PriceListRowType.LostTime || pr.PriceListRow.PriceListRowType == PriceListRowType.LostTimeIWH)).Sum(pr => pr.TotalPrice).Should().Be(actualPrice, "total price should be {0}", actualPrice);
             pi.PriceRows.Count(pr => pr.PriceListRow != null && (pr.PriceListRow.PriceListRowType == PriceListRowType.LostTime || pr.PriceListRow.PriceListRowType == PriceListRowType.LostTimeIWH)).Should().Be(noOfrows, "number of rows {0}", noOfrows);
             useRequestRowsToCompare.Should().Be(useRequestRows, "cause useRequestRows should be {0}", useRequestRows);
         }
 
         [Theory]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 12:00:00", "2018-10-10 10:00:00", "2018-10-10 12:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 12:00:00", "2018-10-10 10:00:00", "2018-10-10 12:20:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false)]
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 12:00:00", "2018-10-10 10:00:00", "2018-10-10 11:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, false)]//Time is less but still 1,5-2h tax
-        [InlineData("2018-10-10 10:00:00", "2018-10-10 12:00:00", "2018-10-10 10:00:00", "2018-10-10 11:29:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, DefaultRankingId, true)]
-        public void UseRequestPricerows(string requestStartAt, string requestEndAt, string requisitionStartAt, string requisitionEndAt, PriceListType listType, CompetenceLevel competenceLevel, int rankingId, bool useRequestRows)
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 12:00:00", "2018-10-10 10:00:00", "2018-10-10 12:00:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false)]
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 12:00:00", "2018-10-10 10:00:00", "2018-10-10 12:20:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false)]
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 12:00:00", "2018-10-10 10:00:00", "2018-10-10 11:45:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, false)]//Time is less but still 1,5-2h tax
+        [InlineData("2018-10-10 10:00:00", "2018-10-10 12:00:00", "2018-10-10 10:00:00", "2018-10-10 11:29:00", PriceListType.Court, CompetenceLevel.OtherInterpreter, true)]
+        public void UseRequestPricerows(string requestStartAt, string requestEndAt, string requisitionStartAt, string requisitionEndAt, PriceListType listType, CompetenceLevel competenceLevel, bool useRequestRows)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameWithPriceData);
             //get a requestRow for broker fee
-            List<PriceRowBase> requestPriceRows = new List<PriceRowBase>
+            List<PriceRowBase> requestPriceRows = new()
                 {
                     { GetPriceRowBaseForTest(requestStartAt, requestEndAt, PriceRowType.BrokerFee, (decimal)Broker_Fee_Price_Comp1) },
                     { GetPriceRowBaseForTest(requestStartAt, requestEndAt, PriceRowType.InterpreterCompensation, (decimal)Price_2H_Court_Comp1) }
                 };
-            _ = new PriceCalculationService(tolkdbContext, CreateCacheService(tolkdbContext)).GetPricesRequisition(DateTime.Parse(requisitionStartAt), DateTime.Parse(requisitionEndAt), DateTime.Parse(requestStartAt), DateTime.Parse(requestEndAt), competenceLevel, listType, rankingId, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate));
+            _ = new PriceCalculationService(tolkdbContext, CreateCacheService(tolkdbContext)).GetPricesRequisition(DateTime.Parse(requisitionStartAt), DateTime.Parse(requisitionEndAt), DateTime.Parse(requestStartAt), DateTime.Parse(requestEndAt), competenceLevel, listType, out bool useRequestRowsToCompare, null, null, requestPriceRows, null, null, DateTime.Parse(DefaultOrderCreatedDate));
             useRequestRowsToCompare.Should().Be(useRequestRows, "useRequestRows should be {0}", useRequestRows);
         }
 
@@ -963,7 +965,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             DateTimeOffset maxEndAt = new List<DateTime> { DateTime.Parse(end1), DateTime.Parse(end2), DateTime.Parse(end3) }.Max().ToDateTimeOffsetSweden();
 
             //generate rows
-            List<PriceRowBase> priceRows = new List<PriceRowBase>
+            List<PriceRowBase> priceRows = new()
                 {
                     { GetPriceRowWithPriceListRowForTest(start1, end1, price, (int)decimal.Round(quant1, MidpointRounding.AwayFromZero), 1101) },
                     { GetPriceRowWithPriceListRowForTest(start2, end2,  price, (int)decimal.Round(quant2, MidpointRounding.AwayFromZero), 1101) },
@@ -982,17 +984,11 @@ namespace Tolk.BusinessLogic.Tests.Services
             return new PriceRowBase { StartAt = DateTime.Parse(startAt).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endAt).ToDateTimeOffsetSweden(), Quantity = 1, PriceRowType = priceRowType, Price = price };
         }
 
-        private static PriceRowBase InterpreterCompensationPriceRow
-        {
-            get
-            {
-                return new PriceRowBase { StartAt = DateTime.Parse(DefaultStartDate).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(DefaultEndDate).ToDateTimeOffsetSweden(), Quantity = 1, PriceRowType = PriceRowType.InterpreterCompensation, Price = (decimal)Price_2H_Court_Comp1 };
-            }
-        }
+        private static PriceRowBase InterpreterCompensationPriceRow =>  new() { StartAt = DateTime.Parse(DefaultStartDate).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(DefaultEndDate).ToDateTimeOffsetSweden(), Quantity = 1, PriceRowType = PriceRowType.InterpreterCompensation, Price = (decimal)Price_2H_Court_Comp1 };
 
-        private PriceRowBase GetPriceRowWithPriceListRowForTest(string startAt, string endAt, decimal price, int quantity, int pricelistRowId)
+        private static PriceRowBase GetPriceRowWithPriceListRowForTest(string startAt, string endAt, decimal price, int quantity, int pricelistRowId)
         {
-            return new PriceRowBase { StartAt = DateTime.Parse(startAt).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endAt).ToDateTimeOffsetSweden(), Quantity = quantity, PriceRowType = PriceRowType.InterpreterCompensation, Price = price, PriceListRow = new PriceListRow { PriceListRowId = pricelistRowId, MaxMinutes = 30 } };
+            return new() { StartAt = DateTime.Parse(startAt).ToDateTimeOffsetSweden(), EndAt = DateTime.Parse(endAt).ToDateTimeOffsetSweden(), Quantity = quantity, PriceRowType = PriceRowType.InterpreterCompensation, Price = price, PriceListRow = new PriceListRow { PriceListRowId = pricelistRowId, MaxMinutes = 30 } };
         }
     }
 }
