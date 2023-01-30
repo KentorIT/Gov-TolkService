@@ -98,6 +98,8 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
+        public TimeSpan? ExpectedLength { get; set; }
+
         public int? ReplacingOrderId { get; set; }
 
         [ForeignKey(nameof(ReplacingOrderId))]

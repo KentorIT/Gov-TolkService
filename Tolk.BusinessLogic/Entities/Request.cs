@@ -101,6 +101,11 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool? CompletedNotificationIsHandled { get; set; }
 
+        /// <summary>
+        /// Used when the customer has set flexible start at and expected length
+        /// </summary>
+        public DateTimeOffset? RespondedStartAt { get; set; }
+
         public bool AllowOrderAgreementCreation()
         {
             //If invalid status, return false;
