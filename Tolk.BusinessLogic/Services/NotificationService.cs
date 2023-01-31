@@ -601,6 +601,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                     $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                     $"\tTillfällen: \n" +
                     $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
+                    $"Inställelsesätt: {((InterpreterLocation)requestGroup.Requests.First().InterpreterLocation).GetDescription()}\n" +
                     GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
                 if (requestGroup.HasExtraInterpreter)
                 {
