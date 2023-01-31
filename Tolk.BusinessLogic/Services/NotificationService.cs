@@ -571,6 +571,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                 OrderReferenceNumberInfo(request.Order) +
                 $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                 $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
+                $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
                 InterpreterCompetenceInfo(request.CompetenceLevel) +
                 GetPossibleInfoNotValidatedInterpreter(request);
 
@@ -1088,6 +1089,7 @@ Sammanställning:
                     OrderReferenceNumberInfo(request.Order) +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                     $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
+                    $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
                     InterpreterCompetenceInfo(request.CompetenceLevel) +
                     GetPossibleInfoNotValidatedInterpreter(request);
 
@@ -1124,6 +1126,7 @@ Sammanställning:
                     OrderReferenceNumberInfo(request.Order) +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                     $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n"+
+                    $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
                     $"Förmedlingen har fram till {request.ExpiresAt.Value.ToSwedishString("yyyy-MM-dd HH:mm")} på sig att tillsätta tolk.\n";
 
                 CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bekräftat bokningsförfrågan {orderNumber}",
@@ -1149,6 +1152,7 @@ Sammanställning:
                     $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                     $"\tTillfällen: \n" +
                     $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +
+                    $"Inställelsesätt: {((InterpreterLocation)requestGroup.Requests.First().InterpreterLocation).GetDescription()}\n" +
                     GetPossibleInfoNotValidatedInterpreter(requestGroup.FirstRequestForFirstInterpreter);
                 if (requestGroup.HasExtraInterpreter)
                 {
@@ -1296,7 +1300,9 @@ Sammanställning:
                     notificationType = NotificationType.ReplamentOrderAccepted;
                     if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
                     {
-                        var body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats. {GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}";
+                        var body = $"Svar på ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Ersättningsuppdrag har accepterats.\n" +
+                            $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
+                            $"{GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}";
                         CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
                             body + GoToOrderPlain(request.Order.OrderId),
                             HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
@@ -1309,7 +1315,9 @@ Sammanställning:
                     notificationType = NotificationType.ReplamentOrderApproved;
                     if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
                     {
-                        var bodyAppr = $"Ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har accepteras. Inga förändrade krav finns, tolkuppdrag är klart för utförande.";
+                        var bodyAppr = $"Ersättningsuppdrag {orderNumber} från förmedling {request.Ranking.Broker.Name} har accepteras.\n" +
+                             $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
+                            "Inga förändrade krav finns, tolkuppdrag är klart för utförande.";
                         CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har accepterat ersättningsuppdrag {orderNumber}",
                             bodyAppr + GoToOrderPlain(request.Order.OrderId, HtmlHelper.ViewTab.Default, true),
                             HtmlHelper.ToHtmlBreak(bodyAppr) + GoToOrderButton(request.Order.OrderId, HtmlHelper.ViewTab.Default, null, true, true),
@@ -1357,6 +1365,7 @@ Sammanställning:
                     OrderReferenceNumberInfo(request.Order) +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                     $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
+                    $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
                     $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" + GetRequireApprovementText(request.LatestAnswerTimeForCustomer)
                     + GetPossibleInfoNotValidatedInterpreter(request);
                 CreateEmail(GetRecipientsFromOrder(request.Order), $"Förmedling har bytt tolk för uppdrag med boknings-ID {orderNumber}",
@@ -1409,6 +1418,7 @@ Sammanställning:
                         OrderReferenceNumberInfo(request.Order) +
                         $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
                         $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
+                        $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
                         $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" +
                         "Tolkbytet är godkänt av systemet." +
                         GetPossibleInfoNotValidatedInterpreter(request);
