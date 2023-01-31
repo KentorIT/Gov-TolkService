@@ -46,7 +46,7 @@
             </div>
             <form method="post">
                 <input asp-for="RequestId" type="hidden" />
-                <form-entry asp-for="ComplaintType" type="select" asp-items="SelectListService.ComplaintTypes" />
+                <form-entry asp-for="ComplaintType" type="select" asp-items="SelectListService.ComplaintTypesByFrameworkAgreement(Model.AvailableComplaintTypes)" />
                 <form-entry asp-for="Message" />
                 <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Order" asp-action="View" asp-route-Id="@Model.OrderId">Avbryt <span class="btn-remove-times">&times;</span></a>
                 <button class="disable-on-click btn btn-large btn-default pull-right">Registera reklamation</button>

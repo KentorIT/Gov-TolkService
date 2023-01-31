@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models
@@ -11,6 +14,8 @@ namespace Tolk.Web.Models
         public int RequestId { get; set; }
 
         public int OrderId { get; set; }
+
+        public int FrameworkAgreementId { get; set; }
 
         [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
@@ -51,6 +56,8 @@ namespace Tolk.Web.Models
         [StringLength(1000)]
         public string Message { get; set; }
 
+        public List<ComplaintType> AvailableComplaintTypes => EnumHelper.GetEnumsWithParent<ComplaintType, FrameworkAgreementResponseRuleset>((FrameworkAgreementResponseRuleset)FrameworkAgreementId).ToList();
+
         #region methods
 
         internal static ComplaintModel GetModelFromRequest(Request request)
@@ -68,6 +75,7 @@ namespace Tolk.Web.Models
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 OrderNumber = request.Order.OrderNumber,
                 RegionName = request.Ranking.Region.Name,
+                FrameworkAgreementId = request.Ranking.FrameworkAgreementId
             };
         }
 

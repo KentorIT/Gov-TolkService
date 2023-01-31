@@ -68,7 +68,7 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> ComplaintTypes => GetList<ComplaintType>();
+        public static IEnumerable<SelectListItem> ComplaintTypesByFrameworkAgreement(IEnumerable<ComplaintType> filter) => GetList(filter);
 
         public static IEnumerable<SelectListItem> RequisitionStatuses =>
             EnumHelper.GetAllDescriptions<RequisitionStatus>()
@@ -315,13 +315,13 @@ namespace Tolk.Web.Services
                         .Select(b => new SerializableExtendedSelectListItem
                         {
                             Text = $"{b.Name} ({OrganisationType.Broker.GetDescription()})",
-                            Value = $"{b.BrokerId.ToSwedishString()}_{OrganisationType.Broker }",
+                            Value = $"{b.BrokerId.ToSwedishString()}_{OrganisationType.Broker}",
                             AdditionalDataAttribute = OrganisationType.Broker.ToString(),
                         }).ToList());
                     list.Add(new SerializableExtendedSelectListItem
                     {
                         Text = "Kammarkollegiet",
-                        Value = $"0_{OrganisationType.Owner }",
+                        Value = $"0_{OrganisationType.Owner}",
                         AdditionalDataAttribute = OrganisationType.Owner.ToString(),
                     });
                     items = list.AsReadOnly();
