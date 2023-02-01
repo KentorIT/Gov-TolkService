@@ -538,7 +538,6 @@ namespace Tolk.BusinessLogic.Services
                 request.Order.EndAt,
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
                 request.Order.CustomerOrganisation.PriceListType,
-                request.Ranking.RankingId,
                 out bool useRequestRows,
                 null,
                 null,

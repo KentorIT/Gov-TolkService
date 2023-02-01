@@ -78,7 +78,7 @@ namespace Tolk.BusinessLogic.Services
             };
         }
 
-        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, DateTimeOffset originStartAt, DateTimeOffset originEndAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, Order replacingOrder, DateTimeOffset orderCreatedDate, List<MealBreak> mealbreaks = null)
+        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, DateTimeOffset originStartAt, DateTimeOffset originEndAt, CompetenceLevel competenceLevel, PriceListType listType, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, Order replacingOrder, DateTimeOffset orderCreatedDate, List<MealBreak> mealbreaks = null)
         {
             var prices = GetPriceList(startAt, competenceLevel, listType);
 
@@ -108,7 +108,7 @@ namespace Tolk.BusinessLogic.Services
             }
             //get lost time and extra charges
             pricesToUse.AddRange(GetLostTimePriceRows(startAt, timeWasteNormalTime, timeWasteIWHTime, prices));
-            return CompletePricesWithExtraCharges(startAt, endAt, pricesToUse, outlay, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee), outlay);
+            return CompletePricesWithExtraCharges(startAt, endAt, pricesToUse, null, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee), outlay);
         }
 
         /// <summary>
