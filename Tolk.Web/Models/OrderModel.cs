@@ -61,7 +61,6 @@ namespace Tolk.Web.Models
 
         public AttachmentListModel RequestAttachmentListModel { get; set; }
 
-
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual TimeRange TimeRange { get; set; }
@@ -69,13 +68,20 @@ namespace Tolk.Web.Models
         [Display(Name = "Extra tolk", Description = "Om det finns behov av två tolkar till samma tillfälle så kryssa i rutan Extra tolk. Detta innebär att arvode och förmedlingsavgift utgår för båda tolkarna för hela tillfället.")]
         public bool ExtraInterpreter { get; set; }
 
+        [Display(Name = "Flexibel startid", Description = "Om det är ok att förmedlingen sätter startiden, inom den tid som ni erbjuder så välj denna.")]
+        public bool FlexibleOrder { get; set; }
+
+        [Display(Name = "Förväntad längd", Description = "Hur lång tid kommer tillfället vara.")]
+        [RequiredIf(nameof(FlexibleOrder), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
+        public TimeSpan? ExpectedLength { get; set; }
+
         [Display(Name = "Måltidspaus beräknas ingå", Description = "Kryssa i rutan om det är ett längre uppdrag över 5 timmar och det beräknas ingå en måltidspaus.")]
         public bool MealBreakIncluded { get; set; }
 
         [Display(Name = "Boka flera tillfällen med samma tolk", Description = "Om rutan kryssas i så går det att lägga till flera tillfällen. Det är tvingande för förmedlingen att tillsätta samma tolk för alla tillfällen. Detta innebär att arvode och förmedlingsavgift utgår för varje tillfälle. Fyll i ett fullständigt tillfälle för att kunna lägga till fler tillfällen.")]
         public bool SeveralOccasions { get; set; }
 
-        [Display(Name = "Datum och tid", Description = "Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00. Om start- eller sluttid kan ha viss flexibilitet, beskriv detta i fritextfältet &quotÖvrig information om uppdraget&quot nedan.")]
+        [Display(Name = "Datum och tid", Description = "Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00.")]
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual SplitTimeRange SplitTimeRange { get; set; }
 
@@ -267,6 +273,7 @@ namespace Tolk.Web.Models
         public DefaultSettingsModel UserDefaultSettings { get; set; }
 
         public bool EnableOrderGroups { get; set; }
+        public FlexibleOrderSettings FlexibleOrderSettings { get; set; }
 
         #region methods
 

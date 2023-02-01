@@ -798,21 +798,6 @@ input[type='checkbox']:checked:after {
     padding-top: 8px;
 }
 
-.order-datepicker.order-group-disabled {
-    .date-part, .starttime-part, .endtime-part {
-        .make-sm-column(4);
-    }
-
-    .time-errors {
-        float: left;
-        width: 100%;
-    }
-}
-
-.order-datepicker.order-group-enabled {
-    .make-sm-column(12);
-}
-
 .order-datepicker {
 
     .date-part {
@@ -851,9 +836,11 @@ input[type='checkbox']:checked:after {
         padding-bottom: 10px;
     }
 
-    .extra-interpreter-part {
+    .extra-interpreter-part, .flexible-order-part {
         padding-top: 20px;
+        margin-top:10px;
         float: left;
+        padding-right: 15px;
     }
 }
 

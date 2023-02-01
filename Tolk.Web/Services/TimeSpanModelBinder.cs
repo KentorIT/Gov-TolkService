@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
@@ -11,32 +13,25 @@ namespace Tolk.Web.Services
         {
             NullCheckHelper.ArgumentCheckNull(bindingContext, nameof(TimeSpanModelBinder));
 
-            var timeValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}");
+            var timeHourValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.Hours");
+            var timeMinuteValue = bindingContext.ValueProvider.GetValue($"{bindingContext.ModelName}.Minutes");
 
-            if (timeValue == ValueProviderResult.None
-                || string.IsNullOrWhiteSpace(timeValue.FirstValue))
+            if (!ValueDefinedAndUsed(timeHourValue) || !ValueDefinedAndUsed(timeHourValue))
             {
                 return Task.CompletedTask;
             }
-            string timeValueSanitized;
 
-            if (timeValue.FirstValue == "0"
-                || timeValue.FirstValue == "00")
-            {
-                timeValueSanitized = "00:00";
-            }
-            else
-            {
-                timeValueSanitized = timeValue.FirstValue.ContainsSwedish(":")
-                    ? timeValue.FirstValue
-                    : timeValue.FirstValue.Insert(timeValue.FirstValue.Length - 2, ":"); // Add colon to time if not exists
-            }
-
-            var model = timeValueSanitized.ToSwedishTimeSpan();
+            var model = new TimeSpan(timeHourValue.FirstValue.ToSwedishInt(), timeMinuteValue.FirstValue.ToSwedishInt(), 0);
 
             bindingContext.Result = ModelBindingResult.Success(model);
 
             return Task.CompletedTask;
         }
+
+        private static bool ValueDefinedAndUsed(ValueProviderResult vpr)
+        {
+            return !(vpr == ValueProviderResult.None || string.IsNullOrWhiteSpace(vpr.FirstValue));
+        }
+
     }
 }

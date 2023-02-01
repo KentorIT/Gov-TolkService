@@ -313,7 +313,6 @@ namespace Tolk.Web.Controllers
                                 Attachments = updatedAttachments,
                                 BrokerId = request.Ranking.BrokerId
                             });
-
                         }
                         await _dbContext.SaveChangesAsync();
                         order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
@@ -376,6 +375,7 @@ namespace Tolk.Web.Controllers
                 CreatedByName = user.FullName,
                 UserDefaultSettings = DefaultSettingsModel.GetModel(user, currentFrameworkAgreementResponseRuleset),
                 EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)),
+                FlexibleOrderSettings = _options.FlexibleOrder,
                 UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId()),
                 TravelConditionHours = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionHours,
                 TravelConditionKilometers = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionKilometers
@@ -867,6 +867,14 @@ namespace Tolk.Web.Controllers
             definition.Single(d => d.Name == nameof(OrderListItemModel.CreatorName)).Visible = User.IsInRole(Roles.CentralAdministrator) || User.IsInRole(Roles.CentralOrderHandler);
             return Json(definition);
         }
+
+        public JsonResult GetHolidays()
+        {
+            return Json(_cacheService.Holidays
+                .Where(h => h.Date >= _clock.SwedenNow.Date)
+                .Select(h => h.Date.ToSwedishString("yyyy-MM-dd") ));
+        }
+
 
         private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart)
         {

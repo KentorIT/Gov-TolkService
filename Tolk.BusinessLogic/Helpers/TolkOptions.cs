@@ -27,6 +27,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public PeppolSettings Peppol { get; set; }
 
+        public FlexibleOrderSettings FlexibleOrder { get; set; }
+
         public TolkConnectionStrings ConnectionStrings { get; set; }
 
         public void Validate()
