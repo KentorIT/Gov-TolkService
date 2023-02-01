@@ -83,7 +83,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestExpiredDueToNoAnswerFromCustomer(Request request) { }
 
-        public void RequestGroupAccepted(RequestGroup requestGroup) { }
+        public void RequestGroupAnsweredAwaitingApproval(RequestGroup requestGroup) { }
 
         public void RequestGroupAnswerApproved(RequestGroup requestGroup) { }
 
@@ -116,5 +116,9 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
         public void RequestGroupTerminatedDueToTerminatedFrameworkAgreement(RequestGroup requestGroup) { }
 
         public void RequestAccepted(Request request) { }
+
+        public void RequestGroupAccepted(RequestGroup requestGroup)
+        {            
+        }
     }
 }

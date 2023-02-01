@@ -36,6 +36,7 @@ namespace Tolk.BusinessLogic.Services
         void RequestCreatedWithoutExpiry(Request request);
         void RequestDeclinedByBroker(Request request);
         void RequestGroupAccepted(RequestGroup requestGroup);
+        void RequestGroupAnsweredAwaitingApproval(RequestGroup requestGroup);
         void RequestGroupAnswerAutomaticallyApproved(RequestGroup requestGroup);
         void RequestGroupAnswerApproved(RequestGroup requestGroup);
         void RequestGroupDeclinedByBroker(RequestGroup requestGroup);

@@ -226,7 +226,7 @@ namespace Tolk.BusinessLogic.Services
                 //2. Set the request group and order group in correct state
                 if (resultingGroup.RequiresApproval(hasTravelCosts))
                 {
-                    _notificationService.RequestGroupAccepted(resultingGroup);
+                    _notificationService.RequestGroupAnsweredAwaitingApproval(resultingGroup);                    
                 }
                 else
                 {

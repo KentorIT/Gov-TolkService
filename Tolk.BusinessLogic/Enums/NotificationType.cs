@@ -275,10 +275,10 @@ namespace Tolk.BusinessLogic.Enums
         RequestgroupCreatedWithoutExpiry = 38,
 
         [Description("Sammanhållen bokningsförfrågan fullständigt besvarad")]
-        [CustomName("order_group_accepted", false)]
+        [CustomName("order_group_answered_and_approved", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
-        OrderGroupAccepted = 39,
+        OrderGroupAnsweredAndApproved = 39,
 
         [Description("Reklamation har godtagits")]
         [CustomName("complaint_confirmed", false)]
@@ -416,11 +416,23 @@ namespace Tolk.BusinessLogic.Enums
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         RequestGroupCreatedForAcceptance = 60,
 
-        [Description("Beställning besvarad, inväntar godkännande av beställare")]
+        [Description("Beställning bekräftad, tolk är ej tillsatt")]
         [CustomName("order_accepted", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
         OrderAccepted = 61,
 
+        [Description("Sammanhållen bokningsförfrågan bekräftad, tolk är ej tillsatt")]
+        [CustomName("order_group_accepted", false)]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [NotificationConsumerType(NotificationConsumerType.Customer)]
+        OrderGroupAccepted = 62,
+
+        [Description("Sammanhållen bokningsförfrågan besvarad, inväntar godkännande av beställare")]
+        [CustomName("order_group_answered", false)]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [AvailableNotificationChannel(NotificationChannel.Webhook)]
+        [NotificationConsumerType(NotificationConsumerType.Customer)]
+        OrderGroupAnsweredAwaitingApproval = 63,
     }
 }

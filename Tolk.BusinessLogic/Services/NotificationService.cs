@@ -591,7 +591,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAnswerAutomaticallyApproved), nameof(NotificationService));
             string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
             var frameworkAgreementNumber = requestGroup.Ranking.FrameworkAgreement.AgreementNumber;
-            NotificationType notificationType = NotificationType.OrderGroupAccepted;
+            NotificationType notificationType = NotificationType.OrderGroupAnsweredAndApproved;
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
                 Order order = requestGroup.OrderGroup.FirstOrder;
@@ -1139,10 +1139,10 @@ Sammanställning:
             }
         }
 
-        public void RequestGroupAccepted(RequestGroup requestGroup)
+        public void RequestGroupAnsweredAwaitingApproval(RequestGroup requestGroup)
         {
-            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAccepted), nameof(NotificationService));
-            NotificationType notificationType = NotificationType.OrderGroupAccepted;
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAnsweredAwaitingApproval), nameof(NotificationService));
+            NotificationType notificationType = NotificationType.OrderGroupAnsweredAwaitingApproval;
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
                 string orderGroupNumber = requestGroup.OrderGroup.OrderGroupNumber;
@@ -1203,6 +1203,34 @@ Sammanställning:
                 webhook.ContactInformation,
                 webhook.NotificationType,
                 webhook.RecipientUserId);
+            }
+        }
+
+
+        public void RequestGroupAccepted(RequestGroup requestGroup)
+        {
+
+            NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(RequestGroupAccepted), nameof(NotificationService));
+            NotificationType notificationType = NotificationType.OrderGroupAccepted;
+            if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
+            {
+                string orderNumber = requestGroup.OrderGroup.OrderGroupNumber;
+                var frameworkAgreementNumber = requestGroup.Ranking.FrameworkAgreement.AgreementNumber;
+                Order order = requestGroup.OrderGroup.FirstOrder;
+                var body = $"Bekräftelse på sammanhållen bokningsförfrågan {orderNumber} från förmedling {requestGroup.Ranking.Broker.Name} har inkommit.\n\n" +
+                    OrderReferenceNumberInfo(order) +
+                    $"Språk: {order.OtherLanguage ?? order.Language?.Name}\n" +
+                    $"\tTillfällen: \n" +
+                    $"{GetOccurences(requestGroup.OrderGroup.Orders)}\n" +                  
+                    $"Inställelsesätt: {((InterpreterLocation)requestGroup.Requests.First().InterpreterLocation).GetDescription()}\n" +
+                    $"Förmedlingen har fram till {requestGroup.ExpiresAt.Value.ToSwedishString("yyyy-MM-dd HH:mm")} på sig att tillsätta tolk.\n";
+
+                CreateEmail(GetRecipientsFromOrderGroup(requestGroup.OrderGroup), $"Förmedling har bekräftat bokningsförfrågan {orderNumber}",
+                    body + GoToOrderGroupPlain(requestGroup.OrderGroup.OrderGroupId),
+                    HtmlHelper.ToHtmlBreak(body) + GoToOrderGroupButton(requestGroup.OrderGroup.OrderGroupId),
+                    notificationType,
+                    frameworkAgreementNumber
+                );
             }
         }
 
