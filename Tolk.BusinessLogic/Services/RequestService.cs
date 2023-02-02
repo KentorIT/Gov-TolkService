@@ -248,16 +248,11 @@ namespace Tolk.BusinessLogic.Services
         )
         {
             NullCheckHelper.ArgumentCheckNull(requestGroup, nameof(AcceptGroup), nameof(RequestService));
-            NullCheckHelper.ArgumentCheckNull(accept, nameof(AcceptGroup), nameof(RequestService));
 
             var declinedRequests = new List<Request>();
             await _orderService.AddOrdersWithListsForGroupToProcess(requestGroup.OrderGroup);
             bool isSingleOccasion = requestGroup.OrderGroup.IsSingleOccasion;
             bool hasExtraInterpreter = requestGroup.HasExtraInterpreter;
-            if (hasExtraInterpreter)
-            {
-                NullCheckHelper.ArgumentCheckNull(extraAccept, nameof(AcceptGroup), nameof(RequestService));
-            }
 
             bool partialAnswer = false;
 
@@ -270,8 +265,10 @@ namespace Tolk.BusinessLogic.Services
                 bool isExtraInterpreterOccasion = request.Order.IsExtraInterpreterForOrderId.HasValue;
                 if (isExtraInterpreterOccasion)
                 {
-                    if (extraAccept.Accepted)
-                    {
+                    //this is always true since it it never set and default is true
+                    //extraAccept can be null if no requirements/competence level are set when accepting
+                    //if (extraAccept.Accepted)
+                    //{
                         AcceptRequestGroupRequest(request,
                             acceptTime,
                             userId,
@@ -280,13 +277,13 @@ namespace Tolk.BusinessLogic.Services
                             extraAccept,
                             Enumerable.Empty<RequestAttachment>().ToList()
                        );
-                    }
-                    else
-                    {
-                        partialAnswer = true;
-                        await Decline(request, acceptTime, userId, impersonatorId, extraAccept.DeclineMessage, false, false);
-                        declinedRequests.Add(request);
-                    }
+                    //}
+                    //else
+                    //{
+                    //    partialAnswer = true;
+                    //    await Decline(request, acceptTime, userId, impersonatorId, extraAccept.DeclineMessage, false, false);
+                    //    declinedRequests.Add(request);
+                    //}
                 }
                 else
                 {
@@ -809,7 +806,7 @@ namespace Tolk.BusinessLogic.Services
 
         private void AcceptRequestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, InterpreterAcceptDto accept, List<RequestAttachment> attachedFiles)
         {
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreterLocation, accept.CompetenceLevel, ReplaceIds(request.Order.Requirements, accept.RequirementAnswers).ToList(), attachedFiles, string.Empty);
+            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreterLocation, accept?.CompetenceLevel, accept != null ? ReplaceIds(request.Order.Requirements, accept?.RequirementAnswers).ToList() : null, attachedFiles, string.Empty);
         }
 
         private static IEnumerable<OrderRequirementRequestAnswer> ReplaceIds(List<OrderRequirement> requirements, IEnumerable<OrderRequirementRequestAnswer> requirementAnswers)

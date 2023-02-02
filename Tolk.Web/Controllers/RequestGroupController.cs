@@ -227,7 +227,7 @@ namespace Tolk.Web.Controllers
                             User.GetUserId(),
                             User.TryGetImpersonatorId(),
                             model.InterpreterLocationOnAccept,
-                            model.InterpreterAcceptModel.AcceptDto,
+                            model.InterpreterAcceptModel?.AcceptDto,
                             model.ExtraInterpreterAcceptModel?.AcceptDto,
                             model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList(),
                             model.BrokerReferenceNumber
