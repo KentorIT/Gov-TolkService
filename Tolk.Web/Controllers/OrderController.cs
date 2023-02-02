@@ -476,7 +476,7 @@ namespace Tolk.Web.Controllers
                         UseDisplayHideInfo = true,
                         Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
                     };
-                    warningOrderTimeInfo = CheckReasonableDurationTime(order.StartAt.DateTime, order.EndAt.DateTime);
+                    warningOrderTimeInfo = CheckReasonableDurationTime(order.StartAt, order.Duration);
                     updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? CheckOrderOccasionFarAway(order.StartAt.DateTime) :
                         $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(order.StartAt.DateTime)}";
                     updatedModel.DisplayMealBreakIncludedText = order.MealBreakTextToDisplay;
@@ -887,7 +887,7 @@ namespace Tolk.Web.Controllers
             string message = string.Empty;
             foreach (OrderOccasionDisplayModel orderOccasion in orderOccasionDisplayModels)
             {
-                message = CheckReasonableDurationTime(orderOccasion.OccasionStartDateTime, orderOccasion.OccasionEndDateTime, true);
+                message = CheckReasonableDurationTime(orderOccasion.OccasionStartDateTime, orderOccasion.Duration, true);
                 if (!string.IsNullOrEmpty(message))
                 {
                     return message;
@@ -896,14 +896,14 @@ namespace Tolk.Web.Controllers
             return message;
         }
 
-        private static string CheckReasonableDurationTime(DateTime start, DateTime end, bool isOrderGroup = false)
+        private static string CheckReasonableDurationTime(DateTimeOffset start, TimeSpan duration, bool isOrderGroup = false)
         {
-            int minutes = (int)(end - start).TotalMinutes;
+            int minutes = (int)duration.TotalMinutes;
             return minutes > 600 ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle är längre än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                $"Observera att tiden för minst ett tillfälle är längre än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{start.AddTicks(duration.Ticks).ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 minutes < 60 ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle är kortare än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                $"Observera att tiden för minst ett tillfälle är kortare än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{start.AddTicks(duration.Ticks).ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 string.Empty;
         }

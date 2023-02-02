@@ -189,22 +189,28 @@ $(function () {
         }
     };
 
+    var checkboxNotSet = function (id) {
+        // TODO: as extend instead!
+        return $(id).length === 0 || $(id).is(":not(:checked)");
+    };
+
+
     var toggleSeveralOccasions = function () {
         //if date is set, and hasToggledLastTimeForRequiringLatestAnswerBy is false and SeveralOccasions is false
-        if ($("#SeveralOccasions").is(":not(:checked)")) {
-            toggleCheckbox("#SeveralOccasions", $("#FlexibleOrder").is(":not(:checked)") && !LastAnswerByIsShowing && hasValidOccasion());
+        if (checkboxNotSet("#SeveralOccasions")) {
+            toggleCheckbox("#SeveralOccasions", checkboxNotSet("#FlexibleOrder") && !LastAnswerByIsShowing && hasValidOccasion());
         }
     };
 
     var toggleFlexibleOrder = function () {
-        if ($("#FlexibleOrder").is(":not(:checked)")) {
-            toggleCheckbox("#FlexibleOrder", $("#SeveralOccasions").is(":not(:checked)") && $("#ExtraInterpreter").is(":not(:checked)"));
+        if (checkboxNotSet("#FlexibleOrder")) {
+            toggleCheckbox("#FlexibleOrder", checkboxNotSet("#SeveralOccasions") && checkboxNotSet("#ExtraInterpreter"));
         }
     };
 
     var toggleExtraInterpreter = function () {
-        if ($("#ExtraInterpreter").is(":not(:checked)")) {
-            toggleCheckbox("#ExtraInterpreter", $("#FlexibleOrder").is(":not(:checked)"));
+        if (checkboxNotSet("#ExtraInterpreter")) {
+            toggleCheckbox("#ExtraInterpreter", checkboxNotSet("#FlexibleOrder"));
         }
     };
 
@@ -282,7 +288,7 @@ $(function () {
     var checkMealbreak = function () {
         var isLongerThan5h = false;
         //if not all time values are set don't show
-        if (($("#FlexibleOrder").is(":not(:checked)") &&
+        if ((checkboxNotSet("#FlexibleOrder") &&
             (
                 $("#SplitTimeRange_StartTimeHour").val() === "" ||
                 $("#SplitTimeRange_StartTimeMinutes").val() === "" ||
