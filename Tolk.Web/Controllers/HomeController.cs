@@ -252,7 +252,8 @@ namespace Tolk.Web.Controllers
                         LanguageName = o.LanguageName,
                         OrderNumber = o.OrderNumber,
                         Status = GetStartListStatusForCustomer(o.OrderStatus, o.ReplacingOrderId ?? 0),
-                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && o.LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)o.LatestAnswerTimeForCustomer.Value.DateTime : null,
+                        LatestDateDescription = "Svara senast:",
+                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && o.LatestAnswerTimeForCustomer.HasValue) ? o.LatestAnswerTimeForCustomer.Value.DateTime : null,
                     }));
             }
             catch (Exception ex)
@@ -273,7 +274,8 @@ namespace Tolk.Web.Controllers
                         LanguageName = o.LanguageName,
                         OrderNumber = o.OrderNumber,
                         Status = GetStartListStatusForCustomer(o.OrderStatus, o.ReplacingOrderId ?? 0),
-                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && o.LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)o.LatestAnswerTimeForCustomer.Value.DateTime : null,
+                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && o.LatestAnswerTimeForCustomer.HasValue) ? o.LatestAnswerTimeForCustomer.Value.DateTime : null,
+                        LatestDateDescription = "Svara senast:",
                         OrderGroupNumber = o.OrderGroupId.HasValue ? $"Del av {o.OrderGroupNumber}" : string.Empty
                     }));
             }
@@ -299,7 +301,8 @@ namespace Tolk.Web.Controllers
                         LanguageName = og.LanguageName,
                         OrderNumber = og.OrderGroupNumber,
                         Status = GetStartListStatusForCustomer((OrderStatus)og.OrderGroupStatus, 0, true),
-                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && og.LatestAnswerTimeForCustomer.HasValue) ? (DateTime?)og.LatestAnswerTimeForCustomer.Value.DateTime : null,
+                        LatestDate = (_options.EnableSetLatestAnswerTimeForCustomer && og.LatestAnswerTimeForCustomer.HasValue) ? og.LatestAnswerTimeForCustomer.Value.DateTime : null,
+                        LatestDateDescription = "Svara senast:",
                         IsSingleOccasion = og.IsSingleOccasion,
                         HasExtraInterpreter = og.HasExtraInterpreter,
                     }));
@@ -470,7 +473,7 @@ namespace Tolk.Web.Controllers
 
         private List<StartListItemModel> CustomerWaitingListItems(int customerOrganisationId, int userId, IEnumerable<int> customerUnits)
         {
-            var  sentOrders = new List<StartListItemModel>();
+            var sentOrders = new List<StartListItemModel>();
             //Sent orders
             try
             {
@@ -486,7 +489,7 @@ namespace Tolk.Web.Controllers
                         CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
                         LanguageName = o.LanguageName,
                         OrderNumber = o.OrderNumber,
-                        RequestAcceptedAt = o.AcceptedAt.HasValue ? (DateTime?)o.AcceptedAt.Value.DateTime : null,
+                        RequestAcceptedAt = o.AcceptedAt.HasValue ? o.AcceptedAt.Value.DateTime : null,
                         Status = o.ReplacingOrderId.HasValue ? StartListItemStatus.ReplacementOrderCreated : (o.OrderStatus == OrderStatus.Requested ? StartListItemStatus.OrderCreated : StartListItemStatus.OrderAccepted)
                     }).ToList();
             }
@@ -511,7 +514,7 @@ namespace Tolk.Web.Controllers
                         LinkOverride = "/OrderGroup/View",
                         LanguageName = og.LanguageName,
                         OrderNumber = og.OrderGroupNumber,
-                        RequestAcceptedAt = og.AcceptedAt.HasValue ? (DateTime?)og.AcceptedAt.Value.DateTime : null,
+                        RequestAcceptedAt = og.AcceptedAt.HasValue ? og.AcceptedAt.Value.DateTime : null,
                         Status = og.OrderStatus == OrderStatus.Requested ? StartListItemStatus.OrderGroupCreated : StartListItemStatus.OrderGroupAccepted,
                         IsSingleOccasion = og.IsSingleOccasion,
                         HasExtraInterpreter = og.HasExtraInterpreter,
@@ -582,13 +585,13 @@ namespace Tolk.Web.Controllers
         {
             yield return new StartList
             {
-                HeaderClass= "start-list-action-header",
+                HeaderClass = "start-list-action-header",
                 HeaderLoading = "Kräver handling av förmedling (laddar...)",
                 Header = "Kräver handling av förmedling (_TOTAL_ st)",
                 EmptyHeader = "Kräver handling av förmedling",
                 EmptyMessage = "För tillfället finns det inga aktiva bokningar som kräver handling av förmedling",
                 HasReviewAction = true,
-                TableDataPath = new ActionDefinition {Controller = "Home", Action = nameof(ListBrokerActionItems) },
+                TableDataPath = new ActionDefinition { Controller = "Home", Action = nameof(ListBrokerActionItems) },
                 TableColumnDefinitionPath = new ActionDefinition { Controller = "Home", Action = nameof(StartListWithActionColumnDefinition) },
                 DefaultLinkPath = new ActionDefinition { Controller = "Request", Action = "View" }
             };
@@ -623,7 +626,7 @@ namespace Tolk.Web.Controllers
         public IActionResult ListBrokerActionItems(IDataTablesRequest request)
         {
             var entities = BrokerActionListItems(User.GetBrokerId(), User.GetUserId());
-            return AjaxDataTableHelper.GetData(request, entities.Count, entities.AsQueryable(), d => d, s => s.OrderBy(l => l.LatestDate == null).ThenBy(l => l.RequestAcceptAt == null ? l.LatestDate : l.RequestAcceptAt)); 
+            return AjaxDataTableHelper.GetData(request, entities.Count, entities.AsQueryable(), d => d, s => s.OrderBy(l => l.LatestDate == null).ThenBy(l => l.RequestAcceptAt == null ? l.LatestDate : l.RequestAcceptAt));
         }
 
         [HttpPost]
@@ -658,13 +661,13 @@ namespace Tolk.Web.Controllers
                 {
                     OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
                     EntityId = (int)r.RequestId,
-                    InfoDate = r.LastRequestCreatedUpdatedAt.HasValue ? (DateTime?)r.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(r).Value,
+                    InfoDate = r.LastRequestCreatedUpdatedAt.HasValue ? r.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.CustomerName,
                     LanguageName = r.LanguageName,
                     OrderNumber = r.OrderNumber,
                     Status = GetStartListStatusForBroker((RequestStatus)r.RequestStatus, r.ReplacingOrderId ?? 0, false),
-                    LatestDate = r.RequestExpiresAt.HasValue ? (DateTime?)r.RequestExpiresAt.Value.DateTime : null,
+                    LatestDate = r.RequestExpiresAt.HasValue ? r.RequestExpiresAt.Value.DateTime : null,
                     ViewedByUser = GetViewedByUserName(r, userId)
                 }).ToList());
             }
@@ -685,14 +688,14 @@ namespace Tolk.Web.Controllers
                 {
                     OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
                     EntityId = (int)r.RequestId,
-                    InfoDate = r.LastRequestCreatedUpdatedAt.HasValue ? (DateTime?)r.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(r).Value,
+                    InfoDate = r.LastRequestCreatedUpdatedAt.HasValue ? r.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.CustomerName,
                     LanguageName = r.LanguageName,
                     OrderNumber = r.OrderNumber,
                     Status = GetStartListStatusForBroker((RequestStatus)r.RequestStatus, r.ReplacingOrderId ?? 0, false),
-                    LatestDate = r.RequestExpiresAt.HasValue ? (DateTime?)r.RequestExpiresAt.Value.DateTime : null,
-                    RequestAcceptAt = r.LastAcceptAt.HasValue ? (DateTime?)r.LastAcceptAt.Value.DateTime : null,
+                    LatestDate = r.RequestExpiresAt.HasValue ? r.RequestExpiresAt.Value.DateTime : null,
+                    RequestAcceptAt = r.LastAcceptAt.HasValue ? r.LastAcceptAt.Value.DateTime : null,
                     ViewedByUser = GetViewedByUserName(r, userId)
                 }).ToList());
             }
@@ -713,14 +716,14 @@ namespace Tolk.Web.Controllers
                 {
                     OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
                     EntityId = (int)r.RequestId,
-                    InfoDate = r.LastRequestCreatedUpdatedAt.HasValue ? (DateTime?)r.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(r).Value,
+                    InfoDate = r.LastRequestCreatedUpdatedAt.HasValue ? r.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.CustomerName,
                     LanguageName = r.LanguageName,
                     OrderNumber = r.OrderNumber,
                     Status = GetStartListStatusForBroker((RequestStatus)r.RequestStatus, r.ReplacingOrderId ?? 0, false),
-                    LatestDate = r.RequestExpiresAt.HasValue ? (DateTime?)r.RequestExpiresAt.Value.DateTime : null,
-                    RequestAcceptedAt = r.AcceptedAt.HasValue ? (DateTime?)r.AcceptedAt.Value.DateTime : null,
+                    LatestDate = r.RequestExpiresAt.HasValue ? r.RequestExpiresAt.Value.DateTime : null,
+                    RequestAcceptedAt = r.AcceptedAt.HasValue ? r.AcceptedAt.Value.DateTime : null,
                     ViewedByUser = GetViewedByUserName(r, userId)
                 }).ToList());
             }
@@ -767,7 +770,7 @@ namespace Tolk.Web.Controllers
                     LanguageName = r.LanguageName,
                     OrderNumber = r.OrderNumber,
                     Status = GetStartListStatusForBroker((RequestStatus)r.RequestStatus, r.ReplacingOrderId ?? 0, false),
-                    LatestDate = (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received) ? (r.RequestExpiresAt.HasValue ? (DateTime?)r.RequestExpiresAt.Value.DateTime : null) : null,
+                    LatestDate = (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received) ? (r.RequestExpiresAt.HasValue ? r.RequestExpiresAt.Value.DateTime : null) : null,
                     ViewedByUser = GetViewedByUserName(r, userId),
                     OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                 }).ToList());
@@ -792,7 +795,7 @@ namespace Tolk.Web.Controllers
                     LanguageName = r.LanguageName,
                     OrderNumber = r.OrderNumber,
                     Status = GetStartListStatusForBroker((RequestStatus)r.RequestStatus, r.ReplacingOrderId ?? 0, false),
-                    LatestDate = r.RequestIsToBeProcessedByBroker ? (r.RequestExpiresAt.HasValue ? (DateTime?)r.RequestExpiresAt.Value.DateTime : null) : null,
+                    LatestDate = r.RequestIsToBeProcessedByBroker ? (r.RequestExpiresAt.HasValue ? r.RequestExpiresAt.Value.DateTime : null) : null,
                     ViewedByUser = GetViewedByUserName(r, userId),
                     OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                 }).ToList());
@@ -840,10 +843,10 @@ namespace Tolk.Web.Controllers
                     LanguageName = rg.LanguageName,
                     OrderNumber = rg.OrderGroupNumber,
                     Status = GetStartListStatusForBroker((RequestStatus)rg.RequestGroupStatus, 0, true),
-                    LatestDate = rg.RequestGroupIsToBeProcessedByBroker ? (rg.RequestExpiresAt.HasValue ? (DateTime?)rg.RequestExpiresAt.Value.DateTime : null) : null,
+                    LatestDate = rg.RequestGroupIsToBeProcessedByBroker ? (rg.RequestExpiresAt.HasValue ? rg.RequestExpiresAt.Value.DateTime : null) : null,
                     ViewedByUser = GetViewedByUserName(rg, userId),
-                    RequestAcceptAt = !rg.AcceptedAt.HasValue && rg.LastAcceptAt.HasValue ? (DateTime?)rg.LastAcceptAt.Value.DateTime : null,
-                    RequestAcceptedAt = rg.AcceptedAt.HasValue ? (DateTime?)rg.AcceptedAt.Value.DateTime : null,
+                    RequestAcceptAt = !rg.AcceptedAt.HasValue && rg.LastAcceptAt.HasValue ? rg.LastAcceptAt.Value.DateTime : null,
+                    RequestAcceptedAt = rg.AcceptedAt.HasValue ? rg.AcceptedAt.Value.DateTime : null,
                     LinkOverride = $"/RequestGroup/View",
                     IsSingleOccasion = rg.IsSingleOccasion,
                     HasExtraInterpreter = rg.HasExtraInterpreter
@@ -1088,7 +1091,7 @@ namespace Tolk.Web.Controllers
             }
             return StartListItemStatus.OrderCancelled;
         }
-        
+
         #endregion
 
         private static IEnumerable<StartList> GetInterpreterStartLists()

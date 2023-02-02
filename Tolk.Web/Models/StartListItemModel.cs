@@ -77,7 +77,7 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Index = 4, Name = nameof(Customer), ColumnName = nameof(CustomerName), SortOnWebServer = true, Title = "Myndighet")]
         public string Customer => $"<br />{CustomerName}<br /><br />";
 
-        [ColumnDefinitions(Index = 5, Name = nameof(OrderDate),ColumnName = nameof(OrderDateTimeRange), SortOnWebServer = true, Title = "Datum för uppdrag")]
+        [ColumnDefinitions(Index = 5, Name = nameof(OrderDate), ColumnName = nameof(OrderDateTimeRange), SortOnWebServer = true, Title = "Datum för uppdrag")]
         public string OrderDate
         {
             get
@@ -90,7 +90,7 @@ namespace Tolk.Web.Models
                 result += $"<br />{OrderDateTimeRange.AsSwedishString}<br /><br />";
                 if (LatestDate != null)
                 {
-                    result += $"<span class=\"startlist-subrow-red\"> Tillsätt tolk innan:<br />{LatestDate?.ToString("yyyy-MM-dd HH:mm")}</span>";
+                    result += $"<span class=\"startlist-subrow-red\"> {LatestDateDescription}<br />{LatestDate?.ToString("yyyy-MM-dd HH:mm")}</span>";
                 }
 
                 return result;
@@ -130,6 +130,8 @@ namespace Tolk.Web.Models
         public DateTime? RequestAcceptedAt { get; set; }
 
         public string RequestAcceptedAtDescription { get; set; } = "Bekräftad: ";
+
+        public string LatestDateDescription { get; set; } = "Tillsätt tolk innan:";
 
         [ColumnDefinitions(IsOverrideClickLinkUrlColumn = true, Name = nameof(LinkOverride), Visible = false)]
         public string LinkOverride { get; set; }
