@@ -91,7 +91,7 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private enum OutputType { Text, DateTimeOffset, Bool, NullableBool, Enum, Currency, MultilineText, TimeSpan, TimeRange, RadioButtonGroup, CheckboxGroup, Date }
+        private enum OutputType { Text, DateTimeOffset, Bool, NullableBool, Enum, Currency, MultilineText, TimeSpan, TimeRange, FlexibleTimeRange, RadioButtonGroup, CheckboxGroup, Date }
 
         private void WriteDetails(TextWriter writer)
         {
@@ -116,6 +116,9 @@ namespace Tolk.Web.TagHelpers
                     break;
                 case OutputType.TimeRange:
                     text = ValuePrefix + ((TimeRange)For.ModelExplorer.Model).AsSwedishString;
+                    break;
+                case OutputType.FlexibleTimeRange:
+                    text = ValuePrefix + ((FlexibleTimeRange)For.ModelExplorer.Model).AsSwedishString;
                     break;
                 case OutputType.Currency:
                     text = ValuePrefix + ((decimal?)For.ModelExplorer.Model)?.ToSwedishString("#,0.00 SEK");
@@ -191,6 +194,10 @@ namespace Tolk.Web.TagHelpers
             if (For.ModelExplorer.ModelType == typeof(TimeRange))
             {
                 return OutputType.TimeRange;
+            }
+            if (For.ModelExplorer.ModelType == typeof(FlexibleTimeRange))
+            {
+                return OutputType.FlexibleTimeRange;
             }
             if (For.ModelExplorer.ModelType == typeof(RadioButtonGroup))
             {

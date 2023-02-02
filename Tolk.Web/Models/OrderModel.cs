@@ -415,6 +415,7 @@ namespace Tolk.Web.Models
             order.CustomerReferenceNumber = CustomerReferenceNumber;
             order.StartAt = startAt;
             order.EndAt = endAt;
+            order.ExpectedLength = ExpectedLength;
             order.Description = Description;
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;

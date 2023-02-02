@@ -502,6 +502,11 @@ $(function () {
             $("#LatestAnswerBy_Minute").val(0).trigger("change").trigger("select2:select");
         }
     });
+    $("body").on("change", "#ExpectedLength_Hours", function () {
+        if ($("#ExpectedLength_Minutes").val() === "") {
+            $("#ExpectedLength_Minutes").val(0).trigger("change").trigger("select2:select");
+        }
+    });
 
     $("body").on("change", "#SplitTimeRange_StartDate", function () {
         var now = new Date($("#now").val());
