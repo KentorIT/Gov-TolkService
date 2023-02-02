@@ -1325,7 +1325,8 @@ namespace Tolk.BusinessLogic.Utilities
             => await groups
             .Include(r => r.Ranking)
             .Include(r => r.OrderGroup).ThenInclude(og => og.CustomerOrganisation)
-            .SingleOrDefaultAsync(r => r.OrderGroupId == id && (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received));
+            .SingleOrDefaultAsync(r => r.OrderGroupId == id &&
+                (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received || r.Status == RequestStatus.AcceptedAwaitingInterpreter));
 
         public static IQueryable<Ranking> GetActiveRankingsForRegion(this IQueryable<Ranking> rankings, int regionId, DateTime date)
             => rankings

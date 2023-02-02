@@ -93,7 +93,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool HasExtraInterpreter => Orders != null && Orders.Any(o => o.IsExtraInterpreterForOrderId != null);
 
-        public bool AllowCancellation => Status == OrderStatus.Requested;
+        public bool AllowCancellation => Status == OrderStatus.Requested || Status == OrderStatus.RequestAcceptedAwaitingInterpreter;
 
         public bool AllowNoAnswerConfirmation => Status == OrderStatus.NoBrokerAcceptedOrder && !StatusConfirmations.Any(os => os.OrderStatus == OrderStatus.NoBrokerAcceptedOrder);
 

@@ -167,7 +167,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCancel => CanCancelRequestBelongsToGroup || CanCancelRequestNotBelongsToGroup;
 
-        public bool CanCancelFromGroup => Order.Status == OrderStatus.Requested && IsToBeProcessedByBroker && Order.OrderGroupId.HasValue;
+        public bool CanCancelFromGroup => (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestAcceptedAwaitingInterpreter) && IsToBeProcessedByBroker && Order.OrderGroupId.HasValue;
 
         private bool CanCancelRequestNotBelongsToGroup => !Order.OrderGroupId.HasValue &&
             (Order.Status == OrderStatus.Requested || Order.Status == OrderStatus.RequestRespondedAwaitingApproval
