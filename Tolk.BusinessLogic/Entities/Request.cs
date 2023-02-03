@@ -192,7 +192,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool IsApprovedOrDelivered => (Status == RequestStatus.Approved || Status == RequestStatus.Delivered);
 
-        public bool IsCancelledByCreator => Status == RequestStatus.CancelledByCreatorWhenApproved || Status == RequestStatus.CancelledByCreator;
+        public bool IsCancelledByCreator => Status == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted || Status == RequestStatus.CancelledByCreator;
 
         public bool TerminateOnDenial => Status == RequestStatus.AcceptedNewInterpreterAppointed && RequestGroupId.HasValue;
 
@@ -425,7 +425,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void ConfirmCancellation(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
         {
-            if (Status != RequestStatus.CancelledByCreatorWhenApproved && Status != RequestStatus.CancelledByCreator)
+            if (Status != RequestStatus.CancelledByCreatorWhenApprovedOrAccepted && Status != RequestStatus.CancelledByCreator)
             {
                 throw new InvalidOperationException($"Förfrågan med boknings-id {Order.OrderNumber} är inte i rätt status för att kunna bekräfta avbokning.");
             }
@@ -711,7 +711,7 @@ namespace Tolk.BusinessLogic.Entities
                     }
                 );
             }
-            Status = Status == RequestStatus.Approved && !isReplaced ? RequestStatus.CancelledByCreatorWhenApproved : RequestStatus.CancelledByCreator;
+            Status = (Status == RequestStatus.Approved || (Status == RequestStatus.AcceptedAwaitingInterpreter && !isCancelledFromGroup)) && !isReplaced ? RequestStatus.CancelledByCreatorWhenApprovedOrAccepted : RequestStatus.CancelledByCreator;
             CancelledAt = cancelledAt;
             CancelledBy = userId;
             ImpersonatingCanceller = impersonatorId;

@@ -105,5 +105,9 @@ namespace Tolk.BusinessLogic.Enums
 
         [Description("Sammanhållen bokningsförfrågan bekräftad, inväntar tolktillsättning")]
         OrderGroupAccepted = 34,
+
+        [Description("Sammanhållen bokningsförfrågan avbokad")]
+        OrderGroupCancelled = 35,
+
     }
 }

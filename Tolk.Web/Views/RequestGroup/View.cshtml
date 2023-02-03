@@ -25,6 +25,14 @@
                 </form>
                 <br /><br />
             }
+            @if (Model.AllowConfirmCancellation)
+            {
+                <br />
+                <form method="post" action="@Url.Action("ConfirmCancellation", "RequestGroup", new { RequestGroupId = Model.RequestGroupId })" asp-antiforgery="true">
+                    <button class="btn btn-primary btn-large pull-right">Arkivera <span class="center-glyphicon glyphicon glyphicon-ok"></span></button>
+                </form>
+                <br /><br />
+            }
             @if (hasPossibleChanges)
             {
                 <div class="row warning-info-home">

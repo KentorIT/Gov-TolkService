@@ -171,7 +171,7 @@ namespace Tolk.Web.Models
 
         public bool AllowConfirmNoAnswer => RequestStatus == BusinessLogic.Enums.RequestStatus.ResponseNotAnsweredByCreator && !HasResponseNotAnsweredByCreatorBrokerConfirmation;
 
-        public bool AllowConfirmCancellationByCreator => RequestStatus == BusinessLogic.Enums.RequestStatus.CancelledByCreatorWhenApproved && !HasCancelledByCreatorWhenApprovedConfirmation;
+        public bool AllowConfirmCancellationByCreator => RequestStatus == BusinessLogic.Enums.RequestStatus.CancelledByCreatorWhenApprovedOrAccepted && !HasCancelledByCreatorWhenApprovedConfirmation;
 
         public override bool AllowProcessing
         {

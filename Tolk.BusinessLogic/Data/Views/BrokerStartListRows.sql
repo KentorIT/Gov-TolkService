@@ -137,9 +137,9 @@ LEFT JOIN dbo.RequestGroupViews rv
 LEFT JOIN dbo.AspNetUsers anu ON rv.ViewedBy = anu.Id
 LEFT JOIN dbo.RequestGroupStatusConfirmations rsc
 	ON rg.RequestGroupId = rsc.RequestGroupId
-		AND rsc.RequestStatus IN (8, 16)
+		AND rsc.RequestStatus IN (8, 10, 16)
 WHERE (rg.Status IN (1, 2, 4, 23) 
-OR (rg.Status IN (8, 16) AND rsc.RequestGroupId IS NULL))
+OR (rg.Status IN (8, 10, 16) AND rsc.RequestGroupId IS NULL))
 UNION
 --Requisitions
 SELECT

@@ -51,7 +51,7 @@ namespace Tolk.BusinessLogic.Services
             NotificationType notificationType = NotificationType.RequestCancelledByCustomerWhenApproved;
             if (NotficationTypeAvailable(notificationType, NotificationConsumerType.Customer, NotificationChannel.Email) && !NotficationTypeExcludedForCustomer(notificationType))
             {
-                if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
+                if (request.Status == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)
                 {
                     string body = $"Rekvisition har skapats pga att myndigheten har avbokat uppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)}. Uppdraget avbokades med detta meddelande:\n{request.CancelMessage}\n" +
                          (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, i de fall något ersättningsuppdrag inte kan ordnas av kund. Observera att ersättning kan tillkomma för eventuell tidsspillan som tolken skulle behövt ta ut för genomförande av aktuellt uppdrag. Även kostnader avseende resor och boende som ej är avbokningsbara, alternativt avbokningskostnader för resor och boende som avbokats kan tillkomma. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna."
@@ -68,7 +68,7 @@ namespace Tolk.BusinessLogic.Services
             var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Email);
             if (email != null)
             {
-                if (request.Status == RequestStatus.CancelledByCreatorWhenApproved)
+                if (request.Status == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)
                 {
                     string body = $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
                          $"Uppdraget har boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)} och skulle ha startat {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}." +

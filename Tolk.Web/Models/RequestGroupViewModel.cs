@@ -11,6 +11,7 @@ namespace Tolk.Web.Models
     {
         public bool AllowConfirmationDenial { get; set; } = false;
         public bool AllowConfirmNoAnswer { get; set; } = false;
+        public bool AllowConfirmCancellation { get; set; } = false;
 
         public List<RequestRequirementAnswerModel> RequirementAnswers { get; set; }
 
@@ -113,6 +114,7 @@ namespace Tolk.Web.Models
             {
                 AllowConfirmationDenial = requestGroup.Status == RequestStatus.DeniedByCreator && !requestGroup.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator),
                 AllowConfirmNoAnswer = requestGroup.Status == RequestStatus.ResponseNotAnsweredByCreator && !requestGroup.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator),
+                AllowConfirmCancellation = requestGroup.Status == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted && !requestGroup.StatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted),
                 AssignmentType = order.AssignmentType,
                 CreatedAt = orderGroup.CreatedAt,
                 OrderGroupId = requestGroup.OrderGroupId,

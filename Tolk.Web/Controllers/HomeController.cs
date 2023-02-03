@@ -759,7 +759,7 @@ namespace Tolk.Web.Controllers
             try
             {
                 actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
-                .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved)
+                .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)
                 .Select(r => new ActionStartListItemModel
                 {
                     OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
@@ -770,7 +770,7 @@ namespace Tolk.Web.Controllers
                     LanguageName = r.LanguageName,
                     OrderNumber = r.OrderNumber,
                     Status = GetStartListStatusForBroker((RequestStatus)r.RequestStatus, r.ReplacingOrderId ?? 0, false),
-                    LatestDate = (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received) ? (r.RequestExpiresAt.HasValue ? r.RequestExpiresAt.Value.DateTime : null) : null,
+                    LatestDate = null,
                     ViewedByUser = GetViewedByUserName(r, userId),
                     OrderGroupNumber = r.RequestGroupId.HasValue ? $"Del av {r.OrderGroupNumber}" : string.Empty
                 }).ToList());
@@ -831,7 +831,7 @@ namespace Tolk.Web.Controllers
             try
             {
                 actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
-                .Where(rg => rg.RowType == StartListRowType.RequestGroup && (rg.RequestGroupStatus == RequestStatus.Created || rg.RequestGroupStatus == RequestStatus.Received || rg.RequestGroupStatus == RequestStatus.DeniedByCreator || rg.RequestGroupStatus == RequestStatus.ResponseNotAnsweredByCreator || rg.RequestGroupStatus == RequestStatus.AcceptedAwaitingInterpreter))
+                .Where(rg => rg.RowType == StartListRowType.RequestGroup && (rg.RequestGroupStatus == RequestStatus.Created || rg.RequestGroupStatus == RequestStatus.Received || rg.RequestGroupStatus == RequestStatus.DeniedByCreator || rg.RequestGroupStatus == RequestStatus.ResponseNotAnsweredByCreator || rg.RequestGroupStatus == RequestStatus.AcceptedAwaitingInterpreter || rg.RequestGroupStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted))
                 .Select(rg => new ActionStartListItemModel
                 {
                     OrderDateTimeRange = new TimeRange { StartDateTime = rg.StartAt, EndDateTime = rg.EndAt },
@@ -1029,14 +1029,14 @@ namespace Tolk.Web.Controllers
 
         private static DateTime? GetInfoDateForBroker(BrokerStartListRow r)
         {
-            return (r.RequestStatus == RequestStatus.CancelledByCreator || r.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved) ? r.CancelledAt?.DateTime : r.RequestStatus == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.EntityDate.DateTime;
+            return (r.RequestStatus == RequestStatus.CancelledByCreator || r.RequestStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted) ? r.CancelledAt?.DateTime : r.RequestStatus == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.EntityDate.DateTime;
         }
 
         private static DateTime? GetInfoDateForGroupForBroker(BrokerStartListRow r)
         {
             return r.RequestGroupStatus == RequestStatus.ResponseNotAnsweredByCreator ? (r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime :
                         r.StartAt.DateTime) : (r.RequestGroupStatus != RequestStatus.DeniedByCreator && r.LastRequestCreatedUpdatedAt.HasValue) ? r.LastRequestCreatedUpdatedAt.Value.DateTime :
-                        (r.RequestGroupStatus == RequestStatus.CancelledByCreator || r.RequestGroupStatus == RequestStatus.CancelledByCreatorWhenApproved) ? r.CancelledAt?.DateTime : r.RequestGroupStatus == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.EntityDate.DateTime;
+                        (r.RequestGroupStatus == RequestStatus.CancelledByCreator || r.RequestGroupStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted) ? r.CancelledAt?.DateTime : r.RequestGroupStatus == RequestStatus.DeniedByCreator ? r.AnswerProcessedAt?.DateTime : r.EntityDate.DateTime;
         }
 
         private static StartListItemStatus GetStartListStatusForBroker(RequestStatus requestStatus, int replacingOrderId, bool isGroup = false)
@@ -1088,6 +1088,10 @@ namespace Tolk.Web.Controllers
             if (requestStatus == RequestStatus.ResponseNotAnsweredByCreator && !isGroup)
             {
                 return StartListItemStatus.RespondedRequestNotAnswered;
+            }
+            if (requestStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted && isGroup)
+            {
+                return StartListItemStatus.OrderGroupCancelled;
             }
             return StartListItemStatus.OrderCancelled;
         }

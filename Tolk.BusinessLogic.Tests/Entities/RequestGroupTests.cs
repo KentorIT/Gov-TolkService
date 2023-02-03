@@ -39,7 +39,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.CancelledByCreator)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
         [InlineData(RequestStatus.DeclinedByBroker)]
         [InlineData(RequestStatus.DeniedByCreator)]
         [InlineData(RequestStatus.DeniedByTimeLimit)]
@@ -94,7 +94,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Created)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.CancelledByCreator)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
         [InlineData(RequestStatus.DeclinedByBroker)]
         [InlineData(RequestStatus.DeniedByCreator)]
         [InlineData(RequestStatus.DeniedByTimeLimit)]
@@ -139,7 +139,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Created)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.CancelledByCreator)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
         [InlineData(RequestStatus.DeclinedByBroker)]
         [InlineData(RequestStatus.DeniedByCreator)]
         [InlineData(RequestStatus.DeniedByTimeLimit)]
@@ -199,7 +199,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
         [InlineData(RequestStatus.DeclinedByBroker)]
         [InlineData(RequestStatus.DeniedByCreator)]
         [InlineData(RequestStatus.DeniedByTimeLimit)]
@@ -276,7 +276,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
         [InlineData(RequestStatus.DeclinedByBroker)]
         [InlineData(RequestStatus.DeniedByCreator)]
         [InlineData(RequestStatus.DeniedByTimeLimit)]
@@ -346,7 +346,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
         [InlineData(RequestStatus.DeclinedByBroker)]
         [InlineData(RequestStatus.DeniedByCreator)]
         [InlineData(RequestStatus.DeniedByTimeLimit)]
@@ -381,7 +381,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
         [InlineData(RequestStatus.Created)]
         [InlineData(RequestStatus.DeclinedByBroker)]
         [InlineData(RequestStatus.DeniedByTimeLimit)]
@@ -403,14 +403,14 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
         [Theory]
         [InlineData(RequestStatus.CancelledByCreator)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
         public void ConfirmCancellation(RequestStatus status)
         {
             var orderGroup = MockOrderGroups.Single(og => og.OrderGroupNumber == "REQUESTSJUSTCREATED");
             var requestGroup = orderGroup.RequestGroups.First();
             requestGroup.SetStatus(status);
             requestGroup.ConfirmCancellation(DateTimeOffset.Now, 1, null);
-            Assert.Equal(1, requestGroup.StatusConfirmations.Count(r => r.RequestStatus == RequestStatus.CancelledByCreator));
-            requestGroup.Requests.ForEach(r => Assert.Equal(1, r.RequestStatusConfirmations.Count(rs => rs.RequestStatus == RequestStatus.CancelledByCreator)));
+            Assert.Equal(1, requestGroup.StatusConfirmations.Count(r => r.RequestStatus == status));
         }
 
         // Invalid request status
@@ -418,7 +418,6 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
         [InlineData(RequestStatus.Created)]
         [InlineData(RequestStatus.DeniedByCreator)]
         [InlineData(RequestStatus.Delivered)]
@@ -455,7 +454,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
         [InlineData(RequestStatus.Created)]
         [InlineData(RequestStatus.DeclinedByBroker)]
         [InlineData(RequestStatus.DeniedByTimeLimit)]
@@ -539,7 +538,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData(RequestStatus.Approved)]
         [InlineData(RequestStatus.AwaitingDeadlineFromCustomer)]
         [InlineData(RequestStatus.CancelledByCreator)]
-        [InlineData(RequestStatus.CancelledByCreatorWhenApproved)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
         [InlineData(RequestStatus.DeclinedByBroker)]
         [InlineData(RequestStatus.DeniedByCreator)]
         [InlineData(RequestStatus.DeniedByTimeLimit)]

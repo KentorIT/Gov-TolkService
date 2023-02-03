@@ -310,6 +310,28 @@ namespace Tolk.Web.Controllers
         }
 
         [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> ConfirmCancellation(int requestGroupId)
+        {
+            RequestGroup requestGroup = await GetConfirmedRequestGroup(requestGroupId);
+            if (requestGroup.Status == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted && (await _authorizationService.AuthorizeAsync(User, requestGroup, Policies.View)).Succeeded)
+            {
+                try
+                {
+                    await _requestService.ConfirmGroupCancellation(requestGroup, _clock.SwedenNow, User.GetUserId(), User.TryGetImpersonatorId());
+                    return RedirectToAction("Index", "Home", new { message = "Sammanhållen bokningsförfrågan arkiverad" });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.LogError("ConfirmCancellation failed for requestgroup, RequestGroupId: {requestGroupId}, message {ex.Message}", requestGroupId, ex.Message);
+                    return RedirectToAction("Index", "Home", new { errormessage = ex.Message });
+                }
+            }
+            return Forbid();
+        }
+
+
+        [ValidateAntiForgeryToken]
         [HttpDelete]
         public async Task<JsonResult> DeleteView(int id)
         {

@@ -175,7 +175,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public void ConfirmCancellation(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
         {
-            if (Status != RequestStatus.CancelledByCreator)
+            if (Status != RequestStatus.CancelledByCreator && Status != RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)
             {
                 throw new InvalidOperationException($"Förfrågan med boknings-id {OrderGroup.OrderGroupNumber} är inte i rätt status för att kunna konfirmera avbokad.");
             }
@@ -206,7 +206,7 @@ namespace Tolk.BusinessLogic.Entities
                 throw new InvalidOperationException($"RequestGroup {RequestGroupId} is {Status}. Only Received and Created RequestGroups can be cancelled");
             }
             Requests.ForEach(r => r.Cancel(cancelledAt, userId, impersonatorId, message, isCancelledFromGroup: true));
-            Status = RequestStatus.CancelledByCreator;
+            Status = Status == RequestStatus.Approved || Status == RequestStatus.AcceptedAwaitingInterpreter ? RequestStatus.CancelledByCreatorWhenApprovedOrAccepted : RequestStatus.CancelledByCreator;
             CancelledAt = cancelledAt;
             CancelledBy = userId;
             ImpersonatingCanceller = impersonatorId;

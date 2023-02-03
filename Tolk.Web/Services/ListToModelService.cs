@@ -48,7 +48,7 @@ namespace Tolk.Web.Services
                 model.HasNoRequisitionConfirmation = requestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.Approved);
                 model.HasDeniedByCreatorConfirmation = requestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.DeniedByCreator);
                 model.HasResponseNotAnsweredByCreatorBrokerConfirmation = requestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator);
-                model.HasCancelledByCreatorWhenApprovedConfirmation = requestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved);
+                model.HasCancelledByCreatorWhenApprovedConfirmation = requestStatusConfirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted);
 
                 model.ActiveRequestPriceInformationModel = PriceInformationModel.GetPriceinformationToDisplay(await _dbContext.RequestPriceRows.GetPriceRowsForRequest(model.RequestId.Value).ToListAsync(), PriceInformationType.Request, mealBreakIncluded: model.MealbreakIncluded);
                 model.RequestAttachmentListModel = await AttachmentListModel.GetReadOnlyModelFromList(_dbContext.Attachments.GetAttachmentsForRequest(model.RequestId.Value, model.RequestGroupId), "Bifogade filer från förmedling");

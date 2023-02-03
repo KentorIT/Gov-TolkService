@@ -50,7 +50,7 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("request_cancelled_by_creator_when_approved")]
         [Description("Uppdrag avbokat av myndighet")]
         [Parent(NegotiationState.TerminatedPrematurely)]
-        CancelledByCreatorWhenApproved = 10,
+        CancelledByCreatorWhenApprovedOrAccepted = 10,
         [CustomName("request_new_interpreter_needs_approval")]
         [Description("Bekräftelse är skickad - Ny tolk")]
         [Parent(NegotiationState.ContractValid)]

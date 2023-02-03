@@ -1349,7 +1349,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
                 .Where(r => r.Interpreter.InterpreterId == interpreterId &&
                     (r.Status == RequestStatus.Approved || r.Status == RequestStatus.CancelledByBroker
-                    || r.Status == RequestStatus.CancelledByCreator || r.Status == RequestStatus.CancelledByCreatorWhenApproved));
+                    || r.Status == RequestStatus.CancelledByCreator || r.Status == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted));
 
         public static async Task<RequestGroup> GetRequestGroupForCreateById(this IQueryable<RequestGroup> groups, int id)
             => await groups.GetRequestGroupsWithBaseIncludes()

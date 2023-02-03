@@ -616,7 +616,7 @@ namespace Tolk.Web.Services
             // Request cancellation
             if (request.CancelledAt.HasValue)
             {
-                if (request.Status == RequestStatus.CancelledByCreatorWhenApproved || request.Status == RequestStatus.CancelledByCreator)
+                if (request.Status == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted || request.Status == RequestStatus.CancelledByCreator)
                 {
                     eventLog.Add(new EventLogEntryModel
                     {
@@ -662,9 +662,9 @@ namespace Tolk.Web.Services
                 }
             }
             // Request cancellation confirmation
-            if (confirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved || rs.RequestStatus == RequestStatus.CancelledByCreator))
+            if (confirmations.Any(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted || rs.RequestStatus == RequestStatus.CancelledByCreator))
             {
-                RequestStatusConfirmation rsc = confirmations.First(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApproved || rs.RequestStatus == RequestStatus.CancelledByCreator);
+                RequestStatusConfirmation rsc = confirmations.First(rs => rs.RequestStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted || rs.RequestStatus == RequestStatus.CancelledByCreator);
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = rsc.ConfirmedAt,

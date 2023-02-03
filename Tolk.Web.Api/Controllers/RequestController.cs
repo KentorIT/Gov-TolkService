@@ -642,7 +642,7 @@ namespace Tolk.Web.Api.Controllers
                 _ = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
-                Request request = await GetConfirmedRequest(model.OrderNumber, brokerId, new[] { RequestStatus.CancelledByCreator, RequestStatus.CancelledByCreatorWhenApproved });
+                Request request = await GetConfirmedRequest(model.OrderNumber, brokerId, new[] { RequestStatus.CancelledByCreator, RequestStatus.CancelledByCreatorWhenApprovedOrAccepted });
                 await _requestService.ConfirmCancellation(
                     request,
                     _timeService.SwedenNow,
