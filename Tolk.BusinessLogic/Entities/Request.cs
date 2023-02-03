@@ -711,7 +711,7 @@ namespace Tolk.BusinessLogic.Entities
                     }
                 );
             }
-            Status = (Status == RequestStatus.Approved || (Status == RequestStatus.AcceptedAwaitingInterpreter && !isCancelledFromGroup)) && !isReplaced ? RequestStatus.CancelledByCreatorWhenApprovedOrAccepted : RequestStatus.CancelledByCreator;
+            Status = ((Status == RequestStatus.Approved || Status == RequestStatus.AcceptedAwaitingInterpreter) && !isReplaced) ? RequestStatus.CancelledByCreatorWhenApprovedOrAccepted : RequestStatus.CancelledByCreator;
             CancelledAt = cancelledAt;
             CancelledBy = userId;
             ImpersonatingCanceller = impersonatorId;

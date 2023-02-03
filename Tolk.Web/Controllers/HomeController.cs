@@ -755,11 +755,12 @@ namespace Tolk.Web.Controllers
             {
                 _logger.LogError(ex, $"Unexpected error occured for Denied requests in method {nameof(BrokerActionListItems)}");
             }
-            //Requests with status CancelledByCreatorWhenApproved
+            //Requests with status CancelledByCreatorWhenApprovedOrAccepted
+            //if not answered don't take reuqests that belongs to group since the requestgroup has been cancelled in that case (and is displayed as a cancelled group)
             try
             {
                 actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
-                .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)
+                .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted && (r.AnsweredAt.HasValue || !r.RequestGroupId.HasValue))
                 .Select(r => new ActionStartListItemModel
                 {
                     OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
