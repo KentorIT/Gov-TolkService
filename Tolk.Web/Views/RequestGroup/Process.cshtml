@@ -222,12 +222,34 @@
                         <div class="col-sm-4">
                             <form-entry asp-for="FullAnswer" />
                         </div>
+                    </div>
+                }
+                <div class="row">
+                    <span class="full-answer-panel">
                         <div class="col-sm-4">
-                            <div class="required-on-accept-panel">
+                            <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.FilteredInterpreterLocations(Model.RankedInterpreterLocations)" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
+                        </div>
+                    </span>
+                    @if (Model.AllowAccept)
+                    {
+                        <span class="required-on-accept-panel">
+                            <div class="col-sm-4">
                                 <form-entry asp-for="InterpreterLocationOnAccept" type="select" asp-items="SelectListService.FilteredInterpreterLocations(Model.RankedInterpreterLocations)" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
                             </div>
-                        </div>
+                        </span>
+                    }
+                    <div class="col-sm-4">
+                        <form-entry asp-for="BrokerReferenceNumber" />
                     </div>
+                    <div class="col-sm-4">
+                        <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
+                        @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
+                        <br />
+                        <br />
+                    </div>
+                </div>
+                @if (Model.AllowAccept)
+                {
                     <div class="row no-gutter required-on-accept-panel">
                         <div class="col-sm-4">
                             @if (Model.SpecificCompetenceLevelRequired)
@@ -333,20 +355,6 @@
                     <input asp-for="FullAnswer" type="hidden" />
                 }
                 <span class="full-answer-panel">
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <form-entry asp-for="InterpreterLocation" type="select" asp-items="SelectListService.FilteredInterpreterLocations(Model.RankedInterpreterLocations)" help-link="@HelpLinkService.GenerateUrl("installelsesatt")" />
-                        </div>
-                        <div class="col-sm-4">
-                            <form-entry asp-for="BrokerReferenceNumber" />
-                        </div>
-                        <div class="col-sm-4">
-                            <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
-                            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
-                            <br />
-                            <br />
-                        </div>
-                    </div>
                     @if (Model.ShouldAssignInterpreter)
                     {
                         <div class="row no-gutter interpreter-panel">
