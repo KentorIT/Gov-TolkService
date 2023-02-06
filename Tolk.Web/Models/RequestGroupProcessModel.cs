@@ -75,6 +75,8 @@ namespace Tolk.Web.Models
                 }
             }
         }
+        public CompetenceAndSpecialistLevel? SelectedInterpreterCompetenceLevelWhenAccepted { get; set; }
+        public CompetenceAndSpecialistLevel? SelectedExtraInterpreterCompetenceLevelWhenAccepted { get; set; }
 
         public bool IsOnSiteOrOffSiteDesignatedLocationSelected => RankedInterpreterLocations.Any(i => i == BusinessLogic.Enums.InterpreterLocation.OnSite || i == BusinessLogic.Enums.InterpreterLocation.OffSiteDesignatedLocation);
 
@@ -83,7 +85,9 @@ namespace Tolk.Web.Models
         internal static RequestGroupProcessModel GetModelFromRequestGroup(RequestGroup requestGroup, Guid fileGroupKey, long combinedMaxSizeAttachments, bool allowDeclineExtraInterpreter)
         {
             OrderGroup orderGroup = requestGroup.OrderGroup;
-            Order order = requestGroup.Requests.First().Order;
+            Request requestWithInformation = requestGroup.Requests.First();
+            Order order = requestWithInformation.Order;
+            int? interpreterLocation = requestWithInformation.InterpreterLocation;
             return new RequestGroupProcessModel
             {
                 AllowAccept = requestGroup.AllowAccept,
@@ -131,8 +135,11 @@ namespace Tolk.Web.Models
                 Status = requestGroup.Status,
                 TravelConditionHours = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)requestGroup.Ranking.FrameworkAgreementId).TravelConditionHours,
                 TravelConditionKilometers = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)requestGroup.Ranking.FrameworkAgreementId).TravelConditionKilometers,
-                FrameworkAgreementNumberOnCreated = requestGroup.Ranking.FrameworkAgreement.AgreementNumber
-            };
+                FrameworkAgreementNumberOnCreated = requestGroup.Ranking.FrameworkAgreement.AgreementNumber,
+                InterpreterLocation = interpreterLocation.HasValue ? (InterpreterLocation?)interpreterLocation.Value : null,
+                SelectedInterpreterCompetenceLevelWhenAccepted = requestGroup.FirstRequestForFirstInterpreter.CompetenceLevel.HasValue ? (CompetenceAndSpecialistLevel)requestGroup.FirstRequestForFirstInterpreter.CompetenceLevel : null,
+                SelectedExtraInterpreterCompetenceLevelWhenAccepted = (requestGroup.HasExtraInterpreter && requestGroup.FirstRequestForExtraInterpreter.CompetenceLevel.HasValue) ? (CompetenceAndSpecialistLevel)requestGroup.FirstRequestForExtraInterpreter.CompetenceLevel : null
+            };            
         }
 
         #endregion

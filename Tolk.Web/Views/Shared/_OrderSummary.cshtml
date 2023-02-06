@@ -124,7 +124,7 @@
                     <div class="no-value-info">Ej angivet</div>
                 }
             </div>
-        </div>
+        </div>     
         @if (Model.IsOnSiteOrOffSiteDesignatedLocationSelected && Model.AllowExceedingTravelCost != null && Model.AllowExceedingTravelCost.SelectedItem != null)
         {
             <div class="row">
@@ -199,7 +199,22 @@
                 {
                     <div class="no-value-info">Inga tillkommande önskemål är angivna</div>
                 }
-            </div>
+            </div>     
+        </div>
+        <div class="row">
+            @if (Model.InterpreterLocationAnswer != 0)
+            {
+                <div class="col-sm-4 blue-border-left">
+                    <display-entry asp-for="InterpreterLocationAnswer" label-override="Inställelsesätt vid bekräftelse" />
+                </div>
+            }
+            @if (Model.InterpreterCompetenceLevel.HasValue)
+            {
+
+                <div class="col-sm-4 blue-border-left">
+                    <display-entry asp-for="InterpreterCompetenceLevel" label-override="Kompetens vid bekräftelse" />
+                </div>
+            }
         </div>
         <div class="row">
             <div class="col-sm-4">

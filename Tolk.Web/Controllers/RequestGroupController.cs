@@ -129,6 +129,7 @@ namespace Tolk.Web.Controllers
                 await _listToModelService.AddInformationFromListsToModel(model, User.GetUserId());
                 model.CustomerInformationModel.IsCustomer = false;
                 model.CustomerInformationModel.UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == requestGroup.OrderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
+                model.BrokerReferenceNumber = requestGroup.BrokerReferenceNumber;
                 //if not first broker in rank (requests are not answered and have no pricerows) we need to get a calculated price with correct broker fee 
                 if (requestGroup.Ranking.Rank != 1)
                 {

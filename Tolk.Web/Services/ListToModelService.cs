@@ -182,6 +182,7 @@ namespace Tolk.Web.Services
             model.RequestedCompetenceLevelSecond = orderGroup.CompetenceRequirements.SingleOrDefault(l => l.Rank == 2)?.CompetenceLevel;
             model.InterpreterAnswerModel = new InterpreterAnswerModel
             {
+                InterpreterCompetenceLevel = model.SelectedInterpreterCompetenceLevelWhenAccepted,
                 RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
                 {
                     OrderRequirementId = r.OrderGroupRequirementId,
@@ -195,10 +196,11 @@ namespace Tolk.Web.Services
                     IsRequired = false,
                     Description = r.Description,
                     RequirementType = r.RequirementType,
-                }).ToList(),
+                }).ToList(),                
             };
             model.ExtraInterpreterAnswerModel = model.HasExtraInterpreter ? new InterpreterAnswerModel
             {
+                InterpreterCompetenceLevel = model.SelectedExtraInterpreterCompetenceLevelWhenAccepted,
                 RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
                 {
                     OrderRequirementId = r.OrderGroupRequirementId,
@@ -217,7 +219,7 @@ namespace Tolk.Web.Services
             if (model.AllowAccept)
             {
                 model.InterpreterAcceptModel = new InterpreterAcceptModel
-                {
+                {                    
                     RequiredRequirementAnswers = orderGroup.Requirements.Where(r => r.IsRequired).Select(r => new RequestRequirementAnswerModel
                     {
                         OrderRequirementId = r.OrderGroupRequirementId,

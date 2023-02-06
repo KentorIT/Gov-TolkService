@@ -90,7 +90,7 @@
                                 <div class="no-value-info">Ej angivet</div>
                             }
                         </div>
-                    </div>
+                    </div>                 
                     @if (Model.IsOnSiteOrOffSiteDesignatedLocationSelected && Model.AllowExceedingTravelCost != null && Model.AllowExceedingTravelCost.SelectedItem != null)
                     {
                         <div class="row">
@@ -194,6 +194,27 @@
                             <display-entry asp-for="Description" />
                         </div>
                     </div>
+                </div>
+
+                <div class="row">
+                    @if (Model.InterpreterLocation.HasValue)
+                    {
+                        <div class="col-sm-4 blue-border-left">
+                            <display-entry asp-for="InterpreterLocation" label-override="Inställelsesätt vid bekräftelse" />
+                        </div>
+                    }
+                    @if (Model.InterpreterAnswerModel.InterpreterCompetenceLevel.HasValue)
+                    {
+                        <div class="col-sm-4 blue-border-left">
+                            <display-entry asp-for="InterpreterAnswerModel.InterpreterCompetenceLevel" label-override="Kompetens vid bekräftelse" />
+                        </div>
+                    }
+                    @if (Model.ExtraInterpreterAnswerModel?.InterpreterCompetenceLevel != null)
+                    {
+                        <div class="col-sm-4 blue-border-left">
+                            <display-entry asp-for="ExtraInterpreterAnswerModel.InterpreterCompetenceLevel" label-override="Kompetens för extra tolk vid bekräftelse" />
+                        </div>
+                    }
                 </div>
             </section>
             @await Html.PartialAsync("_OccasionList", Model.OccasionList)
