@@ -999,7 +999,14 @@ namespace Tolk.BusinessLogic.Services
                         else
                         {
                             expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
-                            _notificationService.RequestExpiredDueToInactivity(expiredRequest);
+                            if (expiredRequest.AcceptedAt.HasValue)
+                            {
+                                _notificationService.RequestExpiredDueToNotFullyAnswered(expiredRequest);
+                            }
+                            else
+                            {
+                                _notificationService.RequestExpiredDueToInactivity(expiredRequest);
+                            }
                             await CreateRequest(expiredRequest.Order, expiredRequest);
                         }
                         await trn.CommitAsync();
@@ -1056,7 +1063,14 @@ namespace Tolk.BusinessLogic.Services
                         {
                             expiredRequestGroup.OrderGroup.RequestGroups = await _tolkDbContext.RequestGroups.GetRequestGroupsForOrderGroup(expiredRequestGroup.OrderGroupId).ToListAsync();
                             expiredRequestGroup.SetStatus(RequestStatus.DeniedByTimeLimit);
-                            _notificationService.RequestGroupExpiredDueToInactivity(expiredRequestGroup);
+                            if (expiredRequestGroup.AcceptedAt.HasValue)
+                            {
+                                _notificationService.RequestGroupExpiredDueToNotFullyAnswered(expiredRequestGroup);
+                            }
+                            else
+                            {
+                                _notificationService.RequestGroupExpiredDueToInactivity(expiredRequestGroup);
+                            }
                             await CreateRequestGroup(expiredRequestGroup.OrderGroup, expiredRequestGroup);
                         }
                         await trn.CommitAsync();

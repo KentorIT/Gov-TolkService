@@ -434,5 +434,19 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
         OrderGroupAnsweredAwaitingApproval = 63,
+
+        [Description("Förlorad förfrågan då bekräftad förfrågan ej besvarats fullständigt")]
+        [CustomName("request_lost_due_to_not_fully_answered")]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [AvailableNotificationChannel(NotificationChannel.Webhook)]
+        [NotificationConsumerType(NotificationConsumerType.Broker)]
+        RequestLostDueToNotFullyAnswered = 64,
+
+        [Description("Sammanhållen uppdragsförfrågan förlorad då bekräftad förfrågan ej besvarats fullständigt")]
+        [CustomName("request_group_lost_due_to_not_fully_answered")]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [AvailableNotificationChannel(NotificationChannel.Webhook)]
+        [NotificationConsumerType(NotificationConsumerType.Broker)]
+        RequestGroupLostDueToNotFullyAnswered = 65,
     }
 }

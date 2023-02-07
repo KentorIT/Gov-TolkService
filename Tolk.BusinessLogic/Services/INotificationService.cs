@@ -42,6 +42,7 @@ namespace Tolk.BusinessLogic.Services
         void RequestGroupDeclinedByBroker(RequestGroup requestGroup);
         void RequestGroupAnswerDenied(RequestGroup requestGroup);
         void RequestExpiredDueToInactivity(Request request);
+        void RequestExpiredDueToNotFullyAnswered(Request request);
         void RequestExpiredDueToNoAnswerFromCustomer(Request request);
         void RequestTerminatedDueToTerminatedFrameworkAgreement(Request request);
         void RequestGroupTerminatedDueToTerminatedFrameworkAgreement(RequestGroup requestGroup);
@@ -57,6 +58,7 @@ namespace Tolk.BusinessLogic.Services
         void OrderGroupTerminated(OrderGroup terminatedOrderGroup);
         void OrderUpdated(Order order, bool attachmentChanged, bool orderFieldsUpdated);
         void RequestGroupExpiredDueToInactivity(RequestGroup expiredRequestGroup);
+        void RequestGroupExpiredDueToNotFullyAnswered(RequestGroup expiredRequestGroup);
         void RequestGroupExpiredDueToNoAnswerFromCustomer(RequestGroup expiredRequestGroup);
         Task NotifyOnFailedWebHook(int callId);
         Task NotifyOnFailedPeppolMessage(int messageId);

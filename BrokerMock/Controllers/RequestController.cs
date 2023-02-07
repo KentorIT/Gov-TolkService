@@ -753,7 +753,29 @@ namespace BrokerMock.Controllers
         }
 
         [HttpPost]
+        public async Task<JsonResult> RequestLostDueToNotFullyAnswered([FromBody] RequestLostDueToInactivityModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Boknings-ID: {payload.OrderNumber} har gått vidare till nästa förmedling.");
+            }
+
+            return new JsonResult("Success");
+        }
+
+        [HttpPost]
         public async Task<JsonResult> RequestGroupLostDueToInactivity([FromBody] RequestGroupLostDueToInactivityModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Sammanhållen Boknings-ID: {payload.OrderGroupNumber} har gått vidare till nästa förmedling.");
+            }
+
+            return new JsonResult("Success");
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> RequestGroupLostDueToNotFullyAnswered([FromBody] RequestGroupLostDueToInactivityModel payload)
         {
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
