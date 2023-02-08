@@ -83,7 +83,7 @@ namespace Tolk.BusinessLogic.Services
                 if (frameworkAgreementList == null)
                 {
                     var now = _clock.SwedenNow;
-                    frameworkAgreementList = _dbContext.FrameworkAgreements.Where(f => f.FirstValidDate <= now).Select(f => new FrameworkAgreementNumberIdModel
+                    frameworkAgreementList = _dbContext.FrameworkAgreements.Select(f => new FrameworkAgreementNumberIdModel
                     {
                         FrameWorkAgreementId = f.FrameworkAgreementId,
                         FrameWorkAgreementNumber = f.AgreementNumber
