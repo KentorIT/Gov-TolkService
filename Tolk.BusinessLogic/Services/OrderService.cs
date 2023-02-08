@@ -998,8 +998,9 @@ namespace Tolk.BusinessLogic.Services
                         }
                         else
                         {
+                            bool notFullyAnswered = expiredRequest.AcceptedAt.HasValue && expiredRequest.Status == RequestStatus.AcceptedAwaitingInterpreter;
                             expiredRequest.Status = RequestStatus.DeniedByTimeLimit;
-                            if (expiredRequest.AcceptedAt.HasValue)
+                            if (notFullyAnswered)
                             {
                                 _notificationService.RequestExpiredDueToNotFullyAnswered(expiredRequest);
                             }
@@ -1062,8 +1063,9 @@ namespace Tolk.BusinessLogic.Services
                         else
                         {
                             expiredRequestGroup.OrderGroup.RequestGroups = await _tolkDbContext.RequestGroups.GetRequestGroupsForOrderGroup(expiredRequestGroup.OrderGroupId).ToListAsync();
+                            bool notFullyAnswered = expiredRequestGroup.AcceptedAt.HasValue && expiredRequestGroup.Status == RequestStatus.AcceptedAwaitingInterpreter;
                             expiredRequestGroup.SetStatus(RequestStatus.DeniedByTimeLimit);
-                            if (expiredRequestGroup.AcceptedAt.HasValue)
+                            if (notFullyAnswered)
                             {
                                 _notificationService.RequestGroupExpiredDueToNotFullyAnswered(expiredRequestGroup);
                             }
