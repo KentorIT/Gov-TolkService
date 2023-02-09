@@ -1,4 +1,41 @@
 
+--detta kördes i efterhand
+--64 request_lost_due_to_not_fully_answered
+--i Prod ska vi först lägga in ny Broker och Rankings innan dessa kan köras (har aktiva rankings för avtal 2, eller kommer få om de läggs in innan)
+INSERT INTO UserNotificationSettings (UserId, NotificationChannel, NotificationType)
+SELECT id, 1, 64
+FROM AspnetUsers a
+left join UserNotificationSettings u on a.id = u.UserId and u.NotificationType = 64
+WHERE IsApiUser = 1 AND BrokerId IN (SELECT r.BrokerId FROM Rankings r WHERE r.FrameworkAgreementId = 2) 
+and u.NotificationChannel is null
+
+--65 request_group_lost_due_to_not_fully_answered
+INSERT UserNotificationSettings (UserId, NotificationChannel, NotificationType)
+SELECT id, 1, 65
+FROM AspnetUsers a
+left join UserNotificationSettings u on a.id = u.UserId and u.NotificationType = 65
+WHERE IsApiUser = 1 AND BrokerId IN (SELECT r.BrokerId FROM Rankings r WHERE r.FrameworkAgreementId = 2) 
+and u.NotificationChannel is NULL
+
+--OBS kördes i efterhand 
+--i Prod ska vi inte köra för de befintliga utan de som består + nya (har aktiva rankings för avtal 2, eller kommer få om de läggs in innan)
+--59 request_created_requires_acceptance_only
+INSERT INTO UserNotificationSettings (UserId, NotificationChannel, NotificationType)
+SELECT id, 1, 59
+FROM AspnetUsers a
+left join UserNotificationSettings u on a.id = u.UserId and u.NotificationType = 59
+WHERE IsApiUser = 1 AND BrokerId IN (SELECT r.BrokerId FROM Rankings r WHERE r.FrameworkAgreementId = 2) 
+and u.NotificationChannel is null
+
+--60 request_group_created_requires_acceptance_only
+INSERT UserNotificationSettings (UserId, NotificationChannel, NotificationType)
+SELECT id, 1, 60
+FROM AspnetUsers a
+left join UserNotificationSettings u on a.id = u.UserId and u.NotificationType = 60
+WHERE IsApiUser = 1 AND BrokerId IN (SELECT r.BrokerId FROM Rankings r WHERE r.FrameworkAgreementId = 2) 
+and u.NotificationChannel is NULL
+
+
 --kolla slutdatum på förra, men bör väl vara 2023-01-10, för att sätta när vi ska lägga in rankings
 	SELECT * FROM Rankings r where r.LastValidDate > '2023-01-01'
 
