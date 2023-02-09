@@ -735,3 +735,10 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 	   ,'20991231'
 	   ,3
 
+	   --ta ut alla Rankings på nya avtalen ur databasen och jämför
+		SELECT reg.Name, r.Rank, b.Name
+		FROM Rankings r
+		JOIN Regions reg ON reg.RegionId = r.RegionId
+		JOIN Brokers b ON b.BrokerId = r.BrokerId
+		WHERE r.FrameworkAgreementId = 2 AND r.LastValidDate > GETDATE()
+		ORDER BY 1, 2
