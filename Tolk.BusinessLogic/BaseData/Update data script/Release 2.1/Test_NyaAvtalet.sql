@@ -13,9 +13,10 @@ INSERT INTO FrameworkAgreements (AgreementNumber, Description, FirstValidDate, L
 	VALUES (N'23.3-12000-20', N'Andra ramavtalet som tolkavropstjänsten hanterar', @firstValidDate, @lastValidDate, 2, 2, @lastValidDate);
 
 --lägg in nya rankings som bygger på gammal ranking per region (vi kopierar som från första avtalet)
+--men vi lägger bara in för tre regioner till att börja med
 	INSERT INTO Rankings (Rank, FirstValidDate, LastValidDate, BrokerId, RegionId, FrameworkAgreementId)
 	SELECT r.Rank, @firstValidDate, '20991231', r.BrokerId, r.RegionId, 2
-	FROM Rankings r WHERE LastValidDate = '20230125'
+	FROM Rankings r WHERE LastValidDate = '20230125' AND r.RegionId IN (3, 6, 21)
 
 --59 request_created_requires_acceptance_only
 INSERT INTO UserNotificationSettings (UserId, NotificationChannel, NotificationType)
