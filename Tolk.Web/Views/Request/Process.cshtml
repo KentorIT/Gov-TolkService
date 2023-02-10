@@ -39,6 +39,24 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                @if (Model.InterpreterLocationAnswer != 0)
+                {
+                    <div class="col-sm-4">
+                        <div class="blue-border-left">
+                            <display-entry asp-for="InterpreterLocationAnswer" label-override="Inställelsesätt vid bekräftelse" />
+                        </div>
+                    </div>
+                }
+                @if (Model.InterpreterCompetenceLevel.HasValue)
+                {
+                    <div class="col-sm-4">
+                        <div class="blue-border-left">
+                            <display-entry asp-for="InterpreterCompetenceLevel" label-override="Kompetens vid bekräftelse" />
+                        </div>
+                    </div>
+                }
+            </div>
             @if (Model.AllowProcessing)
             {
                 <form method="post" asp-action="Answer">

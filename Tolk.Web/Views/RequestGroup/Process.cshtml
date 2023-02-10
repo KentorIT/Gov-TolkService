@@ -195,27 +195,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="row">
-                    @if (Model.InterpreterLocation.HasValue)
-                    {
-                        <div class="col-sm-4 blue-border-left">
-                            <display-entry asp-for="InterpreterLocation" label-override="Inställelsesätt vid bekräftelse" />
-                        </div>
-                    }
-                    @if (Model.InterpreterAnswerModel.InterpreterCompetenceLevel.HasValue)
-                    {
-                        <div class="col-sm-4 blue-border-left">
-                            <display-entry asp-for="InterpreterAnswerModel.InterpreterCompetenceLevel" label-override="Kompetens vid bekräftelse" />
-                        </div>
-                    }
-                    @if (Model.ExtraInterpreterAnswerModel?.InterpreterCompetenceLevel != null)
-                    {
-                        <div class="col-sm-4 blue-border-left">
-                            <display-entry asp-for="ExtraInterpreterAnswerModel.InterpreterCompetenceLevel" label-override="Kompetens för extra tolk vid bekräftelse" />
-                        </div>
-                    }
-                </div>
             </section>
             @await Html.PartialAsync("_OccasionList", Model.OccasionList)
             <form method="post" asp-action="Answer">
@@ -236,6 +215,32 @@
                             <display-entry asp-for="ExpiresAt" />
                         </div>
                     </div>
+                </div>                
+                <div class="row">
+                    @if (Model.InterpreterLocation.HasValue)
+                    {
+                        <div class="col-sm-4">
+                            <div class="blue-border-left">
+                                <display-entry asp-for="InterpreterLocation" label-override="Inställelsesätt vid bekräftelse" />
+                            </div>
+                        </div>
+                    }
+                    @if (Model.InterpreterAnswerModel.InterpreterCompetenceLevel.HasValue)
+                    {
+                        <div class="col-sm-4">
+                            <div class="blue-border-left">
+                                <display-entry asp-for="InterpreterAnswerModel.InterpreterCompetenceLevel" label-override="Kompetens vid bekräftelse" />
+                            </div>
+                        </div>
+                    }
+                    @if (Model.ExtraInterpreterAnswerModel?.InterpreterCompetenceLevel != null)
+                    {
+                        <div class="col-sm-4">
+                            <div class="blue-border-left">
+                                <display-entry asp-for="ExtraInterpreterAnswerModel.InterpreterCompetenceLevel" label-override="Kompetens för extra tolk vid bekräftelse" />
+                            </div>
+                        </div>
+                    }
                 </div>
                 @if (Model.AllowAccept)
                 {
