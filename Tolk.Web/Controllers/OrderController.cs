@@ -380,7 +380,9 @@ namespace Tolk.Web.Controllers
                 TravelConditionHours = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionHours,
                 TravelConditionKilometers = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionKilometers
             };
-            model.UpdateModelWithDefaultSettings(user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList());
+            var activeRegionIds = await _dbContext.Rankings.GetRegionsWithActiveRankings(_clock.SwedenNow.DateTime, _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementId).Select(r => r.RegionId).ToListAsync();
+            var unitIds = user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList();
+            model.UpdateModelWithDefaultSettings(unitIds, activeRegionIds);
             return View(model);
         }
 
