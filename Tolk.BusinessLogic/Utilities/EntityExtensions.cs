@@ -1306,6 +1306,12 @@ namespace Tolk.BusinessLogic.Utilities
             .Where(ra => ra.FirstValidDate <= now && ra.LastValidDate > now &&
                    ra.FrameworkAgreementId == activeFramweorkAgreementId);
 
+        public static IQueryable<Region> GetRegionsWithActiveRankings(this IQueryable<Ranking> rankings, DateTime now, int activeFramweorkAgreementId)
+            => rankings
+                .GetActiveRankings(now, activeFramweorkAgreementId)
+                .Select(r => r.Region)
+                .Distinct();
+
         public static IQueryable<Ranking> GetLatestRankingsForFrameworkAgreement(this IQueryable<Ranking> rankings, int frameworkAgreementId, DateTime nowOrLastValid)
             => rankings
                 .Include(r => r.Broker)

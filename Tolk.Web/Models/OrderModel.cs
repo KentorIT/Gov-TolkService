@@ -532,11 +532,11 @@ namespace Tolk.Web.Models
             }
         }
 
-        internal void UpdateModelWithDefaultSettings(List<int> units)
+        internal void UpdateModelWithDefaultSettings(List<int> units, List<int> regions)
         {
             if (UserDefaultSettings != null)
             {
-                RegionId = Region.Regions.Any(r => r.RegionId == UserDefaultSettings.RegionId) ? UserDefaultSettings.RegionId : null;
+                RegionId = UserDefaultSettings.RegionId.HasValue && regions.Contains(UserDefaultSettings.RegionId.Value) ? UserDefaultSettings.RegionId : null;
                 InvoiceReference = UserDefaultSettings.InvoiceReference;
                 CustomerUnitId = (UserDefaultSettings.CustomerUnitId.HasValue && (UserDefaultSettings.CustomerUnitId == 0 || units.Contains(UserDefaultSettings.CustomerUnitId.Value))) ? UserDefaultSettings.CustomerUnitId : null;
                 AllowExceedingTravelCost = UserDefaultSettings.AllowExceedingTravelCost != null ?

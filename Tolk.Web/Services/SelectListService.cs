@@ -10,6 +10,7 @@ using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 using Tolk.Web.Helpers;
@@ -22,7 +23,9 @@ namespace Tolk.Web.Services
         private readonly IDistributedCache _cache;
         private readonly TolkDbContext _dbContext;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ISwedishClock _clock;
 
+        private const string regionsSelectListKey = nameof(regionsSelectListKey);
         private const string languagesSelectListKey = nameof(languagesSelectListKey);
         private const string brokersSelectListKey = nameof(brokersSelectListKey);
         private const string customersSelectListKey = nameof(customersSelectListKey);
@@ -32,15 +35,48 @@ namespace Tolk.Web.Services
         public SelectListService(
             IDistributedCache cache,
             TolkDbContext dbContext,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            ISwedishClock clock)
         {
             _cache = cache;
             _dbContext = dbContext;
             _httpContextAccessor = httpContextAccessor;
+            _clock = clock;
         }
 
+        public IEnumerable<SelectListItem> ActiveRegions
+        {
+            get
+            {
+                var items = _cache.Get(regionsSelectListKey).FromByteArray<IEnumerable<SerializableExtendedSelectListItem>>();
+                if (items == null)
+                {
+                    var currentFrameworkAgreement = _dbContext.FrameworkAgreements.GetFrameworkAgreementByDate(_clock.SwedenNow.Date);
+                    if (!currentFrameworkAgreement?.IsActive(_clock.SwedenNow.Date) ?? false)
+                    {
+                        items = Enumerable.Empty<SerializableExtendedSelectListItem>();
+                    }
+                    else
+                    {
+                        items = _dbContext.Rankings.GetRegionsWithActiveRankings(_clock.SwedenNow.DateTime, currentFrameworkAgreement.FrameworkAgreementId)
+                        .OrderBy(r => r.Name)
+                        .Select(r => new SerializableExtendedSelectListItem
+                        {
+                            Value = r.RegionId.ToSwedishString(),
+                            Text = r.Name
+                        })
+                        .ToList().AsReadOnly();
+                    }
+
+                    _cache.Set(regionsSelectListKey, items.ToByteArray(), cacheOptions);
+                }
+
+                return items.GetSelectListItems();
+            }
+        }
         public static IEnumerable<SelectListItem> Regions =>
-            Region.Regions.OrderBy(r => r.Name)
+            Region.Regions
+            .OrderBy(r => r.Name)
             .Select(r => new SelectListItem
             {
                 Value = r.RegionId.ToSwedishString(),
