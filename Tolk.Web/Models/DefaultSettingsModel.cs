@@ -88,7 +88,7 @@ namespace Tolk.Web.Models
 
         public string TravelConditionText { get; set; }
 
-        internal static DefaultSettingsModel GetModel(AspNetUser user, FrameworkAgreementResponseRuleset frameWorkAgrrementVersion, bool isFirstTimeUser = false)
+        internal static DefaultSettingsModel GetModel(AspNetUser user, FrameworkAgreementResponseRuleset frameWorkAgreementVersion, bool isFirstTimeUser = false)
         {
             var creatorIsInterpreterUser = user.GetValue(DefaultSettingsType.CreatorIsInterpreterUser);
             return new DefaultSettingsModel
@@ -108,7 +108,7 @@ namespace Tolk.Web.Models
                 InvoiceReference = user.GetValue(DefaultSettingsType.InvoiceReference),
                 CreatorIsInterpreterUser = !string.IsNullOrWhiteSpace(creatorIsInterpreterUser) ? (creatorIsInterpreterUser == "Yes") ? TrueFalse.Yes : TrueFalse.No : null,
                 IsFirstTimeUser = isFirstTimeUser,
-                TravelConditionText = GetTravelConditionText(frameWorkAgrrementVersion),
+                TravelConditionText = GetTravelConditionText(frameWorkAgreementVersion),
                 SavedOrderRequirements = user.DefaultSettingOrderRequirements.Where(r => r.IsRequired).Select(n => new OrderRequirementModel
                 {
                     UserDefaultSettingOrderRequirementId = n.UserDefaultSettingOrderRequirementId,

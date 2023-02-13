@@ -712,6 +712,7 @@ namespace Tolk.BusinessLogic.Utilities
                    .Include(r => r.Order).ThenInclude(o => o.Language)
                    .Include(r => r.Ranking).ThenInclude(r => r.Broker)
                    .Include(r => r.Ranking).ThenInclude(r => r.Region)
+                   .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement)
                    .SingleAsync(r => r.RequestId == id);
 
         public static async Task<Request> GetRequestForWebHook(this IQueryable<Request> requests, int id)
@@ -1036,6 +1037,7 @@ namespace Tolk.BusinessLogic.Utilities
         private static IQueryable<RequestGroup> GetRequestGroupsWithUsers(this IQueryable<RequestGroup> requestGroups)
             => requestGroups
                 .Include(r => r.Ranking).ThenInclude(r => r.Broker)
+                .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement)
                 .Include(r => r.AnsweringUser)
                 .Include(r => r.AcceptingUser)
                 .Include(r => r.ProcessingUser)

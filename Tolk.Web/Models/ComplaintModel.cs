@@ -15,7 +15,7 @@ namespace Tolk.Web.Models
 
         public int OrderId { get; set; }
 
-        public int FrameworkAgreementId { get; set; }
+        public FrameworkAgreementResponseRuleset FrameworkAgreementResponseRuleset { get; set; }
 
         [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
@@ -56,7 +56,7 @@ namespace Tolk.Web.Models
         [StringLength(1000)]
         public string Message { get; set; }
 
-        public List<ComplaintType> AvailableComplaintTypes => EnumHelper.GetEnumsWithParent<ComplaintType, FrameworkAgreementResponseRuleset>((FrameworkAgreementResponseRuleset)FrameworkAgreementId).ToList();
+        public List<ComplaintType> AvailableComplaintTypes => EnumHelper.GetEnumsWithParent<ComplaintType, FrameworkAgreementResponseRuleset>(FrameworkAgreementResponseRuleset).ToList();
 
         #region methods
 
@@ -75,7 +75,7 @@ namespace Tolk.Web.Models
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
                 OrderNumber = request.Order.OrderNumber,
                 RegionName = request.Ranking.Region.Name,
-                FrameworkAgreementId = request.Ranking.FrameworkAgreementId
+                FrameworkAgreementResponseRuleset = request.Ranking.FrameworkAgreement.FrameworkAgreementResponseRuleset
             };
         }
 

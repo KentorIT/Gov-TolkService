@@ -257,8 +257,8 @@ namespace Tolk.Web.Models
                 }).ToList(),
                 InterpreterLocation = request.InterpreterLocation.HasValue ? (InterpreterLocation?)request.InterpreterLocation.Value : null,
                 OrderViewModel = OrderViewModel.GetModelFromOrder(request.Order, request, true, true),
-                TravelConditionHours = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionHours,
-                TravelConditionKilometers = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionKilometers
+                TravelConditionHours = EnumHelper.GetContractDefinition(request?.Ranking.FrameworkAgreement.FrameworkAgreementResponseRuleset).TravelConditionHours,
+                TravelConditionKilometers = EnumHelper.GetContractDefinition(request?.Ranking.FrameworkAgreement.FrameworkAgreementResponseRuleset).TravelConditionKilometers
             };
         }
 

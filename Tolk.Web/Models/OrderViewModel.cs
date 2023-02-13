@@ -324,8 +324,8 @@ namespace Tolk.Web.Models
                     model.TerminateOnDenial = request.TerminateOnDenial;
 
                 }
-                model.TravelConditionHours = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionHours;
-                model.TravelConditionKilometers = EnumHelper.GetContractDefinition((FrameworkAgreementResponseRuleset)request?.Ranking.FrameworkAgreementId).TravelConditionKilometers;
+                model.TravelConditionHours = EnumHelper.GetContractDefinition(request?.Ranking.FrameworkAgreement.FrameworkAgreementResponseRuleset).TravelConditionHours;
+                model.TravelConditionKilometers = EnumHelper.GetContractDefinition(request?.Ranking.FrameworkAgreement.FrameworkAgreementResponseRuleset).TravelConditionKilometers;
                 model.InterpreterCompetenceLevel = request.CompetenceLevel.HasValue ? (CompetenceAndSpecialistLevel)request.CompetenceLevel : null;
             }
             return model;
