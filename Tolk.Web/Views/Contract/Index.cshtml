@@ -10,41 +10,53 @@
     <h1>@ViewData["Title"]</h1>
     <div class="row">
         <div class="col-sm-8">
-            @if(!Model.IsActive){
-                @await Html.PartialAsync("_ErrorMessage","Observera att detta avtal inte längre är aktivt!");
-            }           
-                <p>
-                    @Model.ContractDefinition.Usage
-                </p>
-                <p>
-                    @Model.ContractDefinition.Includes
-                </p>
-                <p>
-                    @Model.ContractDefinition.ExcludedServices
-                </p>
+            @if (!Model.IsActive)
+            {
+                @await Html.PartialAsync("_ErrorMessage","Observera att detta avtal inte längre är aktivt!")
+                ;
+            }
             @switch (Model.FrameworkAgreementResponseRuleset)
             {
                 case FrameworkAgreementResponseRuleset.VersionOne:
+                    <p>
+                        @Model.ContractDefinition.Usage
+                    </p>
+                    <p>
+                        @Model.ContractDefinition.Includes
+                    </p>
+                    <p>
+                        @Model.ContractDefinition.ExcludedServices
+                    </p>
                     @await Html.PartialAsync($"_{FrameworkAgreementResponseRuleset.VersionOne}SpecificRuleset",Model)
+                    <p>
+                        @Model.ContractDefinition.GeneralTerms
+                    </p>
                     break;
                 case FrameworkAgreementResponseRuleset.VersionTwo:
+                    <p>
+                        @Model.ContractDefinition.Usage
+                        @Model.ContractDefinition.Includes
+                    </p>
                     @await Html.PartialAsync($"_{FrameworkAgreementResponseRuleset.VersionTwo}SpecificRuleset",Model)
+                    <p>
+                        @Model.ContractDefinition.GeneralTerms
+                    </p>
+                    <p>
+                        @Model.ContractDefinition.ExcludedServices
+                    </p>
                     break;
                 default:
                     break;
             }
-                <p>
-                    @Model.ContractDefinition.GeneralTerms
-                </p>
-                <p>
-                    Mer information om ramavtalet, tolkförmedlingarna samt vägledning och avropsstöd finns på:
-                </p>                      
+            Mer information om ramavtalet, tolkförmedlingarna samt vägledning och avropsstöd finns på:
+            <br />
         </div>
         <div class="col-sm-8">
-            @if(Model.IsActive)
+            @if (Model.IsActive)
             {
-                <a href=@Options.Value.ExternalLinks.ActiveAgreementInfo target="_blank">@Options.Value.ExternalLinks.ActiveAgreementInfo</a>                
-            } else
+                <a href=@Options.Value.ExternalLinks.ActiveAgreementInfo target="_blank">@Options.Value.ExternalLinks.ActiveAgreementInfo</a>
+            }
+            else
             {
                 <a href=@Options.Value.ExternalLinks.ExpiredAgreementInfo target="_blank">@Options.Value.ExternalLinks.ExpiredAgreementInfo</a>
             }
