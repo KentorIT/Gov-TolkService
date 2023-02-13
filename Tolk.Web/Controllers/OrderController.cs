@@ -368,7 +368,7 @@ namespace Tolk.Web.Controllers
             var now = _clock.SwedenNow.DateTime;
             var lastTimeForRequiringLatestAnswerBy = _orderService.GetLastTimeForRequiringLatestAnswerBy(now);
             var user = await _userService.GetUserWithDefaultSettings(User.GetUserId());
-            var currentFrameworkAgreementResponseRuleset = (FrameworkAgreementResponseRuleset)_cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementId;
+            var currentFrameworkAgreementResponseRuleset = _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset;
             var model = new OrderModel()
             {
                 LastTimeForRequiringLatestAnswerBy = lastTimeForRequiringLatestAnswerBy.ToSwedishString("yyyy-MM-dd"),

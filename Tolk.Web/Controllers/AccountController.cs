@@ -736,7 +736,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<ActionResult> EditDefaultSettings(bool isFirstTimeUser = false)
         {
-            return View(DefaultSettingsModel.GetModel(await GetUserForDefaultSettings(), (FrameworkAgreementResponseRuleset)_cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementId, isFirstTimeUser));
+            return View(DefaultSettingsModel.GetModel(await GetUserForDefaultSettings(),_cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset, isFirstTimeUser));
         }
 
         [ValidateAntiForgeryToken]
