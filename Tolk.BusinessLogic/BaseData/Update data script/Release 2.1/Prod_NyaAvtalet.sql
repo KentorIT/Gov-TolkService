@@ -1,4 +1,7 @@
 
+--kolla om inlagt
+SELECT * FROM BrokerFeeByServiceTypePriceListRows bfbstplr
+SELECT * FROM FrameworkAgreements
 
 --lägg först in nya avtalet OBS! Kolla datum
 --här ska nya datum in för när nya avtalet ska gälla
@@ -330,7 +333,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		50
 	   ,1
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -338,7 +341,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		60
 	   ,2
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -346,7 +349,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		80
 	   ,3
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -354,7 +357,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		90
 	   ,4
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 
@@ -364,7 +367,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		90
 	   ,1
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -372,7 +375,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		100
 	   ,2
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -380,7 +383,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		120
 	   ,3
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -388,7 +391,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		130
 	   ,4
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 
@@ -398,7 +401,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		70
 	   ,1
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -406,7 +409,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		80
 	   ,2
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -414,7 +417,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		100
 	   ,3
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -422,7 +425,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		110
 	   ,4
 	   ,1
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 
@@ -432,7 +435,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		50
 	   ,1
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -440,7 +443,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		60
 	   ,2
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -448,7 +451,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		80
 	   ,3
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -456,7 +459,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		90
 	   ,4
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 
@@ -466,7 +469,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		90
 	   ,1
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -474,7 +477,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		100
 	   ,2
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -482,7 +485,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		120
 	   ,3
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -490,7 +493,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		130
 	   ,4
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 
@@ -500,7 +503,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		70
 	   ,1
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -508,7 +511,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		80
 	   ,2
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -516,7 +519,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		100
 	   ,3
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -524,7 +527,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		110
 	   ,4
 	   ,4
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 
@@ -535,7 +538,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		20
 	   ,1
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -543,7 +546,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		30
 	   ,2
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -551,7 +554,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		50
 	   ,3
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -559,7 +562,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		60
 	   ,4
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 
@@ -570,7 +573,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		20
 	   ,1
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -578,7 +581,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		30
 	   ,2
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -586,7 +589,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		50
 	   ,3
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -594,7 +597,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		60
 	   ,4
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 
@@ -605,7 +608,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		20
 	   ,1
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -613,7 +616,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		30
 	   ,2
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -621,7 +624,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		50
 	   ,3
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -629,7 +632,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		60
 	   ,4
 	   ,2
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 
@@ -640,7 +643,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		20
 	   ,1
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -648,7 +651,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		30
 	   ,2
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -656,7 +659,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		50
 	   ,3
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 	UNION ALL
@@ -664,7 +667,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		60
 	   ,4
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,1
 
@@ -674,7 +677,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		20
 	   ,1
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -682,7 +685,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		30
 	   ,2
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -690,7 +693,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		50
 	   ,3
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 	UNION ALL
@@ -698,7 +701,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		60
 	   ,4
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,2
 
@@ -708,7 +711,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		20
 	   ,1
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -716,7 +719,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		30
 	   ,2
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -724,7 +727,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		50
 	   ,3
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 	UNION ALL
@@ -732,7 +735,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		60
 	   ,4
 	   ,3
-	   ,'@firstValidDate'
+	   ,@firstValidDate
 	   ,'20991231'
 	   ,3
 
@@ -743,3 +746,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		JOIN Brokers b ON b.BrokerId = r.BrokerId
 		WHERE r.FrameworkAgreementId = 2 AND r.LastValidDate > GETDATE()
 		ORDER BY 1, 2
+
+		--kolla efter
+		SELECT * FROM BrokerFeeByServiceTypePriceListRows bfbstplr
+		SELECT * FROM FrameworkAgreements

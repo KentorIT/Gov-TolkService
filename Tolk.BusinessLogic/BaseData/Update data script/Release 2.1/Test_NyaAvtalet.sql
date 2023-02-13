@@ -1,11 +1,15 @@
 
 
+--kolla om inlagt
+SELECT * FROM BrokerFeeByServiceTypePriceListRows bfbstplr
+SELECT * FROM FrameworkAgreements
+
 
 --kolla slutdatum på förra, men bör väl vara 2023-01-25, för att sätta när vi ska lägga in rankings
 	SELECT * FROM Rankings r where r.LastValidDate > '2023-01-01'
 
 --här vore det bra att lägga in i förtid att det inte har börjat gälla och se att allt funkar som vanligt under fredagen 10/2
-	DECLARE @firstValidDate DATE = '2023-02-11'
+	DECLARE @firstValidDate DATE = '2023-02-14'
 	DECLARE @lastValidDate DATE = DATEADD(YEAR, 4, @firstValidDate);
 	
 --Lägg bara in om ej inlagt, ska väl få FrameworkAgreementId 2...
@@ -52,130 +56,123 @@ and u.NotificationChannel is NULL
 
 
 
---kolla om inlagt
-SELECT * FROM BrokerFeeByServiceTypePriceListRows bfbstplr
-
---annars lägg in
+--lägg in
 INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterLocation, FirstValidDate, LastValidDate, RegionGroupId)
-Select 50, 1, 1, '@firstValidDate', '20991231', 1
+Select 50, 1, 1, @firstValidDate, '20991231', 1
 UNION ALL
-Select 60, 2, 1, '@firstValidDate', '20991231', 1
+Select 60, 2, 1, @firstValidDate, '20991231', 1
 UNION ALL
-Select 80, 3, 1, '@firstValidDate', '20991231', 1
+Select 80, 3, 1, @firstValidDate, '20991231', 1
 UNION ALL
-Select 90, 4, 1, '@firstValidDate', '20991231', 1
+Select 90, 4, 1, @firstValidDate, '20991231', 1
 
 UNION ALL
 
-Select 90, 1, 1, '@firstValidDate', '20991231', 2
+Select 90, 1, 1, @firstValidDate, '20991231', 2
 UNION ALL
-Select 100, 2, 1, '@firstValidDate', '20991231', 2
+Select 100, 2, 1, @firstValidDate, '20991231', 2
 UNION ALL
-Select 120, 3, 1, '@firstValidDate', '20991231', 2
+Select 120, 3, 1, @firstValidDate, '20991231', 2
 UNION ALL
-Select 130, 4, 1, '@firstValidDate', '20991231', 2
+Select 130, 4, 1, @firstValidDate, '20991231', 2
 
 UNION ALL
 
-Select 70, 1, 1, '@firstValidDate', '20991231', 3
+Select 70, 1, 1, @firstValidDate, '20991231', 3
 UNION ALL
-Select 80, 2, 1, '@firstValidDate', '20991231', 3
+Select 80, 2, 1, @firstValidDate, '20991231', 3
 UNION ALL
-Select 100, 3, 1, '@firstValidDate', '20991231', 3
+Select 100, 3, 1, @firstValidDate, '20991231', 3
 UNION ALL
-Select 110, 4, 1, '@firstValidDate', '20991231', 3
+Select 110, 4, 1, @firstValidDate, '20991231', 3
 
 UNION ALL
 
-Select 50, 1, 4, '@firstValidDate', '20991231', 1
+Select 50, 1, 4, @firstValidDate, '20991231', 1
 UNION ALL
-Select 60, 2, 4, '@firstValidDate', '20991231', 1
+Select 60, 2, 4, @firstValidDate, '20991231', 1
 UNION ALL
-Select 80, 3, 4, '@firstValidDate', '20991231', 1
+Select 80, 3, 4, @firstValidDate, '20991231', 1
 UNION ALL
-Select 90, 4, 4, '@firstValidDate', '20991231', 1
+Select 90, 4, 4, @firstValidDate, '20991231', 1
 
 UNION ALL
 
-Select 90, 1, 4, '@firstValidDate', '20991231', 2
+Select 90, 1, 4, @firstValidDate, '20991231', 2
 UNION ALL
-Select 100, 2, 4, '@firstValidDate', '20991231', 2
+Select 100, 2, 4, @firstValidDate, '20991231', 2
 UNION ALL
-Select 120, 3, 4, '@firstValidDate', '20991231', 2
+Select 120, 3, 4, @firstValidDate, '20991231', 2
 UNION ALL
-Select 130, 4, 4, '@firstValidDate', '20991231', 2
+Select 130, 4, 4, @firstValidDate, '20991231', 2
 
 UNION ALL
 
-Select 70, 1, 4, '@firstValidDate', '20991231', 3
+Select 70, 1, 4, @firstValidDate, '20991231', 3
 UNION ALL
-Select 80, 2, 4, '@firstValidDate', '20991231', 3
+Select 80, 2, 4, @firstValidDate, '20991231', 3
 UNION ALL
-Select 100, 3, 4, '@firstValidDate', '20991231', 3
+Select 100, 3, 4, @firstValidDate, '20991231', 3
 UNION ALL
-Select 110, 4, 4, '@firstValidDate', '20991231', 3
-
-
-UNION ALL
-
-Select 20, 1, 2, '@firstValidDate', '20991231', 1
-UNION ALL
-Select 30, 2, 2, '@firstValidDate', '20991231', 1
-UNION ALL
-Select 50, 3, 2, '@firstValidDate', '20991231', 1
-UNION ALL
-Select 60, 4, 2, '@firstValidDate', '20991231', 1
-
+Select 110, 4, 4, @firstValidDate, '20991231', 3
 
 UNION ALL
 
-Select 20, 1, 2, '@firstValidDate', '20991231', 2
+Select 20, 1, 2, @firstValidDate, '20991231', 1
 UNION ALL
-Select 30, 2, 2, '@firstValidDate', '20991231', 2
+Select 30, 2, 2, @firstValidDate, '20991231', 1
 UNION ALL
-Select 50, 3, 2, '@firstValidDate', '20991231', 2
+Select 50, 3, 2, @firstValidDate, '20991231', 1
 UNION ALL
-Select 60, 4, 2, '@firstValidDate', '20991231', 2
-
-
-UNION ALL
-
-Select 20, 1, 2, '@firstValidDate', '20991231', 3
-UNION ALL
-Select 30, 2, 2, '@firstValidDate', '20991231', 3
-UNION ALL
-Select 50, 3, 2, '@firstValidDate', '20991231', 3
-UNION ALL
-Select 60, 4, 2, '@firstValidDate', '20991231', 3
-
+Select 60, 4, 2, @firstValidDate, '20991231', 1
 
 UNION ALL
 
-Select 20, 1, 3, '@firstValidDate', '20991231', 1
+Select 20, 1, 2, @firstValidDate, '20991231', 2
 UNION ALL
-Select 30, 2, 3, '@firstValidDate', '20991231', 1
+Select 30, 2, 2, @firstValidDate, '20991231', 2
 UNION ALL
-Select 50, 3, 3, '@firstValidDate', '20991231', 1
+Select 50, 3, 2, @firstValidDate, '20991231', 2
 UNION ALL
-Select 60, 4, 3, '@firstValidDate', '20991231', 1
+Select 60, 4, 2, @firstValidDate, '20991231', 2
 
 UNION ALL
 
-Select 20, 1, 3, '@firstValidDate', '20991231', 2
+Select 20, 1, 2, @firstValidDate, '20991231', 3
 UNION ALL
-Select 30, 2, 3, '@firstValidDate', '20991231', 2
+Select 30, 2, 2, @firstValidDate, '20991231', 3
 UNION ALL
-Select 50, 3, 3, '@firstValidDate', '20991231', 2
+Select 50, 3, 2, @firstValidDate, '20991231', 3
 UNION ALL
-Select 60, 4, 3, '@firstValidDate', '20991231', 2
+Select 60, 4, 2, @firstValidDate, '20991231', 3
 
 UNION ALL
 
-Select 20, 1, 3, '@firstValidDate', '20991231', 3
+Select 20, 1, 3, @firstValidDate, '20991231', 1
 UNION ALL
-Select 30, 2, 3, '@firstValidDate', '20991231', 3
+Select 30, 2, 3, @firstValidDate, '20991231', 1
 UNION ALL
-Select 50, 3, 3, '@firstValidDate', '20991231', 3
+Select 50, 3, 3, @firstValidDate, '20991231', 1
 UNION ALL
-Select 60, 4, 3, '@firstValidDate', '20991231', 3
+Select 60, 4, 3, @firstValidDate, '20991231', 1
+
+UNION ALL
+
+Select 20, 1, 3, @firstValidDate, '20991231', 2
+UNION ALL
+Select 30, 2, 3, @firstValidDate, '20991231', 2
+UNION ALL
+Select 50, 3, 3, @firstValidDate, '20991231', 2
+UNION ALL
+Select 60, 4, 3, @firstValidDate, '20991231', 2
+
+UNION ALL
+
+Select 20, 1, 3, @firstValidDate, '20991231', 3
+UNION ALL
+Select 30, 2, 3, @firstValidDate, '20991231', 3
+UNION ALL
+Select 50, 3, 3, @firstValidDate, '20991231', 3
+UNION ALL
+Select 60, 4, 3, @firstValidDate, '20991231', 3
 
