@@ -1,7 +1,4 @@
 
---kolla om inlagt
-SELECT * FROM BrokerFeeByServiceTypePriceListRows bfbstplr
-SELECT * FROM FrameworkAgreements
 
 --lägg först in nya avtalet OBS! Kolla datum
 --här ska nya datum in för när nya avtalet ska gälla
@@ -12,25 +9,11 @@ DECLARE @lastValidDate DATE = DATEADD(YEAR, 4, @firstValidDate);
 INSERT INTO FrameworkAgreements (AgreementNumber, Description, FirstValidDate, LastValidDate, BrokerFeeCalculationType, FrameworkAgreementResponseRuleset, OriginalLastValidDate)
 	VALUES (N'23.3-12000-20', N'Andra ramavtalet som tolkavropstjänsten hanterar', @firstValidDate, @lastValidDate, 2, 2, @lastValidDate);
 
---lägg sen in ny Broker med API-användare (finns sju Brokers i Prod.)
 DECLARE @newBrokerId INT = 8
-	   ,@newBrokerApiUser INT
-	   ,@UserNameGuid UNIQUEIDENTIFIER = NEWID()
-	   ,@SecStampGuid UNIQUEIDENTIFIER = NEWID()
-	   ,@ConcurrencyStampGuid UNIQUEIDENTIFIER = NEWID()
-
---hör med Charlotte om uppgifter stämmer
-INSERT INTO Brokers (BrokerId, Name, EmailDomain, EmailAddress, OrganizationNumber, OrganizationPrefix)
-	VALUES (@newBrokerId, N'Språkpoolen Skandinavien AB', N'sprakpoolen.se', N'info@sprakpoolen.se', N'559033-3034', N'SPS');
-
---nedan följer de redan inlagda i Prod, kan man bara slumpa GUIDS?
-INSERT AspNetUsers (UserName, NormalizedUserName, Email, NormalizedEmail, EmailConfirmed, SecurityStamp, ConcurrencyStamp, PhoneNumberConfirmed, TwoFactorEnabled, LockoutEnabled, AccessFailedCount, BrokerId, NameFamily, NameFirst, PhoneNumberCellphone, IsActive, IsApiUser)
-	VALUES (@UserNameGuid, @UserNameGuid, N'info@sprakpoolen.se', N'INFO@SPRAKPOOLEN.SE', 0, @SecStampGuid, @ConcurrencyStampGuid, 0, 0, 1, 0, @newBrokerId, N'User', N'Api', N'xx', 1, 1);
-
-SET @newBrokerApiUser = SCOPE_IDENTITY();
+	   ,@newBrokerApiUser INT = 5793
 
 --lägg sen in alla Rankings enligt nya avtalet
---OBS! Alla utom 3 regioner är bortkommenterade, kommer läggas in senare
+--OBS! Alla utom 3 regioner är bortkommenterade, kommer läggas in senare när avtal för dessa regioner startas
 INSERT INTO Rankings (Rank, FirstValidDate, LastValidDate, BrokerId, RegionId, FrameworkAgreementId)
 	VALUES
 	----Stockholm	1	Järva tolk	7	1
@@ -750,3 +733,10 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		--kolla efter
 		SELECT * FROM BrokerFeeByServiceTypePriceListRows bfbstplr
 		SELECT * FROM FrameworkAgreements
+
+		
+		SELECT * FROM UserNotificationSettings uns
+		JOIN AspNetUsers anu ON uns.UserId = anu.Id AND anu.IsApiUser = 1
+		WHERE uns.NotificationChannel = 1
+
+		--rensa cache
