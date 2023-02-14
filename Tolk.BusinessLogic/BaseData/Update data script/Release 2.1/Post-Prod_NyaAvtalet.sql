@@ -5,13 +5,12 @@
 DECLARE @firstValidDate DATE = '2023-02-15'
 DECLARE @lastValidDate DATE = DATEADD(DAY, -1, DATEADD(YEAR, 4, @firstValidDate));
 
+--1 rad 
 --Ska väl få FrameworkAgreementId 2...
 INSERT INTO FrameworkAgreements (AgreementNumber, Description, FirstValidDate, LastValidDate, BrokerFeeCalculationType, FrameworkAgreementResponseRuleset, OriginalLastValidDate)
 	VALUES (N'23.3-12000-20', N'Andra ramavtalet som tolkavropstjänsten hanterar', @firstValidDate, @lastValidDate, 2, 2, @lastValidDate);
 
-DECLARE @newBrokerId INT = 8
-	   ,@newBrokerApiUser INT = 5793
-
+--12 rader
 --lägg sen in alla Rankings enligt nya avtalet
 --OBS! Alla utom 3 regioner är bortkommenterade, kommer läggas in senare när avtal för dessa regioner startas
 INSERT INTO Rankings (Rank, FirstValidDate, LastValidDate, BrokerId, RegionId, FrameworkAgreementId)
@@ -208,6 +207,7 @@ INSERT INTO Rankings (Rank, FirstValidDate, LastValidDate, BrokerId, RegionId, F
 
 --lägg sen in nya notifieringstyper för alla brokers som har rankings för avtal 2
 
+--5 rader
 --59 request_created_requires_acceptance_only
 INSERT INTO UserNotificationSettings (UserId, NotificationChannel, NotificationType)
 	SELECT
@@ -225,6 +225,7 @@ INSERT INTO UserNotificationSettings (UserId, NotificationChannel, NotificationT
 		WHERE r.FrameworkAgreementId = 2)
 	AND u.NotificationChannel IS NULL
 
+--5 rader
 --60 request_group_created_requires_acceptance_only
 INSERT UserNotificationSettings (UserId, NotificationChannel, NotificationType)
 	SELECT
@@ -242,6 +243,7 @@ INSERT UserNotificationSettings (UserId, NotificationChannel, NotificationType)
 		WHERE r.FrameworkAgreementId = 2)
 	AND u.NotificationChannel IS NULL
 
+--5 rader
 --64 request_lost_due_to_not_fully_answered
 INSERT INTO UserNotificationSettings (UserId, NotificationChannel, NotificationType)
 	SELECT
@@ -259,6 +261,7 @@ INSERT INTO UserNotificationSettings (UserId, NotificationChannel, NotificationT
 		WHERE r.FrameworkAgreementId = 2)
 	AND u.NotificationChannel IS NULL
 
+--5 rader
 --65 request_group_lost_due_to_not_fully_answered
 INSERT UserNotificationSettings (UserId, NotificationChannel, NotificationType)
 	SELECT
@@ -276,7 +279,7 @@ INSERT UserNotificationSettings (UserId, NotificationChannel, NotificationType)
 		WHERE r.FrameworkAgreementId = 2)
 	AND u.NotificationChannel IS NULL
 
-
+--48 rader
 --Lägg in BrokerFeeByServiceTypePriceListRows
 INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterLocation, FirstValidDate, LastValidDate, RegionGroupId)
 	SELECT
@@ -690,7 +693,7 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 	   ,3
 
 	   --ta ut alla Rankings på nya avtalen ur databasen och jämför
-		SELECT reg.Name, r.Rank, b.Name
+		SELECT reg.Name, r.Rank, b.Name, r.FirstValidDate, r.LastValidDate
 		FROM Rankings r
 		JOIN Regions reg ON reg.RegionId = r.RegionId
 		JOIN Brokers b ON b.BrokerId = r.BrokerId
@@ -705,5 +708,10 @@ INSERT BrokerFeeByServiceTypePriceListRows (Price, CompetenceLevel, InterpreterL
 		SELECT * FROM UserNotificationSettings uns
 		JOIN AspNetUsers anu ON uns.UserId = anu.Id AND anu.IsApiUser = 1
 		WHERE uns.NotificationChannel = 1
+		AND BrokerId IN (SELECT
+			r.BrokerId
+		FROM Rankings r
+		WHERE r.FrameworkAgreementId = 2)
+		order by BrokerId, 3
 
 		--rensa cache
