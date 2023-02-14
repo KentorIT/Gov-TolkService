@@ -130,7 +130,7 @@ namespace Tolk.BusinessLogic.Enums
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         RequestGroupCreated = 17,
 
-        [Description("Förlorad samanhållen förfrågan på grund av inaktivitet")]
+        [Description("Förlorad sammanhållen förfrågan på grund av inaktivitet")]
         [CustomName("request_group_lost_due_to_inactivity")]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
@@ -175,7 +175,7 @@ namespace Tolk.BusinessLogic.Enums
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         RequestLostDueToNoAnswerFromCustomer = 23,
 
-        [Description("Förlorad samanhållen förfrågan på grund av ej besvarad av myndighet")]
+        [Description("Förlorad sammanhållen förfrågan på grund av ej besvarad av myndighet")]
         [CustomName("request_group_lost_due_to_no_answer_from_customer")]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
