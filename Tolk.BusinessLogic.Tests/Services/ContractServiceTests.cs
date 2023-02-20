@@ -134,19 +134,19 @@ namespace Tolk.BusinessLogic.Tests.Services
         }   
 
         [Theory]
-        [InlineData("2016-01-01 00:00:00", AgreementIdForBrokerFeesByRegionBroker, true)]        
-        [InlineData("2015-12-31 00:00:00", AgreementIdForBrokerFeesByRegionBroker, false)]
-        [InlineData("2015-12-31 23:59:00", AgreementIdForBrokerFeesByRegionBroker, false)]
-        [InlineData("2030-06-02 00:00:00", AgreementIdForBrokerFeesByRegionBroker, false)]
-        [InlineData("2030-06-01 00:00:00", AgreementIdForBrokerFeesByRegionBroker, true)]
-        [InlineData("2030-06-01 23:59:00", AgreementIdForBrokerFeesByRegionBroker, true)]
+        [InlineData("2016-01-01 00:00:00 +01:00", AgreementIdForBrokerFeesByRegionBroker, true)]        
+        [InlineData("2015-12-31 00:00:00 +01:00", AgreementIdForBrokerFeesByRegionBroker, false)]
+        [InlineData("2015-12-31 23:59:00 +01:00", AgreementIdForBrokerFeesByRegionBroker, false)]
+        [InlineData("2030-06-02 00:00:00 +02:00", AgreementIdForBrokerFeesByRegionBroker, false)]
+        [InlineData("2030-06-01 00:00:00 +02:00", AgreementIdForBrokerFeesByRegionBroker, true)]
+        [InlineData("2030-06-01 23:59:00 +02:00", AgreementIdForBrokerFeesByRegionBroker, true)]
 
-        [InlineData("2030-06-02 00:00:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, true)]       
-        [InlineData("2030-06-01 00:00:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, false)]
-        [InlineData("2030-06-01 23:59:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, false)]
-        [InlineData("2041-01-01 00:00:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, false)]
-        [InlineData("2040-12-31 00:00:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, true)]
-        [InlineData("2040-12-31 23:59:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, true)]
+        [InlineData("2030-06-02 00:00:00 +02:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, true)]       
+        [InlineData("2030-06-01 00:00:00 +02:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, false)]
+        [InlineData("2030-06-01 23:59:00 +02:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, false)]
+        [InlineData("2041-01-01 00:00:00 +01:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, false)]
+        [InlineData("2040-12-31 00:00:00 +01:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, true)]
+        [InlineData("2040-12-31 23:59:00 +01:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, true)]
         public void Should_Get_Agreement_And_CorrectStatus(string now, int frameworkAgreementId,bool isActive)
         {            
             var clock = new StubSwedishClock(now);
@@ -159,20 +159,20 @@ namespace Tolk.BusinessLogic.Tests.Services
         }        
 
         [Theory]
-        [InlineData("2015-12-31 00:00:00", 0, null, null)]
-        [InlineData("2015-12-31 23:59:00", 0, null, null)]
-        [InlineData("2016-01-01 00:00:00", 2, "2016-01-01", "2016-12-31")]
-        [InlineData("2016-06-02 00:00:00", 2, "2016-01-01", "2016-12-31")]        
-        [InlineData("2016-12-31 23:59:00", 2, "2016-01-01", "2016-12-31")]
-        [InlineData("2017-01-01 00:00:00", 2, "2017-01-01", "2017-12-31")]        
-        [InlineData("2025-01-01 00:00:00", 2, "2025-01-01", "2025-12-31")]
-        [InlineData("2025-12-31 23:59:00", 2, "2025-01-01", "2025-12-31")]
-        [InlineData("2029-01-01 00:00:00", 2, "2029-01-01", "2029-12-31")]
-        [InlineData("2029-12-31 23:59:00", 2, "2029-01-01", "2029-12-31")]
-        [InlineData("2030-06-02 00:00:00", 2, "2030-01-01", "2030-12-31")]
-        [InlineData("2030-12-31 23:59:00", 2, "2030-01-01", "2030-12-31")]
-        [InlineData("2035-01-01 00:00:00", 2, "2030-01-01", "2030-12-31")]
-        [InlineData("2035-07-20 00:00:00", 2, "2030-01-01", "2030-12-31")]
+        [InlineData("2015-12-31 00:00:00 +01:00", 0, null, null)]
+        [InlineData("2015-12-31 23:59:00 +01:00", 0, null, null)]
+        [InlineData("2016-01-01 00:00:00 +01:00", 2, "2016-01-01", "2016-12-31")]
+        [InlineData("2016-06-02 00:00:00 +02:00", 2, "2016-01-01", "2016-12-31")]        
+        [InlineData("2016-12-31 23:59:00 +01:00", 2, "2016-01-01", "2016-12-31")]
+        [InlineData("2017-01-01 00:00:00 +01:00", 2, "2017-01-01", "2017-12-31")]        
+        [InlineData("2025-01-01 00:00:00 +01:00", 2, "2025-01-01", "2025-12-31")]
+        [InlineData("2025-12-31 23:59:00 +01:00", 2, "2025-01-01", "2025-12-31")]
+        [InlineData("2029-01-01 00:00:00 +01:00", 2, "2029-01-01", "2029-12-31")]
+        [InlineData("2029-12-31 23:59:00 +01:00", 2, "2029-01-01", "2029-12-31")]
+        [InlineData("2030-06-02 00:00:00 +02:00", 2, "2030-01-01", "2030-12-31")]
+        [InlineData("2030-12-31 23:59:00 +01:00", 2, "2030-01-01", "2030-12-31")]
+        [InlineData("2035-01-01 00:00:00 +01:00", 2, "2030-01-01", "2030-12-31")]
+        [InlineData("2035-07-20 00:00:00 +02:00", 2, "2030-01-01", "2030-12-31")]
         public void Should_Return_Current_Or_LastActive_BrokerFeesByRegionBroker_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
         {
             var clock = new StubSwedishClock(now);
@@ -195,12 +195,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         // Add more specific pricelistrows with different Dates and control the different dates for them
 
         [Theory]
-        [InlineData("2030-06-01 00:00:00", 0, null, null)]
-        [InlineData("2030-06-01 23:59:00", 0, null, null)]
-        [InlineData("2030-06-02 00:00:00", 16, "2030-01-01", "2030-12-31")]
-        [InlineData("2031-06-12 00:00:00", 16, "2031-01-01", "2031-12-31")]
-        [InlineData("2040-07-20 00:00:00", 16, "2040-01-01", "2040-12-31")]
-        [InlineData("2100-02-20 00:00:00", 16, "2040-01-01", "2040-12-31")]        
+        [InlineData("2030-06-01 00:00:00 +02:00", 0, null, null)]
+        [InlineData("2030-06-01 23:59:00 +02:00", 0, null, null)]
+        [InlineData("2030-06-02 00:00:00 +02:00", 16, "2030-01-01", "2030-12-31")]
+        [InlineData("2031-06-12 00:00:00 +02:00", 16, "2031-01-01", "2031-12-31")]
+        [InlineData("2040-07-20 00:00:00 +02:00", 16, "2040-01-01", "2040-12-31")]
+        [InlineData("2100-02-20 00:00:00 +01:00", 16, "2040-01-01", "2040-12-31")]        
         public void Should_Return_Current_Or_LastActive_OffSite_BrokerFeeByRegionGroupAndServiceTypePriceList_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
         {
             var clock = new StubSwedishClock(now);
@@ -220,12 +220,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2030-06-01 00:00:00", 0, null, null)]
-        [InlineData("2030-06-01 23:59:00", 0, null, null)]
-        [InlineData("2030-06-02 00:00:00", 16, "2030-01-01", "2030-12-31")]
-        [InlineData("2031-06-12 00:00:00", 16, "2031-01-01", "2031-12-31")]
-        [InlineData("2040-07-20 00:00:00", 16, "2040-01-01", "2040-12-31")]
-        [InlineData("2100-02-20 00:00:00", 16, "2040-01-01", "2040-12-31")]
+        [InlineData("2030-06-01 00:00:00 +02:00", 0, null, null)]
+        [InlineData("2030-06-01 23:59:00 +02:00", 0, null, null)]
+        [InlineData("2030-06-02 00:00:00 +02:00", 16, "2030-01-01", "2030-12-31")]
+        [InlineData("2031-06-12 00:00:00 +02:00", 16, "2031-01-01", "2031-12-31")]
+        [InlineData("2040-07-20 00:00:00 +02:00", 16, "2040-01-01", "2040-12-31")]
+        [InlineData("2100-02-20 00:00:00 +01:00", 16, "2040-01-01", "2040-12-31")]
         public void Should_Return_Current_Or_LastActive_OnSite_BrokerFeeByRegionGroupAndServiceTypePriceList_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
         {
             var clock = new StubSwedishClock(now);
