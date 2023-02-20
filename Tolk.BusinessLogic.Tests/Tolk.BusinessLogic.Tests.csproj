@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Tolk.BusinessLogic\Tolk.BusinessLogic.csproj" />
+    <ProjectReference Include="..\Tolk.Web\Tolk.Web.csproj" />
   </ItemGroup>
 
 </Project>

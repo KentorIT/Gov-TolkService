@@ -1367,5 +1367,27 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<Request> GetRequestWithInterpreterById(this IQueryable<Request> requests, int id)
             => await requests.Include(r => r.Interpreter).SingleAsync(r => r.RequestId == id);
+
+        public static IEnumerable<PriceInformationBrokerFee> CurrentOrLastActiveBrokerFeesForAgreement(this IEnumerable<PriceInformationBrokerFee> brokerfees, CurrentOrLatestFrameworkAgreement frameworkAgreement, DateTime today)
+        {
+            return frameworkAgreement.IsActive ?
+                brokerfees.Where(bf => bf.StartDate.Date <= today && bf.EndDate >= today) :
+                brokerfees.Where(bf => bf.StartDate.Date <= today && bf.StartDate.Date <= frameworkAgreement.LastValidDate && bf.EndDate.Date >= frameworkAgreement.LastValidDate);                            
+        }
+
+        public static IEnumerable<BrokerFeeByRegionAndServiceType> CurrentOrLastActiveDistanceBrokerFeesForAgreement(this IEnumerable<BrokerFeeByRegionAndServiceType> brokerfees, CurrentOrLatestFrameworkAgreement frameworkAgreement, DateTime today)
+        {
+            var brokerFeeQuery = brokerfees.Where(bf => bf.InterpreterLocation == InterpreterLocation.OffSiteVideo || bf.InterpreterLocation == InterpreterLocation.OffSitePhone).AsQueryable();
+            return frameworkAgreement.IsActive ?
+                brokerFeeQuery.Where(bf => bf.StartDate.Date <= today && bf.EndDate.Date >= today) :
+                brokerFeeQuery.Where(bf => bf.StartDate.Date <= today && bf.StartDate.Date <= frameworkAgreement.LastValidDate && bf.EndDate >= frameworkAgreement.LastValidDate);                
+        }
+        public static IEnumerable<BrokerFeeByRegionAndServiceType> CurrentOrLastActiveOnSiteBrokerFeesForAgreement(this IEnumerable<BrokerFeeByRegionAndServiceType> brokerfees, CurrentOrLatestFrameworkAgreement frameworkAgreement, DateTime today)
+        {
+            var brokerFeeQuery = brokerfees.Where(bf => bf.InterpreterLocation == InterpreterLocation.OnSite || bf.InterpreterLocation == InterpreterLocation.OffSiteDesignatedLocation).AsQueryable();
+            return frameworkAgreement.IsActive ?
+                brokerFeeQuery.Where(bf => bf.StartDate.Date <= today && bf.EndDate.Date >= today) :
+                brokerFeeQuery.Where(bf => bf.StartDate.Date <= today && bf.StartDate.Date <= frameworkAgreement.LastValidDate && bf.EndDate >= frameworkAgreement.LastValidDate);
+        }
     }
 }

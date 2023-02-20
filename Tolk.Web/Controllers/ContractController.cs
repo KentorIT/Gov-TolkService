@@ -17,15 +17,18 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
         private readonly CacheService _cacheService;
+        private readonly ContractService _contractService;
 
         public ContractController(
             TolkDbContext dbContext,
             ISwedishClock clock,
-            CacheService cacheService)
+            CacheService cacheService,
+            ContractService contractService)
         {
             _dbContext = dbContext;
             _clock = clock;
             _cacheService = cacheService;
+            _contractService = contractService;
         }
 
         public IActionResult Index()
@@ -83,31 +86,19 @@ namespace Tolk.Web.Controllers
             }
             else
             {
-                var agreement = await _dbContext.FrameworkAgreements.FirstOrDefaultAsync(fa => fa.FrameworkAgreementId == frameworkAgreementId);
-                var now = _clock.SwedenNow;
-                return agreement != null ?
-                           new CurrentOrLatestFrameworkAgreement
-                           {
-                               FrameworkAgreementId = agreement.FrameworkAgreementId,
-                               AgreementNumber = agreement.AgreementNumber,
-                               LastValidDate = agreement.LastValidDate,
-                               FirstValidDate = agreement.FirstValidDate,
-                               OriginalLastValidDate = agreement.OriginalLastValidDate,                               
-                               Description = agreement.Description,
-                               BrokerFeeCalculationType = agreement.BrokerFeeCalculationType,
-                               FrameworkAgreementResponseRuleset = agreement.FrameworkAgreementResponseRuleset,
-                               IsActive = agreement.LastValidDate >= now.Date && now.Date >= agreement.FirstValidDate,
-                           } :
-                           new CurrentOrLatestFrameworkAgreement { IsActive = false };
+                return await _contractService.GetFrameworkAgreementById(frameworkAgreementId);
             }
         }       
 
         private async Task<ContractListWrapperModel> GetContractListByRegionGroupAndServiceType(CurrentOrLatestFrameworkAgreement frameworkAgreement)
         {
             var brokerFeePrices = _cacheService.BrokerFeeByRegionGroupAndServiceTypePriceList;
+            var distanceBrokerFeePrices = brokerFeePrices.CurrentOrLastActiveDistanceBrokerFeesForAgreement(frameworkAgreement, _clock.SwedenNow.Date);
+            var onSiteBrokerFeePrices = brokerFeePrices.CurrentOrLastActiveOnSiteBrokerFeesForAgreement(frameworkAgreement, _clock.SwedenNow.Date);
             var rankings = await _dbContext.Rankings.GetLatestRankingsForFrameworkAgreement(frameworkAgreement.FrameworkAgreementId, frameworkAgreement.IsActive ? _clock.SwedenNow.DateTime : frameworkAgreement.LastValidDate).ToListAsync();
             var brokers = rankings.Select(r => r.Broker).Distinct().OrderBy(b => b.Name).ToList();
             var regions = rankings.Select(r => r.Region).Distinct().OrderBy(r => r.Name).ToList();
+
             return new ContractListWrapperModel
             {
                 ListType = BrokerFeeCalculationType.ByRegionGroupAndServiceType,
@@ -115,10 +106,7 @@ namespace Tolk.Web.Controllers
                 {
                     ConnectedFrameworkAgreement = frameworkAgreement,
 
-                    ItemsDistanceInterpretationPerCompetence = brokerFeePrices
-                        .Where(p => (p.InterpreterLocation == InterpreterLocation.OffSiteVideo || 
-                                    p.InterpreterLocation == InterpreterLocation.OffSitePhone) &&
-                                    p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow)
+                    ItemsDistanceInterpretationPerCompetence = distanceBrokerFeePrices                       
                         .GroupBy(p => new { p.BrokerFee, p.CompetenceLevel })
                         .Select(g => new ContractBrokerFeeCompetenceItemModel
                         {
@@ -130,11 +118,8 @@ namespace Tolk.Web.Controllers
                         new ContractPricePerRegionGroupListItemModel
                         {
                             RegionGroupName = r.First().RegionGroup.Name,
-                            BrokerFeePerCompentence = brokerFeePrices
-                                .Where(p => p.RegionId == r.First().RegionId && 
-                                       p.InterpreterLocation != InterpreterLocation.OffSiteVideo &&
-                                       p.InterpreterLocation != InterpreterLocation.OffSitePhone &&
-                                       p.StartDate <= _clock.SwedenNow && p.EndDate > _clock.SwedenNow)
+                            BrokerFeePerCompentence = onSiteBrokerFeePrices
+                                .Where(p => p.RegionId == r.First().RegionId)                                       
                                 .GroupBy(p => new { p.BrokerFee, p.CompetenceLevel })
                                 .OrderBy(g => g.First().CompetenceLevel)
                                 .Select(g => new ContractBrokerFeeCompetenceItemModel
@@ -176,10 +161,10 @@ namespace Tolk.Web.Controllers
         private async Task<ContractListWrapperModel> GetContractListByRegionAndBroker(CurrentOrLatestFrameworkAgreement frameworkAgreement)
         {
             var brokerFeePrices = _cacheService.BrokerFeeByRegionAndBrokerPriceList;
+            brokerFeePrices = brokerFeePrices.CurrentOrLastActiveBrokerFeesForAgreement(frameworkAgreement, _clock.SwedenNow.Date);
             var rankings = await _dbContext.Rankings.GetLatestRankingsForFrameworkAgreement(frameworkAgreement.FrameworkAgreementId,frameworkAgreement.IsActive ? _clock.SwedenNow.DateTime : frameworkAgreement.LastValidDate).ToListAsync();
             var brokers = rankings.Select(r => r.Broker).Distinct().OrderBy(b => b.Name).ToList();
-            var regions = rankings.Select(r => r.Region).Distinct().OrderBy(r => r.Name).ToList();           
-
+            var regions = rankings.Select(r => r.Region).Distinct().OrderBy(r => r.Name).ToList();     
             return new ContractListWrapperModel
             {
                 ListType = BrokerFeeCalculationType.ByRegionAndBroker,
@@ -195,14 +180,10 @@ namespace Tolk.Web.Controllers
                             RegionName = ra.Region.Name,
                             BrokerFeePercentage = ra.BrokerFee.Value,
                             Rank = ra.Rank,
-                            BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
-                                  ((frameworkAgreement.IsActive && p.StartDate <= _clock.SwedenNow.Date && p.EndDate >= _clock.SwedenNow.Date) ||
-                                  (!frameworkAgreement.IsActive && p.EndDate == frameworkAgreement.LastValidDate)))
+                            BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId)
                                       .OrderBy(p => p.PriceToUse)
                                 .Select(p => p.PriceToUse.ToSwedishString("#,0.00")).ToList(),
-                            CompetenceDescriptions = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
-                                  ((frameworkAgreement.IsActive && p.StartDate <= _clock.SwedenNow.Date && p.EndDate >= _clock.SwedenNow.Date) ||
-                                  (!frameworkAgreement.IsActive && p.EndDate.Date == frameworkAgreement.LastValidDate)))
+                            CompetenceDescriptions = brokerFeePrices.Where(p => p.RankingId == ra.RankingId)
                                       .OrderBy(p => p.CompetenceLevel)
                                 .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                         }).ToList()
@@ -216,13 +197,9 @@ namespace Tolk.Web.Controllers
                             BrokerName = ra.Broker.Name,
                             BrokerFeePercentage = ra.BrokerFee.Value,
                             Rank = ra.Rank,
-                            BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
-                                      ((frameworkAgreement.IsActive && p.StartDate <= _clock.SwedenNow.Date && p.EndDate >= _clock.SwedenNow.Date) ||
-                                      (!frameworkAgreement.IsActive && p.EndDate == frameworkAgreement.LastValidDate)))
+                            BrokerFeesPerCompetenceLevel = brokerFeePrices.Where(p => p.RankingId == ra.RankingId)
                                     .Select(p => p.PriceToUse.ToSwedishString("#,0.00")).ToList(),
-                            CompetenceDescriptions = brokerFeePrices.Where(p => p.RankingId == ra.RankingId &&
-                                     ((frameworkAgreement.IsActive && p.StartDate <= _clock.SwedenNow.Date && p.EndDate >= _clock.SwedenNow.Date) ||
-                                      (!frameworkAgreement.IsActive && p.EndDate.Date == frameworkAgreement.LastValidDate)))
+                            CompetenceDescriptions = brokerFeePrices.Where(p => p.RankingId == ra.RankingId)
                                           .OrderBy(p => p.CompetenceLevel)
                                     .Select(p => p.CompetenceLevel.GetShortDescription()).ToList()
                         }).ToList()
