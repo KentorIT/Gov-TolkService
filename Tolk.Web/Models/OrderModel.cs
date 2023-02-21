@@ -220,10 +220,7 @@ namespace Tolk.Web.Models
             get => (!SeveralOccasions && ExtraInterpreter) || (SeveralOccasions && (Occasions.Count > 1 || Occasions.Single().ExtraInterpreter));
         }
 
-        public OrderOccasionDisplayModel FirstOccasion
-        {
-            get => UniqueOrdersFromOccasions.OrderBy(o => o.OccasionStartDateTime).FirstOrDefault();
-        }
+        public OrderOccasionModel FirstOccasion => UniqueOrdersFromOccasions.OrderBy(o => o.OccasionStartDateTime).FirstOrDefault();
 
         public IEnumerable<OrderOccasionDisplayModel> UniqueOrdersFromOccasions
         {
@@ -249,6 +246,7 @@ namespace Tolk.Web.Models
                         {
                             OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
                             OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
+                            ExpectedLength = ExpectedLength,
                             ExtraInterpreter = false,
                             MealBreakIncluded = MealBreakIncluded,
                             OrderOccasionId = id
@@ -259,6 +257,7 @@ namespace Tolk.Web.Models
                             {
                                 OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
                                 OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
+                                ExpectedLength = ExpectedLength,
                                 ExtraInterpreter = true,
                                 ExtraInterpreterFor = id,
                                 MealBreakIncluded = MealBreakIncluded,
@@ -410,12 +409,12 @@ namespace Tolk.Web.Models
             }
         }
 
-        internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false, bool isGroupOrder = false, bool useAttachments = false)
+        internal void UpdateOrder(Order order, OrderOccasionModel occasion, bool isReplace = false, bool isGroupOrder = false, bool useAttachments = false)
         {
             order.CustomerReferenceNumber = CustomerReferenceNumber;
-            order.StartAt = startAt;
-            order.EndAt = endAt;
-            order.ExpectedLength = ExpectedLength;
+            order.StartAt = occasion.OccasionStartDateTime;
+            order.EndAt = occasion.OccasionEndDateTime;
+            order.ExpectedLength = occasion.ExpectedLength;
             order.Description = Description;
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;
@@ -450,7 +449,7 @@ namespace Tolk.Web.Models
             }
             else
             {
-                order.MealBreakIncluded = MealBreakIncluded && ((int)(endAt.DateTime - startAt.DateTime).TotalMinutes > 300);
+                order.MealBreakIncluded = MealBreakIncluded && ((int)(order.EndAt.DateTime - order.StartAt.DateTime).TotalMinutes > 300);
                 order.LanguageId = LanguageId;
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;

@@ -422,8 +422,7 @@ namespace Tolk.Web.Controllers
                 else
                 {
                     Order order = await CreateNewOrder();
-                    var firstOccasion = model.FirstOccasion;
-                    model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
+                    model.UpdateOrder(order, model.FirstOccasion, useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
                     await _orderService.Create(order, latestAnswerBy: model.LatestAnswerBy);
                     await _dbContext.SaveChangesAsync();
                     trn.Commit();
@@ -451,9 +450,8 @@ namespace Tolk.Web.Controllers
                 Order order = await CreateNewOrder();
                 PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
                 OrderViewModel updatedModel = null;
-                var firstOccasion = model.FirstOccasion;
                 string warningOrderTimeInfo = string.Empty;
-                model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
+                model.UpdateOrder(order, model.FirstOccasion, useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
                 updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
                 if (model.IsMultipleOrders)
                 {
@@ -964,7 +962,7 @@ namespace Tolk.Web.Controllers
             foreach (var occasion in model.UniqueOrdersFromOccasions.OrderBy(o => o.OrderOccasionId))
             {
                 var order = await CreateNewOrder();
-                model.UpdateOrder(order, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), isGroupOrder: true);
+                model.UpdateOrder(order, occasion, isGroupOrder: true);
                 if (occasion.ExtraInterpreter)
                 {
                     if (list.TryGetValue(occasion.ExtraInterpreterFor, out Order parentOrder))
@@ -989,7 +987,7 @@ namespace Tolk.Web.Controllers
             {
                 Order groupOrder = await CreateNewOrder();
                 // Add list of occasions, with the price information
-                model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), isGroupOrder: true);
+                model.UpdateOrder(groupOrder, occasion, isGroupOrder: true);
                 occasion.PriceInformationModel = new PriceInformationModel
                 {
                     MealBreakIsNotDetucted = occasion.MealBreakIncluded ?? false,

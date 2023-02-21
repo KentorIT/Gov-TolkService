@@ -19,6 +19,7 @@ namespace Tolk.Web.Models
             OccasionEndDateTime = occasion.OccasionEndDateTime;
             ExtraInterpreter = occasion.ExtraInterpreter;
             MealBreakIncluded = occasion.MealBreakIncluded;
+            ExpectedLength = occasion.ExpectedLength;
         }
 
         public int ExtraInterpreterFor { get; set; }
@@ -60,7 +61,8 @@ namespace Tolk.Web.Models
                 ControllerName = request == null ? "Order" : "Request",
                 OrderStatus = order.Status,
                 RequestStatus = request?.Status,
-                MealBreakIncluded = order.MealBreakIncluded
+                MealBreakIncluded = order.MealBreakIncluded,
+                ExpectedLength = order.ExpectedLength
             };
         }
     }

@@ -32,8 +32,8 @@ namespace Tolk.Web.Models
         public string NextLastTimeForRequiringLatestAnswerBy { get; set; }
 
         [Display(Name = "Dialekt")]
-
         public string Dialect { get; set; }
+
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
         public virtual TimeRange TimeRange { get; set; }
 
@@ -287,11 +287,19 @@ namespace Tolk.Web.Models
                 CustomerPeppolId = order.CustomerOrganisation.PeppolId,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 CompetenceIsRequired = order.SpecificCompetenceLevelRequired,
-                TimeRange = new TimeRange
+                TimeRange = !order.ExpectedLength.HasValue ?
+                new TimeRange
                 {
                     StartDateTime = order.StartAt,
                     EndDateTime = order.EndAt
-                },
+                } : null,
+                FlexibleTimeRange = order.ExpectedLength.HasValue ?
+                new FlexibleTimeRange
+                {
+                    FlexibleStartDateTime = order.StartAt,
+                    FlexibleEndDateTime = order.EndAt,
+                    ExpectedLength = order.ExpectedLength.Value
+                } : null,
                 DisplayMealBreakIncludedText = order.MealBreakTextToDisplay,
                 Description = order.Description,
                 UnitName = order.UnitName,
