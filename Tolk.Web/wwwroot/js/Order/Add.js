@@ -9,6 +9,20 @@ $(function () {
         '<a class="btn btn-danger small-button remove">Ta bort <span class="btn-remove-times-small">&times;</span></a>' +
         '</div>';
 
+    var holidays;
+
+    var getHolidays = function () {
+        holidays = [];
+        $.ajax({
+            url: tolkBaseUrl + "Order/GetHolidays",
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                holidays = data;
+            }
+        });
+    };
+
     var toggleLanguage = function (selectedItem) {
         if (selectedItem.attr('value') === $("#OtherLanguageId").val()) {
             $('#other-language').collapse('show');
@@ -165,49 +179,156 @@ $(function () {
         hasToggledLastTimeForRequiringLatestAnswerBy = !(now.getHours() === 13);
     };
 
-    var toggleSeveralOccasions = function () {
-        //if date is set, and hasToggledLastTimeForRequiringLatestAnswerBy is false and SeveralOccasions is false
-        if ($("#SeveralOccasions").is(":checked")) {
-            return;
-        }
-        var $disabled = LastAnswerByIsShowing || !hasValidOccasion();
-        $("#SeveralOccasions").prop('disabled', $disabled);
-        if ($disabled) {
-            $("#SeveralOccasions").parents(".checkbox").addClass("checkbox-disabled");
+    var toggleCheckbox = function (id, enabled) {
+        // TODO: as extend instead!
+        $(id).prop('disabled', !enabled);
+        if (enabled) {
+            $(id).parents(".checkbox").removeClass("checkbox-disabled");
         } else {
-            $("#SeveralOccasions").parents(".checkbox").removeClass("checkbox-disabled");
+            $(id).parents(".checkbox").addClass("checkbox-disabled");
         }
     };
 
-    var checkMealbreak = function () {
-        //if not all time values are set don't show
-        if ($("#SplitTimeRange_StartTimeHour").val() === "" || $("#SplitTimeRange_StartTimeMinutes").val() === ""
-            || $("#SplitTimeRange_EndTimeHour").val() === "" || $("#SplitTimeRange_EndTimeMinutes").val() === "") {
-            return;
-        }
-        //else check if longer than 5h
-        var isLongerThan5h = false;
-        var startHour = Number($("#SplitTimeRange_StartTimeHour").val());
-        var startMinute = Number($("#SplitTimeRange_StartTimeMinutes").val());
-        var endHour = Number($("#SplitTimeRange_EndTimeHour").val());
-        var endMinute = Number($("#SplitTimeRange_EndTimeMinutes").val());
+    var checkboxNotSet = function (id) {
+        // TODO: as extend instead!
+        return $(id).length === 0 || $(id).is(":not(:checked)");
+    };
 
-        if (startHour === endHour) {
-            isLongerThan5h = endMinute <= startMinute;
+
+    var toggleSeveralOccasions = function () {
+        //if date is set, and hasToggledLastTimeForRequiringLatestAnswerBy is false and SeveralOccasions is false
+        if (checkboxNotSet("#SeveralOccasions")) {
+            toggleCheckbox("#SeveralOccasions", checkboxNotSet("#FlexibleOrder") && !LastAnswerByIsShowing && hasValidOccasion());
         }
-        else if (startHour > endHour) {
-            if (startHour - endHour < 20) {
+    };
+
+    var toggleFlexibleOrder = function () {
+        if (checkboxNotSet("#FlexibleOrder")) {
+            toggleCheckbox("#FlexibleOrder", checkboxNotSet("#SeveralOccasions") && checkboxNotSet("#ExtraInterpreter"));
+        }
+    };
+
+    var toggleExtraInterpreter = function () {
+        if (checkboxNotSet("#ExtraInterpreter")) {
+            toggleCheckbox("#ExtraInterpreter", checkboxNotSet("#FlexibleOrder"));
+        }
+    };
+
+    var validateFlexibleOrderTimes = function () {
+        // Before starting, all select-boxes in ".order-datepicker select" nust have a value
+        var $allSet = true;
+        $(".order-datepicker select").each(function (i, v) {
+            if ($(this).val() === "") {
+                $allSet = false;
+                return false;
+            }
+        });
+        if ($allSet) {
+            //Test expected length not longer than span between start and end
+            var startHour = Number($("#SplitTimeRange_StartTimeHour").val());
+            var startMinute = Number($("#SplitTimeRange_StartTimeMinutes").val());
+            var endHour = Number($("#SplitTimeRange_EndTimeHour").val());
+            var endMinute = Number($("#SplitTimeRange_EndTimeMinutes").val());
+            var expectedHours = Number($("#ExpectedLength_Hours").val());
+            var expectedMinutes = Number($("#ExpectedLength_Minutes").val());
+            if (startHour > endHour) {
+                //add full day
+                endHour += 24;
+            }
+            if (((endHour - startHour) < expectedHours) || (((endHour - startHour) === expectedHours) && ((endMinute - startMinute) < expectedMinutes))) {
+                validatorMessage("ExpectedLength", "Förväntad tid kan inte vara längre än den totala flexibla tiden");
+                return false;
+            } else {
+                hideValidatorMessage("ExpectedLength");
+            }
+        }
+        return true;
+    };
+
+    var validateAvailableBoundriesForFlexibleOrder = function () {
+        if (!hasValidOccasion()) {
+            return true;
+        }
+        var success = true;
+        var earliestStartHour = Number($("#FlexibleOrderSettings_EarliestStartAtHour").val());
+        var latestEndHour = Number($("#FlexibleOrderSettings_LatestEndAtHour").val());
+        if (earliestStartHour > 0 && latestEndHour > 0) {
+            //Only test the time if both are set
+            //Test expected length not longer than span between start and end
+            var startHour = Number($("#SplitTimeRange_StartTimeHour").val());
+            var endHour = Number($("#SplitTimeRange_EndTimeHour").val());
+            var endMinute = Number($("#SplitTimeRange_EndTimeMinutes").val());
+
+            if (startHour < earliestStartHour || endHour > latestEndHour || startHour > endHour || (endHour === latestEndHour && endMinute > 0)) {
+                //Where should the error message be dispalyed?
+                validatorMessage("SplitTimeRange", "Den flexibla tiden måste starta efter " + earliestStartHour.toString() + " och inte sluta efter " + latestEndHour.toString());
+                success = false;
+            } else {
+                hideValidatorMessage("SplitTimeRange");
+            }
+        }
+        if ($("#FlexibleOrderSettings_AllowOnNonWorkdays").val() === "False") {
+            //Make sure that the day of the flexible  order is a workday
+            var occStartDateAndTime = getDate($("#SplitTimeRange_StartDate").val(), $("#SplitTimeRange_StartTimeHour").val(), $("#SplitTimeRange_StartTimeMinutes").val());
+            day = occStartDateAndTime.getDay();
+            if (day < 1 || day > 5 || checkIfOnHoliday($("#SplitTimeRange_StartDate").val())) {
+                validatorMessage("FlexibleOrder", "Flexibla bokningar får bara bokas på helgfria vardagar");
+                success = false;
+           } else {
+                hideValidatorMessage("FlexibleOrder");
+            }
+        }
+        return success;
+    };
+
+    var checkIfOnHoliday = function (day) {
+        return $.inArray(day, holidays) > -1;
+    }
+
+    var checkMealbreak = function () {
+        var isLongerThan5h = false;
+        //if not all time values are set don't show
+        if ((checkboxNotSet("#FlexibleOrder") &&
+            (
+                $("#SplitTimeRange_StartTimeHour").val() === "" ||
+                $("#SplitTimeRange_StartTimeMinutes").val() === "" ||
+                $("#SplitTimeRange_EndTimeHour").val() === "" ||
+                $("#SplitTimeRange_EndTimeMinutes").val() === ""
+            )) || ($("#FlexibleOrder").is(":checked") &&
+                (
+                    $("#ExpectedLength_Hours").val() === "" ||
+                    $("#ExpectedLength_Minutes").val() === ""
+                ))
+        ) {
+            isLongerThan5h = false;
+        } else if ($("#FlexibleOrder").is(":checked")) {
+            var expectedHours = Number($("#ExpectedLength_Hours").val());
+            var expectedMinutes = Number($("#ExpectedLength_Minutes").val());
+            isLongerThan5h = expectedHours > 5 || (expectedHours === 5 && expectedMinutes > 0);
+        } else {
+            //else check if longer than 5h
+            var startHour = Number($("#SplitTimeRange_StartTimeHour").val());
+            var startMinute = Number($("#SplitTimeRange_StartTimeMinutes").val());
+            var endHour = Number($("#SplitTimeRange_EndTimeHour").val());
+            var endMinute = Number($("#SplitTimeRange_EndTimeMinutes").val());
+
+            if (startHour === endHour) {
+                isLongerThan5h = endMinute <= startMinute;
+            }
+            else if (startHour > endHour) {
+                if (startHour - endHour < 20) {
+                    isLongerThan5h = true;
+                }
+                else if (startHour - endHour === 20) {
+                    isLongerThan5h = endMinute > startMinute;
+                }
+            }
+            else if (endHour - startHour > 5) {
                 isLongerThan5h = true;
             }
-            else if (startHour - endHour === 20) {
+            else if (endHour - startHour === 5) {
                 isLongerThan5h = endMinute > startMinute;
             }
-        }
-        else if (endHour - startHour > 5) {
-            isLongerThan5h = true;
-        }
-        else if (endHour - startHour === 5) {
-            isLongerThan5h = endMinute > startMinute;
         }
         if (isLongerThan5h) {
             $("#mealbreak-included").show();
@@ -382,15 +503,14 @@ $(function () {
         }
     });
 
-    $("body").on("change", "#SplitTimeRange_StartTimeHour, #SplitTimeRange_StartTimeMinutes, #SplitTimeRange_EndTimeHour, #SplitTimeRange_EndTimeMinutes", function () {
-        toggleSeveralOccasions();
-        checkMealbreak();
-
-    });
-
     $("body").on("change", "#LatestAnswerBy_Hour", function () {
         if ($("#LatestAnswerBy_Minute").val() === "") {
             $("#LatestAnswerBy_Minute").val(0).trigger("change").trigger("select2:select");
+        }
+    });
+    $("body").on("change", "#ExpectedLength_Hours", function () {
+        if ($("#ExpectedLength_Minutes").val() === "") {
+            $("#ExpectedLength_Minutes").val(0).trigger("change").trigger("select2:select");
         }
     });
 
@@ -483,6 +603,42 @@ $(function () {
             }
             toggleSeveralOccasions();
         }
+        toggleFlexibleOrder();
+    });
+
+    $("body").on("change", "#ExtraInterpreter", function () {
+        toggleFlexibleOrder();
+    });
+
+    $("body").on("change", ".order-datepicker input, .order-datepicker select", function () {
+        if ($("#FlexibleOrder").is(":checked")) {
+            validateFlexibleOrderTimes();
+            validateAvailableBoundriesForFlexibleOrder();
+        } else {
+            hideValidatorMessage("ExpectedLength");
+        }
+        toggleSeveralOccasions();
+        checkMealbreak();
+    });
+
+    $("body").on("change", "#FlexibleOrder", function () {
+        if ($(this).is(":checked")) {
+            if (holidays === undefined) {
+                getHolidays();
+            }
+            $(".expected-length-part").show();
+            $(".starttime-part label").html($(".starttime-part label").html().replace("Starttid", "Flexibel starttid"));
+            $(".endtime-part label").html($(".endtime-part label").html().replace("Sluttid", "Flexibel sluttid"));
+        } else {
+            $(".expected-length-part").hide();
+            $(".starttime-part label").html($(".starttime-part label").html().replace("Flexibel starttid", "Starttid"));
+            $(".endtime-part label").html($(".endtime-part label").html().replace("Flexibel sluttid", "Sluttid"));
+            $("#ExpectedLength_Hours").val("").trigger("change");
+            $("#ExpectedLength_Minutes").val("").trigger("change");
+        }
+        checkMealbreak();
+        toggleSeveralOccasions();
+        toggleExtraInterpreter();
     });
 
     $("body").on("click", ".add-occasion", function () {
@@ -652,6 +808,14 @@ $(function () {
             if (competenceMessage !== "") {
                 validatorMessage("RequestedCompetenceLevelFirst", competenceMessage);
                 errors++;
+            }
+            if ($("#FlexibleOrder").is(":checked")) {
+                if (!validateFlexibleOrderTimes()) {
+                    errors++;
+                }
+                if (!validateAvailableBoundriesForFlexibleOrder()) {
+                    errors++;
+                }
             }
             if (!$("#SeveralOccasions").is(":checked")) {
                 if (!validateStartTime()) {

@@ -313,7 +313,6 @@ namespace Tolk.Web.Controllers
                                 Attachments = updatedAttachments,
                                 BrokerId = request.Ranking.BrokerId
                             });
-
                         }
                         await _dbContext.SaveChangesAsync();
                         order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
@@ -376,6 +375,7 @@ namespace Tolk.Web.Controllers
                 CreatedByName = user.FullName,
                 UserDefaultSettings = DefaultSettingsModel.GetModel(user, currentFrameworkAgreementResponseRuleset),
                 EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)),
+                FlexibleOrderSettings = _options.FlexibleOrder,
                 UseAttachments = CachedUseAttachentSetting(User.GetCustomerOrganisationId()),
                 TravelConditionHours = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionHours,
                 TravelConditionKilometers = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionKilometers
@@ -422,8 +422,7 @@ namespace Tolk.Web.Controllers
                 else
                 {
                     Order order = await CreateNewOrder();
-                    var firstOccasion = model.FirstOccasion;
-                    model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
+                    model.UpdateOrder(order, model.FirstOccasion, useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
                     await _orderService.Create(order, latestAnswerBy: model.LatestAnswerBy);
                     await _dbContext.SaveChangesAsync();
                     trn.Commit();
@@ -451,9 +450,8 @@ namespace Tolk.Web.Controllers
                 Order order = await CreateNewOrder();
                 PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
                 OrderViewModel updatedModel = null;
-                var firstOccasion = model.FirstOccasion;
                 string warningOrderTimeInfo = string.Empty;
-                model.UpdateOrder(order, firstOccasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), firstOccasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
+                model.UpdateOrder(order, model.FirstOccasion, useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
                 updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
                 if (model.IsMultipleOrders)
                 {
@@ -476,7 +474,7 @@ namespace Tolk.Web.Controllers
                         UseDisplayHideInfo = true,
                         Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
                     };
-                    warningOrderTimeInfo = CheckReasonableDurationTime(order.StartAt.DateTime, order.EndAt.DateTime);
+                    warningOrderTimeInfo = CheckReasonableDurationTime(order.StartAt, order.Duration);
                     updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? CheckOrderOccasionFarAway(order.StartAt.DateTime) :
                         $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(order.StartAt.DateTime)}";
                     updatedModel.DisplayMealBreakIncludedText = order.MealBreakTextToDisplay;
@@ -868,6 +866,14 @@ namespace Tolk.Web.Controllers
             return Json(definition);
         }
 
+        public JsonResult GetHolidays()
+        {
+            return Json(_cacheService.Holidays
+                .Where(h => h.Date >= _clock.SwedenNow.Date)
+                .Select(h => h.Date.ToSwedishString("yyyy-MM-dd") ));
+        }
+
+
         private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart)
         {
             var noOfDays = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(_clock.SwedenNow.DateTime, orderStart.DateTime);
@@ -879,7 +885,7 @@ namespace Tolk.Web.Controllers
             string message = string.Empty;
             foreach (OrderOccasionDisplayModel orderOccasion in orderOccasionDisplayModels)
             {
-                message = CheckReasonableDurationTime(orderOccasion.OccasionStartDateTime, orderOccasion.OccasionEndDateTime, true);
+                message = CheckReasonableDurationTime(orderOccasion.OccasionStartDateTime, orderOccasion.Duration, true);
                 if (!string.IsNullOrEmpty(message))
                 {
                     return message;
@@ -888,14 +894,14 @@ namespace Tolk.Web.Controllers
             return message;
         }
 
-        private static string CheckReasonableDurationTime(DateTime start, DateTime end, bool isOrderGroup = false)
+        private static string CheckReasonableDurationTime(DateTimeOffset start, TimeSpan duration, bool isOrderGroup = false)
         {
-            int minutes = (int)(end - start).TotalMinutes;
+            int minutes = (int)duration.TotalMinutes;
             return minutes > 600 ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle är längre än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                $"Observera att tiden för minst ett tillfälle är längre än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{start.AddTicks(duration.Ticks).ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 minutes < 60 ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle är kortare än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{end.ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                $"Observera att tiden för minst ett tillfälle är kortare än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{start.AddTicks(duration.Ticks).ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 string.Empty;
         }
@@ -956,7 +962,7 @@ namespace Tolk.Web.Controllers
             foreach (var occasion in model.UniqueOrdersFromOccasions.OrderBy(o => o.OrderOccasionId))
             {
                 var order = await CreateNewOrder();
-                model.UpdateOrder(order, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), isGroupOrder: true);
+                model.UpdateOrder(order, occasion, isGroupOrder: true);
                 if (occasion.ExtraInterpreter)
                 {
                     if (list.TryGetValue(occasion.ExtraInterpreterFor, out Order parentOrder))
@@ -981,7 +987,7 @@ namespace Tolk.Web.Controllers
             {
                 Order groupOrder = await CreateNewOrder();
                 // Add list of occasions, with the price information
-                model.UpdateOrder(groupOrder, occasion.OccasionStartDateTime.ToDateTimeOffsetSweden(), occasion.OccasionEndDateTime.ToDateTimeOffsetSweden(), isGroupOrder: true);
+                model.UpdateOrder(groupOrder, occasion, isGroupOrder: true);
                 occasion.PriceInformationModel = new PriceInformationModel
                 {
                     MealBreakIsNotDetucted = occasion.MealBreakIncluded ?? false,

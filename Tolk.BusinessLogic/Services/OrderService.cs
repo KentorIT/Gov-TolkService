@@ -533,9 +533,9 @@ namespace Tolk.BusinessLogic.Services
             //if mealbreaks and full compensation we must get correct prices with mealbreaks deducted otherwize make a copy from the request's pricerows.
             var priceRows = (createFullCompensationRequisition && mealbreaks != null) ? _priceCalculationService.GetPricesRequisition(
                 request.Order.StartAt,
-                request.Order.EndAt,
+                request.Order.Duration,
                 request.Order.StartAt,
-                request.Order.EndAt,
+                request.Order.Duration,
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
                 request.Order.CustomerOrganisation.PriceListType,
                 out bool useRequestRows,
@@ -613,10 +613,9 @@ namespace Tolk.BusinessLogic.Services
             return PriceCalculationService.GetPriceInformationToDisplay(
                 _priceCalculationService.GetPrices(
                     order.StartAt,
-                    order.EndAt,
+                    order.Duration,
                     cl,
                     pl,
-                    rankingId,
                     order.CreatedAt,
                     _priceCalculationService.GetCalculatedBrokerFee(order, _clock.SwedenNow, brokerFeeCalculationType, cl, rankingId, order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation))
                 .PriceRows);
@@ -941,10 +940,9 @@ namespace Tolk.BusinessLogic.Services
             var competenceLevel = EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(SelectCompetenceLevelForPriceEstimation(order.CompetenceRequirements?.Select(item => item.CompetenceLevel)));
             var priceInformation = _priceCalculationService.GetPrices(
                 order.StartAt,
-                order.EndAt,
+                order.Duration,
                 competenceLevel,
                 order.CustomerOrganisation.PriceListType,
-                order.Requests.Single(r => r.IsToBeProcessedByBroker || r.IsAcceptedOrApproved).RankingId,
                 order.CreatedAt,
                 _priceCalculationService.GetCalculatedBrokerFee(order, _clock.SwedenNow, brokerFeeCalculationType, competenceLevel, rankingId, order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation));
             order.PriceRows.AddRange(priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, OrderPriceRow>(row)));

@@ -32,10 +32,13 @@ namespace Tolk.Web.Models
         public string NextLastTimeForRequiringLatestAnswerBy { get; set; }
 
         [Display(Name = "Dialekt")]
-
         public string Dialect { get; set; }
+
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
         public virtual TimeRange TimeRange { get; set; }
+
+        [Display(Name = "Flexibel datum och tid", Description = "Datum och tid för tolkuppdraget")]
+        public virtual FlexibleTimeRange FlexibleTimeRange { get; set; }
 
         public AttachmentListModel RequestAttachmentListModel { get; set; }
 
@@ -284,11 +287,19 @@ namespace Tolk.Web.Models
                 CustomerPeppolId = order.CustomerOrganisation.PeppolId,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 CompetenceIsRequired = order.SpecificCompetenceLevelRequired,
-                TimeRange = new TimeRange
+                TimeRange = !order.ExpectedLength.HasValue ?
+                new TimeRange
                 {
                     StartDateTime = order.StartAt,
                     EndDateTime = order.EndAt
-                },
+                } : null,
+                FlexibleTimeRange = order.ExpectedLength.HasValue ?
+                new FlexibleTimeRange
+                {
+                    FlexibleStartDateTime = order.StartAt,
+                    FlexibleEndDateTime = order.EndAt,
+                    ExpectedLength = order.ExpectedLength.Value
+                } : null,
                 DisplayMealBreakIncludedText = order.MealBreakTextToDisplay,
                 Description = order.Description,
                 UnitName = order.UnitName,
@@ -356,11 +367,19 @@ namespace Tolk.Web.Models
                 IsCreatorInterpreterUser = order.CreatorIsInterpreterUser,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 InvoiceReference = order.InvoiceReference,
-                TimeRange = new TimeRange
+                TimeRange = !order.ExpectedLength.HasValue ?
+                new TimeRange
                 {
                     StartDateTime = order.StartAt,
                     EndDateTime = order.EndAt
-                },
+                } : null,
+                FlexibleTimeRange = order.ExpectedLength.HasValue ?
+                new FlexibleTimeRange
+                {
+                    FlexibleStartDateTime = order.StartAt,
+                    FlexibleEndDateTime = order.EndAt,
+                    ExpectedLength = order.ExpectedLength.Value
+                } : null,
                 Description = order.Description,
                 UnitName = order.UnitName,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
@@ -387,6 +406,5 @@ namespace Tolk.Web.Models
                 }).ToList(),
             };
         }
-
     }
 }

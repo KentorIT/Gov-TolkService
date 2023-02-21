@@ -18,30 +18,32 @@
 @using (Html.BeginForm("Add", "Order", FormMethod.Post))
 {
     @section Scripts {
-        <environment include="Development">
-            <script src="~/js/Files.js" asp-append-version="true"></script>
-            <script src="~/js/Wizard/wizard.js" asp-append-version="true"></script>
-            <script src="~/js/Wizard/validate.js" asp-append-version="true"></script>
-            <script src="~/js/Order/Add.js" asp-append-version="true"></script>
-            <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
-            <script src="~/js/OrderRequirements.js" asp-append-version="true"></script>
-        </environment>
-        <environment exclude="Development">
-            <script src="~/js/Files.min.js" asp-append-version="true"></script>
-            <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
-            <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
-            <script src="~/js/Wizard/wizard.min.js" asp-append-version="true"></script>
-            <script src="~/js/Wizard/validate.min.js" asp-append-version="true"></script>
-            <script src="~/js/OrderRequirements.min.js" asp-append-version="true"></script>
-        </environment>
-        @await Html.PartialAsync("_ValidationScriptsPartial")
+    <environment include="Development">
+        <script src="~/js/Files.js" asp-append-version="true"></script>
+        <script src="~/js/Wizard/wizard.js" asp-append-version="true"></script>
+        <script src="~/js/Wizard/validate.js" asp-append-version="true"></script>
+        <script src="~/js/Order/Add.js" asp-append-version="true"></script>
+        <script src="~/js/Order/HandleInterpreterLocations.js" asp-append-version="true"></script>
+        <script src="~/js/OrderRequirements.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Files.min.js" asp-append-version="true"></script>
+        <script src="~/js/Order/add.min.js" asp-append-version="true"></script>
+        <script src="~/js/Order/HandleInterpreterLocations.min.js" asp-append-version="true"></script>
+        <script src="~/js/Wizard/wizard.min.js" asp-append-version="true"></script>
+        <script src="~/js/Wizard/validate.min.js" asp-append-version="true"></script>
+        <script src="~/js/OrderRequirements.min.js" asp-append-version="true"></script>
+    </environment>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
     }
     <div class="wizard row">
         <div class="col-xs-12">
             @*step 1 fill form*@
             <section aria-label="Ny bokning">
                 <div class="wizard-step" data-forward-button-text="Gå vidare ">
-                    @{ HelpLinkService.PageName = "myndighet-skapa-bokning/";}
+                    @{
+                        HelpLinkService.PageName = "myndighet-skapa-bokning/";
+                    }
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="col-sm-12 text-center">
@@ -76,13 +78,28 @@
                                     <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.ActiveRegions" help-link="@HelpLinkService.GenerateUrl("nybokning_lan")" />
                                 </div>
                             </div>
+                            @if (Model.FlexibleOrderSettings.UseFlexibleOrders)
+                            {
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <form-entry asp-for="FlexibleOrder" class="flexible-order-part" help-link="@HelpLinkService.GenerateUrl("nybokning_flexibel")" />
+                                        <input type="hidden" asp-for="FlexibleOrderSettings.EarliestStartAtHour" />
+                                        <input type="hidden" asp-for="FlexibleOrderSettings.LatestEndAtHour"/>
+                                        <input type="hidden" asp-for="FlexibleOrderSettings.AllowOnNonWorkdays" />
+                                    </div>
+                                </div>
+                            }
                             <div class="row">
-                                <div class="order-datepicker @orderTimeClass">
+                                <div class="order-datepicker @orderTimeClass col-sm-12">
                                     <form-entry asp-for="SplitTimeRange" class="date-and-time-part" help-link="@HelpLinkService.GenerateUrl("nybokning_start_sluttid")" />
 
                                     @if (enableOrderGroups)
                                     {
                                         <form-entry asp-for="ExtraInterpreter" class="extra-interpreter-part" help-link="@HelpLinkService.GenerateUrl("nybokning_sammanhallen")" />
+                                    }
+                                    @if (Model.FlexibleOrderSettings.UseFlexibleOrders)
+                                    {
+                                        <form-entry asp-for="ExpectedLength" class="expected-length-part d-none" />
                                     }
                                 </div>
                                 <div id="mealbreak-included" class="col-sm-12 d-none">

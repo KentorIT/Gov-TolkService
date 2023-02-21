@@ -728,38 +728,6 @@ input[type='checkbox']:checked:after {
   padding-bottom: 8px;
   padding-top: 8px;
 }
-.order-datepicker.order-group-disabled .date-part,
-.order-datepicker.order-group-disabled .starttime-part,
-.order-datepicker.order-group-disabled .endtime-part {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .order-datepicker.order-group-disabled .date-part,
-  .order-datepicker.order-group-disabled .starttime-part,
-  .order-datepicker.order-group-disabled .endtime-part {
-    float: left;
-    width: 33.33333333%;
-  }
-}
-.order-datepicker.order-group-disabled .time-errors {
-  float: left;
-  width: 100%;
-}
-.order-datepicker.order-group-enabled {
-  position: relative;
-  min-height: 1px;
-  padding-left: 15px;
-  padding-right: 15px;
-}
-@media (min-width: 768px) {
-  .order-datepicker.order-group-enabled {
-    float: left;
-    width: 100%;
-  }
-}
 .order-datepicker .date-part {
   width: 170px;
   padding-bottom: 10px;
@@ -787,9 +755,12 @@ input[type='checkbox']:checked:after {
 .order-datepicker .endtime-part label {
   display: block;
 }
-.order-datepicker .extra-interpreter-part {
+.order-datepicker .extra-interpreter-part,
+.order-datepicker .flexible-order-part {
   padding-top: 20px;
+  margin-top: 10px;
   float: left;
+  padding-right: 15px;
 }
 table.styled-row th.currency,
 table.styled-row td.currency {

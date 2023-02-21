@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Org.BouncyCastle.Crypto.Digests;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -234,7 +235,6 @@ namespace Tolk.Web.TagHelpers
                     case InputTypeTime:
                         WriteLabel(writer);
                         WriteTimeBox(writer);
-                        WriteValidation(writer);
                         break;
                     case InputTypeDateRange:
                         WriteDateRangeBlock(writer);
@@ -491,24 +491,25 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteTimeBox(TextWriter writer)
         {
-            var tagBuilder = _htmlGenerator.GenerateTextBox(
-                ViewContext,
-                For.ModelExplorer,
-                For.Name,
-                value: For.Model,
-                format: "{0:hh\\:mm}",
-                htmlAttributes: new
-                {
-                    @class = "form-control",
-                    placeholder = "HH:MM",
-                    data_val_regex_pattern = "^(([0-1]?[0-9])|(2[0-3])):?[0-5][0-9]$",
-                    data_val_regex = "Ange tid som HH:MM eller HHMM",
-                    data_val_required = "Tid måste anges.",
-                    data_val = true
-                });
-            RemoveRequiredIfNullable(tagBuilder);
-            WritePrefix(writer, PrefixAttribute.Position.Value);
-            tagBuilder.WriteTo(writer, _htmlEncoder);
+            writer.WriteLine("<div class=\"input-group time\">");
+            var timeHourModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Hours");
+            var timeMinutesModelExplorer = For.ModelExplorer.Properties.Single(p => p.Metadata.PropertyName == "Minutes");
+            var timeHourFieldName = $"{For.Name}.Hours";
+            var timeMinuteFieldName = $"{For.Name}.Minutes";
+            var isRequired = For.ModelExplorer.Metadata.IsRequired;
+
+            WriteSplitTimePickerInput(timeHourModelExplorer, timeHourFieldName, writer, true, isRequired, false);
+
+            WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, writer, false, isRequired, false);
+            //RemoveRequiredIfNullable(tagBuilder);
+            writer.WriteLine("</div>");
+            writer.WriteLine();
+            writer.WriteLine("<span class=\"time-errors\">");
+            WriteValidation(writer, timeHourModelExplorer, timeHourFieldName);
+            WriteValidation(writer, timeMinutesModelExplorer, timeMinuteFieldName);
+            //Validation place for general error on the field
+            WriteValidation(writer);
+            writer.WriteLine("</span>");
         }
 
         private void WriteDateTimeOffsetBlock(TextWriter writer)
@@ -586,31 +587,32 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("</div>");
         }
 
-        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, TextWriter writer, bool hour, bool isRequired = true)
+        private void WriteSplitTimePickerInput(ModelExplorer timeModelExplorer, string timeFieldName, TextWriter writer, bool hour, bool isRequired = true, bool useAsClock = true)
         {
             string hourClass = hour ? "hour" : string.Empty;
             writer.WriteLine($"<div class=\"input-group time timesplit {hourClass}\">");
-            WriteSelect(GetSplitTimeValues(hour), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", hour ? "Timme måste anges" : " Minut måste anges", isRequired);
+            var errorMessage = hour ? $"{(useAsClock ? "Timme" : "Timmar")} måste anges" : $" {(useAsClock ? "Minut" : "Minuter" )} måste anges";
+            WriteSelect(GetSplitTimeValues(hour, useAsClock), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", errorMessage, isRequired);
             writer.WriteLine("</div>");
         }
 
-        private static IEnumerable<SelectListItem> GetSplitTimeValues(bool hour)
+        private static IEnumerable<SelectListItem> GetSplitTimeValues(bool hour, bool useAsClock = true)
         {
             List<SelectListItem> list = new List<SelectListItem>();
 
-            int start = hour ? 8 : 0;
+            int start = hour ? useAsClock ? 8 : 0 : 0;
             int max = hour ? 23 : 55;
             int jump = hour ? 1 : 5;
 
             for (int i = start; i <= max; i += jump)
             {
-                list.Add(new SelectListItem() { Text = i < 10 ? 0 + i.ToSwedishString() : i.ToSwedishString(), Value = i.ToSwedishString() });
+                list.Add(new SelectListItem() { Text = i.ToSwedishString("D2"), Value = i.ToSwedishString() });
             }
             if (hour)
             {
                 for (int i = 0; i <= 7; i += jump)
                 {
-                    list.Add(new SelectListItem() { Text = i < 10 ? 0 + i.ToSwedishString() : i.ToSwedishString(), Value = i.ToSwedishString() });
+                    list.Add(new SelectListItem() { Text = i.ToSwedishString("D2"), Value = i.ToSwedishString() });
                 }
             }
             return list;
@@ -790,6 +792,8 @@ namespace Tolk.Web.TagHelpers
             WriteHelpIfHelpLink(writer);
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
             WriteValidation(writer, dateModelExplorer, dateFieldName);
+            //General validation holder
+            WriteValidation(writer);
             writer.WriteLine("</div>");
             writer.WriteLine("<div class=\"starttime-part\">");
             WriteLabelWithoutFor(startTimeHourModelExplorer, writer);
@@ -865,6 +869,18 @@ namespace Tolk.Web.TagHelpers
                 {
                     tagBuilder.Attributes.Remove("data-val-required");
                 }
+                var reqiredIfAttribute = (RequiredIfAttribute)AttributeHelper.GetAttribute<RequiredIfAttribute>(
+                    For.ModelExplorer.Metadata.ContainerType,
+                    For.ModelExplorer.Metadata.PropertyName);
+                if (reqiredIfAttribute != null)
+                {
+                    tagBuilder.Attributes.Remove("data-val-required");
+                    tagBuilder.Attributes.Add("data-val-requiredif", requiredMessage);
+                    tagBuilder.Attributes.Add("data-val-requiredif-otherproperty", reqiredIfAttribute.OtherProperty);
+                    tagBuilder.Attributes.Add("data-val-requiredif-otherpropertytype", reqiredIfAttribute.OtherPropertyType.ToString());
+                    tagBuilder.Attributes.Add("data-val-requiredif-otherpropertyvalue", reqiredIfAttribute.Value.ToString());
+                }
+
                 if (For.Model == null)
                 {
                     var existingOptionsBuilder = new HtmlContentBuilder();

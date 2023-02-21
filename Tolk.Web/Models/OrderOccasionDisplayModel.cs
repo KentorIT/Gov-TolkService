@@ -1,4 +1,5 @@
-﻿using Tolk.BusinessLogic.Entities;
+﻿using System;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
@@ -18,6 +19,7 @@ namespace Tolk.Web.Models
             OccasionEndDateTime = occasion.OccasionEndDateTime;
             ExtraInterpreter = occasion.ExtraInterpreter;
             MealBreakIncluded = occasion.MealBreakIncluded;
+            ExpectedLength = occasion.ExpectedLength;
         }
 
         public int ExtraInterpreterFor { get; set; }
@@ -39,6 +41,8 @@ namespace Tolk.Web.Models
         public string StatusName => RequestStatus.HasValue ? RequestStatus.Value.GetDescription() : OrderStatus.GetDescription();
 
         public string Information => $"{OccasionStartDateTime.ToSwedishString("yyyy-MM-dd")} {OccasionStartDateTime.ToSwedishString("HH\\:mm")}-{OccasionEndDateTime.ToSwedishString("HH\\:mm")}";
+        
+        public TimeSpan Duration => OccasionEndDateTime - OccasionStartDateTime;
 
         public PriceInformationModel PriceInformationModel { get; set; }
 
@@ -57,7 +61,8 @@ namespace Tolk.Web.Models
                 ControllerName = request == null ? "Order" : "Request",
                 OrderStatus = order.Status,
                 RequestStatus = request?.Status,
-                MealBreakIncluded = order.MealBreakIncluded
+                MealBreakIncluded = order.MealBreakIncluded,
+                ExpectedLength = order.ExpectedLength
             };
         }
     }

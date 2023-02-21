@@ -61,7 +61,6 @@ namespace Tolk.Web.Models
 
         public AttachmentListModel RequestAttachmentListModel { get; set; }
 
-
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual TimeRange TimeRange { get; set; }
@@ -69,13 +68,20 @@ namespace Tolk.Web.Models
         [Display(Name = "Extra tolk", Description = "Om det finns behov av två tolkar till samma tillfälle så kryssa i rutan Extra tolk. Detta innebär att arvode och förmedlingsavgift utgår för båda tolkarna för hela tillfället.")]
         public bool ExtraInterpreter { get; set; }
 
+        [Display(Name = "Flexibel startid", Description = "Om det är ok att förmedlingen sätter startiden, inom den tid som ni erbjuder så välj denna.")]
+        public bool FlexibleOrder { get; set; }
+
+        [Display(Name = "Förväntad längd", Description = "Hur lång tid kommer tillfället vara.")]
+        [RequiredIf(nameof(FlexibleOrder), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
+        public TimeSpan? ExpectedLength { get; set; }
+
         [Display(Name = "Måltidspaus beräknas ingå", Description = "Kryssa i rutan om det är ett längre uppdrag över 5 timmar och det beräknas ingå en måltidspaus.")]
         public bool MealBreakIncluded { get; set; }
 
         [Display(Name = "Boka flera tillfällen med samma tolk", Description = "Om rutan kryssas i så går det att lägga till flera tillfällen. Det är tvingande för förmedlingen att tillsätta samma tolk för alla tillfällen. Detta innebär att arvode och förmedlingsavgift utgår för varje tillfälle. Fyll i ett fullständigt tillfälle för att kunna lägga till fler tillfällen.")]
         public bool SeveralOccasions { get; set; }
 
-        [Display(Name = "Datum och tid", Description = "Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00. Om start- eller sluttid kan ha viss flexibilitet, beskriv detta i fritextfältet &quotÖvrig information om uppdraget&quot nedan.")]
+        [Display(Name = "Datum och tid", Description = "Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00.")]
         [ClientRequired(ErrorMessage = "Ange datum")]
         public virtual SplitTimeRange SplitTimeRange { get; set; }
 
@@ -214,10 +220,7 @@ namespace Tolk.Web.Models
             get => (!SeveralOccasions && ExtraInterpreter) || (SeveralOccasions && (Occasions.Count > 1 || Occasions.Single().ExtraInterpreter));
         }
 
-        public OrderOccasionDisplayModel FirstOccasion
-        {
-            get => UniqueOrdersFromOccasions.OrderBy(o => o.OccasionStartDateTime).FirstOrDefault();
-        }
+        public OrderOccasionModel FirstOccasion => UniqueOrdersFromOccasions.OrderBy(o => o.OccasionStartDateTime).FirstOrDefault();
 
         public IEnumerable<OrderOccasionDisplayModel> UniqueOrdersFromOccasions
         {
@@ -243,6 +246,7 @@ namespace Tolk.Web.Models
                         {
                             OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
                             OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
+                            ExpectedLength = ExpectedLength,
                             ExtraInterpreter = false,
                             MealBreakIncluded = MealBreakIncluded,
                             OrderOccasionId = id
@@ -253,6 +257,7 @@ namespace Tolk.Web.Models
                             {
                                 OccasionStartDateTime = SplitTimeRange.StartAt.Value.DateTime,
                                 OccasionEndDateTime = SplitTimeRange.EndAt.Value.DateTime,
+                                ExpectedLength = ExpectedLength,
                                 ExtraInterpreter = true,
                                 ExtraInterpreterFor = id,
                                 MealBreakIncluded = MealBreakIncluded,
@@ -267,6 +272,7 @@ namespace Tolk.Web.Models
         public DefaultSettingsModel UserDefaultSettings { get; set; }
 
         public bool EnableOrderGroups { get; set; }
+        public FlexibleOrderSettings FlexibleOrderSettings { get; set; }
 
         #region methods
 
@@ -403,11 +409,12 @@ namespace Tolk.Web.Models
             }
         }
 
-        internal void UpdateOrder(Order order, DateTimeOffset startAt, DateTimeOffset endAt, bool isReplace = false, bool isGroupOrder = false, bool useAttachments = false)
+        internal void UpdateOrder(Order order, OrderOccasionModel occasion, bool isReplace = false, bool isGroupOrder = false, bool useAttachments = false)
         {
             order.CustomerReferenceNumber = CustomerReferenceNumber;
-            order.StartAt = startAt;
-            order.EndAt = endAt;
+            order.StartAt = occasion.OccasionStartDateTime;
+            order.EndAt = occasion.OccasionEndDateTime;
+            order.ExpectedLength = occasion.ExpectedLength;
             order.Description = Description;
             order.UnitName = UnitName;
             order.ContactPersonId = ContactPersonId;
@@ -442,7 +449,7 @@ namespace Tolk.Web.Models
             }
             else
             {
-                order.MealBreakIncluded = MealBreakIncluded && ((int)(endAt.DateTime - startAt.DateTime).TotalMinutes > 300);
+                order.MealBreakIncluded = MealBreakIncluded && ((int)(order.EndAt.DateTime - order.StartAt.DateTime).TotalMinutes > 300);
                 order.LanguageId = LanguageId;
                 order.OtherLanguage = OtherLanguageId == LanguageId ? OtherLanguage : null;
                 order.LanguageHasAuthorizedInterpreter = LanguageHasAuthorizedInterpreter ?? false;

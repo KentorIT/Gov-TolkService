@@ -44,19 +44,18 @@ namespace Tolk.BusinessLogic.Services
                 order.InterpreterLocations.OrderBy(l => l.Rank).First().InterpreterLocation);
             return GetPrices(
                 order.StartAt,
-                order.EndAt,
+                order.Duration,
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel),
                 order.CustomerOrganisation.PriceListType,
-                request.RankingId,
                 order.CreatedAt,
                 GetCalculatedBrokerFee(order, calculateFrom, request.Ranking.FrameworkAgreement.BrokerFeeCalculationType, EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>(competenceLevel), request.RankingId, interpreterLocationCorCalculation),
                 expectedTravelCost);
         }
 
-        public PriceInformation GetPrices(DateTimeOffset startAt, DateTimeOffset endAt, CompetenceLevel competenceLevel, PriceListType listType, int rankingId, DateTimeOffset orderCreatedDate, PriceRowBase brokerFee, decimal? travelCost = null)
+        public PriceInformation GetPrices(DateTimeOffset startAt, TimeSpan duration, CompetenceLevel competenceLevel, PriceListType listType, DateTimeOffset orderCreatedDate, PriceRowBase brokerFee, decimal? travelCost = null)
         {
-            return CompletePricesWithExtraCharges(startAt, endAt,
-                MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, endAt, GetPriceList(startAt, competenceLevel, listType))).ToList(),
+            return CompletePricesWithExtraCharges(startAt, duration,
+                MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, duration, GetPriceList(startAt, competenceLevel, listType))).ToList(),
                 travelCost,
                 brokerFee);
         }
@@ -78,7 +77,7 @@ namespace Tolk.BusinessLogic.Services
             };
         }
 
-        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, DateTimeOffset endAt, DateTimeOffset originStartAt, DateTimeOffset originEndAt, CompetenceLevel competenceLevel, PriceListType listType, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, Order replacingOrder, DateTimeOffset orderCreatedDate, List<MealBreak> mealbreaks = null)
+        public PriceInformation GetPricesRequisition(DateTimeOffset startAt, TimeSpan duration, DateTimeOffset originStartAt, TimeSpan originDuration, CompetenceLevel competenceLevel, PriceListType listType, out bool useRequestPricerows, int? timeWasteNormalTime, int? timeWasteIWHTime, IEnumerable<PriceRowBase> requestPriceRows, decimal? outlay, Order replacingOrder, DateTimeOffset orderCreatedDate, List<MealBreak> mealbreaks = null)
         {
             var prices = GetPriceList(startAt, competenceLevel, listType);
 
@@ -86,8 +85,8 @@ namespace Tolk.BusinessLogic.Services
             IDictionary<PriceListRowType, int> mealbreakTimes = GetMealBreakTimesAndTypes(mealbreaks);
 
             //compare compensation for origin times with requisition times (including mealbreaks), broker/interpreter should have the compensation that get most payed
-            var pricesRequisition = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, endAt, prices, mealbreaks), mealbreakTimes);
-            var pricesOriginTimes = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(originStartAt, originEndAt, prices, mealbreaks), mealbreakTimes);
+            var pricesRequisition = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(startAt, duration, prices, mealbreaks), mealbreakTimes);
+            var pricesOriginTimes = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(originStartAt, originDuration, prices, mealbreaks), mealbreakTimes);
 
             useRequestPricerows = UsePricesOriginTimes(pricesRequisition, pricesOriginTimes);
 
@@ -97,7 +96,7 @@ namespace Tolk.BusinessLogic.Services
             //if replacementorder - check and compare start- and endtime from replacing order
             if (replacingOrder != null)
             {
-                var pricesReplacingOrder = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(replacingOrder.StartAt, replacingOrder.EndAt, prices, mealbreaks), mealbreakTimes);
+                var pricesReplacingOrder = MergePriceListRowsAndReduceForMealBreak(GetPriceRowsPerType(replacingOrder.StartAt, replacingOrder.Duration, prices, mealbreaks), mealbreakTimes);
 
                 bool useReplacingOrderTimes = UsePricesOriginTimes(useRequestPricerows ? pricesOriginTimes : pricesRequisition, pricesReplacingOrder);
                 if (useReplacingOrderTimes)
@@ -108,7 +107,7 @@ namespace Tolk.BusinessLogic.Services
             }
             //get lost time and extra charges
             pricesToUse.AddRange(GetLostTimePriceRows(startAt, timeWasteNormalTime, timeWasteIWHTime, prices));
-            return CompletePricesWithExtraCharges(startAt, endAt, pricesToUse, null, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee), outlay);
+            return CompletePricesWithExtraCharges(startAt, duration, pricesToUse, null, requestPriceRows.Single(rpr => rpr.PriceRowType == PriceRowType.BrokerFee), outlay);
         }
 
         /// <summary>
@@ -176,8 +175,9 @@ namespace Tolk.BusinessLogic.Services
             return reducedMinutes > 0 ? reducedMinutes % newPriceRow.PriceListRow.MaxMinutes > 0 ? (reducedMinutes / newPriceRow.PriceListRow.MaxMinutes) + 1 : reducedMinutes / newPriceRow.PriceListRow.MaxMinutes : 0;
         }
 
-        private PriceInformation CompletePricesWithExtraCharges(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceRowBase> priceListRowsPerPriceType, decimal? travelCost, PriceRowBase brokerFeePriceRow, decimal? outlay = null)
+        private PriceInformation CompletePricesWithExtraCharges(DateTimeOffset startAt, TimeSpan duration, List<PriceRowBase> priceListRowsPerPriceType, decimal? travelCost, PriceRowBase brokerFeePriceRow, decimal? outlay = null)
         {
+            DateTimeOffset endAt = startAt.AddTicks(duration.Ticks);
             List<PriceRowBase> allPriceRows = new List<PriceRowBase>
             {
                 GetPriceRowSocialInsuranceCharge(startAt, endAt, priceListRowsPerPriceType),
@@ -423,12 +423,12 @@ namespace Tolk.BusinessLogic.Services
             };
         }
 
-        private IEnumerable<PriceRowBase> GetPriceRowsPerType(DateTimeOffset startAt, DateTimeOffset endAt, List<PriceListRow> prices, List<MealBreak> mealbreaks = null)
+        private IEnumerable<PriceRowBase> GetPriceRowsPerType(DateTimeOffset startAt, TimeSpan duration, List<PriceListRow> prices, List<MealBreak> mealbreaks = null)
         {
             int maxMinutes = 330;
-            TimeSpan span = endAt - startAt;
+            DateTimeOffset endAt = startAt.AddTicks(duration.Ticks);
             int mealbreakMinutes = mealbreaks == null ? 0 : mealbreaks.Sum(mb => mb.Minutes);
-            int totalMinutes = (int)span.TotalMinutes - mealbreakMinutes;
+            int totalMinutes = (int)duration.TotalMinutes - mealbreakMinutes;
             if (totalMinutes > maxMinutes)
             {
                 DateTimeOffset extraTimeStartsAt = startAt.AddMinutes(maxMinutes);

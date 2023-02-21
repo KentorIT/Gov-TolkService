@@ -46,11 +46,12 @@ namespace Tolk.BusinessLogic.Services
                 throw new InvalidOperationException($"Cannot create requisition on order {request.OrderId}");
             }
             request.PriceRows = await _dbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToListAsync();
+            TimeSpan sessionDuration = sessionEndedAt - sessionStartedAt;
             var priceInformation = _priceCalculationService.GetPricesRequisition(
                 sessionStartedAt,
-                sessionEndedAt,
+                sessionDuration,
                 request.Order.StartAt,
-                request.Order.EndAt,
+                request.Order.Duration,
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
                 request.Order.CustomerOrganisation.PriceListType,
                 out bool useRequestRows,

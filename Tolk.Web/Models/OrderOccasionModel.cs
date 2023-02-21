@@ -13,5 +13,7 @@ namespace Tolk.Web.Models
         public bool ExtraInterpreter { get; set; }
 
         public bool? MealBreakIncluded { get; set; }
+
+        public TimeSpan? ExpectedLength { get; set; }
     }
 }
