@@ -91,7 +91,7 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private enum OutputType { Text, DateTimeOffset, Bool, NullableBool, Enum, Currency, MultilineText, TimeSpan, TimeRange, FlexibleTimeRange, RadioButtonGroup, CheckboxGroup, Date }
+        private enum OutputType { Text, DateTimeOffset, Bool, NullableBool, Enum, Currency, MultilineText, TimeSpan, TimeRange, FlexibleTimeRange, RadioButtonGroup, CheckboxGroup, Date, Clock }
 
         private void WriteDetails(TextWriter writer)
         {
@@ -130,6 +130,10 @@ namespace Tolk.Web.TagHelpers
                 case OutputType.TimeSpan:
                     var time = ((TimeSpan?)For.ModelExplorer.Model) ?? TimeSpan.Zero;
                     text = ValuePrefix + (time.Hours > 0 ? $"{time.Hours} timmar {time.Minutes} minuter" : $"{time.Minutes} minuter");
+                    break;
+                case OutputType.Clock:
+                    var clock = (TimeSpan?)For.ModelExplorer.Model;
+                    text = ValuePrefix + clock?.ToString(@"hh\:mm") ?? "-";
                     break;
                 case OutputType.RadioButtonGroup:
                     text = ValuePrefix + ((RadioButtonGroup)For.ModelExplorer.Model).SelectedItem.Text;
@@ -185,6 +189,10 @@ namespace Tolk.Web.TagHelpers
             if (For.ModelExplorer.Metadata.DataTypeName == "MultilineText")
             {
                 return OutputType.MultilineText;
+            }
+            if (For.ModelExplorer.Metadata.DataTypeName == "Clock")
+            {
+                return OutputType.Clock;
             }
             if (For.ModelExplorer.ModelType == typeof(TimeSpan)
                 || For.ModelExplorer.ModelType == typeof(TimeSpan?))

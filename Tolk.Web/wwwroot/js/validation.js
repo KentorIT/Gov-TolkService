@@ -7,6 +7,19 @@ function isNullOrEmpty(val) {
         || val == '' /* eslint-disable-line eqeqeq */
         || val.trim().length === 0;
 }
+$.validator.addMethod('validtimespanrange', function (value, element, params) {
+    var timespanGroup = $(element).parents(".input-group.time:not(.timesplit)");
+    var hour = timespanGroup.find("select[id$=_Hours]").val();
+    var minute = timespanGroup.find("select[id$=_Minutes]").val();
+    if (isNullOrEmpty(hour) || isNullOrEmpty(minute)) {
+        //Do not try to validate if both are not set.
+        return true;
+    }
+    var time = hour.padStart(2, "0") + ":" + minute.padStart(2, "0") + ":00";
+    var startAt = $("#" + params[0]).val();
+    var endAt = $("#" + params[1]).val();
+    return (time >= startAt && time <= endAt);
+});
 
 $.validator.addMethod('requiredif', function (value, element, params) {
     var otherElement = params[0];
@@ -87,4 +100,8 @@ $.validator.unobtrusive.adapters.add('requiredif', ['otherproperty', 'otherprope
 $.validator.unobtrusive.adapters.add('requiredchecked', ['min', 'max', 'maxchecked'], function (options) {
     options.rules['requiredchecked'] = [options.params['min'], options.params['max'], options.params['maxchecked'], options.message];
     options.messages['requiredchecked'] = options.message;
+});
+$.validator.unobtrusive.adapters.add('validtimespanrange', ['startatproperty', 'endatproperty'], function (options) {
+    options.rules['validtimespanrange'] = [options.params['startatproperty'], options.params['endatproperty'], options.message];
+    options.messages['validtimespanrange'] = options.message;
 });

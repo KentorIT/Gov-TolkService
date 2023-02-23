@@ -399,6 +399,9 @@ namespace Tolk.BusinessLogic.Entities
 
         internal override bool UserIsContact(int userId) => ContactPersonId == userId;
 
+        internal bool IsValidRespondedStartAt(DateTimeOffset? respondedStartAt)
+            => (!respondedStartAt.HasValue && !ExpectedLength.HasValue) || (ExpectedLength.HasValue && StartAt <= respondedStartAt && EndAt.Subtract(ExpectedLength.Value) >= respondedStartAt);
+
         #endregion
     }
 }

@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Routing;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
@@ -163,6 +165,17 @@ namespace Tolk.Web.Models
 
         public bool AllowAccept { get; set; } = true;
 
+        public TimeSpan? EarliestStartAt => OrderViewModel?.FlexibleTimeRange.EarliestStartAt;
+        public TimeSpan? LatestStartAt => OrderViewModel?.FlexibleTimeRange.LatestStartAt;
+
+        public bool IsFlexibleOrder { get; set; } = false;
+
+        [Display(Name = "Förväntad starttid", Description = "Tiden som tolken kommer.")]
+        [RequiredIf(nameof(IsFlexibleOrder), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
+        [ValidTimeSpanRange(StartAtProperty = nameof(EarliestStartAt), EndAtProperty = nameof(LatestStartAt)  )]
+        [DataType("Clock")]
+        public TimeSpan? RespondedStartAt { get; set; }
+
         [Display(Name = "Tillsätt tolk direkt", Description = "Detta är en förfrågan med lång framförhållning, där ni som förmedling inte behöver tillsätta tolk i första svaret. Men om ni gör det så kommer det anses som en fullständig tillsättning, vilket gör att ni inte behöver tillsätta tolken senare.")]
         public bool FullAnswer { get; set; } = true;
 
@@ -228,6 +241,7 @@ namespace Tolk.Web.Models
                 BrokerReferenceNumber = request.BrokerReferenceNumber,
                 Interpreter = request.Interpreter?.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
+                RespondedStartAt = request.RespondedStartAt?.GetTimePartAsTimeSpan(),
                 RequirementAnswers = request.Order.Requirements.Select(r => new RequestRequirementAnswerModel
                 {
                     OrderRequirementId = r.OrderRequirementId,

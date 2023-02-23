@@ -52,6 +52,10 @@ namespace Tolk.BusinessLogic.Helpers
                 .AddSeconds(time.Second);
         }
 
+        public static TimeSpan GetTimePartAsTimeSpan(this DateTimeOffset baseTime)
+            => new(baseTime.Hour, baseTime.Minute, 0);
+        
+
         public static DateTimeOffset ClearSeconds(this DateTimeOffset baseTime)
             => baseTime.AddSeconds(-baseTime.Second);
     }

@@ -110,6 +110,10 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "CompetenceLevel was missing");
                 }
+                //if (order.ExpectedLength.HasValue && !model.RespondedStartAt.HasValue)
+                //{
+                //    return ReturnError(ErrorCodes.NEWERRORTYPE);
+                //}
                 var now = _timeService.SwedenNow;
                 if (request.Status == RequestStatus.Created)
                 {
@@ -137,7 +141,8 @@ namespace Tolk.Web.Api.Controllers
                         model.ExpectedTravelCosts,
                         model.ExpectedTravelCostInfo,
                         model.LatestAnswerTimeForCustomer,
-                        model.BrokerReferenceNumber
+                        model.BrokerReferenceNumber,
+                        null //model.RespondedStartAt TODO: Handle possible responded start at here!!
                     );
                     await _dbContext.SaveChangesAsync();
                     return Ok(new AnswerResponse { InterpreterId = interpreter.InterpreterBrokerId });
@@ -201,6 +206,12 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.AllRequirementsMustBeAnsweredOnAccept);
                 }
+
+                //if (order.ExpectedLength.HasValue && !model.RespondedStartAt.HasValue)
+                //{
+                //    return ReturnError(ErrorCodes.NEWERRORTYPE);
+                //}
+
                 var now = _timeService.SwedenNow;
                 await _requestService.Accept(
                         request,
@@ -218,7 +229,8 @@ namespace Tolk.Web.Api.Controllers
                         }).ToList(),
                         //Does not handle attachments yet.
                         new List<RequestAttachment>(),
-                        model.BrokerReferenceNumber
+                        model.BrokerReferenceNumber,
+                        null //model.RespondedStartAt TODO: Handle possible responded start at here!!
                     );
                 await _dbContext.SaveChangesAsync();
                 return Ok(new ResponseBase());

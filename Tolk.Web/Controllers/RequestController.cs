@@ -143,6 +143,7 @@ namespace Tolk.Web.Controllers
                 model.AllowProcessing = !request.RequestGroupId.HasValue;
                 model.AllowAccept = request.AllowAccept;
                 model.FullAnswer = !request.AllowAccept;
+                model.IsFlexibleOrder = request.Order.ExpectedLength.HasValue;
                 model.OrderViewModel.UseAttachments = true;
                 return View(model);
             }
@@ -340,10 +341,24 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Answer(RequestAnswerModel model)
         {
+            var request = await _dbContext.Requests.GetRequestForAcceptById(model.RequestId);
+            if (request.Order.ExpectedLength.HasValue && !request.RespondedStartAt.HasValue)
+            {
+                var range = new FlexibleTimeRange
+                {
+                    FlexibleStartDateTime = request.Order.StartAt,
+                    FlexibleEndDateTime = request.Order.EndAt,
+                    ExpectedLength = request.Order.ExpectedLength.Value
+                };
+                model.EarliestStartAt = range.EarliestStartAt;
+                model.LatestStartAt = range.LatestStartAt;
+            }
+            if (request.RespondedStartAt.HasValue && model.IsFlexibleOrder)
+            {
+                model.IsFlexibleOrder = false;
+            }
             if (ModelState.IsValid)
             {
-                var request = await _dbContext.Requests.GetRequestForAcceptById(model.RequestId);
-
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
                     if (!request.IsToBeProcessedByBroker)
@@ -381,7 +396,8 @@ namespace Tolk.Web.Controllers
                             model.ExpectedTravelCosts,
                             model.ExpectedTravelCostInfo,
                             (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
-                            model.BrokerReferenceNumber
+                            model.BrokerReferenceNumber,
+                            model.RespondedStartAt.HasValue ? request.Order.StartAt.Date.Add(model.RespondedStartAt.Value).ToDateTimeOffsetSweden() : null
                         );
                         await _dbContext.SaveChangesAsync();
                     }
@@ -406,9 +422,20 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Accept(RequestAcceptModel model)
         {
+            var request = await _dbContext.Requests.GetRequestForAcceptById(model.RequestId);
+            if (request.Order.ExpectedLength.HasValue)
+            {
+                var range = new FlexibleTimeRange
+                {
+                    FlexibleStartDateTime = request.Order.StartAt,
+                    FlexibleEndDateTime = request.Order.EndAt,
+                    ExpectedLength = request.Order.ExpectedLength.Value
+                };
+                model.EarliestStartAt = range.EarliestStartAt;
+                model.LatestStartAt = range.LatestStartAt;
+            }
             if (ModelState.IsValid)
             {
-                var request = await _dbContext.Requests.GetRequestForAcceptById(model.RequestId);
 
                 if ((await _authorizationService.AuthorizeAsync(User, request, Policies.Accept)).Succeeded)
                 {
@@ -432,7 +459,6 @@ namespace Tolk.Web.Controllers
                     }).ToList());
                     try
                     {
-
                         await _requestService.Accept(
                             request,
                             _clock.SwedenNow,
@@ -442,7 +468,8 @@ namespace Tolk.Web.Controllers
                             model.InterpreterCompetenceLevelOnAccept,
                             requirementAnswers,
                             model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
-                            model.BrokerReferenceNumber
+                            model.BrokerReferenceNumber,
+                            request.Order.ExpectedLength.HasValue ? request.Order.StartAt.Date.Add(model.RespondedStartAt.Value).ToDateTimeOffsetSweden() : null
                         );
                         await _dbContext.SaveChangesAsync();
                     }
@@ -460,6 +487,7 @@ namespace Tolk.Web.Controllers
                 }
                 return Forbid();
             }
+            //TODO: send back a full model, with the errors! See Order.create?
             return RedirectToAction(nameof(Process), new { id = model.RequestId });
         }
 
@@ -739,7 +767,7 @@ namespace Tolk.Web.Controllers
             model.ActiveRequest.LanguageAndDialect = model.LanguageAndDialect;
             model.ActiveRequest.AttachmentListModel = model.RequestAttachmentListModel;
             model.ActiveRequest.RequestCalculatedPriceInformationModel = model.ActiveRequestPriceInformationModel;
-            model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.RequestedCompetenceLevels);            
+            model.OrderCalculatedPriceInformationModel = GetPriceinformationOrderToDisplay(request, model.RequestedCompetenceLevels);
             model.EventLog = new EventLogModel
             {
                 Header = "Bokningshändelser",

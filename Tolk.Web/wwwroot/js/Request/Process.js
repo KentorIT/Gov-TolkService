@@ -1,5 +1,13 @@
-$(function () {
+$.fn.extend({
+    forceValidation: function () {
+        var $form = $(this).closest("form");
+        $form.validate();
+        $(this).valid();
+        return $(this);
+    }
+});
 
+$(function () {
     var checkRequirements = function checkRequirements() {
         $('.disable-at-required').attr('disabled', false);
 
@@ -12,7 +20,18 @@ $(function () {
             }
         });
     };
+    $("body").on("change", "#RespondedStartAt_Hours", function () {
+        if ($("#RespondedStartAt_Minutes").val() === "") {
+            $("#RespondedStartAt_Minutes").val(0).trigger("change").trigger("select2:select");
+        } else {
+            $("#RespondedStartAt_timeHidden").forceValidation();
+       }
+    });
+    $("body").on("change", "#RespondedStartAt_Minutes", function () {
+        $("#RespondedStartAt_timeHidden").forceValidation();
+    });
 
+    // Add change trigger on _timehidden
     checkRequirements();
 
     $("#InterpreterCompetenceLevel, #NewInterpreterOfficialInterpreterId").change(function () {
@@ -55,7 +74,7 @@ $(function () {
             $("#Answer").hide();
             $("#Accept").show();
             $(".required-on-accept-panel").show();
-       }
+        }
     }
 
     $("#Answer").closest("form").on("submit", function () {
@@ -72,10 +91,10 @@ $(function () {
         $("#Change").disableOnSubmit();
     });
 
-    $("#Decline").closest("form").on("submit", function () {  
+    $("#Decline").closest("form").on("submit", function () {
         if (!validateDeclineMessageExist()) {
             return false;
-        }   
+        }
         $("#Decline").disableOnSubmit();
     });
 
@@ -141,8 +160,7 @@ $(function () {
         return true;
     };
 
-    function validateDeclineMessageExist()
-    {
+    function validateDeclineMessageExist() {
         if ($("#DenyMessage").val().length > 0) {
             return true;
         }

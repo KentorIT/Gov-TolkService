@@ -728,35 +728,44 @@ input[type='checkbox']:checked:after {
   padding-bottom: 8px;
   padding-top: 8px;
 }
-.order-datepicker .date-part {
+.order-datepicker .date-part,
+.flexible-start-response-part .date-part {
   width: 170px;
   padding-bottom: 10px;
   float: left;
 }
-.order-datepicker .input-group.time.timesplit {
+.order-datepicker .input-group.time.timesplit,
+.flexible-start-response-part .input-group.time.timesplit {
   float: left;
 }
-.order-datepicker .input-group.time.timesplit.hour {
+.order-datepicker .input-group.time.timesplit.hour,
+.flexible-start-response-part .input-group.time.timesplit.hour {
   margin-right: 10px;
 }
-.order-datepicker .starttime-part {
+.order-datepicker .starttime-part,
+.flexible-start-response-part .starttime-part {
   width: 175px;
   float: left;
   padding-bottom: 10px;
 }
-.order-datepicker .starttime-part label {
+.order-datepicker .starttime-part label,
+.flexible-start-response-part .starttime-part label {
   display: block;
 }
-.order-datepicker .endtime-part {
+.order-datepicker .endtime-part,
+.flexible-start-response-part .endtime-part {
   width: 175px;
   float: left;
   padding-bottom: 10px;
 }
-.order-datepicker .endtime-part label {
+.order-datepicker .endtime-part label,
+.flexible-start-response-part .endtime-part label {
   display: block;
 }
 .order-datepicker .extra-interpreter-part,
-.order-datepicker .flexible-order-part {
+.flexible-start-response-part .extra-interpreter-part,
+.order-datepicker .flexible-order-part,
+.flexible-start-response-part .flexible-order-part {
   padding-top: 20px;
   margin-top: 10px;
   float: left;

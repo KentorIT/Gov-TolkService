@@ -502,11 +502,30 @@ namespace Tolk.Web.TagHelpers
 
             WriteSplitTimePickerInput(timeMinutesModelExplorer, timeMinuteFieldName, writer, false, isRequired, false);
             //RemoveRequiredIfNullable(tagBuilder);
+            var validtimespanrange = (ValidTimeSpanRangeAttribute)AttributeHelper.GetAttribute<ValidTimeSpanRangeAttribute>(
+                For.ModelExplorer.Metadata.ContainerType,
+                For.ModelExplorer.Metadata.PropertyName);
+            if (validtimespanrange != null)
+            {
+                var hiddenBuilder = _htmlGenerator.GenerateHidden(
+                    ViewContext,
+                    For.ModelExplorer,
+                    $"{For.Name}_timeHidden",
+                    null,
+                    false,
+                    new { @class = "force-validation" });
+                //Handled in the selectboxes above
+                hiddenBuilder.Attributes.Remove("data-val-requiredif");
+
+                hiddenBuilder.WriteTo(writer, _htmlEncoder);
+            }
+
             writer.WriteLine("</div>");
             writer.WriteLine();
             writer.WriteLine("<span class=\"time-errors\">");
             WriteValidation(writer, timeHourModelExplorer, timeHourFieldName);
             WriteValidation(writer, timeMinutesModelExplorer, timeMinuteFieldName);
+            WriteValidation(writer, For.ModelExplorer, $"{For.Name}_timeHidden");
             //Validation place for general error on the field
             WriteValidation(writer);
             writer.WriteLine("</span>");

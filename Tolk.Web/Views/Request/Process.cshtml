@@ -62,6 +62,32 @@
                 <form method="post" asp-action="Answer">
                     <input asp-for="RequestId" type="hidden" />
                     <input asp-for="OrderId" type="hidden" />
+                    <input asp-for="IsFlexibleOrder" type="hidden" />
+                    @if (Model.IsFlexibleOrder)
+                    {
+                        <input asp-for="EarliestStartAt" type="hidden" />
+                        <input asp-for="LatestStartAt" type="hidden" />
+                        <div class="row">
+                            <div class="col-sm-4">
+                                Detta är en bokning med flexibel starttid där ni som förmedling kan svara när tillfället kommer starta, inom de ramar som beskrivs.
+                            </div>
+                            <div class="col-sm-4">
+                                <display-entry asp-for="OrderViewModel.FlexibleTimeRange" />
+                            </div>
+                            <div class="col-sm-4">
+                                @if (!Model.RespondedStartAt.HasValue)
+                                {
+
+                                    <form-entry asp-for="RespondedStartAt" class="flexible-start-response-part" />
+                                } 
+                                else
+                                {
+                                    <display-entry asp-for="RespondedStartAt" class="flexible-start-response-part" />
+                                }
+
+                            </div>
+                        </div>
+                    }
                     @if (Model.AllowAccept)
                     {
                         <div class="row">

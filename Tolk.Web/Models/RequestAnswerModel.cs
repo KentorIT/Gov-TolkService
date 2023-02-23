@@ -66,5 +66,15 @@ namespace Tolk.Web.Models
             }
         }
 
+        //TODO: Make a lot of inheritence here!!!
+        public TimeSpan? EarliestStartAt { get; set; }
+        public TimeSpan? LatestStartAt { get; set; }
+
+        public bool IsFlexibleOrder { get; set; }
+
+        [RequiredIf(nameof(IsFlexibleOrder), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
+        [ValidTimeSpanRange(StartAtProperty = nameof(EarliestStartAt), EndAtProperty = nameof(LatestStartAt))]
+        public TimeSpan? RespondedStartAt { get; set; }
+
     }
 }

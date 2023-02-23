@@ -5,7 +5,7 @@ using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
 {
-    public class FlexibleTimeRange: IModel
+    public class FlexibleTimeRange : IModel
     {
         [Display(Name = "Datum")]
         [Required(ErrorMessage = "Ange datum")]
@@ -69,6 +69,10 @@ namespace Tolk.Web.Models
         }
 
         public TimeSpan ExpectedLength { get; set; }
+
+        public TimeSpan? EarliestStartAt => FlexibleStartDateTime.Value.TimeOfDay;
+        public TimeSpan? LatestStartAt => FlexibleEndDateTime.Value.TimeOfDay.Subtract(ExpectedLength);
+
 
         public string AsSwedishString =>
             $"Förväntad längd: {ExpectedLength.ToSwedishString("hh\\:mm")}<br/>{StartDate.ToSwedishString("yyyy-MM-dd")} mellan {FlexibleStartTime.ToSwedishString("hh\\:mm")}-{FlexibleEndTime.ToSwedishString("hh\\:mm")}";

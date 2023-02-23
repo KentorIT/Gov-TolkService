@@ -262,7 +262,8 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset? latestAnswerTimeForCustomer,
             string brokerReferenceNumber,
             VerificationResult? verificationResult = null,
-            bool overrideRequireAccept = false
+            bool overrideRequireAccept = false,
+            DateTimeOffset? respondedStartAt = null
             )
         {
             if (priceInformation == null)
@@ -277,6 +278,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
             }
+            ValidateRespondedStartAtAgainstOrder(respondedStartAt);
             ValidateInterpreterLocationAgainstOrder(interpreterLocation);
             ValidateRequirementsAgainstOrder(requirementAnswers);
             ValidateCompetenceLevelAgainstOrder(competenceLevel);
@@ -294,7 +296,7 @@ namespace Tolk.BusinessLogic.Entities
             BrokerReferenceNumber = brokerReferenceNumber;
             ExpectedTravelCostInfo = expectedTravelCostInfo;
             LatestAnswerTimeForCustomer = latestAnswerTimeForCustomer;
-
+            RespondedStartAt = respondedStartAt;
             var requiresAccept = overrideRequireAccept || RequiresAccept;
 
             Status = requiresAccept ? RequestStatus.AnsweredAwaitingApproval : RequestStatus.Approved;
@@ -374,7 +376,8 @@ namespace Tolk.BusinessLogic.Entities
             List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
             PriceInformation priceInformation,
-            string brokerReferenceNumber
+            string brokerReferenceNumber, 
+            DateTimeOffset? respondedStartAt = null
             )
         {
             if (priceInformation == null)
@@ -393,6 +396,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
             }
+            ValidateRespondedStartAtAgainstOrder(respondedStartAt);
             ValidateRequirementsAgainstOrder(requirementAnswers);
             ValidateCompetenceLevelAgainstOrder(competenceLevel);
             ValidateInterpreterLocationAgainstOrder(interpreterLocation);
@@ -405,6 +409,7 @@ namespace Tolk.BusinessLogic.Entities
             Attachments = attachedFiles;
             PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
             BrokerReferenceNumber = brokerReferenceNumber;
+            RespondedStartAt = respondedStartAt;
 
             Status = RequestStatus.AcceptedAwaitingInterpreter;
             Order.Status = OrderStatus.RequestAcceptedAwaitingInterpreter;
@@ -835,6 +840,23 @@ namespace Tolk.BusinessLogic.Entities
                 {
                     throw new InvalidOperationException("LatestAnswerTimeForCustomer must not be before now.");
                 }
+            }
+        }
+        private void ValidateRespondedStartAtAgainstOrder(DateTimeOffset? respondedStartAt)
+        {
+            if (Order.ExpectedLength.HasValue && !respondedStartAt.HasValue)
+            {
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är en bokning med flexibel start, vilket kräver att svaret innehåller en förväntad starttid.");
+            }
+
+            if (!Order.ExpectedLength.HasValue && respondedStartAt.HasValue)
+            {
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är inte en bokning med flexibel start, vilket gör att man inte får tillhandahålla en förväntad starttid.");
+            }
+
+            if (!Order.IsValidRespondedStartAt(respondedStartAt))
+            {
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Den förväntade starttiden är inte korrekt i relation till bokningens flexibla tider.");
             }
         }
 
