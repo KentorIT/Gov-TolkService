@@ -149,17 +149,18 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2022-05-02 10:13:12 +01:00", "2022-05-02 00:00:00 +02:00")] //ordinary weekday before 14:00 => same day
-        [InlineData("2022-05-02 16:13:12 +01:00", "2022-05-03 00:00:00 +02:00")] //ordinary weekday after 14:00  => next workday
-        [InlineData("2022-05-06 10:13:12 +01:00", "2022-05-08 00:00:00 +02:00")] //Friday before 14:00 => set to Sunday
-        [InlineData("2022-05-06 14:13:12 +01:00", "2022-05-09 00:00:00 +02:00")] //Friday after 14:00 => set to next workday (Monday)
-        [InlineData("2022-05-07 14:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Saturday => set to Monday
-        [InlineData("2022-05-08 10:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Sunday before 14:00 => set to Monday
-        [InlineData("2022-05-08 14:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Sunday after 14:00 => set to Monday
-        [InlineData("2022-05-25 10:00:01 +01:00", "2022-05-26 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") before 14:00 => also include holiday
-        [InlineData("2022-05-25 14:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
-        [InlineData("2022-05-26 10:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") before 14:00 => set to Sunday
-        [InlineData("2022-05-26 14:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
+        [InlineData("2022-05-02 10:13:12 +02:00", "2022-05-02 00:00:00 +02:00")] //ordinary weekday before 14:00 => same day
+        [InlineData("2022-05-02 16:13:12 +02:00", "2022-05-03 00:00:00 +02:00")] //ordinary weekday after 14:00  => next workday
+        [InlineData("2022-05-06 10:13:12 +02:00", "2022-05-08 00:00:00 +02:00")] //Friday before 14:00 => set to Sunday
+        [InlineData("2022-05-06 13:13:12 +00:00", "2022-05-08 00:00:00 +02:00")] //Friday before 14:00 => set to Sunday
+        [InlineData("2022-05-06 14:13:12 +02:00", "2022-05-09 00:00:00 +02:00")] //Friday after 14:00 => set to next workday (Monday)
+        [InlineData("2022-05-07 14:00:01 +02:00", "2022-05-09 00:00:00 +02:00")] //Saturday => set to Monday
+        [InlineData("2022-05-08 10:00:01 +02:00", "2022-05-09 00:00:00 +02:00")] //Sunday before 14:00 => set to Monday
+        [InlineData("2022-05-08 14:00:01 +02:00", "2022-05-09 00:00:00 +02:00")] //Sunday after 14:00 => set to Monday
+        [InlineData("2022-05-25 10:00:01 +02:00", "2022-05-26 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") before 14:00 => also include holiday
+        [InlineData("2022-05-25 14:00:01 +02:00", "2022-05-29 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
+        [InlineData("2022-05-26 10:00:01 +02:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") before 14:00 => set to Sunday
+        [InlineData("2022-05-26 14:00:01 +02:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
         public void GetLastTimeForRequiringLatestAnswerByTest(string orderDate, string expectedLastTimeForRequiringLatestAnswerByTest)
         {
             DateTimeFormatInfo dtfi = new CultureInfo("sv-SE").DateTimeFormat;
@@ -175,18 +176,19 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2022-05-02 10:13:12 +01:00", "2022-05-03 00:00:00 +02:00")] //ordinary weekday before 14:00 => next workday
-        [InlineData("2022-05-02 16:13:12 +01:00", "2022-05-03 00:00:00 +02:00")] //ordinary weekday after 14:00 => next workday
-        [InlineData("2022-05-06 10:13:12 +01:00", "2022-05-09 00:00:00 +02:00")] //Friday before 14:00 => set to Monday
-        [InlineData("2022-05-06 14:13:12 +01:00", "2022-05-09 00:00:00 +02:00")] //Friday after 14:00 => set to Monday
-        [InlineData("2022-05-07 12:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Saturday before 14:00 => set to Monday
-        [InlineData("2022-05-07 15:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Saturday after 14:00 => set to Monday
-        [InlineData("2022-05-08 10:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Sunday before 14:00 => set to Monday
-        [InlineData("2022-05-08 14:00:01 +01:00", "2022-05-09 00:00:00 +02:00")] //Sunday after 14:00 => set to Monday
-        [InlineData("2022-05-25 10:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") before 14:00 => also include holiday
-        [InlineData("2022-05-25 14:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
-        [InlineData("2022-05-26 10:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") before 14:00 => set to Sunday
-        [InlineData("2022-05-26 14:00:01 +01:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
+        //testa gränser med
+        [InlineData("2022-05-02 10:13:12 +02:00", "2022-05-03 00:00:00 +02:00")] //ordinary weekday before 14:00 => next workday
+        [InlineData("2022-05-02 16:13:12 +02:00", "2022-05-03 00:00:00 +02:00")] //ordinary weekday after 14:00 => next workday
+        [InlineData("2022-05-06 10:13:12 +02:00", "2022-05-09 00:00:00 +02:00")] //Friday before 14:00 => set to Monday
+        [InlineData("2022-05-06 14:13:12 +02:00", "2022-05-09 00:00:00 +02:00")] //Friday after 14:00 => set to Monday
+        [InlineData("2022-05-07 12:00:01 +02:00", "2022-05-09 00:00:00 +02:00")] //Saturday before 14:00 => set to Monday
+        [InlineData("2022-05-07 15:00:01 +02:00", "2022-05-09 00:00:00 +02:00")] //Saturday after 14:00 => set to Monday
+        [InlineData("2022-05-08 10:00:01 +02:00", "2022-05-09 00:00:00 +02:00")] //Sunday before 14:00 => set to Monday
+        [InlineData("2022-05-08 14:00:01 +02:00", "2022-05-09 00:00:00 +02:00")] //Sunday after 14:00 => set to Monday
+        [InlineData("2022-05-25 10:00:01 +02:00", "2022-05-29 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") before 14:00 => also include holiday
+        [InlineData("2022-05-25 14:00:01 +02:00", "2022-05-29 00:00:00 +02:00")] //Day before Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
+        [InlineData("2022-05-26 10:00:01 +02:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") before 14:00 => set to Sunday
+        [InlineData("2022-05-26 14:00:01 +02:00", "2022-05-29 00:00:00 +02:00")] //Holiday Thursday ("squeeze day") after 14:00 => set to Sunday
         public void GetNextLastTimeForRequiringLatestAnswerByTest(string orderDate, string expectedNextLastTimeForRequiringLatestAnswerByTest)
         {
             DateTimeFormatInfo dtfi = new CultureInfo("sv-SE").DateTimeFormat;
