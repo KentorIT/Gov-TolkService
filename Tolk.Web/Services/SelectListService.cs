@@ -104,13 +104,13 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> ComplaintTypesByFrameworkAgreement(IEnumerable<ComplaintType> filter) => GetList(filter);
+        public static IEnumerable<SelectListItem> ComplaintTypesByFrameworkAgreement(FrameworkAgreementResponseRuleset ruleset) =>  GetList(EnumHelper.GetEnumsWithParent<ComplaintType, FrameworkAgreementResponseRuleset>(ruleset).ToList());
 
         public static IEnumerable<SelectListItem> RequisitionStatuses =>
-            EnumHelper.GetAllDescriptions<RequisitionStatus>()
-                .Where(e => e.Value != RequisitionStatus.Approved && e.Value != RequisitionStatus.DeniedByCustomer)
-                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
-                .ToList().AsReadOnly();
+                EnumHelper.GetAllDescriptions<RequisitionStatus>()
+                    .Where(e => e.Value != RequisitionStatus.Approved && e.Value != RequisitionStatus.DeniedByCustomer)
+                    .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+                    .ToList().AsReadOnly();
 
         public static IEnumerable<SelectListItem> OrderStatuses =>
             EnumHelper.GetAllDescriptions<OrderStatus>()

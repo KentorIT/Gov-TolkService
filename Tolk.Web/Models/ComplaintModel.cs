@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
-using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models
@@ -55,8 +52,6 @@ namespace Tolk.Web.Models
         [Placeholder("Orsak till reklamation. Beakta eventuell sekretess avseende informationen.")]
         [StringLength(1000)]
         public string Message { get; set; }
-
-        public List<ComplaintType> AvailableComplaintTypes => EnumHelper.GetEnumsWithParent<ComplaintType, FrameworkAgreementResponseRuleset>(FrameworkAgreementResponseRuleset).ToList();
 
         #region methods
 
