@@ -515,6 +515,9 @@ namespace Tolk.BusinessLogic.Data
                 .HasIndex(o => new { o.RequestId, o.Index })
                 .IsUnique();
 
+            builder.Entity<CustomerSpecificProperty>()
+                .HasKey(c => new { c.CustomerOrganisationId, c.PropertyType });
+
             //Views
             builder.Entity<OrderListRow>().HasNoKey().ToView(nameof(OrderListRows));
             builder.Entity<RequestListRow>().HasNoKey().ToView(nameof(RequestListRows));
@@ -681,6 +684,7 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<RegionGroup> RegionGroups { get; set; }
 
         public DbSet<BrokerFeeByServiceTypePriceListRow> BrokerFeeByServiceTypePriceListRows { get; set; }
+        public DbSet<CustomerSpecificProperty> CustomerSpecificProperties { get; set; }
 
         private static bool isUserStoreInitialized = false;
 

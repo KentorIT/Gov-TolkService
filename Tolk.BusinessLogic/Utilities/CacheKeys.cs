@@ -9,5 +9,6 @@
         public const string CustomerSettings = nameof(CustomerSettings);
         public const string CurrentOrLatestFrameworkAgreement = nameof(CurrentOrLatestFrameworkAgreement);
         public const string FrameworkAgreementList = nameof(FrameworkAgreementList);
+        public const string CustomerSpecificProperties = nameof(CustomerSpecificProperties);
     }
 }

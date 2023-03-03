@@ -7,6 +7,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
@@ -35,6 +36,7 @@ namespace Tolk.BusinessLogic.Services
             await _cache.RemoveAsync(CacheKeys.CustomerSettings);
             await _cache.RemoveAsync(CacheKeys.CurrentOrLatestFrameworkAgreement);
             await _cache.RemoveAsync(CacheKeys.FrameworkAgreementList);
+            await _cache.RemoveAsync(CacheKeys.CustomerSpecificProperties);
         }
 
         public async Task Flush(string id)
@@ -236,6 +238,20 @@ namespace Tolk.BusinessLogic.Services
                     _cache.Set(CacheKeys.CustomerSettings, customerSettings.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
                 }
                 return customerSettings;
+            }
+        }
+
+        public IEnumerable<CustomerSpecificPropertyModel> CustomerSpecificProperties
+        {
+            get
+            {
+                var customerSpecificProperties = _cache.Get(CacheKeys.CustomerSpecificProperties).FromByteArray<IEnumerable<CustomerSpecificPropertyModel>>();
+                if (customerSpecificProperties == null)
+                {
+                    customerSpecificProperties = _dbContext.CustomerSpecificProperties.Select(c => new CustomerSpecificPropertyModel(c)).ToList();
+                    _cache.Set(CacheKeys.CustomerSpecificProperties, customerSpecificProperties.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
+                }
+                return customerSpecificProperties;
             }
         }
     }

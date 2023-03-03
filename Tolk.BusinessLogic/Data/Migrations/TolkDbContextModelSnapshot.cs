@@ -818,6 +818,46 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("CustomerSettingHistoryEntries");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSpecificProperty", b =>
+                {
+                    b.Property<int>("CustomerOrganisationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PropertyType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DisplayDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("InputPlaceholder")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("MaxLength")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RegexErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RegexPattern")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("RemoteValidation")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Required")
+                        .HasColumnType("bit");
+
+                    b.HasKey("CustomerOrganisationId", "PropertyType");
+
+                    b.ToTable("CustomerSpecificProperties");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerStartListRow", b =>
                 {
                     b.Property<DateTimeOffset?>("AcceptedAt")
@@ -4005,6 +4045,17 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("CustomerChangeLogEntry");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSpecificProperty", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
+                        .WithMany()
+                        .HasForeignKey("CustomerOrganisationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomerOrganisation");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnit", b =>
