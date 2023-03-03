@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 using Tolk.Web.Models;
@@ -72,11 +73,31 @@ namespace Tolk.Web.TagHelpers
                 }
                 if (isDisplayed)
                 {
-                    WriteLabel(writer, isSubItem);
+                    if(For.ModelExplorer.ModelType == typeof(CustomerSpecificPropertyModel))
+                    {
+                        WriteCustomerSpecificLabel(writer);
+                    }
+                    else
+                    {
+                        WriteLabel(writer, isSubItem);
+                    }
                 }
                 WriteDetails(writer);
                 output.Content.AppendHtml(writer.ToString());
             }
+        }
+
+        private void WriteCustomerSpecificLabel(TextWriter writer)
+        {
+            var property = (CustomerSpecificPropertyModel)For.ModelExplorer.Model;
+            var tagBuilder = _htmlGenerator.GenerateLabel(
+                ViewContext,
+                For.ModelExplorer,
+                 $"{For.ModelExplorer.Metadata.Name}.{nameof(CustomerSpecificPropertyModel.Value)}",
+                 labelText: property.DisplayName,
+                 htmlAttributes: new { @class = "control-label" }
+                );
+            tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
         private void WriteLabel(TextWriter writer, bool isSubItem = false)
@@ -91,7 +112,7 @@ namespace Tolk.Web.TagHelpers
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 
-        private enum OutputType { Text, DateTimeOffset, Bool, NullableBool, Enum, Currency, MultilineText, TimeSpan, TimeRange, FlexibleTimeRange, RadioButtonGroup, CheckboxGroup, Date, Clock }
+        private enum OutputType { Text, DateTimeOffset, Bool, NullableBool, Enum, Currency, MultilineText, TimeSpan, TimeRange, FlexibleTimeRange, RadioButtonGroup, CheckboxGroup, Date, Clock, CustomerSpecificProperty }
 
         private void WriteDetails(TextWriter writer)
         {
@@ -143,6 +164,10 @@ namespace Tolk.Web.TagHelpers
                     text = ValuePrefix + ((CheckboxGroup)For.ModelExplorer.Model).SelectedItems
                         .Select(item => item.Text)
                         .Aggregate((current, next) => current + "\n" + next);
+                    break;
+                case OutputType.CustomerSpecificProperty:
+                    var property = (CustomerSpecificPropertyModel)For.ModelExplorer.Model;
+                    text = ValuePrefix + property.Value;
                     break;
                 default:
                     text = ValuePrefix + _htmlGenerator.Encode(For.ModelExplorer.Model);
@@ -214,6 +239,10 @@ namespace Tolk.Web.TagHelpers
             if (For.ModelExplorer.ModelType == typeof(CheckboxGroup))
             {
                 return OutputType.CheckboxGroup;
+            }
+            if (For.ModelExplorer.ModelType == typeof(CustomerSpecificPropertyModel))
+            {
+                return OutputType.CustomerSpecificProperty;
             }
             return OutputType.Text;
         }

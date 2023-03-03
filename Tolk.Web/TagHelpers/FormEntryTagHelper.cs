@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
-using Org.BouncyCastle.Crypto.Digests;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
@@ -47,6 +47,7 @@ namespace Tolk.Web.TagHelpers
         private const string InputTypeRadioButtonGroup = "radio-group";
         private const string InputTypeCheckboxGroup = "checkbox-group";
         private const string DateLabelId = "lblDate";
+        private const string InputCustomerSpecificField = "customer-specific-field";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -108,6 +109,7 @@ namespace Tolk.Web.TagHelpers
                 case InputTypeTimeRange:
                 case InputTypeDate:
                 case InputTypeSplitTimeRange:
+                case InputCustomerSpecificField:
                     if (Items != null)
                     {
                         throw new ArgumentException("Items are only relevant if type is select, radio-group or checkbox-group.");
@@ -177,6 +179,11 @@ namespace Tolk.Web.TagHelpers
                 if (For.ModelExplorer.ModelType == typeof(CheckboxGroup))
                 {
                     InputType = InputTypeCheckboxGroup;
+                    return;
+                }
+                if(For.ModelExplorer.ModelType == typeof(CustomerSpecificPropertyModel))
+                {
+                    InputType = InputCustomerSpecificField;
                     return;
                 }
             }
@@ -249,6 +256,12 @@ namespace Tolk.Web.TagHelpers
                     case InputTypeHiddenTimeRangeHidden:
                         WriteTimeRangeBlock(writer, true);
                         break;
+                    case InputCustomerSpecificField:
+                        var property = (CustomerSpecificPropertyModel)For.ModelExplorer.Model;
+                        WriteCustomerSpecificLabel(writer, property);
+                        WriteCustomerSpecificInput(writer, property);
+                        WriteCustomerSpecificValidation(writer);
+                        break;
                     default:
                         WriteLabel(writer);
                         WriteInput(writer);
@@ -260,7 +273,63 @@ namespace Tolk.Web.TagHelpers
                 output.Content.AppendHtml(writer.ToString());
             }
         }
+        private void WriteCustomerSpecificValidation(StringWriter writer)
+        {
+           var tagBuilder = _htmlGenerator.GenerateValidationMessage(
+           ViewContext,
+           For.ModelExplorer,
+           $"{For.ModelExplorer.Metadata.Name}.{nameof(CustomerSpecificPropertyModel.Value)}",
+           message: null,
+           tag: null,
+           htmlAttributes: new { @class = "text-danger" });
 
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+        }
+        private void WriteCustomerSpecificInput(StringWriter writer, CustomerSpecificPropertyModel property)
+        {
+            var tagBuilder = _htmlGenerator.GenerateTextBox(
+             ViewContext,
+             For.ModelExplorer,
+             $"{For.ModelExplorer.Metadata.Name}.{nameof(CustomerSpecificPropertyModel.Value)}",
+             value: property.Value,
+             format: null,
+             htmlAttributes: new { @class = "form-control" });
+
+            if (!string.IsNullOrEmpty(property.Placeholder))
+            {
+                tagBuilder.Attributes.Add("placeholder", property.Placeholder);
+            }
+            if (property.Required)
+            {
+                tagBuilder.Attributes.Add("data-val", "true");
+                tagBuilder.Attributes.Add("data-val-required", $"{property.DisplayName} Måste anges");
+            }
+            if (property.RemoteValidation)
+            {
+                tagBuilder.Attributes.Add("data-val-remote", ""); // add error from remote validation if possible
+                tagBuilder.Attributes.Add("data-val-remote-additionalfields", $"*.{nameof(property.Value)}");
+                tagBuilder.Attributes.Add("data-val-remote-url", $"/Validate/CustomerSpecific{property.PropertyToReplace}");
+            }
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+        }
+        private void WriteCustomerSpecificLabel(StringWriter writer, CustomerSpecificPropertyModel property)
+        {
+            var tagBuilder = _htmlGenerator.GenerateLabel(
+               ViewContext,
+               For.ModelExplorer,
+               $"{For.ModelExplorer.Metadata.Name}.{nameof(CustomerSpecificPropertyModel.Value)}",
+               labelText: property.DisplayName,
+               htmlAttributes: new { @class = "control-label" });
+            if (property.Required)
+            {
+                tagBuilder.InnerHtml.AppendHtml(RequiredStarSpan);
+            }
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+            if (!string.IsNullOrEmpty(property.DisplayDescription))
+            {
+                writer.WriteLine(InformationSpan.FormatSwedish(DescriptionOverride ?? property.DisplayDescription));
+            }
+        }      
         private const string RequiredStarSpan = "<span class=\"required-star\">*</span>";
         private const string InformationSpan = " <span class=\"form-entry-information glyphicon glyphicon-info-sign\" title=\"{0}\"></span>";
         private const string HelpAnchor = " <a href=\"{0}\" aria-label=\"Hjälp från manual\" target=\"_blank\"><span class=\"form-entry-help glyphicon glyphicon-question-sign\"></span></a>";
