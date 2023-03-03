@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
@@ -71,10 +72,17 @@ namespace Tolk.Web.Models
         [Display(Name = "Är tolkanvändare samma person som bokar", Description = "Om du är den som brukar använda tolken, dvs hålla i mötet, så välj Ja. Om du brukar boka tolk åt en annan person på myndigheten så välj Nej")]
         public TrueFalse? CreatorIsInterpreterUser { get; set; }
 
+        private string _invoiceReference;
         [Display(Name = "Fakturareferens", Description = "Här anger du den beställarreferens enligt era interna instruktioner som krävs för att fakturan för tolkuppdraget ska komma till rätt mottagare i er myndighet.")]
         [StringLength(100)]
         [Placeholder("Er fakturareferens...")]
-        public string InvoiceReference { get; set; }
+        public string InvoiceReference
+        {
+            get { return CustomerSpecificInvoiceReference?.Value ?? _invoiceReference; }
+            set { _invoiceReference = value; }
+        }
+
+        public CustomerSpecificPropertyModel CustomerSpecificInvoiceReference { get; set; }
 
         public List<OrderRequirementModel> OrderRequirements { get; set; }
 

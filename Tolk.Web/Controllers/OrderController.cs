@@ -138,6 +138,7 @@ namespace Tolk.Web.Controllers
                 };
                 model.InfoMessage = message;
                 model.ErrorMessage = errorMessage;
+                SetCustomerSpecificProperties(model);               
                 return View(model);
             }
             return Forbid();
@@ -241,6 +242,7 @@ namespace Tolk.Web.Controllers
                     model.LocationCity = selectedLocation.City;
                     model.LocationStreet = selectedLocation.Street;
                 }
+                SetCustomerSpecificProperties(model);
                 return View(model);
             }
             return Forbid();
@@ -380,6 +382,7 @@ namespace Tolk.Web.Controllers
                 TravelConditionHours = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionHours,
                 TravelConditionKilometers = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionKilometers
             };
+            SetCustomerSpecificProperties(model);           
             var activeRegionIds = await _dbContext.Rankings.GetRegionsWithActiveRankings(_clock.SwedenNow.DateTime, _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementId).Select(r => r.RegionId).ToListAsync();
             var unitIds = user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList();
             model.UpdateModelWithDefaultSettings(unitIds, activeRegionIds);
@@ -403,7 +406,7 @@ namespace Tolk.Web.Controllers
                 ModelState.Remove("SplitTimeRange.EndTimeHour");
                 ModelState.Remove("SplitTimeRange.EndTimeMinutes");
                 model.SplitTimeRange = null;
-            }
+            }             
             if (ModelState.IsValid)
             {
                 using var trn = await _dbContext.Database.BeginTransactionAsync();
@@ -452,7 +455,7 @@ namespace Tolk.Web.Controllers
                 OrderViewModel updatedModel = null;
                 string warningOrderTimeInfo = string.Empty;
                 model.UpdateOrder(order, model.FirstOccasion, useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
-                updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
+                updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);                
                 if (model.IsMultipleOrders)
                 {
                     updatedModel.OrderOccasionDisplayModels = await GetGroupOrders(model, pricelistType, currentFrameworkAgreement.BrokerFeeCalculationType);
@@ -521,6 +524,7 @@ namespace Tolk.Web.Controllers
                 updatedModel.CustomerOrganisationNumber = user.CustomerOrganisation.OrganisationNumber;
                 updatedModel.CustomerPeppolId = user.CustomerOrganisation.PeppolId;
                 updatedModel.CompetenceIsRequired = order.SpecificCompetenceLevelRequired;
+                SetCustomerSpecificProperties(updatedModel);              
                 return PartialView(nameof(Confirm), updatedModel);
             }
             catch (Exception ex)
@@ -1039,5 +1043,22 @@ namespace Tolk.Web.Controllers
             return list;
         }
 
+        private void SetCustomerSpecificProperties(OrderBaseModel model)
+        {
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+            foreach (var property in customerSpecificProperties)
+            {
+                switch (property.PropertyToReplace)
+                {
+                    case PropertyType.InvoiceReference:
+                        var customerSpecific = property;
+                        customerSpecific.Value = model.InvoiceReference;
+                        model.CustomerSpecificInvoiceReference = customerSpecific;
+                        break;
+                    default:
+                        break;
+                }
+            }            
+        }
     }
 }

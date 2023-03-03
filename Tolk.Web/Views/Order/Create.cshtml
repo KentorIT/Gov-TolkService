@@ -60,7 +60,7 @@
                             <input type="hidden" asp-for="UserDefaultSettings.OffSiteDesignatedLocationCity" />
                             <input type="hidden" asp-for="UserDefaultSettings.OffSitePhoneContactInformation" />
                             <input type="hidden" asp-for="UserDefaultSettings.OffSiteVideoContactInformation" />
-                            <form-entry asp-for="AssignmentType" asp-items="SelectListService.AssignmentTypes" checked-value="@AssignmentType.Interpretation.ToString()" help-link="@HelpLinkService.GenerateUrl("nybokning_uppdragstyp")" />
+                            <form-entry asp-for="AssignmentType" asp-items="SelectListService.AssignmentTypes" checked-value="@AssignmentType.Interpretation.ToString()" help-link="@HelpLinkService.GenerateUrl("nybokning_uppdragstyp")" />                            
                             <div class="row">
                                 <div class="col-sm-4">
                                     <form-entry asp-for="LanguageId" class="collapse in" id="language-panel" type="select" asp-items="SelectListService.Languages" help-link="@HelpLinkService.GenerateUrl("nybokning_sprak")" />
@@ -334,7 +334,13 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-4">
-                                <form-entry asp-for="InvoiceReference" help-link="@HelpLinkService.GenerateUrl("nybokning_fakturareferens")" />
+                                @if(Model.CustomerSpecificInvoiceReference != null)
+                                {
+                                    <form-entry asp-for="CustomerSpecificInvoiceReference"/>                                
+                                } else
+                                {
+                                    <form-entry asp-for="InvoiceReference" help-link="@HelpLinkService.GenerateUrl("nybokning_fakturareferens")" />
+                                }
                             </div>
                             <div class="col-sm-4">
                                 <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" class="allow-clear" help-link="@HelpLinkService.GenerateUrl("nybokning_rekvisition")" />

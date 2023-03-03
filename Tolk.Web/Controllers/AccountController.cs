@@ -729,14 +729,20 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.Customer)]
         public async Task<ActionResult> ViewDefaultSettings(string message)
         {
-            return View(DefaultSettingsViewModel.GetModel(await GetUserForDefaultSettings(), Region.Regions, message));
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId());
+            var defaultSettingsModel = DefaultSettingsViewModel.GetModel(await GetUserForDefaultSettings(), Region.Regions, message);
+            SetCustomerSpecficViewProperties(defaultSettingsModel);
+            return View(defaultSettingsModel);
         }
 
 
         [Authorize(Policy = Policies.Customer)]
         public async Task<ActionResult> EditDefaultSettings(bool isFirstTimeUser = false)
         {
-            return View(DefaultSettingsModel.GetModel(await GetUserForDefaultSettings(),_cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset, isFirstTimeUser));
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId());
+            var defaultSettingsModel = DefaultSettingsModel.GetModel(await GetUserForDefaultSettings(), _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset, isFirstTimeUser);
+            SetCustomerSpecficInputProperties(defaultSettingsModel);
+            return View(defaultSettingsModel);
         }
 
         [ValidateAntiForgeryToken]
@@ -1042,7 +1048,40 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
         }
-
+        private DefaultSettingsModel SetCustomerSpecficInputProperties(DefaultSettingsModel model)
+        {
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+            foreach (var property in customerSpecificProperties)
+            {
+                switch (property.PropertyToReplace)
+                {
+                    case PropertyType.InvoiceReference:
+                        property.Value = model.InvoiceReference;
+                        model.CustomerSpecificInvoiceReference = property;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return model;
+        }
+        private DefaultSettingsViewModel SetCustomerSpecficViewProperties(DefaultSettingsViewModel model)
+        {
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+            foreach (var property in customerSpecificProperties)
+            {
+                switch (property.PropertyToReplace)
+                {
+                    case PropertyType.InvoiceReference:
+                        property.Value = model.InvoiceReference;
+                        model.CustomerSpecificInvoiceReference = property;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return model;
+        }
         #endregion
     }
 }

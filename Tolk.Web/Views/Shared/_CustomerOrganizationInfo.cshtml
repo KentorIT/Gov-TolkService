@@ -23,7 +23,14 @@ else
             <div class="col-sm-4">
                 <display-entry asp-for="CustomerName" />
                 <display-entry asp-for="CustomerPeppolId" />
-                <display-entry asp-for="InvoiceReference" />
+                @if (Model.CustomerSpecificInvoiceReference != null)
+                {
+                    <display-entry asp-for="CustomerSpecificInvoiceReference" />
+                }
+                else
+                {
+                    <display-entry asp-for="InvoiceReference" />                    
+                }
             </div>
             @if (IsOrderDetailView)
             {

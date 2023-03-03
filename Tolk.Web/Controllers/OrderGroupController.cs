@@ -89,7 +89,7 @@ namespace Tolk.Web.Controllers
                 model.AllowResponseNotAnsweredConfirmation = orderGroup.AllowResponseNotAnsweredConfirmation && allowEdit;
                 model.AllowUpdateExpiry = orderGroup.AllowUpdateExpiry && allowEdit;
                 model.UseAttachments = CachedUseAttachentSetting(orderGroup.CustomerOrganisationId);
-
+                SetCustomerSpecificViewProperties(model.CustomerInformationModel);
                 return View(model);
             }
             return Forbid();
@@ -232,5 +232,23 @@ namespace Tolk.Web.Controllers
 
         private bool CachedUseAttachentSetting(int customerOrganisationId) => _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == customerOrganisationId && !c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.HideAttachmentField));
 
+        private CustomerInformationModel SetCustomerSpecificViewProperties(CustomerInformationModel model)
+        {
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+            foreach (var property in customerSpecificProperties)
+            {
+                switch (property.PropertyToReplace)
+                {
+                    case PropertyType.InvoiceReference:
+                        var customerSpecific = property;
+                        customerSpecific.Value = model.InvoiceReference;
+                        model.CustomerSpecificInvoiceReference = customerSpecific;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return model;
+        }
     }
 }

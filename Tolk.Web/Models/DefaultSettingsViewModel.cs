@@ -4,6 +4,7 @@ using System.Linq;
 using Tolk.BusinessLogic;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Helpers;
 
@@ -60,6 +61,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Fakturareferens")]
         public string InvoiceReference { get; set; }
+        public CustomerSpecificPropertyModel CustomerSpecificInvoiceReference { get; set; }
 
         [Display(Name = "Tillkommande krav")]
         public List<OrderRequirementModel> OrderRequirements { get; set; }

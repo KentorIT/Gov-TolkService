@@ -22,7 +22,14 @@
                 <form-entry asp-for="RegionId" type="select" asp-items="SelectListService.Regions" class="allow-clear" />
             </div>
             <div class="col-sm-4">
-                <form-entry asp-for="InvoiceReference" />
+                @if(Model.CustomerSpecificInvoiceReference != null)
+                {
+                    <form-entry asp-for="CustomerSpecificInvoiceReference" />
+                }
+                else
+                {
+                    <form-entry asp-for="InvoiceReference" />
+                }
             </div>
             @if (customerUnitItems != null && customerUnitItems.Any())
             {

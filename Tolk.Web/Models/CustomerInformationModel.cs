@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
 
 namespace Tolk.Web.Models
 {
@@ -12,6 +13,8 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Fakturareferens")]
         public string InvoiceReference { get; set; }
+
+        public CustomerSpecificPropertyModel CustomerSpecificInvoiceReference { get; set; }
 
         [Display(Name = "Myndighet")]
         public string Name { get; set; }

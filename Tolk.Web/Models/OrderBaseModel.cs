@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
@@ -32,11 +33,29 @@ namespace Tolk.Web.Models
         [Display(Name = "Bokning skapad av")]
         public string CreatedByName { get; set; }
 
+        private string _invoiceReference;
+
         [Display(Name = "Fakturareferens", Description = "Här anger du den beställarreferens enligt era interna instruktioner som krävs för att fakturan för tolkuppdraget ska komma till rätt mottagare i er myndighet.")]
         [StringLength(100)]
         [Placeholder("Referens för korrekt fakturering...")]
         [Required]
-        public string InvoiceReference { get; set; }
+        public string InvoiceReference
+        {
+            get { return CustomerSpecificInvoiceReference?.Value ?? _invoiceReference; }
+            set
+            {
+                if (CustomerSpecificInvoiceReference != null)
+                {
+                    CustomerSpecificInvoiceReference.Value = value;
+                }
+                else
+                {
+                    _invoiceReference= value;
+                }
+            }
+        }
+
+        public CustomerSpecificPropertyModel CustomerSpecificInvoiceReference { get; set; }
 
         [Display(Name = "Bokning besvarad av")]
         [DataType(DataType.MultilineText)]
@@ -197,7 +216,7 @@ namespace Tolk.Web.Models
 
         #endregion
 
-        public virtual DateTimeOffset? StartAt 
+        public virtual DateTimeOffset? StartAt
         {
             get;
         }
