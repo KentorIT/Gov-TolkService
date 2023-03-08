@@ -504,7 +504,7 @@ namespace Tolk.Web.Controllers
                     {
                         _logger.LogInformation("Created initial user account {0}", user.UserName);
 
-                        result = await _userManager.AddToRolesAsync(user, new[] { Roles.SystemAdministrator, Roles.Impersonator });
+                        result = await _userManager.AddToRolesAsync(user, new[] { Roles.SystemAdministrator, Roles.Impersonator, Roles.ApplicationAdministrator });
                         if (result.Succeeded)
                         {
                             _logger.LogInformation("Added {0} to System administrator and Impersonator roles", user.UserName);
