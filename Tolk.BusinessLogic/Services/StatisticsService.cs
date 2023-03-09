@@ -415,8 +415,7 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Avtalsnummer";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AgreementNumber);
             rowsWorksheet.Row(1).Style.Font.Bold = true;
-            rowsWorksheet.Columns().AdjustToContents();
-            MemoryStream memoryStream = new MemoryStream();
+            MemoryStream memoryStream = new();
             workbook.SaveAs(memoryStream);
             memoryStream.Flush();
             memoryStream.Position = 0;
