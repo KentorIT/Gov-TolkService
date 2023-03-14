@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -41,6 +42,7 @@ namespace Tolk.Web.Controllers
         private readonly ListToModelService _listToModelService;
         private readonly EventLogService _eventLogService;
         private readonly UserService _userService;
+        private readonly ValidationService _validationService;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -56,7 +58,8 @@ namespace Tolk.Web.Controllers
             CacheService cacheService,
             ListToModelService listToModelService,
             EventLogService eventLogService,
-            UserService userService
+            UserService userService,
+            ValidationService validationService
             )
         {
             _dbContext = dbContext;
@@ -73,6 +76,7 @@ namespace Tolk.Web.Controllers
             _listToModelService = listToModelService;
             _eventLogService = eventLogService;
             _userService = userService;
+            _validationService = validationService;
         }
 
         public IActionResult List()
@@ -157,7 +161,9 @@ namespace Tolk.Web.Controllers
                     _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
                     TimeIsValidForOrderReplacement(order.StartAt))
                 {
-                    return View(await _listToModelService.AddInformationFromListsToModel(ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()), _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset)));
+                    var replaceOrderModel = ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()), _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset);
+                    SetCustomerSpecificProperties(replaceOrderModel);           
+                    return View(await _listToModelService.AddInformationFromListsToModel(replaceOrderModel));
                 }
                 else
                 {
@@ -172,6 +178,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(ReplaceOrderModel model)
         {
+            var validationResult = ValidateCustomerSpecificProperties(model);         
             if (ModelState.IsValid)
             {
                 Order order = await _dbContext.Orders.GetFullOrderById(model.ReplacingOrderId);
@@ -253,6 +260,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Update(UpdateOrderModel model)
         {
+            var validationResult = ValidateCustomerSpecificProperties(model);
             if (ModelState.IsValid)
             {
                 var order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
@@ -406,7 +414,8 @@ namespace Tolk.Web.Controllers
                 ModelState.Remove("SplitTimeRange.EndTimeHour");
                 ModelState.Remove("SplitTimeRange.EndTimeMinutes");
                 model.SplitTimeRange = null;
-            }             
+            }
+            var validationResult = ValidateCustomerSpecificProperties(model);                
             if (ModelState.IsValid)
             {
                 using var trn = await _dbContext.Database.BeginTransactionAsync();
@@ -431,9 +440,29 @@ namespace Tolk.Web.Controllers
                     trn.Commit();
                     return RedirectToAction(nameof(Sent), new { id = order.OrderId });
                 }
-            }
+            }            
             _logger.LogError($"{nameof(Add)} - {nameof(InvalidModelStateErrors)}: {InvalidModelStateErrors}");
             return View(model);
+        }
+
+        private (string ErrorMessage, bool Success) ValidateCustomerSpecificProperties(OrderBaseModel model)
+        {
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+            foreach (var property in customerSpecificProperties)
+            {
+                switch (property.PropertyToReplace)
+                {
+                    case PropertyType.InvoiceReference:
+                        if (!_validationService.ValidateCustomerSpecificProperty(property, model.InvoiceReference))
+                        {
+                            ModelState.AddModelError(nameof(PropertyType.InvoiceReference), property.RegexErrorMessage);
+                        };
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return (string.Empty, true);
         }
 
         private string InvalidModelStateErrors => string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));

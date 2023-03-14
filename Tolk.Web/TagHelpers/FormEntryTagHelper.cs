@@ -299,9 +299,9 @@ namespace Tolk.Web.TagHelpers
             {
                 tagBuilder.Attributes.Add("placeholder", property.Placeholder);
             }
+            tagBuilder.Attributes.Add("data-val", "true");
             if (property.Required)
             {
-                tagBuilder.Attributes.Add("data-val", "true");
                 tagBuilder.Attributes.Add("data-val-required", $"{property.DisplayName} Måste anges");
             }
             if (property.RemoteValidation)

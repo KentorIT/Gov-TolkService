@@ -29,6 +29,7 @@ namespace Tolk.BusinessLogic.Services
             services.AddScoped<CacheService>();
             services.AddScoped<OrderAgreementService>();
             services.AddScoped<ContractService>();
+            services.AddScoped<ValidationService>();
         }
     }
 }

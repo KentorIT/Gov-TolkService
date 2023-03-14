@@ -194,7 +194,14 @@
                 <div class="row">
                     <div class="col-sm-4">
                         <form-entry asp-for="ContactPersonId" type="select" asp-items="SelectListService.OtherContactPersons" />
-                        <form-entry asp-for="InvoiceReference" />
+                        @if (Model.CustomerSpecificInvoiceReference != null)
+                        {
+                            <form-entry asp-for="CustomerSpecificInvoiceReference" />
+                        }
+                        else
+                        {
+                            <form-entry asp-for="InvoiceReference" />                            
+                        }
                     </div>
                     <div class="col-sm-4">
                         <form-entry asp-for="UnitName" />

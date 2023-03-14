@@ -39,6 +39,7 @@ namespace Tolk.Web.Controllers
         private readonly IdentityErrorDescriber _identityErrorDescriber;
         private readonly INotificationService _notificationService;
         private readonly CacheService _cacheService;
+        private readonly ValidationService _validationService;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -51,7 +52,8 @@ namespace Tolk.Web.Controllers
             ISwedishClock clock,
             IdentityErrorDescriber identityErrorDescriber,
             INotificationService notificationService,
-            CacheService cacheService)
+            CacheService cacheService,
+            ValidationService validationService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -64,6 +66,7 @@ namespace Tolk.Web.Controllers
             _identityErrorDescriber = identityErrorDescriber;
             _notificationService = notificationService;
             _cacheService = cacheService;
+            _validationService = validationService;
         }
 
         public async Task<IActionResult> Index()
@@ -751,7 +754,7 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> EditDefaultSettings(DefaultSettingsModel model)
         {
             var user = await _userManager.GetUserAsync(User);
-
+            var validationResult = ValidateCustomerSpecificProperties(model);           
             if (ModelState.IsValid)
             {
                 if (user != null)
@@ -1058,6 +1061,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                     case PropertyType.InvoiceReference:
                         property.Value = model.InvoiceReference;
                         model.CustomerSpecificInvoiceReference = property;
+                        model.CustomerSpecificInvoiceReference.Required = false;
                         break;
                     default:
                         break;
@@ -1081,6 +1085,25 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 }
             }
             return model;
+        }
+        private (string ErrorMessage, bool Success) ValidateCustomerSpecificProperties(DefaultSettingsModel model)
+        {
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+            foreach (var property in customerSpecificProperties)
+            {
+                switch (property.PropertyToReplace)
+                {
+                    case PropertyType.InvoiceReference:                 
+                        if (model.InvoiceReference != null && !_validationService.ValidateCustomerSpecificProperty(property, model.InvoiceReference))
+                        {
+                            ModelState.AddModelError(nameof(PropertyType.InvoiceReference), property.RegexErrorMessage);
+                        };
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return (string.Empty, true);
         }
         #endregion
     }
