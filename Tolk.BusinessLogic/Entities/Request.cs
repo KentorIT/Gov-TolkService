@@ -106,6 +106,10 @@ namespace Tolk.BusinessLogic.Entities
         /// </summary>
         public DateTimeOffset? RespondedStartAt { get; set; }
 
+        public DateTimeOffset CalculatedStartAt => RespondedStartAt ?? Order.StartAt;
+
+        public DateTimeOffset CalculatedEndAt => RespondedStartAt.HasValue ? RespondedStartAt.Value.Add(Order.ExpectedLength.Value): Order.EndAt;
+
         public bool AllowOrderAgreementCreation()
         {
             //If invalid status, return false;

@@ -71,7 +71,7 @@ namespace Tolk.BusinessLogic.Services
                 if (request.Status == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)
                 {
                     string body = $"Ert tolkuppdrag hos {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
-                         $"Uppdraget har boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)} och skulle ha startat {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}." +
+                         $"Uppdraget har boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)} och skulle ha startat {request.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}." +
                          (createFullCompensationRequisition ? "\nDetta är en avbokning som skett med mindre än 48 timmar till tolkuppdragets start. Därmed utgår full ersättning, i de fall något ersättningsuppdrag inte kan ordnas av kund. Observera att ersättning kan tillkomma för eventuell tidsspillan som tolken skulle behövt ta ut för genomförande av aktuellt uppdrag. Även kostnader avseende resor och boende som ej är avbokningsbara, alternativt avbokningskostnader för resor och boende som avbokats kan tillkomma. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna." : "\nDetta är en avbokning som skett med mer än 48 timmar till tolkuppdragets start. Därmed utgår förmedlingsavgift till leverantören. Obs: Lördagar, söndagar och helgdagar räknas inte in i de 48 timmarna.");
                     CreateEmail(email.ContactInformation, $"Avbokat tolkuppdrag boknings-ID {orderNumber}",
                         body + GoToRequestPlain(request.RequestId),
@@ -83,7 +83,7 @@ namespace Tolk.BusinessLogic.Services
                 else
                 {
                     var body = $"Förfrågan från {request.Order.CustomerOrganisation.Name} har avbokats, med detta meddelande:\n{request.CancelMessage}\n" +
-                        $"Uppdraget har boknings-ID {orderNumber} och skulle ha startat {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}.";
+                        $"Uppdraget har boknings-ID {orderNumber} och skulle ha startat {request.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}.";
                     CreateEmail(email.ContactInformation, $"Avbokad förfrågan boknings-ID {orderNumber}",
                         body + GoToRequestPlain(request.RequestId),
                         HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
@@ -228,19 +228,19 @@ namespace Tolk.BusinessLogic.Services
             var email = GetOrganisationNotificationSettings(replacementRequest.Ranking.BrokerId, NotificationType.RequestReplacementCreated, NotificationChannel.Email);
             if (email != null)
             {
-                var bodyPlain = $"\tOrginal Start: {oldRequest.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                   $"\tOrginal Slut: {oldRequest.Order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                   $"\tErsättning Start: {replacementRequest.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                   $"\tErsättning Slut: {replacementRequest.Order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                var bodyPlain = $"\tOrginal Start: {oldRequest.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                   $"\tOrginal Slut: {oldRequest.CalculatedEndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                   $"\tErsättning Start: {replacementRequest.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
+                   $"\tErsättning Slut: {replacementRequest.CalculatedEndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
                    $"\tSvara senast: {replacementRequest.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" +
                    $"Gå till ersättningsuppdrag: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, replacementRequest.RequestId)}\n" +
                    $"Gå till ursprungligt uppdrag: {HtmlHelper.GetRequestViewUrl(_tolkBaseOptions.TolkWebBaseUrl, oldRequest.RequestId)}";
                 var bodyHtml = $@"
 <ul>
-<li>Orginal Start: {oldRequest.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
-<li>Orginal Slut: {oldRequest.Order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
-<li>Ersättning Start: {replacementRequest.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
-<li>Ersättning Slut: {replacementRequest.Order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Orginal Start: {oldRequest.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Orginal Slut: {oldRequest.CalculatedEndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Ersättning Start: {replacementRequest.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
+<li>Ersättning Slut: {replacementRequest.CalculatedEndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
 <li>Svara senast: {replacementRequest.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
 </ul>
 <div>{GoToRequestButton(replacementRequest.RequestId, textOverride: "Gå till ersättningsuppdrag", autoBreakLines: false)}</div>
@@ -642,7 +642,7 @@ Notera att er förfrågan INTE skickas vidare till nästa förmedling, tills des
                 var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats.\n\n" +
                 OrderReferenceNumberInfo(request.Order) +
                 $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
-                $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
+                $"Datum och tid för uppdrag: {request.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.CalculatedEndAt.ToSwedishString("HH:mm")}\n" +
                 $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
                 InterpreterCompetenceInfo(request.CompetenceLevel) +
                 GetPossibleInfoNotValidatedInterpreter(request);
@@ -1223,7 +1223,7 @@ Sammanställning:
                 var body = $"Svar på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit. Bokningsförfrågan har accepterats. {GetRequireApprovementText(request.LatestAnswerTimeForCustomer)}\n\n" +
                     OrderReferenceNumberInfo(request.Order) +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
-                    $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
+                    $"Datum och tid för uppdrag: {request.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
                     $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
                     InterpreterCompetenceInfo(request.CompetenceLevel) +
                     GetPossibleInfoNotValidatedInterpreter(request);
@@ -1260,7 +1260,7 @@ Sammanställning:
                 var body = $"Bekräftelse på bokningsförfrågan {orderNumber} från förmedling {request.Ranking.Broker.Name} har inkommit.\n\n" +
                     OrderReferenceNumberInfo(request.Order) +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
-                    $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
+                    $"Datum och tid för uppdrag: {request.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
                     $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
                     $"Förmedlingen har fram till {request.ExpiresAt.Value.ToSwedishString("yyyy-MM-dd HH:mm")} på sig att tillsätta tolk.\n";
 
@@ -1527,7 +1527,7 @@ Sammanställning:
                 var body = $"Nytt svar på bokningsförfrågan med boknings-ID {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
                     OrderReferenceNumberInfo(request.Order) +
                     $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
-                    $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
+                    $"Datum och tid för uppdrag: {request.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.CalculatedEndAt.ToSwedishString("HH:mm")}\n" +
                     $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
                     $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" + GetRequireApprovementText(request.LatestAnswerTimeForCustomer)
                     + GetPossibleInfoNotValidatedInterpreter(request);
@@ -1580,7 +1580,7 @@ Sammanställning:
                         var bodyNoAccept = $"Nytt svar på bokningsförfrågan {orderNumber} har inkommit. Förmedling {request.Ranking.Broker.Name} har bytt tolk för uppdraget.\n\n" +
                         OrderReferenceNumberInfo(request.Order) +
                         $"Språk: {request.Order.OtherLanguage ?? request.Order.Language?.Name}\n" +
-                        $"Datum och tid för uppdrag: {request.Order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.Order.EndAt.ToSwedishString("HH:mm")}\n" +
+                        $"Datum och tid för uppdrag: {request.CalculatedStartAt.ToSwedishString("yyyy-MM-dd HH:mm")}-{request.CalculatedEndAt.ToSwedishString("HH:mm")}\n" +
                         $"Inställelsesätt: {((InterpreterLocation)request.InterpreterLocation).GetDescription()}\n" +
                         $"{InterpreterCompetenceInfo(request.CompetenceLevel)}\n\n" +
                         "Tolkbytet är godkänt av systemet." +

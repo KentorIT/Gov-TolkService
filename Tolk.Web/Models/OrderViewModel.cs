@@ -292,13 +292,18 @@ namespace Tolk.Web.Models
                 {
                     StartDateTime = order.StartAt,
                     EndDateTime = order.EndAt
+                } : (request?.RespondedStartAt.HasValue ?? false) ?
+                new TimeRange
+                {
+                    StartDateTime = request.RespondedStartAt.Value,
+                    EndDateTime = request.RespondedStartAt.Value.Add(order.ExpectedLength.Value)
                 } : null,
-                FlexibleTimeRange = order.ExpectedLength.HasValue ?
+                FlexibleTimeRange = order.ExpectedLength.HasValue && (!request?.RespondedStartAt.HasValue ?? false) ?
                 new FlexibleTimeRange
                 {
                     FlexibleStartDateTime = order.StartAt,
                     FlexibleEndDateTime = order.EndAt,
-                    ExpectedLength = order.ExpectedLength.Value
+                    ExpectedLength = order.ExpectedLength.Value, 
                 } : null,
                 DisplayMealBreakIncludedText = order.MealBreakTextToDisplay,
                 Description = order.Description,

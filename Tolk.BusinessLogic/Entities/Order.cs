@@ -112,7 +112,7 @@ namespace Tolk.BusinessLogic.Entities
 
         #endregion
 
-        public string MealBreakTextToDisplay => ((int)(EndAt.DateTime - StartAt.DateTime).TotalMinutes > 300) ? MealBreakIncluded.HasValue ? MealBreakIncluded.Value ? "Måltidspaus beräknas ingå" : "Måltidspaus beräknas inte ingå" : "Ej angivet om måltidspaus beräknas ingå" : null;
+        public string MealBreakTextToDisplay => (int)Duration.TotalMinutes > 300 ? MealBreakIncluded.HasValue ? MealBreakIncluded.Value ? "Måltidspaus beräknas ingå" : "Måltidspaus beräknas inte ingå" : "Ej angivet om måltidspaus beräknas ingå" : null;
 
         public TimeSpan Duration => ExpectedLength ?? EndAt - StartAt;
 

@@ -57,7 +57,14 @@
                 <display-entry asp-for="RegionName" />
             </div>
             <div class="col-sm-4">
-                <display-entry asp-for="TimeRange" />
+                @if (Model.FlexibleTimeRange != null)
+                {
+                    <display-entry asp-for="FlexibleTimeRange" />
+                }
+                else
+                {
+                    <display-entry asp-for="TimeRange" />
+                }
                 @if (!string.IsNullOrEmpty(Model.DisplayMealBreakIncluded))
                 {
                     <div class="detail-text mealbreak-info">
