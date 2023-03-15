@@ -59,7 +59,12 @@ Select @UserId, 2, 59, 'https://localhost:5001/Request/CreatedRequiresAcceptance
 union
 Select @UserId, 2, 60, 'https://localhost:5001/Request/GroupCreatedRequiresAcceptance'
 
-
+union
+Select @UserId, 2, 64, 'https://localhost:5001/Request/RequestLostDueToNotFullyAnswered'
+union
+Select @UserId, 2, 65, 'https://localhost:5001/Request/RequestGroupLostDueToNotFullyAnswered'
+union
+Select @UserId, 2, 66, 'https://localhost:5001/Request/FlexibleRequestCreated'
 --Get broker 2 api user id
 Select @userid = Id
 from AspNetUsers

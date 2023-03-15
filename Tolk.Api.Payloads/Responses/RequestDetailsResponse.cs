@@ -20,11 +20,16 @@ namespace Tolk.Api.Payloads.Responses
         public string Region { get; set; }
         public DateTimeOffset? ExpiresAt { get; set; }
         public DateTimeOffset? LastAcceptAt { get; set; }
+
         public string RequiredAnswerLevel { get; set; }
         public string RequestAnswerRuleType { get; set; }
         public LanguageModel Language { get; set; }
-        public DateTimeOffset StartAt { get; set; }
-        public DateTimeOffset EndAt { get; set; }
+        public DateTimeOffset? FlexibleStartAt { get; set; }
+        public DateTimeOffset? FlexibleEndAt { get; set; }
+        public DateTimeOffset? StartAt { get; set; }
+        public DateTimeOffset? EndAt { get; set; }
+        public TimeSpan? ExpectedLength { get; set; }
+        public bool IsFlexibleRequest { get; set; }
         public IEnumerable<LocationModel> Locations { get; set; }
         public IEnumerable<CompetenceModel> CompetenceLevels { get; set; }
         public bool CompetenceLevelsAreRequired { get; set; }

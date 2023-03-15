@@ -118,8 +118,12 @@ namespace Tolk.Web.Api.Services
                     Key = request.Order.Language?.ISO_639_Code,
                     Description = request.Order.OtherLanguage ?? request.Order.Language.Name,
                 },
-                StartAt = request.Order.StartAt,
-                EndAt = request.Order.EndAt,
+                FlexibleStartAt = request.Order.ExpectedLength.HasValue ? request.Order.StartAt : null,
+                FlexibleEndAt = request.Order.ExpectedLength.HasValue ? request.Order.EndAt: null,
+                StartAt = request.Order.ExpectedLength.HasValue ? request.RespondedStartAt : request.Order.StartAt,
+                EndAt = request.Order.ExpectedLength.HasValue ? request.RespondedStartAt?.Add(request.Order.ExpectedLength.Value) :request.Order.EndAt,
+                ExpectedLength = request.Order.Duration,
+                IsFlexibleRequest = request.Order.ExpectedLength.HasValue,
                 Locations = request.Order.InterpreterLocations.Select(l => new LocationModel
                 {
                     OffsiteContactInformation = l.OffSiteContactInformation,

@@ -9,7 +9,7 @@ namespace Tolk.Web.Api.Helpers
     {
         public Uri TolkWebBaseUrl { get; set; }
         public static List<ErrorResponse> BrokerApiErrorResponses =>
-                new List<ErrorResponse>
+                new()
                 {
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.OrderNotFound, ErrorMessage = "The provided order number could not be found on a request connected to your organisation." },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.RequestNotFound, ErrorMessage = "The provided order number has no request in the correct state for the call." },
@@ -27,10 +27,14 @@ namespace Tolk.Web.Api.Helpers
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.AllRequirementsMustBeAnsweredOnAccept, ErrorMessage = "All requirement on a request must be accepted on accept." },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.AcceptIsNotAllowedOnTheRequest, ErrorMessage = "The request is not allowed for initial accept, it must be fully answered directly." },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.AcceptIsNotAllowedOnTheRequestGroup, ErrorMessage = "The request group is not allowed for initial accept, it must be fully answered directly." },
+                    new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.FlexibleRequestNeedsRespondedStartAt, ErrorMessage = "The request has a flexible start and end time, therefore it requires a RespondedStartAt." },
+                    new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.NonFlexibleRequestCannotHaveRespondedStartAt, ErrorMessage = "The request does not allow a flexible start, therefore a ResponseStartAt is ot allowed." },
+                    new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.RespondedStartAtAlreadySet, ErrorMessage = "The request already has received a RespondedStartAt on Accept. This cannot be changed on Answer." },
+                    new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.RespondedStartAtNotValid, ErrorMessage = "The RespondedStartAt is not valid related to the flexible start and end." },
                };
         
         public static List<ErrorResponse> CustomerApiErrorResponses =>
-                new List<ErrorResponse>
+                new()
                 {
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.CallingUserMissing, ErrorMessage = "You must provide a calling user for this call." },
                     new ErrorResponse { StatusCode = 403, ErrorCode = ErrorCodes.OrderNotFound, ErrorMessage = "The provided order number could not be found, connected to your organisation." },
@@ -40,7 +44,7 @@ namespace Tolk.Web.Api.Helpers
                };
 
         public static List<ErrorResponse> CommonErrorResponses =>
-                new List<ErrorResponse>
+                new()
                 {
                     new ErrorResponse { StatusCode = 500, ErrorCode = ErrorCodes.UnspecifiedProblem, ErrorMessage = "The api server encountered a problem. Please contact the support if the problem persists." },
                     new ErrorResponse { StatusCode = 401, ErrorCode = ErrorCodes.Unauthorized, ErrorMessage = "The api user could not be authorized." },

@@ -11,7 +11,7 @@ namespace Tolk.BusinessLogic.Services
         void ComplaintDisputed(Complaint complaint);
         void ComplaintDisputePendingTrial(Complaint complaint);
         void ComplaintTerminatedAsDisputeAccepted(Complaint complaint);
-        void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType,string frameWorkAgreementNumber = null, bool isBrokerMail = false, bool addContractInfo = true);       
+        void CreateEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, string frameWorkAgreementNumber = null, bool isBrokerMail = false, bool addContractInfo = true);
         void CreateReplacingEmail(string recipient, string subject, string plainBody, string htmlBody, NotificationType notificationType, int replacingEmailId, int resentByUserId);
         void CustomerCreated(CustomerOrganisation customer);
         void OrderCancelledByCustomer(Request request, bool createFullCompensationRequisition);
@@ -32,7 +32,9 @@ namespace Tolk.BusinessLogic.Services
         void RequestCancelledByBroker(Request request);
         void RequestChangedInterpreter(Request request);
         void RequestChangedInterpreterAccepted(Request request, InterpereterChangeAcceptOrigin changeOrigin = InterpereterChangeAcceptOrigin.User);
-        Task RequestCreated(Request request);
+        Task RequestNeedsFullAnswerCreated(Request request);
+        Task RequestNeedsAcceptanceCreated(Request request);
+        Task FlexibleRequestCreated(Request request);
         void RequestCreatedWithoutExpiry(Request request);
         void RequestDeclinedByBroker(Request request);
         void RequestGroupAccepted(RequestGroup requestGroup);

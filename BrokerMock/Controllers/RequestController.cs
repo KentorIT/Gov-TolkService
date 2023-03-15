@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,25 +80,7 @@ namespace BrokerMock.Controllers
             }
             var interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
             var extraInstructions = GetExtraInstructions(payload.Description);
-
-            if (extraInstructions.Contains("SLEEP20"))
-            {
-                Thread.Sleep(20000);
-            }
-
-            if (extraInstructions.Contains("VIEWUNAUTHORIZED"))
-            {
-                await _apiService.CallRequestViewUnauthorized(payload.OrderNumber);
-            }
-
-            if (extraInstructions.Contains("THROW"))
-            {
-                throw new Exception();
-            }
-            if (extraInstructions.Contains("VIEW"))
-            {
-                var req = await _apiService.GetOrderRequest(payload.OrderNumber);
-            }
+            await MockPreAnswerOnCreated(payload.OrderNumber, extraInstructions);
 
             if (!extraInstructions.Contains("LEAVEUNACKNOWLEDGED"))
             {
@@ -113,60 +96,7 @@ namespace BrokerMock.Controllers
                 {
                     if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
                     {
-                        var interpreter = interpreters?.FirstOrDefault();
-                        DateTimeOffset? latestAnswerAt = null;
-                        decimal? expectedTravelCosts = null;
-                        if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
-                        {
-                            interpreter = GetNewInterpreter();
-                        }
-                        if (extraInstructions.Contains("SETLATESTANSWERAT"))
-                        {
-                            latestAnswerAt = payload.StartAt.AddMinutes(-60);
-                            expectedTravelCosts = 300;
-                        }
-                        if (extraInstructions.Contains("ADDTRAVELCOSTS"))
-                        {
-                            expectedTravelCosts = 200;
-                        }
-
-                        if (extraInstructions.Contains("BADLOCATION"))
-                        {
-                            var badLocation = _cache.Get<List<ListItemResponse>>("LocationTypes").First(l => !payload.Locations.Any(pl => pl.Key == l.Key)).Key;
-                            //Find a location that is not present in payload
-
-                            await AssignInterpreter(
-                                payload.OrderNumber,
-                                interpreter,
-                                badLocation,
-                                payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
-                                payload.Requirements.Select(r => new RequirementAnswerModel
-                                {
-                                    Answer = "Japp",
-                                    CanMeetRequirement = true,
-                                    RequirementId = r.RequirementId
-                                }),
-                                expectedTravelCosts,
-                                latestAnswerAt
-                            );
-                        }
-                        else
-                        {
-                            await AssignInterpreter(
-                                payload.OrderNumber,
-                                interpreter,
-                                payload.Locations.First().Key,
-                                payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
-                                payload.Requirements.Select(r => new RequirementAnswerModel
-                                {
-                                    Answer = "Japp",
-                                    CanMeetRequirement = true,
-                                    RequirementId = r.RequirementId
-                                }),
-                                expectedTravelCosts,
-                                latestAnswerAt
-                            );
-                        }
+                        await AnswerRequestWithInstructions(payload, interpreters, extraInstructions);
                     }
                     if (extraInstructions.Contains("CHANGEINTERPRETERONCREATE"))
                     {
@@ -205,50 +135,10 @@ namespace BrokerMock.Controllers
                 //X-Kammarkollegiet-InterpreterService-Delivery
             }
 
-            if (extraInstructions.Contains("CREATEINTERPRETER"))
-            {
-                await CreateInterpreter(new InterpreterDetailsModel(GetNewInterpreter()));
-            }
-            if (extraInstructions.Contains("UPDATEINTERPRETER"))
-            {
-                await _apiService.GetInterpreters();
-                interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
-                await UpdateInterpreter(interpreters.OrderBy(i => i.FirstName).First());
-            }
-            if (extraInstructions.Contains("INACTIVATEINTERPRETER"))
-            {
-                await _apiService.GetInterpreters();
-                interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
-                var interpreter = interpreters.Where(i => i.IsActive).OrderBy(i => i.LastName).First();
-                await ToggleIfInterpreterIsActive(interpreter);
-            }
-            if (extraInstructions.Contains("ACTIVATEINTERPRETER"))
-            {
-                await _apiService.GetInterpreters();
-                interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
-                var interpreter = interpreters.Where(i => !i.IsActive).OrderBy(i => i.LastName).FirstOrDefault();
-                if (interpreter == null)
-                {
-                    interpreter = interpreters.Where(i => i.IsActive).OrderBy(i => i.LastName).First();
-                    interpreter = await ToggleIfInterpreterIsActive(interpreter);
-                }
-                await ToggleIfInterpreterIsActive(interpreter);
-            }
-            if (extraInstructions.Contains("VIEWINTERPRETER"))
-            {
-                await _apiService.GetInterpreters();
-                interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
-                var interpreter = interpreters.Where(i => i.OfficialInterpreterId != null).OrderBy(i => i.Email).First();
-                await _apiService.GetInterpreter(interpreter.InterpreterId.Value);
-                await _apiService.GetInterpreter(interpreter.OfficialInterpreterId);
-            }
-
-            if (extraInstructions.Contains("GETFILE"))
-            {
-                await GetFile(payload.OrderNumber, payload.Attachments.First().AttachmentId);
-            }
+            await MockPostAnswerOnCreated(payload, extraInstructions);
             return new JsonResult("Success");
         }
+
         [HttpPost]
         public async Task<JsonResult> CreatedRequiresAcceptance([FromBody] RequestModel payload)
         {
@@ -262,25 +152,7 @@ namespace BrokerMock.Controllers
                 await _apiService.GetAllLists();
             }
             var extraInstructions = GetExtraInstructions(payload.Description);
-
-            if (extraInstructions.Contains("SLEEP20"))
-            {
-                Thread.Sleep(20000);
-            }
-
-            if (extraInstructions.Contains("VIEWUNAUTHORIZED"))
-            {
-                await _apiService.CallRequestViewUnauthorized(payload.OrderNumber);
-            }
-
-            if (extraInstructions.Contains("THROW"))
-            {
-                throw new Exception();
-            }
-            if (extraInstructions.Contains("VIEW"))
-            {
-                var req = await _apiService.GetOrderRequest(payload.OrderNumber);
-            }
+            await MockPreAnswerOnCreated(payload.OrderNumber, extraInstructions);
 
             if (!extraInstructions.Contains("LEAVEUNACKNOWLEDGED"))
             {
@@ -296,7 +168,19 @@ namespace BrokerMock.Controllers
                 {
                     if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
                     {
-                        await AcceptRequest(
+                        if (extraInstructions.Contains("FORCEANSWER"))
+                        {
+                            Thread.Sleep(1500);
+                            var interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
+                            await AnswerRequestWithInstructions(payload, interpreters, extraInstructions);
+                        }
+                        if (!extraInstructions.Contains("FORCEANSWER") || extraInstructions.Contains("FORCEACCEPT"))
+                        {
+                            if (extraInstructions.Contains("FORCEANSWER"))
+                            {
+                                Thread.Sleep(1500);
+                            }
+                            await AcceptRequest(
                             payload.OrderNumber,
                             payload.Locations.First().Key,
                             payload.CompetenceLevelsAreRequired ?
@@ -308,6 +192,7 @@ namespace BrokerMock.Controllers
                                 RequirementId = r.RequirementId
                             })
                         );
+                        }
                         if (extraInstructions.Contains("DECLINEAFTERACCEPT"))
                         {
                             Thread.Sleep(1500);
@@ -317,36 +202,7 @@ namespace BrokerMock.Controllers
                         {
                             Thread.Sleep(1500);
                             var interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
-                            var interpreter = interpreters?.FirstOrDefault();
-                            DateTimeOffset? latestAnswerAt = null;
-                            decimal? expectedTravelCosts = null;
-                            if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
-                            {
-                                interpreter = GetNewInterpreter();
-                            }
-                            if (extraInstructions.Contains("SETLATESTANSWERAT"))
-                            {
-                                latestAnswerAt = payload.StartAt.AddMinutes(-60);
-                                expectedTravelCosts = 300;
-                            }
-                            if (extraInstructions.Contains("ADDTRAVELCOSTS"))
-                            {
-                                expectedTravelCosts = 200;
-                            }
-                            await AssignInterpreter(
-                                payload.OrderNumber,
-                                interpreter,
-                                payload.Locations.First().Key,
-                                payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
-                                payload.Requirements.Select(r => new RequirementAnswerModel
-                                {
-                                    Answer = "Japp",
-                                    CanMeetRequirement = true,
-                                    RequirementId = r.RequirementId
-                                }),
-                                expectedTravelCosts,
-                                latestAnswerAt
-                            );
+                            await AnswerRequestWithInstructions(payload, interpreters, extraInstructions);
                         }
                     }
                 }
@@ -530,15 +386,16 @@ namespace BrokerMock.Controllers
                         await AcceptGroup(
                             payload.OrderGroupNumber,
                             payload.Locations.First().Key,
-                            new InterpreterGroupAcceptModel{
+                            new InterpreterGroupAcceptModel
+                            {
                                 CompetenceLevel = payload.CompetenceLevelsAreRequired ?
                                     payload.CompetenceLevels.OrderBy(c => c.Rank).First().Key : null,
                                 RequirementAnswers = payload.Requirements.Select(r => new RequirementAnswerModel
-                                    {
-                                        Answer = "Japp",
-                                        CanMeetRequirement = true,
-                                        RequirementId = r.RequirementId
-                                    }) 
+                                {
+                                    Answer = "Japp",
+                                    CanMeetRequirement = true,
+                                    RequirementId = r.RequirementId
+                                })
                             },
                             extraAccept
                         );
@@ -818,9 +675,221 @@ namespace BrokerMock.Controllers
 
             return new JsonResult("Success");
         }
+
+        [HttpPost]
+        public async Task<JsonResult> FlexibleRequestCreated([FromBody] FlexibleRequestModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Boknings-ID: {payload.OrderNumber} skapad av {payload.CustomerInformation.Name} organisationsnummer {payload.CustomerInformation.OrganisationNumber} i {payload.Region}, med flexibel starttid");
+            }
+            if (_cache.Get<List<ListItemResponse>>("LocationTypes") == null)
+            {
+                await _apiService.GetAllLists();
+            }
+            var extraInstructions = GetExtraInstructions(payload.Description);
+            await MockPreAnswerOnCreated(payload.OrderNumber, extraInstructions);
+            if (!extraInstructions.Contains("LEAVEUNACKNOWLEDGED"))
+            {
+                if (extraInstructions.Contains("ACKNOWLEDGE") || extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                {
+                    await Acknowledge(payload.OrderNumber);
+                }
+                if (!extraInstructions.Contains("ONLYACKNOWLEDGE"))
+                {
+                    if (extraInstructions.Contains("DECLINE"))
+                    {
+                        await Decline(payload.OrderNumber, "Vill inte, kan inte bör inte...");
+                    }
+                    else
+                    {
+                        var interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
+                        DateTimeOffset? respondedStartAt = payload.FlexibleStartAt.AddMinutes(30);
+                        if (extraInstructions.Contains("BADRESPONDEDSTARTAT"))
+                        {
+                            respondedStartAt = respondedStartAt.Value.AddDays(1);
+                        }
+                        else if (extraInstructions.Contains("NORESPONDEDSTARTAT"))
+                        {
+                            respondedStartAt = null;
+                        }
+
+                        if (!extraInstructions.Contains("NOANSWER") && (extraInstructions.Contains("FORCEANSWER") || payload.RequiredAnswerLevel == "request_requires_interpreter"))
+                        {
+                            await AnswerRequestWithInstructions(payload, interpreters, extraInstructions, respondedStartAt);
+                        }
+                        if ((!extraInstructions.Contains("FORCEANSWER") && payload.RequiredAnswerLevel == "request_requires_accept") || extraInstructions.Contains("FORCEACCEPT"))
+                        {
+                            if (extraInstructions.Contains("FORCEANSWER"))
+                            {
+                                Thread.Sleep(1500);
+                            }
+                            await AcceptRequest(
+                            payload.OrderNumber,
+                            payload.Locations.First().Key,
+                            payload.CompetenceLevelsAreRequired ?
+                                payload.CompetenceLevels.OrderBy(c => c.Rank).First().Key : null,
+                            payload.Requirements.Select(r => new RequirementAnswerModel
+                            {
+                                Answer = "Japp",
+                                CanMeetRequirement = true,
+                                RequirementId = r.RequirementId
+                            }), 
+                            respondedStartAt
+                        );
+                        }
+                        if (extraInstructions.Contains("DECLINEAFTERACCEPT"))
+                        {
+                            Thread.Sleep(1500);
+                            await Decline(payload.OrderNumber, "Tackar nej efter lite eftertanke...");
+                        }
+                        if (extraInstructions.Contains("ANSWERAFTERACCEPT"))
+                        {
+                            if (!extraInstructions.Contains("FORCERESPONDEDSTARTAT"))
+                            {
+                                respondedStartAt = null;
+                            }
+                            Thread.Sleep(1500);
+                            await AnswerRequestWithInstructions(payload, interpreters, extraInstructions, respondedStartAt);
+                        }
+                    }
+                }
+                //Get the headers:
+                //X-Kammarkollegiet-InterpreterService-Delivery
+            }
+
+            await MockPostAnswerOnCreated(payload, extraInstructions);
+            return new JsonResult("Success");
+        }
+
         #endregion
 
         #region private methods
+
+        private async Task AnswerRequestWithInstructions(RequestModel payload, List<InterpreterDetailsModel> interpreters, IEnumerable<string> extraInstructions, DateTimeOffset? respondedStartAt = null)
+        {
+            var interpreter = interpreters?.FirstOrDefault();
+            DateTimeOffset? latestAnswerAt = null;
+            decimal? expectedTravelCosts = null;
+            if (interpreter == null || extraInstructions.Contains("NEWINTERPRETER"))
+            {
+                interpreter = GetNewInterpreter();
+            }
+            if (extraInstructions.Contains("SETLATESTANSWERAT"))
+            {
+                latestAnswerAt = payload.StartAt.Value.AddMinutes(-60);
+                expectedTravelCosts = 300;
+            }
+            if (extraInstructions.Contains("ADDTRAVELCOSTS"))
+            {
+                expectedTravelCosts = 200;
+            }
+
+            if (extraInstructions.Contains("BADLOCATION"))
+            {
+                var badLocation = _cache.Get<List<ListItemResponse>>("LocationTypes").First(l => !payload.Locations.Any(pl => pl.Key == l.Key)).Key;
+                //Find a location that is not present in payload
+
+                await AssignInterpreter(
+                    payload.OrderNumber,
+                    interpreter,
+                    badLocation,
+                    payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                    payload.Requirements.Select(r => new RequirementAnswerModel
+                    {
+                        Answer = "Japp",
+                        CanMeetRequirement = true,
+                        RequirementId = r.RequirementId
+                    }),
+                    expectedTravelCosts,
+                    latestAnswerAt,
+                    respondedStartAt
+                );
+            }
+            else
+            {
+                await AssignInterpreter(
+                    payload.OrderNumber,
+                    interpreter,
+                    payload.Locations.First().Key,
+                    payload.CompetenceLevels.OrderBy(c => c.Rank).FirstOrDefault()?.Key ?? _cache.Get<List<ListItemResponse>>("CompetenceLevels").First(c => c.Key != "no_interpreter").Key,
+                    payload.Requirements.Select(r => new RequirementAnswerModel
+                    {
+                        Answer = "Japp",
+                        CanMeetRequirement = true,
+                        RequirementId = r.RequirementId
+                    }),
+                    expectedTravelCosts,
+                    latestAnswerAt,
+                    respondedStartAt
+                );
+            }
+        }
+
+        private async Task MockPreAnswerOnCreated(string orderNumber, IEnumerable<string> extraInstructions)
+        {
+            if (extraInstructions.Contains("SLEEP20"))
+            {
+                Thread.Sleep(20000);
+            }
+
+            if (extraInstructions.Contains("VIEWUNAUTHORIZED"))
+            {
+                await _apiService.CallRequestViewUnauthorized(orderNumber);
+            }
+
+            if (extraInstructions.Contains("THROW"))
+            {
+                throw new Exception();
+            }
+            if (extraInstructions.Contains("VIEW"))
+            {
+                _ = await _apiService.GetOrderRequest(orderNumber);
+            }
+        }
+
+        private async Task MockPostAnswerOnCreated(RequestModel payload, IEnumerable<string> extraInstructions)
+        {
+            if (extraInstructions.Contains("CREATEINTERPRETER"))
+            {
+                await CreateInterpreter(new InterpreterDetailsModel(GetNewInterpreter()));
+            }
+            if (extraInstructions.Contains("UPDATEINTERPRETER"))
+            {
+                await _apiService.GetInterpreters();
+                await UpdateInterpreter(_cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters").OrderBy(i => i.FirstName).First());
+            }
+            if (extraInstructions.Contains("INACTIVATEINTERPRETER"))
+            {
+                await _apiService.GetInterpreters();
+                var interpreter = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters").Where(i => i.IsActive).OrderBy(i => i.LastName).First();
+                await ToggleIfInterpreterIsActive(interpreter);
+            }
+            if (extraInstructions.Contains("ACTIVATEINTERPRETER"))
+            {
+                await _apiService.GetInterpreters();
+                var interpreters = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters");
+                var interpreter = interpreters.Where(i => !i.IsActive).OrderBy(i => i.LastName).FirstOrDefault();
+                if (interpreter == null)
+                {
+                    interpreter = interpreters.Where(i => i.IsActive).OrderBy(i => i.LastName).First();
+                    interpreter = await ToggleIfInterpreterIsActive(interpreter);
+                }
+                await ToggleIfInterpreterIsActive(interpreter);
+            }
+            if (extraInstructions.Contains("VIEWINTERPRETER"))
+            {
+                await _apiService.GetInterpreters();
+                var interpreter = _cache.Get<List<InterpreterDetailsModel>>("BrokerInterpreters").Where(i => i.OfficialInterpreterId != null).OrderBy(i => i.Email).First();
+                await _apiService.GetInterpreter(interpreter.InterpreterId.Value);
+                await _apiService.GetInterpreter(interpreter.OfficialInterpreterId);
+            }
+
+            if (extraInstructions.Contains("GETFILE"))
+            {
+                await GetFile(payload.OrderNumber, payload.Attachments.First().AttachmentId);
+            }
+        }
 
         private async Task<bool> CreateInterpreter(InterpreterDetailsModel payload)
         {
@@ -915,7 +984,7 @@ namespace BrokerMock.Controllers
             return description.ToSwedishUpper().Split(";", StringSplitOptions.RemoveEmptyEntries).AsEnumerable();
         }
 
-        private async Task<bool> AcceptRequest(string orderNumber, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers)
+        private async Task<bool> AcceptRequest(string orderNumber, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers, DateTimeOffset? respondedStartAt = null)
         {
             var payload = new RequestAcceptModel
             {
@@ -924,6 +993,7 @@ namespace BrokerMock.Controllers
                 CompetenceLevel = competenceLevel,
                 CallingUser = "regular-user@formedling1.se",
                 RequirementAnswers = requirementAnswers,
+                RespondedStartAt = respondedStartAt
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
             using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Accept"), content);
@@ -945,7 +1015,7 @@ namespace BrokerMock.Controllers
             return true;
         }
 
-        private async Task<bool> AssignInterpreter(string orderNumber, InterpreterModel interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers, decimal? expectedTravelCosts = null, DateTimeOffset? latestAnswerAt = null)
+        private async Task<bool> AssignInterpreter(string orderNumber, InterpreterModel interpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers, decimal? expectedTravelCosts = null, DateTimeOffset? latestAnswerAt = null, DateTimeOffset? respondedStartAt = null)
         {
             var payload = new RequestAnswerModel
             {
@@ -956,7 +1026,8 @@ namespace BrokerMock.Controllers
                 ExpectedTravelCosts = expectedTravelCosts,
                 CallingUser = "regular-user@formedling1.se",
                 RequirementAnswers = requirementAnswers,
-                LatestAnswerTimeForCustomer = latestAnswerAt
+                LatestAnswerTimeForCustomer = latestAnswerAt, 
+                RespondedStartAt = respondedStartAt
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
             using var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Request/Answer"), content);
@@ -977,6 +1048,7 @@ namespace BrokerMock.Controllers
             }
             return true;
         }
+
         private async Task<bool> AnswerGroup(string orderGroupNumber, InterpreterModel interpreter, InterpreterModel extraInterpreter, string location, string competenceLevel, IEnumerable<RequirementAnswerModel> requirementAnswers, bool declineExtranInterpreter = false, decimal expectedTravelCosts = 0)
         {
             var payload = new RequestGroupAnswerModel
