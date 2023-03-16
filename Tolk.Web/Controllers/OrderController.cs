@@ -1073,8 +1073,8 @@ namespace Tolk.Web.Controllers
         }
 
         private void SetCustomerSpecificProperties(OrderBaseModel model)
-        {
-            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+        {            
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.TryGetCustomerOrganisationId()).ToList();
             foreach (var property in customerSpecificProperties)
             {
                 switch (property.PropertyToReplace)

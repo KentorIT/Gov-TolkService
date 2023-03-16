@@ -732,7 +732,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policies.Customer)]
         public async Task<ActionResult> ViewDefaultSettings(string message)
         {
-            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId());
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.TryGetCustomerOrganisationId());
             var defaultSettingsModel = DefaultSettingsViewModel.GetModel(await GetUserForDefaultSettings(), Region.Regions, message);
             SetCustomerSpecficViewProperties(defaultSettingsModel);
             return View(defaultSettingsModel);
@@ -742,7 +742,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<ActionResult> EditDefaultSettings(bool isFirstTimeUser = false)
         {
-            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId());
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.TryGetCustomerOrganisationId());
             var defaultSettingsModel = DefaultSettingsModel.GetModel(await GetUserForDefaultSettings(), _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset, isFirstTimeUser);
             SetCustomerSpecficInputProperties(defaultSettingsModel);
             return View(defaultSettingsModel);
@@ -1053,7 +1053,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         }
         private DefaultSettingsModel SetCustomerSpecficInputProperties(DefaultSettingsModel model)
         {
-            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.TryGetCustomerOrganisationId()).ToList();
             foreach (var property in customerSpecificProperties)
             {
                 switch (property.PropertyToReplace)
@@ -1071,7 +1071,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         }
         private DefaultSettingsViewModel SetCustomerSpecficViewProperties(DefaultSettingsViewModel model)
         {
-            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.TryGetCustomerOrganisationId()).ToList();
             foreach (var property in customerSpecificProperties)
             {
                 switch (property.PropertyToReplace)
@@ -1088,7 +1088,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         }
         private (string ErrorMessage, bool Success) ValidateCustomerSpecificProperties(DefaultSettingsModel model)
         {
-            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
+            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.TryGetCustomerOrganisationId()).ToList();
             foreach (var property in customerSpecificProperties)
             {
                 switch (property.PropertyToReplace)
