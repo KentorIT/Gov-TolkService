@@ -15,6 +15,8 @@ namespace Tolk.BusinessLogic.Entities
         public string OrderGroupNumber { get; set; }
         public DateTimeOffset StartAt { get; set; }
         public DateTimeOffset EndAt { get; set; }
+        public TimeSpan? ExpectedLength { get; set; }
+        public DateTimeOffset? RespondedStartAt { get; set; }
         public RequisitionStatus? RequisitionStatus { get; set; }
         public ComplaintStatus? ComplaintStatus { get; set; }
         public DateTimeOffset EntityDate { get; set; }

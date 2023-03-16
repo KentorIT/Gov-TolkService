@@ -31,6 +31,8 @@ DISTINCT
    ,r.AcceptedAt
    ,r.ExpiresAt 'RequestExpiresAt'
    ,r.CreatedAt 'LastRequestCreatedUpdatedAt'
+   ,o.ExpectedLength
+   ,r.RespondedStartAt
    ,NULL 'NoOfChildren'
    ,NULL 'NoOfExtraInterpreter'
    ,NULL 'RequisitionStatus'
@@ -91,6 +93,8 @@ DISTINCT
    ,rg.AcceptedAt
    ,rg.ExpiresAt 'RequestExpiresAt'
    ,rg.CreatedAt 'LastRequestCreatedUpdatedAt'
+   ,NULL 'ExpectedLength'
+   ,NULL 'RespondedStartAt'
    ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId) 'NoOfChildren'
    ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId AND IsExtraInterpreterForOrderId IS NOT NULL) 'NoOfExtraInterpreter'
    ,NULL 'RequisitionStatus'
@@ -146,6 +150,8 @@ DISTINCT
    ,NULL 'AcceptedAt'
    ,NULL 'RequestExpiresAt'
    ,NULL 'LastRequestCreatedUpdatedAt'
+   ,NULL 'ExpectedLength'
+   ,NULL 'RespondedStartAt'
    ,NULL 'NoOfChildren'
    ,NULL 'NoOfExtraInterpreter'
    ,r.Status 'RequisitionStatus'
@@ -195,6 +201,8 @@ DISTINCT
    ,NULL 'AcceptedAt'
    ,NULL 'RequestExpiresAt'
    ,NULL 'LastRequestCreatedUpdatedAt'
+   ,NULL 'ExpectedLength'
+   ,NULL 'RespondedStartAt'
    ,0 'NoOfChildren'
    ,0 'NoOfExtraInterpreter'
    ,NULL 'RequisitionStatus'
