@@ -63,7 +63,7 @@
                     <input asp-for="RequestId" type="hidden" />
                     <input asp-for="OrderId" type="hidden" />
                     <input asp-for="IsFlexibleOrder" type="hidden" />
-                    @if (Model.IsFlexibleOrder)
+                    @if (Model.IsFlexibleOrder && !Model.RespondedStartAt.HasValue)
                     {
                         <input asp-for="EarliestStartAt" type="hidden" />
                         <input asp-for="LatestStartAt" type="hidden" />
@@ -75,16 +75,7 @@
                                 <display-entry asp-for="OrderViewModel.FlexibleTimeRange" />
                             </div>
                             <div class="col-sm-4">
-                                @if (!Model.RespondedStartAt.HasValue)
-                                {
-
-                                    <form-entry asp-for="RespondedStartAt" class="flexible-start-response-part" />
-                                } 
-                                else
-                                {
-                                    <display-entry asp-for="RespondedStartAt" class="flexible-start-response-part" />
-                                }
-
+                                <form-entry asp-for="RespondedStartAt" class="flexible-start-response-part" />
                             </div>
                         </div>
                     }
@@ -128,7 +119,7 @@
                                     <span class="glyphicon message-icon glyphicon-ok"></span>
                                     <span class="info-message"></span>
                                     <span title="" class="form-entry-information glyphicon glyphicon-info-sign d-none"
-                                      data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
+                                          data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
                                 </div>
                             </div>
                             <div class="col-sm-4">

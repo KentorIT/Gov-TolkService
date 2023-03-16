@@ -125,6 +125,7 @@ namespace Tolk.Web.Controllers
                 }
                 model.ActiveRequest.RegionName = model.RegionName;
                 model.ActiveRequest.TimeRange = model.TimeRange;
+                model.ActiveRequest.FlexibleTimeRange = model.FlexibleTimeRange;
                 model.ActiveRequest.DisplayMealBreakIncluded = model.DisplayMealBreakIncludedText;
                 model.ActiveRequest.IsCancelled = model.Status == OrderStatus.CancelledByCreator || model.Status == OrderStatus.CancelledByBroker;
 

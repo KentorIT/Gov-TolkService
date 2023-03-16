@@ -30,5 +30,9 @@ namespace Tolk.Web.Api.Helpers
         public const string AllRequirementsMustBeAnsweredOnAccept = nameof(AllRequirementsMustBeAnsweredOnAccept);
         public const string AcceptIsNotAllowedOnTheRequest = nameof(AcceptIsNotAllowedOnTheRequest);
         public const string AcceptIsNotAllowedOnTheRequestGroup = nameof(AcceptIsNotAllowedOnTheRequestGroup);
+        public const string FlexibleRequestNeedsRespondedStartAt = nameof(FlexibleRequestNeedsRespondedStartAt);
+        public const string NonFlexibleRequestCannotHaveRespondedStartAt = nameof(NonFlexibleRequestCannotHaveRespondedStartAt);
+        public const string RespondedStartAtAlreadySet = nameof(RespondedStartAtAlreadySet);
+        public const string RespondedStartAtNotValid = nameof(RespondedStartAtNotValid);
     }
 }

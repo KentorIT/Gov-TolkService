@@ -87,7 +87,7 @@ namespace Tolk.Web.Models
                 {
                     result = "<span class=\"small-red-border-left startlist-subrow\">OBS! Första av flera tillfällen</span>";
                 }
-                result += $"<br />{OrderDateTimeRange.AsSwedishString}<br /><br />";
+                result += $"<br />{OrderDateTimeRange.AsSwedishString}<br />";
                 if (LatestDate != null)
                 {
                     result += $"<span class=\"startlist-subrow-red\"> {LatestDateDescription}<br />{LatestDate?.ToString("yyyy-MM-dd HH:mm")}</span>";
@@ -99,7 +99,7 @@ namespace Tolk.Web.Models
 
         public string ViewedByUser { get; set; } = string.Empty;
 
-        public TimeRange OrderDateTimeRange { get; set; }
+        public CombinedTimeRange OrderDateTimeRange { get; set; }
 
         public StartListItemStatus Status { get; set; }
 

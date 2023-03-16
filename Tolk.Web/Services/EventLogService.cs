@@ -384,6 +384,17 @@ namespace Tolk.Web.Services
                     Actor = "Systemet",
                 });
             }
+            if (request.RespondedStartAt.HasValue && request.RequestAnswerRuleType != RequestAnswerRuleType.ReplacedInterpreter && request.RequestAnswerRuleType != RequestAnswerRuleType.ReplacedOrder)
+            {
+                eventLog.Add(new EventLogEntryModel
+                {
+                    Timestamp = request.AcceptedAt ?? request.AnswerProcessedAt.Value,
+                    EventDetails = $"Flexibel starttid bestämd",
+                    Actor = request.AcceptingUser?.FullName ?? request.AnsweringUser?.FullName,
+                    Organization = brokerName,
+                    ActorContactInfo = GetContactinfo(request.AcceptingUser ?? request.AnsweringUser)
+                });
+            }
             if (request.RequestUpdateLatestAnswerTime != null)
             {
                 // Request sent to broker when latest answer time is updated

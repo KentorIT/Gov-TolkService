@@ -110,10 +110,20 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "CompetenceLevel was missing");
                 }
-                //if (order.ExpectedLength.HasValue && !model.RespondedStartAt.HasValue)
-                //{
-                //    return ReturnError(ErrorCodes.NEWERRORTYPE);
-                //}
+                if (order.ExpectedLength.HasValue && !model.RespondedStartAt.HasValue)
+                {
+                    return ReturnError(ErrorCodes.FlexibleRequestNeedsRespondedStartAt);
+                }
+                //Has respondedStartAt on an order that is not flexible:
+                if (!order.ExpectedLength.HasValue && model.RespondedStartAt.HasValue)
+                {
+                    return ReturnError(ErrorCodes.NonFlexibleRequestCannotHaveRespondedStartAt);
+                }
+                //Has respondedStartAt on a request that already recieved this from previous accept:
+                if (order.ExpectedLength.HasValue && model.RespondedStartAt.HasValue && request.RespondedStartAt.HasValue)
+                {
+                    return ReturnError(ErrorCodes.RespondedStartAtAlreadySet);
+                }
                 var now = _timeService.SwedenNow;
                 if (request.Status == RequestStatus.Created)
                 {
@@ -142,7 +152,7 @@ namespace Tolk.Web.Api.Controllers
                         model.ExpectedTravelCostInfo,
                         model.LatestAnswerTimeForCustomer,
                         model.BrokerReferenceNumber,
-                        null //model.RespondedStartAt TODO: Handle possible responded start at here!!
+                        model.RespondedStartAt
                     );
                     await _dbContext.SaveChangesAsync();
                     return Ok(new AnswerResponse { InterpreterId = interpreter.InterpreterBrokerId });
@@ -207,10 +217,19 @@ namespace Tolk.Web.Api.Controllers
                     return ReturnError(ErrorCodes.AllRequirementsMustBeAnsweredOnAccept);
                 }
 
-                //if (order.ExpectedLength.HasValue && !model.RespondedStartAt.HasValue)
-                //{
-                //    return ReturnError(ErrorCodes.NEWERRORTYPE);
-                //}
+                if (order.ExpectedLength.HasValue && !model.RespondedStartAt.HasValue)
+                {
+                    return ReturnError(ErrorCodes.FlexibleRequestNeedsRespondedStartAt);
+                }
+                //Has respondedStartAt on an order that is not flexible:
+                if (!order.ExpectedLength.HasValue && model.RespondedStartAt.HasValue)
+                {
+                    return ReturnError(ErrorCodes.NonFlexibleRequestCannotHaveRespondedStartAt);
+                }
+                if (!order.IsValidRespondedStartAt(model.RespondedStartAt))
+                {
+                    return ReturnError(ErrorCodes.RespondedStartAtNotValid);
+                }
 
                 var now = _timeService.SwedenNow;
                 await _requestService.Accept(
@@ -230,13 +249,13 @@ namespace Tolk.Web.Api.Controllers
                         //Does not handle attachments yet.
                         new List<RequestAttachment>(),
                         model.BrokerReferenceNumber,
-                        null //model.RespondedStartAt TODO: Handle possible responded start at here!!
+                        model.RespondedStartAt 
                     );
                 await _dbContext.SaveChangesAsync();
                 return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
-            {
+            {   
                 return ReturnError(ex.ErrorCode);
             }
             catch (Exception e)

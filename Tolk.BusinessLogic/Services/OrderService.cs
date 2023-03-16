@@ -321,7 +321,24 @@ namespace Tolk.BusinessLogic.Services
                             request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
                         if (notify)
                         {
-                            await _notificationService.RequestCreated(newRequest);
+                            if (request.Order.ExpectedLength.HasValue)
+                            {
+                                await _notificationService.FlexibleRequestCreated(newRequest);
+                            }
+                            else
+                            {
+                                switch (EnumHelper.Parent<RequestAnswerRuleType, RequiredAnswerLevel>(request.RequestAnswerRuleType))
+                                {
+                                    case RequiredAnswerLevel.Full:
+                                        await _notificationService.RequestNeedsFullAnswerCreated(newRequest);
+                                        break;
+                                    case RequiredAnswerLevel.Acceptance:
+                                        await _notificationService.RequestNeedsAcceptanceCreated(newRequest);
+                                        break;
+                                    default:
+                                        throw new InvalidOperationException();
+                                }
+                            }
                         }
                     }
                     else
@@ -333,7 +350,7 @@ namespace Tolk.BusinessLogic.Services
 
                         await _tolkDbContext.SaveChangesAsync();
 
-                        _logger.LogInformation($"Created request {request.RequestId} for order {request.OrderId}, but system was unable to calculate expiry.");
+                        _logger.LogInformation("Created request {requestId} for order {orderId}, but system was unable to calculate expiry.", request.RequestId, request.OrderId);
                         if (notify)
                         {
                             _notificationService.RequestCreatedWithoutExpiry(newRequest);
@@ -588,7 +605,14 @@ namespace Tolk.BusinessLogic.Services
 
             // Log and notify
             _logger.LogInformation($"Expiry {expiry} manually set on request {request.RequestId}");
-            await _notificationService.RequestCreated(request);
+            if (request.Order.ExpectedLength.HasValue)
+            {
+                await _notificationService.FlexibleRequestCreated(request);
+            }
+            else
+            {
+                await _notificationService.RequestNeedsFullAnswerCreated(request);
+            }
         }
 
         public async Task SetRequestGroupExpiryManually(RequestGroup requestGroup, DateTimeOffset expiry, int userId, int? impersonatingUserId)

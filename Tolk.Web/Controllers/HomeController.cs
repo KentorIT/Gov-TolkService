@@ -245,7 +245,7 @@ namespace Tolk.Web.Controllers
                     .Where(o => o.RowType == StartListRowType.Order && (o.OrderStatus == OrderStatus.RequestRespondedAwaitingApproval || o.OrderStatus == OrderStatus.AwaitingDeadlineFromCustomer)).ToList()
                     .Select(o => new ActionStartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = o.StartAt, EndAt = o.EndAt, ExpectedLength = o.ExpectedLength, RespondedStartAt = o.RespondedStartAt },
                         EntityId = o.OrderId,
                         InfoDate = GetInfoDateForCustomer(o)?.DateTime,
                         CompetenceLevel = (CompetenceAndSpecialistLevel?)o.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -267,7 +267,7 @@ namespace Tolk.Web.Controllers
                     .Where(o => o.RowType == StartListRowType.Order && o.OrderStatus == OrderStatus.RequestRespondedNewInterpreter).ToList()
                     .Select(o => new ActionStartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = o.StartAt, EndAt = o.EndAt, ExpectedLength = o.ExpectedLength, RespondedStartAt = o.RespondedStartAt },
                         EntityId = o.OrderId,
                         InfoDate = GetInfoDateForCustomer(o)?.DateTime,
                         CompetenceLevel = (CompetenceAndSpecialistLevel?)o.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -292,7 +292,7 @@ namespace Tolk.Web.Controllers
                     .Where(og => og.RowType == StartListRowType.OrderGroup && og.OrderGroupStatus == OrderStatus.RequestRespondedAwaitingApproval).ToList()
                     .Select(og => new ActionStartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = og.StartAt, EndAt = og.EndAt, ExpectedLength = og.ExpectedLength, RespondedStartAt = og.RespondedStartAt },
                         EntityId = og.OrderGroupId.Value,
                         InfoDate = GetInfoDateForCustomer(og)?.DateTime,
                         CompetenceLevel = (CompetenceAndSpecialistLevel?)og.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -311,7 +311,7 @@ namespace Tolk.Web.Controllers
                     .Where(og => og.RowType == StartListRowType.OrderGroup && og.OrderGroupStatus == OrderStatus.AwaitingDeadlineFromCustomer).ToList()
                     .Select(og => new ActionStartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = og.StartAt, EndAt = og.EndAt, ExpectedLength = og.ExpectedLength, RespondedStartAt = og.RespondedStartAt },
                         EntityId = og.OrderGroupId.Value,
                         InfoDate = GetInfoDateForCustomer(og)?.DateTime,
                         CompetenceLevel = CompetenceAndSpecialistLevel.NoInterpreter,
@@ -336,7 +336,7 @@ namespace Tolk.Web.Controllers
                         .Where(og => og.RowType == StartListRowType.OrderGroup && og.OrderGroupStatus == OrderStatus.RequestAwaitingPartialAccept).ToList()
                         .Select(og => new ActionStartListItemModel
                         {
-                            OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
+                            OrderDateTimeRange = new CombinedTimeRange { StartAt = og.StartAt, EndAt = og.EndAt, ExpectedLength = og.ExpectedLength, RespondedStartAt = og.RespondedStartAt },
                             EntityId = og.OrderGroupId.Value,
                             InfoDate = GetInfoDateForCustomer(og)?.DateTime,
                             CompetenceLevel = (CompetenceAndSpecialistLevel?)og.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,//this might not be correct
@@ -361,7 +361,7 @@ namespace Tolk.Web.Controllers
                             (_options.EnableSetLatestAnswerTimeForCustomer && (!o.OrderGroupId.HasValue || o.OrderGroupStatus != OrderStatus.ResponseNotAnsweredByCreator) && o.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator))).ToList()
                         .Select(o => new ActionStartListItemModel
                         {
-                            OrderDateTimeRange = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
+                            OrderDateTimeRange = new CombinedTimeRange { StartAt = o.StartAt, EndAt = o.EndAt, ExpectedLength = o.ExpectedLength, RespondedStartAt = o.RespondedStartAt },
                             EntityId = o.OrderId,
                             InfoDate = (o.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator) ? o.LatestAnswerTimeForCustomer?.DateTime ?? o.StartAt.DateTime : GetInfoDateForCustomer(o)?.DateTime,
                             CompetenceLevel = o.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator ? (CompetenceAndSpecialistLevel?)o.CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter,
@@ -385,7 +385,7 @@ namespace Tolk.Web.Controllers
                             || (_options.EnableSetLatestAnswerTimeForCustomer && og.OrderGroupStatus == OrderStatus.ResponseNotAnsweredByCreator))).ToList()
                         .Select(og => new ActionStartListItemModel
                         {
-                            OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
+                            OrderDateTimeRange = new CombinedTimeRange { StartAt = og.StartAt, EndAt = og.EndAt, ExpectedLength = og.ExpectedLength, RespondedStartAt = og.RespondedStartAt },
                             EntityId = og.OrderGroupId.Value,
                             InfoDate = og.OrderGroupStatus == OrderStatus.ResponseNotAnsweredByCreator ? og.LatestAnswerTimeForCustomer?.DateTime ?? og.StartAt.DateTime : GetInfoDateForCustomer(og)?.DateTime,
                             CompetenceLevel = og.OrderGroupStatus == OrderStatus.ResponseNotAnsweredByCreator ? (CompetenceAndSpecialistLevel?)og.CompetenceLevel : CompetenceAndSpecialistLevel.NoInterpreter,
@@ -409,7 +409,7 @@ namespace Tolk.Web.Controllers
                 .Where(o => o.RowType == StartListRowType.Order && o.OrderStatus == OrderStatus.CancelledByBroker).ToList()
                 .Select(o => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = o.StartAt, EndAt = o.EndAt, ExpectedLength = o.ExpectedLength, RespondedStartAt = o.RespondedStartAt },
                     EntityId = o.OrderId,
                     InfoDate = GetInfoDateForCustomer(o)?.DateTime,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)o.CompetenceLevel,
@@ -430,7 +430,7 @@ namespace Tolk.Web.Controllers
                     .Where(r => r.RowType == StartListRowType.Requisition)
                     .Select(r => new ActionStartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                         EntityId = r.OrderId,
                         InfoDate = r.EntityDate.DateTime,
                         CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -452,7 +452,7 @@ namespace Tolk.Web.Controllers
                     .Where(c => c.RowType == StartListRowType.Complaint)
                     .Select(c => new ActionStartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = c.StartAt, EndDateTime = c.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = c.StartAt, EndAt = c.EndAt, ExpectedLength = c.ExpectedLength, RespondedStartAt = c.RespondedStartAt },
                         EntityId = c.OrderId,
                         InfoDate = c.AnsweredAt.HasValue ? c.AnsweredAt.Value.DateTime : c.EntityDate.DateTime,
                         CompetenceLevel = (CompetenceAndSpecialistLevel?)c.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -482,7 +482,7 @@ namespace Tolk.Web.Controllers
                     && o.EndAt > _clock.SwedenNow)
                     .Select(o => new StartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = o.StartAt, EndAt = o.EndAt, ExpectedLength = o.ExpectedLength, RespondedStartAt = o.RespondedStartAt },
                         EntityId = o.OrderId,
                         InfoDate = o.EntityDate.DateTime,
                         InfoDateDescription = "Skickad: ",
@@ -506,7 +506,7 @@ namespace Tolk.Web.Controllers
                     .Where(og => og.RowType == StartListRowType.OrderGroup && (og.OrderStatus == OrderStatus.Requested || og.OrderStatus == OrderStatus.RequestAcceptedAwaitingInterpreter) && og.EndAt > _clock.SwedenNow).ToList()
                     .Select(og => new StartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = og.StartAt, EndDateTime = og.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = og.StartAt, EndAt = og.EndAt, ExpectedLength = og.ExpectedLength, RespondedStartAt = og.RespondedStartAt },
                         EntityId = og.OrderGroupId.Value,
                         InfoDate = og.EntityDate.DateTime,
                         InfoDateDescription = "Skickad: ",
@@ -539,7 +539,7 @@ namespace Tolk.Web.Controllers
                     .Where(o => o.RowType == StartListRowType.Order && o.OrderStatus == OrderStatus.ResponseAccepted && o.EndAt > _clock.SwedenNow)
                 .Select(o => new StartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = o.StartAt, EndDateTime = o.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = o.StartAt, EndAt = o.EndAt, ExpectedLength = o.ExpectedLength, RespondedStartAt = o.RespondedStartAt },
                     EntityId = o.OrderId,
                     InfoDate = o.AnsweredAt.Value.DateTime,
                     CompetenceLevel = (CompetenceAndSpecialistLevel)o.CompetenceLevel,
@@ -659,7 +659,7 @@ namespace Tolk.Web.Controllers
                     (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received))
                 .Select(r => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                     EntityId = (int)r.RequestId,
                     InfoDate = r.LastRequestCreatedUpdatedAt.HasValue ? r.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -686,7 +686,7 @@ namespace Tolk.Web.Controllers
                     (r.RequestStatus == RequestStatus.Created || r.RequestStatus == RequestStatus.Received))
                 .Select(r => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                     EntityId = (int)r.RequestId,
                     InfoDate = r.LastRequestCreatedUpdatedAt.HasValue ? r.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -714,7 +714,7 @@ namespace Tolk.Web.Controllers
                     (r.RequestStatus == RequestStatus.AcceptedAwaitingInterpreter))
                 .Select(r => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                     EntityId = (int)r.RequestId,
                     InfoDate = r.LastRequestCreatedUpdatedAt.HasValue ? r.LastRequestCreatedUpdatedAt.Value.DateTime : GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -739,7 +739,7 @@ namespace Tolk.Web.Controllers
                     r.RequestStatus == RequestStatus.DeniedByCreator)
                 .Select(r => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                     EntityId = (int)r.RequestId,
                     InfoDate = GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -763,7 +763,7 @@ namespace Tolk.Web.Controllers
                 .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted && (r.AnsweredAt.HasValue || !r.RequestGroupId.HasValue))
                 .Select(r => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                     EntityId = (int)r.RequestId,
                     InfoDate = GetInfoDateForBroker(r).Value,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -788,7 +788,7 @@ namespace Tolk.Web.Controllers
                 .Where(r => r.RowType == StartListRowType.Request && (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroupStatus != RequestStatus.ResponseNotAnsweredByCreator)) && r.RequestStatus == RequestStatus.ResponseNotAnsweredByCreator)
                 .Select(r => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                     EntityId = (int)r.RequestId,
                     InfoDate = r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : r.StartAt.DateTime,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -812,7 +812,7 @@ namespace Tolk.Web.Controllers
                 .Where(r => r.RowType == StartListRowType.Request && r.EndAt > _clock.SwedenNow && (r.RequestStatus == RequestStatus.Approved || r.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && r.OrderChangedAt.HasValue)
                 .Select(r => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                     EntityId = (int)r.RequestId,
                     InfoDate = r.OrderChangedAt.Value.DateTime,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -835,7 +835,7 @@ namespace Tolk.Web.Controllers
                 .Where(rg => rg.RowType == StartListRowType.RequestGroup && (rg.RequestGroupStatus == RequestStatus.Created || rg.RequestGroupStatus == RequestStatus.Received || rg.RequestGroupStatus == RequestStatus.DeniedByCreator || rg.RequestGroupStatus == RequestStatus.ResponseNotAnsweredByCreator || rg.RequestGroupStatus == RequestStatus.AcceptedAwaitingInterpreter || rg.RequestGroupStatus == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted))
                 .Select(rg => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = rg.StartAt, EndDateTime = rg.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = rg.StartAt, EndAt = rg.EndAt, ExpectedLength = rg.ExpectedLength, RespondedStartAt = rg.RespondedStartAt },
                     EntityId = (int)rg.RequestGroupId,
                     InfoDate = GetInfoDateForGroupForBroker(rg),
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)rg.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
@@ -864,7 +864,7 @@ namespace Tolk.Web.Controllers
                     .Where(c => c.ComplaintStatus == ComplaintStatus.Created)
                 .Select(c => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = c.StartAt, EndDateTime = c.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = c.StartAt, EndAt = c.EndAt, ExpectedLength = c.ExpectedLength, RespondedStartAt = c.RespondedStartAt },
                     EntityId = (int)c.RequestId,
                     LinkOverride = $"/Request/View/?tab=complaint",
                     InfoDate = c.EntityDate.DateTime,
@@ -888,7 +888,7 @@ namespace Tolk.Web.Controllers
                 .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.Approved && r.StartAt < _clock.SwedenNow)
                  .Select(r => new ActionStartListItemModel
                  {
-                     OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                     OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                      EntityId = (int)r.RequestId,
                      InfoDate = r.EndAt.DateTime,
                      InfoDateDescription = "Utfört: ",
@@ -912,7 +912,7 @@ namespace Tolk.Web.Controllers
                 .Where(r => r.RowType == StartListRowType.Requisition && r.RequisitionStatus == RequisitionStatus.Commented)
                 .Select(r => new ActionStartListItemModel
                 {
-                    OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                    OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                     EntityId = (int)r.RequestId,
                     LinkOverride = $"/Request/View/?tab=complaint",
                     InfoDate = r.AnsweredAt.Value.DateTime,
@@ -944,7 +944,7 @@ namespace Tolk.Web.Controllers
                         r.StartAt > _clock.SwedenNow)
                     .Select(r => new StartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                         EntityId = (int)r.RequestId,
                         InfoDate = r.AnsweredAt.Value.DateTime,
                         InfoDateDescription = "Tillsatt: ",
@@ -967,7 +967,7 @@ namespace Tolk.Web.Controllers
                     .Where(rg => rg.RowType == StartListRowType.RequestGroup && rg.RequestGroupStatus == RequestStatus.AnsweredAwaitingApproval && !(rg.StartAt < _clock.SwedenNow))
                     .Select(rg => new StartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = rg.StartAt, EndDateTime = rg.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = rg.StartAt, EndAt = rg.EndAt, ExpectedLength = rg.ExpectedLength, RespondedStartAt = rg.RespondedStartAt },
                         EntityId = (int)rg.RequestGroupId,
                         InfoDate = rg.AnsweredAt.Value.DateTime,
                         InfoDateDescription = "Tillsatt: ",
@@ -1003,7 +1003,7 @@ namespace Tolk.Web.Controllers
                     .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.Approved && r.StartAt > _clock.SwedenNow)
                     .Select(r => new StartListItemModel
                     {
-                        OrderDateTimeRange = new TimeRange { StartDateTime = r.StartAt, EndDateTime = r.EndAt },
+                        OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                         EntityId = (int)r.RequestId,
                         InfoDate = (r.RequestStatus == RequestStatus.Approved && r.AnswerProcessedAt.HasValue) ? r.AnswerProcessedAt.Value.DateTime : r.AnsweredAt.Value.DateTime,
                         InfoDateDescription = "Godkänd: ",

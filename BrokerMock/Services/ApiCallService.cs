@@ -231,8 +231,8 @@ namespace BrokerMock.Services
             var payload = new RequisitionModel
             {
                 OrderNumber = orderNumber,
-                AcctualStartedAt = request.StartAt,
-                AcctualEndedAt = request.EndAt,
+                AcctualStartedAt = request.StartAt.Value,
+                AcctualEndedAt = request.EndAt.Value,
                 CallingUser = "regular-user@formedling1.se",
                 TaxCard = _cache.Get<List<ListItemResponse>>("TaxCardTypes").First().Key,
                 Message = "Testar att skicka en ny rekvisition, då",
