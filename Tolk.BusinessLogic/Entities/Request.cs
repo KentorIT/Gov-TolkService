@@ -40,8 +40,9 @@ namespace Tolk.BusinessLogic.Entities
             QuarantineId = quarantine.QuarantineId;
         }
 
+        //Used when replacing order, should not inherit RespondedStartAt
         internal Request(Request originalRequest, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime)
-            : this(originalRequest.Ranking, newRequestExpiry, creationTime, respondedStartAt: originalRequest.RespondedStartAt)
+            : this(originalRequest.Ranking, newRequestExpiry, creationTime)
         {
             Interpreter = originalRequest.Interpreter;
             CompetenceLevel = originalRequest.CompetenceLevel;

@@ -98,7 +98,8 @@ namespace Tolk.Web.Controllers
 
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.View)).Succeeded)
             {
-                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);  
+                var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);
+                var calculatedStartAt = request?.RespondedStartAt ?? order.StartAt;
                 bool isConnectedToCurrentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId);
                 var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator), false, isConnectedToCurrentFrameworkAgreement);              
                 model.UserCanEdit = (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
@@ -108,8 +109,8 @@ namespace Tolk.Web.Controllers
                 model.UserCanPrint = (await _authorizationService.AuthorizeAsync(User, order, Policies.Print)).Succeeded;
 
                 model.OrderUpdateIsEnabled = _options.EnableOrderUpdate;
-                model.TimeIsValidForOrderReplacement = TimeIsValidForOrderReplacement(order.StartAt);
-                model.StartAtIsInFuture = order.StartAt > _clock.SwedenNow;
+                model.TimeIsValidForOrderReplacement = TimeIsValidForOrderReplacement(calculatedStartAt);
+                model.StartAtIsInFuture = calculatedStartAt > _clock.SwedenNow;
 
                 if (request != null)
                 {
@@ -160,9 +161,9 @@ namespace Tolk.Web.Controllers
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(replacingOrderId);
                 if (request.CanCreateReplacementOrderOnCancel &&
                     _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
-                    TimeIsValidForOrderReplacement(order.StartAt))
+                    TimeIsValidForOrderReplacement(request.CalculatedStartAt))
                 {
-                    var replaceOrderModel = ReplaceOrderModel.GetModelFromOrder(order, cancelMessage, request.Ranking.Broker.Name, CachedUseAttachentSetting(User.GetCustomerOrganisationId()), _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset);
+                    var replaceOrderModel = ReplaceOrderModel.GetModelFromOrder(order, request, cancelMessage, CachedUseAttachentSetting(User.GetCustomerOrganisationId()), _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset);
                     SetCustomerSpecificProperties(replaceOrderModel);           
                     return View(await _listToModelService.AddInformationFromListsToModel(replaceOrderModel));
                 }
@@ -188,7 +189,7 @@ namespace Tolk.Web.Controllers
                     var request = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                     if (request.CanCreateReplacementOrderOnCancel &&
                         _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
-                        TimeIsValidForOrderReplacement(order.StartAt))
+                        TimeIsValidForOrderReplacement(request.CalculatedStartAt))
                     {
                         using var trn = await _dbContext.Database.BeginTransactionAsync();
                         // add a few lists, used when copying in constructor
@@ -686,7 +687,7 @@ namespace Tolk.Web.Controllers
                         }
                         if (request.CanCreateReplacementOrderOnCancel &&
                             _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId) &&
-                            TimeIsValidForOrderReplacement(order.StartAt))
+                            TimeIsValidForOrderReplacement(request.CalculatedStartAt))
                         {
                             //Forward the message to replace
                             return RedirectToAction(nameof(Replace), new { replacingOrderId = model.OrderId, cancelMessage = model.CancelMessage });
@@ -906,7 +907,6 @@ namespace Tolk.Web.Controllers
                 .Where(h => h.Date >= _clock.SwedenNow.Date)
                 .Select(h => h.Date.ToSwedishString("yyyy-MM-dd") ));
         }
-
 
         private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart)
         {

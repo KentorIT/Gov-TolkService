@@ -42,11 +42,11 @@ namespace Tolk.Web.Models
         [StayWithinOriginalRange(ErrorMessage = "Uppdraget måste ske inom tiden för det ersatta uppdraget", OtherRangeProperty = nameof(ReplacedTimeRange), RulesetProperty = nameof(FrameworkAgreementResponseRuleset))]
         public TimeRange TimeRange { get; set; }
 
-        internal static ReplaceOrderModel GetModelFromOrder(Order order, string cancelMessage, string brokerName, bool useAttachments, FrameworkAgreementResponseRuleset responseRuleset)
+        internal static ReplaceOrderModel GetModelFromOrder(Order order, Request request, string cancelMessage, bool useAttachments, FrameworkAgreementResponseRuleset responseRuleset)
         {
             var model = new ReplaceOrderModel
             {
-                BrokerName = brokerName,
+                BrokerName = request.Ranking.Broker.Name,
                 AllowExceedingTravelCost = GetAllowExceedingTravelCost(order),
                 Status = order.Status,
                 AssignmentType = order.AssignmentType,
@@ -69,15 +69,15 @@ namespace Tolk.Web.Models
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 ReplacedTimeRange = new TimeRange
                 {
-                    StartDateTime = order.StartAt,
-                    EndDateTime = order.EndAt
+                    StartDateTime = request.CalculatedStartAt,
+                    EndDateTime = request.CalculatedEndAt
                 },
                 ReplacingOrderNumber = order.OrderNumber,
                 CancelMessage = cancelMessage,
                 TimeRange = new TimeRange
                 {
-                    StartDateTime = order.StartAt,
-                    EndDateTime = order.EndAt
+                    StartDateTime = request.CalculatedStartAt,
+                    EndDateTime = request.CalculatedEndAt
                 },
                 Description = order.Description,
                 UnitName = order.UnitName,

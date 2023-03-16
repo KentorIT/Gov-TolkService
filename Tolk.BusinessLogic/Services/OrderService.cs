@@ -374,7 +374,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 throw new InvalidOperationException($"Order {order.OrderId} has no active requests that can be cancelled");
             }
-            var replacingRequest = new Request(request, new RequestExpiryResponse { ExpiryAt = order.StartAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedOrder }, _clock.SwedenNow);
+            var replacingRequest = new Request(request, new RequestExpiryResponse { ExpiryAt = replacementOrder.StartAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedOrder }, _clock.SwedenNow);
             await _tolkDbContext.AddAsync(replacementOrder);
             replacingRequest.Order = replacementOrder;
             await _tolkDbContext.AddAsync(replacingRequest);
