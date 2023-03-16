@@ -857,7 +857,8 @@ namespace Tolk.BusinessLogic.Services
         private async Task HandleStartedOrders()
         {
             var requestIds = await _tolkDbContext.Requests
-                .Where(r => (r.Order.StartAt <= _clock.SwedenNow && r.Order.Status == OrderStatus.ResponseAccepted) &&
+                .Where(r => (((r.RespondedStartAt != null && r.RespondedStartAt <= _clock.SwedenNow) || (r.RespondedStartAt == null && r.Order.StartAt <= _clock.SwedenNow)) && 
+                     r.Order.Status == OrderStatus.ResponseAccepted) &&
                      r.Status == RequestStatus.Approved && r.InterpreterCompetenceVerificationResultOnAssign != null &&
                      r.InterpreterCompetenceVerificationResultOnStart == null)
                 .Select(r => r.RequestId)
