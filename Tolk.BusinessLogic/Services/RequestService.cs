@@ -446,7 +446,7 @@ namespace Tolk.BusinessLogic.Services
                 throw new InvalidOperationException("Det går inte att tillsätta samma tolk som redan är tillsatt som extra tolk för samma tillfälle.");
             }
 
-            Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, changedAt, isAReplacingRequest: true, requestGroup: request.RequestGroup)
+            Request newRequest = new(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, changedAt, isAReplacingRequest: true, requestGroup: request.RequestGroup, respondedStartAt: request.RespondedStartAt)
             {
                 Order = request.Order,
                 Status = RequestStatus.AcceptedNewInterpreterAppointed,
@@ -774,11 +774,10 @@ namespace Tolk.BusinessLogic.Services
             var prices = _priceCalculationService.GetPrices(request, _clock.SwedenNow, competenceLevel, interpreterLocation, expectedTravelCosts);
             if (request.Status == RequestStatus.AcceptedAwaitingInterpreter)
             {
-                Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, acceptTime, isAReplacingRequest: true, requestGroup: request.RequestGroup)
+                Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = request.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, acceptTime, isAReplacingRequest: true, requestGroup: request.RequestGroup, respondedStartAt: request.RespondedStartAt)
                 {
                     Order = request.Order,
-                    Status = RequestStatus.AcceptedNewInterpreterAppointed,
-                    RespondedStartAt = request.RespondedStartAt
+                    Status = RequestStatus.AcceptedNewInterpreterAppointed
                 };
                 request.Order.Requests.Add(newRequest);
 

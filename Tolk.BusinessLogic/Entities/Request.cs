@@ -14,7 +14,7 @@ namespace Tolk.BusinessLogic.Entities
 
         public Request() { }
 
-        public Request(Ranking ranking, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime, bool isTerminalRequest = false, bool isAReplacingRequest = false, RequestGroup requestGroup = null)
+        public Request(Ranking ranking, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime, bool isTerminalRequest = false, bool isAReplacingRequest = false, RequestGroup requestGroup = null, DateTimeOffset? respondedStartAt = null)
         {
             if (!isAReplacingRequest && newRequestExpiry.ExpiryAt.HasValue && newRequestExpiry.ExpiryAt < creationTime)
             {
@@ -28,6 +28,7 @@ namespace Tolk.BusinessLogic.Entities
             RequestGroup = requestGroup;
             RequestAnswerRuleType = newRequestExpiry.RequestAnswerRuleType;
             LastAcceptAt = newRequestExpiry.LastAcceptedAt;
+            RespondedStartAt = respondedStartAt;
         }
 
         internal Request(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
@@ -40,7 +41,7 @@ namespace Tolk.BusinessLogic.Entities
         }
 
         internal Request(Request originalRequest, RequestExpiryResponse newRequestExpiry, DateTimeOffset creationTime)
-            : this(originalRequest.Ranking, newRequestExpiry, creationTime)
+            : this(originalRequest.Ranking, newRequestExpiry, creationTime, respondedStartAt: originalRequest.RespondedStartAt)
         {
             Interpreter = originalRequest.Interpreter;
             CompetenceLevel = originalRequest.CompetenceLevel;

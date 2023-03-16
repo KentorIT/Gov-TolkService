@@ -384,7 +384,7 @@ namespace Tolk.Web.Services
                     Actor = "Systemet",
                 });
             }
-            if (request.RespondedStartAt.HasValue)
+            if (request.RespondedStartAt.HasValue && request.RequestAnswerRuleType != RequestAnswerRuleType.ReplacedInterpreter && request.RequestAnswerRuleType != RequestAnswerRuleType.ReplacedOrder)
             {
                 eventLog.Add(new EventLogEntryModel
                 {
