@@ -51,8 +51,8 @@ namespace Tolk.Web.Controllers
                 CustomerName = r.Order.CustomerOrganisation.Name,
                 RegionName = r.Order.Region.Name,
                 ExpiresAt = r.ExpiresAt,
-                StartAt = r.Order.StartAt,
-                EndAt = r.Order.EndAt,
+                StartAt = r.RespondedStartAt ?? r.Order.StartAt,
+                EndAt = r.RespondedStartAt != null ? r.RespondedStartAt.Value.Add(r.Order.ExpectedLength.Value) : r.Order.EndAt,
                 Status = r.Status
             }));
         }

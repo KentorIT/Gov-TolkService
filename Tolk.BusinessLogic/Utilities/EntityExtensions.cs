@@ -85,7 +85,8 @@ namespace Tolk.BusinessLogic.Utilities
                         (r.LastAcceptAt <= now &&
                             (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)
                         ) ||
-                        (r.Order.StartAt <= now && r.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
+                        (((r.RespondedStartAt != null && r.RespondedStartAt <= now) || (r.RespondedStartAt == null && r.Order.StartAt <= now)) && 
+                            r.Status == RequestStatus.AwaitingDeadlineFromCustomer) ||
                         (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= now &&
                             (r.Status == RequestStatus.AnsweredAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)
                         )
@@ -171,7 +172,8 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return requests.Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status == RequestStatus.Approved)) &&
                     (r.Order.Status == OrderStatus.RequestRespondedAwaitingApproval || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
-                    r.Order.StartAt <= now && (r.Status == RequestStatus.AnsweredAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed));
+                    ((r.RespondedStartAt != null && r.RespondedStartAt <= now) || (r.RespondedStartAt == null && r.Order.StartAt <= now)) && 
+                    (r.Status == RequestStatus.AnsweredAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed));
         }
 
         public static Task<Request> GetNonAnsweredRespondedRequest(this IQueryable<Request> requests, DateTimeOffset now, int requestId)

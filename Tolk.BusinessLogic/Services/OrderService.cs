@@ -545,13 +545,13 @@ namespace Tolk.BusinessLogic.Services
 
         public (List<RequisitionPriceRow>, List<MealBreak>) GetCompensationPriceRowsForCancelledRequest(Request request, bool createFullCompensationRequisition)
         {
-            var mealbreaks = (createFullCompensationRequisition && (request.Order.MealBreakIncluded ?? false)) ? new List<MealBreak> { new MealBreak { StartAt = request.Order.StartAt.AddHours(2).ToDateTimeOffsetSweden(), EndAt = request.Order.StartAt.AddHours(3).ToDateTimeOffsetSweden() } } : null;
+            var mealbreaks = (createFullCompensationRequisition && (request.Order.MealBreakIncluded ?? false)) ? new List<MealBreak> { new MealBreak { StartAt = request.CalculatedStartAt.AddHours(2).ToDateTimeOffsetSweden(), EndAt = request.CalculatedStartAt.AddHours(3).ToDateTimeOffsetSweden() } } : null;
 
             //if mealbreaks and full compensation we must get correct prices with mealbreaks deducted otherwize make a copy from the request's pricerows.
             var priceRows = (createFullCompensationRequisition && mealbreaks != null) ? _priceCalculationService.GetPricesRequisition(
-                request.Order.StartAt,
+                request.CalculatedStartAt,
                 request.Order.Duration,
-                request.Order.StartAt,
+                request.CalculatedStartAt,
                 request.Order.Duration,
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
                 request.Order.CustomerOrganisation.PriceListType,
@@ -996,7 +996,7 @@ namespace Tolk.BusinessLogic.Services
                         _logger.LogInformation("Processing expired request {requestId} for Order {orderId}.",
                             expiredRequest.RequestId, expiredRequest.OrderId);
 
-                        if (expiredRequest.Order.StartAt <= _clock.SwedenNow)
+                        if (expiredRequest.CalculatedStartAt <= _clock.SwedenNow)
                         {
                             if (expiredRequest.Status == RequestStatus.AwaitingDeadlineFromCustomer)
                             {

@@ -372,7 +372,7 @@ namespace Tolk.BusinessLogic.Services
                 //Check if the replacing order has startime before original order's starttime
                 // Or end time after original end time.
                 // If so, a requisition is in order...
-                if (replacedRequest.Order.StartAt > request.Order.StartAt || replacedRequest.Order.EndAt < request.Order.EndAt)
+                if (replacedRequest.CalculatedStartAt > request.Order.StartAt || replacedRequest.CalculatedEndAt < request.Order.EndAt)
                 {
                     (priceRows, mealbreaks) = _orderService.GetCompensationPriceRowsForCancelledRequest(replacedRequest, true);
                 }

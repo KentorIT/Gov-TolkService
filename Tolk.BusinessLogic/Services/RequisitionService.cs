@@ -50,7 +50,7 @@ namespace Tolk.BusinessLogic.Services
             var priceInformation = _priceCalculationService.GetPricesRequisition(
                 sessionStartedAt,
                 sessionDuration,
-                request.Order.StartAt,
+                request.CalculatedStartAt,
                 request.Order.Duration,
                 EnumHelper.Parent<CompetenceAndSpecialistLevel, CompetenceLevel>((CompetenceAndSpecialistLevel)request.CompetenceLevel),
                 request.Order.CustomerOrganisation.PriceListType,

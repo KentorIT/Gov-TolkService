@@ -186,13 +186,13 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool CanCreateReplacementOrderOnCancel => !Order.OrderGroupId.HasValue && !Order.ReplacingOrderId.HasValue && Status == RequestStatus.Approved;
 
-        public bool CanChangeInterpreter(DateTimeOffset swedenNow) => Order.StartAt > swedenNow &&
+        public bool CanChangeInterpreter(DateTimeOffset swedenNow) => CalculatedStartAt > swedenNow &&
             ((!RequestGroupId.HasValue && IsAcceptedOrApproved) ||
             (RequestGroupId.HasValue && (Status == RequestStatus.Approved || Status == RequestStatus.AcceptedNewInterpreterAppointed)));
 
         public bool CanCreateRequisition => !Requisitions.Any(r => r.Status == RequisitionStatus.Reviewed || r.Status == RequisitionStatus.Created) && IsApprovedOrDelivered;
 
-        public bool CanCreateComplaint(DateTimeOffset swedenNow) => !Complaints.Any() && HasCorrectStatusForCreateComplaint && !(IsApprovedOrDelivered && Order.StartAt > swedenNow);
+        public bool CanCreateComplaint(DateTimeOffset swedenNow) => !Complaints.Any() && HasCorrectStatusForCreateComplaint && !(IsApprovedOrDelivered && (RespondedStartAt ?? Order.StartAt) > swedenNow);
 
         public bool HasCorrectStatusForCreateComplaint => IsApprovedOrDelivered || Status == RequestStatus.CancelledByBroker;
 
@@ -470,7 +470,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Bokningsförfrågan med boknings-id {Order.OrderNumber} har redan arkiverats");
             }
-            if (Order.StartAt > confirmedAt)
+            if (CalculatedStartAt > confirmedAt)
             {
                 throw new InvalidOperationException($"Tolkuppdraget med boknings-id {Order.OrderNumber} har inte startat ännu och kan därför inte arkiveras");
             }
@@ -545,8 +545,8 @@ namespace Tolk.BusinessLogic.Entities
                         ImpersonatingCreatedBy = impersonatorId,
                         Message = "Genererad av systemet. Full ersättning utgår pga att avbokning skett mindre än 48 timmar före bokat tolktillfälle och att tolken inte kan inställa sig efter de förändrade tidsramarna.",
                         Status = RequisitionStatus.AutomaticGeneratedFromCancelledOrder,
-                        SessionStartedAt = Order.StartAt,
-                        SessionEndedAt = Order.EndAt,
+                        SessionStartedAt = CalculatedStartAt,
+                        SessionEndedAt = CalculatedEndAt,
                         PriceRows = priceRows,
                         MealBreaks = mealbreaks
                     }
@@ -697,7 +697,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Order {OrderId} is {Order.Status}, and request {RequestId} is {Status}. Order or request has wrong status to be cancelled");
             }
-            if (Order.StartAt < cancelledAt)
+            if (CalculatedStartAt < cancelledAt)
             {
                 throw new InvalidOperationException($"Order {OrderId} has already passed its start time. Orders that has started cannot be cancelled");
             }
@@ -715,8 +715,8 @@ namespace Tolk.BusinessLogic.Entities
                         ImpersonatingCreatedBy = impersonatorId,
                         Message = createFullCompensationRequisition ? "Genererad av systemet. Full ersättning utgår pga att avbokning skett mindre än 48 timmar före bokat tolktillfälle." : "Genererat av systemet vid avbokning, endast förmedlingsavgift utgår.",
                         Status = RequisitionStatus.AutomaticGeneratedFromCancelledOrder,
-                        SessionStartedAt = Order.StartAt,
-                        SessionEndedAt = Order.EndAt,
+                        SessionStartedAt = CalculatedStartAt,
+                        SessionEndedAt = CalculatedEndAt,
                         PriceRows = priceRows,
                         MealBreaks = mealbreaks
                     }
@@ -736,7 +736,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Order {OrderId} is {Order.Status}. Only Orders where response is accepted can be cancelled by broker.");
             }
-            if (Order.StartAt < cancelledAt)
+            if (CalculatedStartAt < cancelledAt)
             {
                 throw new InvalidOperationException($"Order {OrderId} has already passed its start time. Orders that has started can not be cancelled");
             }
@@ -759,7 +759,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Request {RequestId} is {Status}. Only requests under negotiation can be terminated due to ended framework agreement");
             }
-            if (Order.StartAt < terminatedAt)
+            if (CalculatedStartAt < terminatedAt)
             {
                 throw new InvalidOperationException($"Order {OrderId} has already passed its start time. Orders that have started can not be terminated due to ended framework agreement");
             }
@@ -780,7 +780,7 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException("A requisition cannot be created when request is not approved or delivered.");
             }
-            if (Order.StartAt > requisition?.CreatedAt)
+            if (CalculatedStartAt > requisition?.CreatedAt)
             {
                 throw new InvalidOperationException("A requisition cannot be created before order start time.");
             }
@@ -838,7 +838,7 @@ namespace Tolk.BusinessLogic.Entities
             }
             if (latestAnswerTimeForCustomer != null)
             {
-                if (latestAnswerTimeForCustomer.Value >= Order.StartAt)
+                if (latestAnswerTimeForCustomer.Value >= CalculatedStartAt)
                 {
                     throw new InvalidOperationException("LatestAnswerTimeForCustomer must not be after order start time.");
                 }
