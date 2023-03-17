@@ -1,8 +1,10 @@
-﻿using System;
+﻿using log4net.Appender;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Tests.TestHelpers;
 using Tolk.BusinessLogic.Utilities;
 using Xunit;
@@ -289,7 +291,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
         [InlineData("2019-01-02", "2019-01-01", false)]
         public void CreateRequestValid(string expiry, string now, bool isTerminalRequest)
         {
-            RequestExpiryResponse  response = new RequestExpiryResponse { ExpiryAt = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null ,RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer  };
+            RequestExpiryResponse response = new RequestExpiryResponse { ExpiryAt = expiry != null ? (DateTime?)DateTime.Parse(expiry) : null, RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer };
             var nowDate = DateTime.Parse(now);
             var order = MockOrders.Last();
             var request = order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), response, nowDate, isTerminalRequest);
@@ -318,7 +320,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var order = MockOrders.Last();
             order.CustomerOrganisationId = customer;
             order.RegionId = region;
-            order.CreateRequest(MockEntities.MockRankingsWithQuarantines.Where(r => r.RegionId == region).AsQueryable(), new RequestExpiryResponse { RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer}, new DateTimeOffset(2018, 09, 07, 0, 0, 0, new TimeSpan(02, 00, 00)), false);
+            order.CreateRequest(MockEntities.MockRankingsWithQuarantines.Where(r => r.RegionId == region).AsQueryable(), new RequestExpiryResponse { RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer }, new DateTimeOffset(2018, 09, 07, 0, 0, 0, new TimeSpan(02, 00, 00)), false);
             Assert.Equal(requests, order.Requests.Count);
             Assert.Equal(expectedStatus, order.Status);
         }
@@ -424,6 +426,190 @@ namespace Tolk.BusinessLogic.Tests.Entities
             order.Requests.First().Order = order;
             order.Status = status;
             Assert.Throws<InvalidOperationException>(() => order.ConfirmNoAnswer(DateTimeOffset.Now, 1, null));
+        }
+
+        [Theory]
+        [InlineData("2023-03-17 10:00:00", "2023-03-17 17:00:00", "2023-03-17 10:00:00", "02:00", true)]
+        [InlineData("2023-03-17 10:00:00", "2023-03-17 17:00:00", "2023-03-17 15:00:00", "02:00", true)]
+        [InlineData("2023-03-17 10:00:00", "2023-03-17 17:00:00", "2023-03-17 12:15:00", "02:00", true)]
+        [InlineData("2023-03-17 10:00:00", "2023-03-17 17:00:00", "2023-03-17 09:59:00", "02:00", false)]
+        [InlineData("2023-03-17 10:00:00", "2023-03-17 14:00:00", "2023-03-17 15:00:00", "02:00", false)]
+        [InlineData("2023-03-17 10:00:00", "2023-03-17 14:00:00", "2023-03-17 12:01:00", "02:00", false)]
+        [InlineData("2023-03-17 10:00:00", "2023-03-17 14:00:00", "2023-03-18 12:00:00", "02:00", false)]
+        [InlineData("2023-03-17 10:00:00", "2023-03-17 12:00:00", "2023-03-17 15:00:00", null, false)]
+        [InlineData("2023-03-17 10:00:00", "2023-03-17 17:00:00", null, "02:00", false)]
+        [InlineData("2023-03-17 10:00:00", "2023-03-17 17:00:00", null, null, true)]
+
+        public void IsValidRespondedStartAt(string orderStartAt, string orderEndAt, string respondedStartAt, string expectedLength, bool result)
+        {
+            var orderStartAtOffset = DateTimeOffset.Parse(orderStartAt);
+            var orderEndAtOffset = DateTimeOffset.Parse(orderEndAt);
+            DateTimeOffset? respondedStartAtOffset = !string.IsNullOrEmpty(respondedStartAt) ? DateTimeOffset.Parse(respondedStartAt) : null;
+            TimeSpan? expectedLengthTimeSpan = !string.IsNullOrEmpty(expectedLength) ? TimeSpan.Parse(expectedLength) : null;
+            var order = new Order(MockOrders.First())
+            {
+                StartAt = orderStartAtOffset,
+                EndAt = orderEndAtOffset,
+                ExpectedLength = expectedLengthTimeSpan,
+            };
+            Assert.Equal(result, order.IsValidRespondedStartAt(respondedStartAtOffset));
+        }
+
+        [Fact]
+        public void ConfirmResponseNotAnswered()
+        {
+            var order = new Order(MockOrders.First())
+            {
+                Status = OrderStatus.ResponseNotAnsweredByCreator,
+                Requests = new List<Request>()
+                {
+                    new Request() { Status = RequestStatus.DeniedByTimeLimit }
+                },
+                OrderStatusConfirmations = new List<OrderStatusConfirmation>()
+            };
+            order.ConfirmResponseNotAnswered(DateTimeOffset.Now, 1, null);
+            Assert.Equal(1, order.OrderStatusConfirmations.Count(o => o.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator));
+        }
+
+        // Invalid order status
+        [Theory]
+        [InlineData(OrderStatus.AwaitingDeadlineFromCustomer)]
+        [InlineData(OrderStatus.CancelledByBroker)]
+        [InlineData(OrderStatus.CancelledByCreator)]
+        [InlineData(OrderStatus.Delivered)]
+        [InlineData(OrderStatus.DeliveryAccepted)]
+        [InlineData(OrderStatus.GroupAwaitingPartialResponse)]
+        [InlineData(OrderStatus.RequestAwaitingPartialAccept)]
+        [InlineData(OrderStatus.NoDeadlineFromCustomer)]
+        [InlineData(OrderStatus.Requested)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter)]
+        [InlineData(OrderStatus.ResponseAccepted)]
+        [InlineData(OrderStatus.NoBrokerAcceptedOrder)]
+        public void ConfirmResponseNotAnswered_Invalid(OrderStatus status)
+        {
+            var order = new Order(MockOrders.First())
+            {
+                Status = OrderStatus.Requested,
+                AllowExceedingTravelCost = AllowExceedingTravelCost.No,
+                Requests = new List<Request>()
+                {
+                    new Request() { Status = status == OrderStatus.ResponseAccepted ? RequestStatus.Approved : RequestStatus.Created }
+                },
+                OrderStatusConfirmations = new List<OrderStatusConfirmation>()
+            };
+            order.Requests.First().Order = order;
+            order.Status = status;
+            Assert.Throws<InvalidOperationException>(() => order.ConfirmResponseNotAnswered(DateTimeOffset.Now, 1, null));
+        }
+
+        [Fact]
+        public void ConfirmResponseNotAnswered_AlreadyConfirmed()
+        {
+            var order = new Order(MockOrders.First())
+            {
+                Status = OrderStatus.ResponseNotAnsweredByCreator,
+                Requests = new List<Request>()
+                {
+                    new Request() { Status = RequestStatus.DeniedByTimeLimit }
+                },
+                OrderStatusConfirmations = new List<OrderStatusConfirmation>()
+            };
+            order.ConfirmResponseNotAnswered(DateTimeOffset.Now, 1, null);
+            Assert.Equal(1, order.OrderStatusConfirmations.Count(o => o.OrderStatus == OrderStatus.ResponseNotAnsweredByCreator));
+            Assert.Throws<InvalidOperationException>(() => order.ConfirmResponseNotAnswered(DateTimeOffset.Now, 2, null));
+        }
+
+        [Theory]
+        [InlineData("New Desc", 1, true, true, true)]
+        [InlineData("New Desc", 1, true, true, false)]
+        [InlineData(null, 1, false, true, true)]
+        [InlineData(null, 1, false, true, false)]
+        [InlineData("New Desc", null, true, false, false)]
+        public void Update_Valid(string description, int? updatedAttachment, bool orderFieldsUpdated, bool attachmentChanged, bool attachmentRemoved)
+        {
+            var order = new Order(MockOrders.First())
+            {
+                Status = OrderStatus.Requested,
+                AllowExceedingTravelCost = AllowExceedingTravelCost.No,
+                Requests = new List<Request>()
+                {
+                    new Request() { Status = RequestStatus.Approved }
+                },
+                Attachments = attachmentRemoved ? new List<OrderAttachment>() { new OrderAttachment { AttachmentId = 1 } } : new List<OrderAttachment>(),
+                OrderChangeLogEntries = new List<OrderChangeLogEntry>(),
+            };
+            order.Requests.First().Order = order;
+            order.InterpreterLocations.Add(new OrderInterpreterLocation { Rank = 1, InterpreterLocation = InterpreterLocation.OffSitePhone });
+            order.Status = OrderStatus.ResponseAccepted;
+            var updatedAttachments = updatedAttachment.HasValue ? new[] { updatedAttachment.Value } : null;
+            order.Update(new ChangeOrderModel
+            {
+                UpdatedAt = DateTimeOffset.Now,
+                UpdatedBy = 1,
+                Description = description,
+                OrderChangeLogType = (orderFieldsUpdated && attachmentChanged) ? OrderChangeLogType.AttachmentAndOrderInformationFields : attachmentChanged ? OrderChangeLogType.Attachment : OrderChangeLogType.OrderInformationFields,
+                Attachments = updatedAttachments,
+                BrokerId = 1,
+                SelectedInterpreterLocation = InterpreterLocation.OffSitePhone
+            });
+            Assert.Equal(orderFieldsUpdated || attachmentChanged, order.OrderChangeLogEntries.Count > 0);
+            Assert.Equal(orderFieldsUpdated, order.OrderChangeLogEntries.Single().OrderHistories.Count > 0);
+            Assert.Equal(attachmentRemoved, order.OrderChangeLogEntries.Single().OrderAttachmentHistoryEntries.Count > 0);
+        }
+
+        [Theory]
+        [InlineData(OrderStatus.AwaitingDeadlineFromCustomer)]
+        [InlineData(OrderStatus.CancelledByBroker)]
+        [InlineData(OrderStatus.CancelledByCreator)]
+        [InlineData(OrderStatus.Delivered)]
+        [InlineData(OrderStatus.DeliveryAccepted)]
+        [InlineData(OrderStatus.GroupAwaitingPartialResponse)]
+        [InlineData(OrderStatus.NoBrokerAcceptedOrder)]
+        [InlineData(OrderStatus.NoDeadlineFromCustomer)]
+        [InlineData(OrderStatus.RequestAwaitingPartialAccept)]
+        [InlineData(OrderStatus.Requested)]
+        [InlineData(OrderStatus.RequestRespondedAwaitingApproval)]
+        [InlineData(OrderStatus.RequestRespondedNewInterpreter)]
+        [InlineData(OrderStatus.RequestAcceptedAwaitingInterpreter)]
+        [InlineData(OrderStatus.ResponseNotAnsweredByCreator)]
+        [InlineData(OrderStatus.TerminatedDueToTerminatedFrameworkAgreement)]
+        [InlineData(OrderStatus.ToBeProcessedByCustomer)]
+        public void Update_InvalidStatus(OrderStatus status)
+        {
+            var order = new Order(MockOrders.First())
+            {
+                Status = OrderStatus.Requested,
+                AllowExceedingTravelCost = AllowExceedingTravelCost.No,
+                Requests = new List<Request>()
+                {
+                    new Request() { Status = status == OrderStatus.ResponseAccepted ? RequestStatus.Approved : RequestStatus.Created }
+                },
+                OrderStatusConfirmations = new List<OrderStatusConfirmation>()
+            };
+            order.Requests.First().Order = order;
+            order.Status = status;
+            Assert.Throws<InvalidOperationException>(() => order.Update(new ChangeOrderModel()));
+
+        }
+
+        [Fact]
+        public void Update_InvalidModel()
+        {
+            var order = new Order(MockOrders.First())
+            {
+                Status = OrderStatus.Requested,
+                AllowExceedingTravelCost = AllowExceedingTravelCost.No,
+                Requests = new List<Request>()
+                {
+                    new Request() { Status = RequestStatus.Approved }
+                },
+                OrderStatusConfirmations = new List<OrderStatusConfirmation>()
+            };
+            order.Requests.First().Order = order;
+            order.Status = OrderStatus.ResponseAccepted;
+            Assert.Throws<InvalidOperationException>(() => order.Update(null));
+
         }
     }
 }

@@ -817,11 +817,15 @@ namespace Tolk.BusinessLogic.Tests.Entities
         }
 
         [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
-        public void ReplaceInterpreter_Valid(bool isAutoAccepted, bool isOldRequestApproved)
+        [InlineData(false, false, false)]
+        [InlineData(false, true, false)]
+        [InlineData(true, false, false)]
+        [InlineData(true, true, false)]
+        [InlineData(false, false, true)]
+        [InlineData(false, true, true)]
+        [InlineData(true, false, true)]
+        [InlineData(true, true, true)]
+        public void ReplaceInterpreter_Valid(bool isAutoAccepted, bool isOldRequestApproved, bool isFlexible)
         {
             var interpreterLocation = InterpreterLocation.OnSite;
 
@@ -844,19 +848,18 @@ namespace Tolk.BusinessLogic.Tests.Entities
                 AnswerProcessedBy = oldRequestAnswerProcessedBy,
                 ImpersonatingAnsweredBy = oldRequestImpersonatingAnswerProcessedBy,
                 InterpreterLocation = (int)interpreterLocation,
+                RespondedStartAt = isFlexible ? MockOrder.StartAt: null,
                 Order = new Order(MockOrder)
                 {
                     Status = OrderStatus.Requested,
                     InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = interpreterLocation } },
+                    ExpectedLength = isFlexible ? new TimeSpan(1,0,0) : null,
                 },
             };
-
-            var request = new Request()
+            Request request = new(oldRequest.Ranking, new RequestExpiryResponse { LastAcceptedAt = oldRequest.LastAcceptAt, ExpiryAt = oldRequest.ExpiresAt, RequestAnswerRuleType = RequestAnswerRuleType.ReplacedInterpreter }, DateTimeOffset.Now, isAReplacingRequest: true, respondedStartAt: oldRequest.RespondedStartAt)
             {
+                Order = oldRequest.Order,
                 Status = RequestStatus.AcceptedNewInterpreterAppointed,
-                RequirementAnswers = new List<OrderRequirementRequestAnswer>(),
-                PriceRows = new List<RequestPriceRow>(),
-                Order = oldRequest.Order
             };
 
             oldRequest.Order.Requests.Add(oldRequest);
@@ -896,6 +899,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             Assert.Equal(requirementAnswers, request.RequirementAnswers);
             Assert.Equal(attachments, request.Attachments);
             Assert.Equal(priceInfo.PriceRows, request.PriceRows);
+            Assert.Equal(isFlexible, request.RespondedStartAt == request.Order.StartAt);
         }
 
         [Theory]
@@ -2897,10 +2901,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             request.Accept(acceptedAt, userId, null, InterpreterLocation.OnSite, null, new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(), new PriceInformation { PriceRows = new List<PriceRowBase>() }, brokerReferenceNumber, respondedStartAt);
             Assert.Equal(respondedStartAt, request.RespondedStartAt);
-
-
         }
-
 
         [Theory]
         [InlineData("2023-03-23 10:00", "2023-03-23 12:00", "01:00", "2023-03-23 09:00")]//before
@@ -2929,7 +2930,74 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var brokerReferenceNumber = "bra nummer";
 
             Assert.Throws<InvalidOperationException>(() => request.Accept(acceptedAt, userId, null, InterpreterLocation.OnSite, null, new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(), new PriceInformation { PriceRows = new List<PriceRowBase>() }, brokerReferenceNumber, respondedStartAt));
+        }
+        [Theory]
+        [InlineData("2023-03-23 10:00", "2023-03-23 16:00", "02:00", "2023-03-23 10:00")]//on start
+        [InlineData("2023-03-23 10:00", "2023-03-23 16:00", "02:00", "2023-03-23 14:00")]//as late as possible
+        [InlineData("2023-03-23 10:00", "2023-03-23 16:00", "02:00", "2023-03-23 11:45")]//in the middle of things
+        public void Answer_RespondedStartAt(string flexibleStartDateTime, string flexibleEndDateTime, string expectedLengthTime, string respondedStartDateTime)
+        {
+            var flexibleStartAt = DateTimeOffset.Parse(flexibleStartDateTime).ToDateTimeOffsetSweden();
+            var flexibleEndAt = DateTimeOffset.Parse(flexibleEndDateTime).ToDateTimeOffsetSweden();
+            var expectedLength = TimeSpan.Parse(expectedLengthTime);
+            var respondedStartAt = DateTimeOffset.Parse(respondedStartDateTime).ToDateTimeOffsetSweden();
+            var order = new Order(MockOrder)
+            {
+                Status = OrderStatus.Requested,
+                StartAt = flexibleStartAt,
+                EndAt = flexibleEndAt,
+                ExpectedLength = expectedLength,
+                InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite } },
+            };
 
+            var request = new Request()
+            {
+                Status = RequestStatus.Created,
+                Order = order,
+                RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore
+            };
+            var answeredAt = DateTime.Now;
+            var userId = 10;
+            var brokerReferenceNumber = "bra nummer";
+            request.Order.Requests.Add(request);
+
+            request.Answer(answeredAt, userId, null, MockInterpreter, InterpreterLocation.OnSite, CompetenceAndSpecialistLevel.OtherInterpreter, 
+                new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(), new PriceInformation { PriceRows = new List<PriceRowBase>() }, 
+                string.Empty ,null,brokerReferenceNumber, respondedStartAt: respondedStartAt);
+            Assert.Equal(respondedStartAt, request.RespondedStartAt);
+        }
+
+        [Fact]
+        public void AnswerWithRespondedStartAtAfterAccept()
+        {
+            var flexibleStartAt = DateTimeOffset.Parse("2023-03-23 10:00").ToDateTimeOffsetSweden();
+            var flexibleEndAt = DateTimeOffset.Parse("2023-03-23 16:00").ToDateTimeOffsetSweden();
+            var expectedLength = TimeSpan.Parse("02:00");
+            var respondedStartAt = DateTimeOffset.Parse("2023-03-23 10:00").ToDateTimeOffsetSweden();
+            var order = new Order(MockOrder)
+            {
+                Status = OrderStatus.Requested,
+                StartAt = flexibleStartAt,
+                EndAt = flexibleEndAt,
+                ExpectedLength = expectedLength,
+                InterpreterLocations = new List<OrderInterpreterLocation>() { new OrderInterpreterLocation { InterpreterLocation = InterpreterLocation.OnSite } },
+            };
+
+            var request = new Request()
+            {
+                Status = RequestStatus.AcceptedAwaitingInterpreter,
+                Order = order,
+                RespondedStartAt = respondedStartAt,
+                RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore
+            };
+            var answeredAt = DateTime.Now;
+            var userId = 10;
+            var brokerReferenceNumber = "bra nummer";
+            request.Order.Requests.Add(request);
+
+            Assert.Throws<InvalidOperationException>(() => request.Answer(answeredAt, userId, null, MockInterpreter, InterpreterLocation.OnSite, CompetenceAndSpecialistLevel.OtherInterpreter,
+                new List<OrderRequirementRequestAnswer>(), new List<RequestAttachment>(), new PriceInformation { PriceRows = new List<PriceRowBase>() },
+                string.Empty, null, brokerReferenceNumber, respondedStartAt: respondedStartAt));
         }
 
         [Theory]

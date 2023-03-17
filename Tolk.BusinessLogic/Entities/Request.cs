@@ -284,6 +284,10 @@ namespace Tolk.BusinessLogic.Entities
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
             }
+            if (respondedStartAt.HasValue && RespondedStartAt.HasValue)
+            {
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Förväntad starttid är redan satt och kan inte ändras.");
+            }
             ValidateRespondedStartAtAgainstOrder(respondedStartAt);
             ValidateInterpreterLocationAgainstOrder(interpreterLocation);
             ValidateRequirementsAgainstOrder(requirementAnswers);
