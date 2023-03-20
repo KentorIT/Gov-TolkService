@@ -300,13 +300,14 @@ namespace Tolk.Web.TagHelpers
                 tagBuilder.Attributes.Add("placeholder", property.Placeholder);
             }
             tagBuilder.Attributes.Add("data-val", "true");
+            tagBuilder.Attributes.Add("data-val-length-max", property.MaxLength.ToString());
             if (property.Required)
             {
                 tagBuilder.Attributes.Add("data-val-required", $"{property.DisplayName} Måste anges");
             }
             if (property.RemoteValidation)
             {
-                tagBuilder.Attributes.Add("data-val-remote", ""); // add error from remote validation if possible
+                tagBuilder.Attributes.Add("data-val-remote", "");
                 tagBuilder.Attributes.Add("data-val-remote-additionalfields", $"*.{nameof(property.Value)}");
                 tagBuilder.Attributes.Add("data-val-remote-url", $"/Validate/CustomerSpecific{property.PropertyToReplace}");
             }

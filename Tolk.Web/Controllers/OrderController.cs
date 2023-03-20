@@ -9,7 +9,6 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
@@ -41,8 +40,7 @@ namespace Tolk.Web.Controllers
         private readonly CacheService _cacheService;
         private readonly ListToModelService _listToModelService;
         private readonly EventLogService _eventLogService;
-        private readonly UserService _userService;
-        private readonly ValidationService _validationService;
+        private readonly UserService _userService;        
 
         public OrderController(
             TolkDbContext dbContext,
@@ -58,8 +56,7 @@ namespace Tolk.Web.Controllers
             CacheService cacheService,
             ListToModelService listToModelService,
             EventLogService eventLogService,
-            UserService userService,
-            ValidationService validationService
+            UserService userService            
             )
         {
             _dbContext = dbContext;
@@ -75,8 +72,7 @@ namespace Tolk.Web.Controllers
             _cacheService = cacheService;
             _listToModelService = listToModelService;
             _eventLogService = eventLogService;
-            _userService = userService;
-            _validationService = validationService;
+            _userService = userService;            
         }
 
         public IActionResult List()
@@ -179,8 +175,8 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(ReplaceOrderModel model)
-        {
-            var validationResult = ValidateCustomerSpecificProperties(model);         
+        {            
+            RevalidateCustomerSpecificProperties(model);
             if (ModelState.IsValid)
             {
                 Order order = await _dbContext.Orders.GetFullOrderById(model.ReplacingOrderId);
@@ -262,7 +258,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Update(UpdateOrderModel model)
         {
-            var validationResult = ValidateCustomerSpecificProperties(model);
+            RevalidateCustomerSpecificProperties(model);
             if (ModelState.IsValid)
             {
                 var order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
@@ -410,14 +406,9 @@ namespace Tolk.Web.Controllers
             }
             if (model.SeveralOccasions)
             {
-                ModelState.Remove("SplitTimeRange.StartDate");
-                ModelState.Remove("SplitTimeRange.StartTimeHour");
-                ModelState.Remove("SplitTimeRange.StartTimeMinutes");
-                ModelState.Remove("SplitTimeRange.EndTimeHour");
-                ModelState.Remove("SplitTimeRange.EndTimeMinutes");
-                model.SplitTimeRange = null;
+                RemoveSplitTimeRangeValidation(model);               
             }
-            var validationResult = ValidateCustomerSpecificProperties(model);                
+            RevalidateCustomerSpecificProperties(model);                    
             if (ModelState.IsValid)
             {
                 using var trn = await _dbContext.Database.BeginTransactionAsync();
@@ -445,27 +436,7 @@ namespace Tolk.Web.Controllers
             }            
             _logger.LogError($"{nameof(Add)} - {nameof(InvalidModelStateErrors)}: {InvalidModelStateErrors}");
             return View(model);
-        }
-
-        private (string ErrorMessage, bool Success) ValidateCustomerSpecificProperties(OrderBaseModel model)
-        {
-            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.GetCustomerOrganisationId()).ToList();
-            foreach (var property in customerSpecificProperties)
-            {
-                switch (property.PropertyToReplace)
-                {
-                    case PropertyType.InvoiceReference:
-                        if (!_validationService.ValidateCustomerSpecificProperty(property, model.InvoiceReference))
-                        {
-                            ModelState.AddModelError(nameof(PropertyType.InvoiceReference), property.RegexErrorMessage);
-                        };
-                        break;
-                    default:
-                        break;
-                }
-            }
-            return (string.Empty, true);
-        }
+        }   
 
         private string InvalidModelStateErrors => string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
 
@@ -1089,6 +1060,30 @@ namespace Tolk.Web.Controllers
                         break;
                 }
             }            
+        }
+       
+        private void RemoveSplitTimeRangeValidation(OrderModel model)
+        {
+            if (model.SeveralOccasions)
+            {
+                ModelState.Remove("SplitTimeRange.StartDate");
+                ModelState.Remove("SplitTimeRange.StartTimeHour");
+                ModelState.Remove("SplitTimeRange.StartTimeMinutes");
+                ModelState.Remove("SplitTimeRange.EndTimeHour");
+                ModelState.Remove("SplitTimeRange.EndTimeMinutes");
+                model.SplitTimeRange = null;
+            }            
+        }
+
+        private void RevalidateCustomerSpecificProperties(OrderBaseModel model)
+        {            
+            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("CustomerSpecific"))) {
+                ModelState.Remove(key);
+            }
+            ModelState.Remove("RankedInterpreterLocationFirst");
+            model.RankedInterpreterLocationFirst = null;
+            SetCustomerSpecificProperties(model);
+            TryValidateModel(model);
         }
     }
 }

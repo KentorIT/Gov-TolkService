@@ -39,7 +39,6 @@ namespace Tolk.Web.Controllers
         private readonly IdentityErrorDescriber _identityErrorDescriber;
         private readonly INotificationService _notificationService;
         private readonly CacheService _cacheService;
-        private readonly ValidationService _validationService;
 
         public AccountController(
             UserManager<AspNetUser> userManager,
@@ -52,8 +51,7 @@ namespace Tolk.Web.Controllers
             ISwedishClock clock,
             IdentityErrorDescriber identityErrorDescriber,
             INotificationService notificationService,
-            CacheService cacheService,
-            ValidationService validationService)
+            CacheService cacheService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -66,7 +64,6 @@ namespace Tolk.Web.Controllers
             _identityErrorDescriber = identityErrorDescriber;
             _notificationService = notificationService;
             _cacheService = cacheService;
-            _validationService = validationService;
         }
 
         public async Task<IActionResult> Index()
@@ -754,7 +751,7 @@ namespace Tolk.Web.Controllers
         public async Task<ActionResult> EditDefaultSettings(DefaultSettingsModel model)
         {
             var user = await _userManager.GetUserAsync(User);
-            var validationResult = ValidateCustomerSpecificProperties(model);           
+            RevalidateCustomerSpecificProperties(model);
             if (ModelState.IsValid)
             {
                 if (user != null)
@@ -1014,9 +1011,9 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 $"Återställning lösenord {Constants.SystemName}",
                 bodyPlain,
                 bodyHtml,
-                NotificationType.PasswordReset, 
-                isBrokerMail:false,
-                addContractInfo:false);
+                NotificationType.PasswordReset,
+                isBrokerMail: false,
+                addContractInfo: false);
             _dbContext.SaveChanges();
 
             _logger.LogInformation("Password reset link sent to {email} for {userId}",
@@ -1086,24 +1083,11 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             }
             return model;
         }
-        private (string ErrorMessage, bool Success) ValidateCustomerSpecificProperties(DefaultSettingsModel model)
+        private void RevalidateCustomerSpecificProperties(DefaultSettingsModel model)
         {
-            var customerSpecificProperties = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.TryGetCustomerOrganisationId()).ToList();
-            foreach (var property in customerSpecificProperties)
-            {
-                switch (property.PropertyToReplace)
-                {
-                    case PropertyType.InvoiceReference:                 
-                        if (model.InvoiceReference != null && !_validationService.ValidateCustomerSpecificProperty(property, model.InvoiceReference))
-                        {
-                            ModelState.AddModelError(nameof(PropertyType.InvoiceReference), property.RegexErrorMessage);
-                        };
-                        break;
-                    default:
-                        break;
-                }
-            }
-            return (string.Empty, true);
+            ModelState.Remove(nameof(model.CustomerSpecificInvoiceReference));
+            SetCustomerSpecficInputProperties(model);
+            TryValidateModel(model);
         }
         #endregion
     }
