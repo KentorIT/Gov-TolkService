@@ -198,6 +198,11 @@ namespace Tolk.BusinessLogic.Tests.Services
                 o.EndAt = resetDate.AddHours(2);
                 o.Status = OrderStatus.Delivered;
             }
+            foreach (Request r in tolkDbContext.Requests)
+            {
+                r.Status = RequestStatus.Delivered;
+            }
+
             for (int i = 1; i <= weekBefore; i++)
             {
                 orders[i].StartAt = dateIn_14_DaysRange;
@@ -278,13 +283,12 @@ namespace Tolk.BusinessLogic.Tests.Services
 
 
         [Theory]
-        [InlineData(8, 5, 2, 1, 0, 0, 3)]
-        [InlineData(8, 5, 1, 1, 1, 0, 4)]
-        [InlineData(9, 5, 1, 1, 1, 1, 5)]
-        [InlineData(9, 3, 2, 2, 1, 1, 5)]
-        [InlineData(9, 2, 2, 2, 2, 1, 5)]
-        [InlineData(9, 4, 3, 2, 0, 0, 3)]
-
+        [InlineData(6, 3, 2, 1, 0, 0, 4)]
+        [InlineData(6, 3, 1, 1, 1, 0, 5)]
+        [InlineData(6, 2, 1, 1, 1, 1, 6)]
+        [InlineData(8, 3, 2, 1, 1, 1, 6)]
+        [InlineData(9, 2, 2, 2, 2, 1, 6)]
+        [InlineData(7, 5, 2, 0, 0, 0, 3)]
         public void GetOrderLanguageStatistics(int noOfTotalOrdersToCheck, int noOfTop1, int noOfTop2, int noOfTop3, int noOfTop4, int noOfTop5, int expectedNoOfListItems)
         {
             using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
@@ -300,6 +304,10 @@ namespace Tolk.BusinessLogic.Tests.Services
             if (noOfTotalOrdersToCheck > orders.Count)
                 Assert.True(false, "Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
 
+            for (int i = 0; i < orders.Count; i++)
+            {
+                orders[i].LanguageId = MockEntities.MockLanguages[5].LanguageId;
+            }
             int c = 0;
             for (int i = 0; i < noOfTop1; i++)
             {
@@ -338,35 +346,36 @@ namespace Tolk.BusinessLogic.Tests.Services
                     c = i;
                 }
             }
-            if (noOfTotalOrdersToCheck < orders.Count)
-            {
-                for (int i = ++c; i < orders.Count; i++)
-                {
-                    orders[i].LanguageId = null;
-                }
-            }
             tolkDbContext.SaveChanges();
-            OrderStatisticsModel os = StatisticsService.GetOrderLanguageStatistics(tolkDbContext.Orders.Where(o => o.LanguageId > 0).Include(o => o.Language));
+
+            OrderStatisticsModel os = new StatisticsService(tolkDbContext, _clock).GetOrderLanguageStatistics();
             Assert.Equal(expectedNoOfListItems, os.TotalListItems.Count());
-            int count = 0;
+            int count = -1;
             foreach (var item in os.TotalListItems)
             {
-                Assert.Equal(MockEntities.MockLanguages[count].Name, item.Name);
-                Assert.Equal(listValues[count], item.NoOfItems);
-                Assert.Equal(Math.Round((double)listValues[count] * 100 / noOfTotalOrdersToCheck, 1), item.PercentageValueToDisplay);
+                if (count == -1)
+                {
+                    Assert.Equal(MockEntities.MockLanguages[5].Name, item.Name);
+                    Assert.Equal(orders.Count - noOfTotalOrdersToCheck, item.NoOfItems);
+                    Assert.Equal(Math.Round((double)(orders.Count - noOfTotalOrdersToCheck) * 100 / orders.Count, 1), item.PercentageValueToDisplay);
+                }
+                else
+                {
+                    Assert.Equal(MockEntities.MockLanguages[count].Name, item.Name);
+                    Assert.Equal(listValues[count], item.NoOfItems);
+                    Assert.Equal(Math.Round((double)listValues[count] * 100 / orders.Count, 1), item.PercentageValueToDisplay);
+                }
                 count++;
             }
         }
 
-
         [Theory]
-        [InlineData(8, 5, 2, 1, 0, 0, 3)]
-        [InlineData(8, 5, 1, 1, 1, 0, 4)]
-        [InlineData(9, 5, 1, 1, 1, 1, 5)]
-        [InlineData(9, 3, 2, 2, 1, 1, 5)]
-        [InlineData(9, 2, 2, 2, 2, 1, 5)]
-        [InlineData(9, 4, 3, 2, 0, 0, 3)]
-
+        [InlineData(6, 3, 2, 1, 0, 0, 4)]
+        [InlineData(6, 3, 1, 1, 1, 0, 5)]
+        [InlineData(6, 2, 1, 1, 1, 1, 6)]
+        [InlineData(8, 3, 2, 1, 1, 1, 6)]
+        [InlineData(9, 2, 2, 2, 2, 1, 6)]
+        [InlineData(7, 5, 2, 0, 0, 0, 3)]
         public void GetOrderRegionStatistics(int noOfTotalOrdersToCheck, int noOfTop1, int noOfTop2, int noOfTop3, int noOfTop4, int noOfTop5, int expectedNoOfListItems)
         {
             using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
@@ -381,8 +390,10 @@ namespace Tolk.BusinessLogic.Tests.Services
 
             if (noOfTotalOrdersToCheck > orders.Count)
                 Assert.True(false, "Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
-            var regionNotIncludedInTest = Region.Regions[listValues.Count()].RegionId;
-
+            for (int i = 0; i < orders.Count; i++)
+            {
+                orders[i].RegionId = Region.Regions[5].RegionId;
+            }
             int c = 0;
             for (int i = 0; i < noOfTop1; i++)
             {
@@ -421,34 +432,36 @@ namespace Tolk.BusinessLogic.Tests.Services
                     c = i;
                 }
             }
-            if (noOfTotalOrdersToCheck < orders.Count)
-            {
-                for (int i = ++c; i < orders.Count; i++)
-                {
-                    orders[i].RegionId = regionNotIncludedInTest;
-                }
-            }
             tolkDbContext.SaveChanges();
-            OrderStatisticsModel os = StatisticsService.GetOrderRegionStatistics(tolkDbContext.Orders.Where(o => o.RegionId != regionNotIncludedInTest).Include(o => o.Region));
+            OrderStatisticsModel os = new StatisticsService(tolkDbContext, _clock).GetOrderRegionStatistics();
+
             Assert.Equal(expectedNoOfListItems, os.TotalListItems.Count());
-            int count = 0;
+            int count = -1;
             foreach (var item in os.TotalListItems)
             {
-                Assert.Equal(Region.Regions[count].Name, item.Name);
-                Assert.Equal(listValues[count], item.NoOfItems);
-                Assert.Equal(Math.Round((double)listValues[count] * 100 / noOfTotalOrdersToCheck, 1), item.PercentageValueToDisplay);
+                if (count == -1)
+                {
+                    Assert.Equal(Region.Regions[5].Name, item.Name);
+                    Assert.Equal(orders.Count - noOfTotalOrdersToCheck, item.NoOfItems);
+                    Assert.Equal(Math.Round((double)(orders.Count - noOfTotalOrdersToCheck) * 100 / orders.Count, 1), item.PercentageValueToDisplay);
+                }
+                else
+                {
+                    Assert.Equal(Region.Regions[count].Name, item.Name);
+                    Assert.Equal(listValues[count], item.NoOfItems);
+                    Assert.Equal(Math.Round((double)listValues[count] * 100 / orders.Count, 1), item.PercentageValueToDisplay);
+                }
                 count++;
             }
         }
 
-
         [Theory]
-        [InlineData(8, 5, 2, 1, 0, 0, 3)]
-        [InlineData(8, 5, 1, 1, 1, 0, 4)]
-        [InlineData(9, 5, 1, 1, 1, 1, 5)]
-        [InlineData(9, 3, 2, 2, 1, 1, 5)]
-        [InlineData(9, 2, 2, 2, 2, 1, 5)]
-        [InlineData(9, 4, 3, 2, 0, 0, 3)]
+        [InlineData(6, 3, 2, 1, 0, 0, 4)]
+        [InlineData(6, 3, 1, 1, 1, 0, 5)]
+        [InlineData(6, 2, 1, 1, 1, 1, 6)]
+        [InlineData(8, 3, 2, 1, 1, 1, 6)]
+        [InlineData(9, 2, 2, 2, 2, 1, 6)]
+        [InlineData(7, 5, 2, 0, 0, 0, 3)]
         public void GetOrderCustomerStatistics(int noOfTotalOrdersToCheck, int noOfTop1, int noOfTop2, int noOfTop3, int noOfTop4, int noOfTop5, int expectedNoOfListItems)
         {
             using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
@@ -463,7 +476,10 @@ namespace Tolk.BusinessLogic.Tests.Services
 
             if (noOfTotalOrdersToCheck > orders.Count)
                 Assert.True(false, "Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
-            var customerNotIncludedInTest = MockEntities.MockCustomers[listValues.Count()].CustomerOrganisationId;
+            for (int i = 0; i < orders.Count; i++)
+            {
+                orders[i].CustomerOrganisationId = MockEntities.MockCustomers[5].CustomerOrganisationId;
+            }
 
             int c = 0;
             for (int i = 0; i < noOfTop1; i++)
@@ -503,24 +519,24 @@ namespace Tolk.BusinessLogic.Tests.Services
                     c = i;
                 }
             }
-            if (noOfTotalOrdersToCheck < orders.Count)
-            {
-                for (int i = ++c; i < orders.Count; i++)
-                {
-                    orders[i].CustomerOrganisationId = customerNotIncludedInTest;
-                }
-            }
             tolkDbContext.SaveChanges();
-            OrderStatisticsModel os = StatisticsService.GetOrderCustomerStatistics(tolkDbContext.Orders.
-                Where(o => o.CustomerOrganisationId != customerNotIncludedInTest).Include(o => o.CustomerOrganisation));
+            OrderStatisticsModel os = new StatisticsService(tolkDbContext, _clock).GetOrderCustomerStatistics();
             Assert.Equal(expectedNoOfListItems, os.TotalListItems.Count());
-            int count = 0;
-
+            int count = -1;
             foreach (var item in os.TotalListItems)
             {
-                Assert.Equal(MockEntities.MockCustomers[count].Name, item.Name);
-                Assert.Equal(listValues[count], item.NoOfItems);
-                Assert.Equal(Math.Round((double)listValues[count] * 100 / noOfTotalOrdersToCheck, 1), item.PercentageValueToDisplay);
+                if (count == -1)
+                {
+                    Assert.Equal(MockEntities.MockCustomers[5].Name, item.Name);
+                    Assert.Equal(orders.Count - noOfTotalOrdersToCheck, item.NoOfItems);
+                    Assert.Equal(Math.Round((double)(orders.Count - noOfTotalOrdersToCheck) * 100 / orders.Count, 1), item.PercentageValueToDisplay);
+                }
+                else
+                {
+                    Assert.Equal(MockEntities.MockCustomers[count].Name, item.Name);
+                    Assert.Equal(listValues[count], item.NoOfItems);
+                    Assert.Equal(Math.Round((double)listValues[count] * 100 / orders.Count, 1), item.PercentageValueToDisplay);
+                }
                 count++;
             }
         }

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
@@ -16,7 +15,6 @@ namespace Tolk.BusinessLogic.Services
 {
     public class StatisticsService
     {
-
         private readonly TolkDbContext _dbContext;
         private readonly ISwedishClock _clock;
 
@@ -44,32 +42,34 @@ namespace Tolk.BusinessLogic.Services
         public WeeklyStatisticsModel GetWeeklyOrderStatistics(DateTimeOffset breakDate)
         {
             var orders = GetOrders(StartDate, _clock.SwedenNow);
-            return GetWeeklyStatistics(orders.Where(o => o.CreatedAt < breakDate).Count(), orders.Where(o => o.CreatedAt >= breakDate).Count(), "Bokningar");
+            return GetWeeklyStatistics(orders.Where(o => o < breakDate).Count(), orders.Where(o => o >= breakDate).Count(), "Bokningar");
         }
 
         public WeeklyStatisticsModel GetWeeklyDeliveredOrderStatistics(DateTimeOffset breakDate)
         {
-            var deliveredOrders = GetDeliveredOrders(StartDate, _clock.SwedenNow);
-            return GetWeeklyStatistics(deliveredOrders.Where(o => o.EndAt < breakDate).Count(), deliveredOrders.Where(o => o.EndAt >= breakDate).Count(), "Utförda uppdrag");
+            var deliveredOrders = GetDeliveredOrders();
+            return GetWeeklyStatistics(
+                deliveredOrders.Where(o => o.CalculatedEndAt >= StartDate && o.CalculatedEndAt < breakDate).Count(),
+                deliveredOrders.Where(o => o.CalculatedEndAt >= breakDate && o.CalculatedEndAt < _clock.SwedenNow).Count(), "Utförda uppdrag");
         }
 
         public WeeklyStatisticsModel GetWeeklyRequisitionStatistics(DateTimeOffset breakDate)
         {
             var requisitions = GetRequisitions(StartDate, _clock.SwedenNow);
-            return GetWeeklyStatistics(requisitions.Where(r => r.CreatedAt < breakDate).Count(), requisitions.Where(r => r.CreatedAt >= breakDate).Count(), "Rekvisitioner");
+            return GetWeeklyStatistics(requisitions.Where(r => r < breakDate).Count(), requisitions.Where(r => r >= breakDate).Count(), "Rekvisitioner");
         }
 
         public WeeklyStatisticsModel GetWeeklyComplaintStatistics(DateTimeOffset breakDate)
         {
             var complaints = GetComplaints(StartDate, _clock.SwedenNow);
-            return GetWeeklyStatistics(complaints.Where(c => c.CreatedAt < breakDate).Count(), complaints.Where(c => c.CreatedAt >= breakDate).Count(), "Reklamationer");
+            return GetWeeklyStatistics(complaints.Where(c => c < breakDate).Count(), complaints.Where(c => c >= breakDate).Count(), "Reklamationer");
         }
 
         public WeeklyStatisticsModel GetWeeklyUserLogins(DateTimeOffset breakDate)
         {
             var userLogins = GetUserLogins(StartDate, _clock.SwedenNow);
-            int lastWeek = userLogins.Where(u => u.LoggedInAt < breakDate).Select(u => u.UserId).Distinct().Count();
-            int thisWeek = userLogins.Where(u => u.LoggedInAt >= breakDate).Select(u => u.UserId).Distinct().Count();
+            int lastWeek = userLogins.Where(u => u.LoggedAt < breakDate).Select(u => u.UserId).Distinct().Count();
+            int thisWeek = userLogins.Where(u => u.LoggedAt >= breakDate).Select(u => u.UserId).Distinct().Count();
             return GetWeeklyStatistics(lastWeek, thisWeek, "Inloggade anv.");
         }
 
@@ -85,39 +85,33 @@ namespace Tolk.BusinessLogic.Services
 
         private DateTimeOffset BreakDate => _clock.SwedenNow.AddDays(-7);
 
-        private List<Order> GetOrders(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _dbContext.Orders.Where(o => o.CreatedAt >= start && o.CreatedAt < end).ToList();
-        }
+        private List<DateTimeOffset> GetOrders(DateTimeOffset start, DateTimeOffset end)
+            => _dbContext.Orders.Where(o => o.CreatedAt >= start && o.CreatedAt < end).Select(o => o.CreatedAt).ToList();
 
-        private List<Order> GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _dbContext.Orders.Where(o => o.EndAt >= start && o.EndAt < end
-                    && (o.Status == OrderStatus.Delivered || o.Status == OrderStatus.DeliveryAccepted || o.Status == OrderStatus.ResponseAccepted)).ToList();
-        }
 
-        private List<Requisition> GetRequisitions(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _dbContext.Requisitions.Where(r => r.CreatedAt >= start && r.CreatedAt < end
-                    && !r.ReplacedByRequisitionId.HasValue).ToList();
-        }
+        private List<DeliveryEndAtDto> GetDeliveredOrders()
+            => _dbContext.Requests.Where(r => (r.Status == RequestStatus.Delivered || r.Status == RequestStatus.Approved))
+            .Select(r => new DeliveryEndAtDto
+            {
+                EndAt = r.Order.EndAt,
+                RespondedStartAt = r.RespondedStartAt,
+                ExpectedLength = r.Order.ExpectedLength
+            }).ToList();
 
-        private List<Complaint> GetComplaints(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _dbContext.Complaints.Where(c => c.CreatedAt >= start && c.CreatedAt < end).ToList();
-        }
+        private List<DateTimeOffset> GetRequisitions(DateTimeOffset start, DateTimeOffset end)
+            => _dbContext.Requisitions.Where(r => r.CreatedAt >= start && r.CreatedAt < end
+                    && !r.ReplacedByRequisitionId.HasValue).Select(r => r.CreatedAt).ToList();
 
-        private List<UserLoginLogEntry> GetUserLogins(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _dbContext.UserLoginLogEntries.Where(u => u.LoggedInAt >= start
-                && u.LoggedInAt < end).ToList();
-        }
+        private List<DateTimeOffset> GetComplaints(DateTimeOffset start, DateTimeOffset end)
+            => _dbContext.Complaints.Where(c => c.CreatedAt >= start && c.CreatedAt < end).Select(c => c.CreatedAt).ToList();
 
-        private List<UserAuditLogEntry> GetNewUsers(DateTimeOffset start, DateTimeOffset end)
-        {
-            return _dbContext.UserAuditLogEntries.Where(u => u.LoggedAt >= start
-                && u.LoggedAt < end && u.UserChangeType == UserChangeType.Created).ToList();
-        }
+        private List<UserLoginDto> GetUserLogins(DateTimeOffset start, DateTimeOffset end)
+            => _dbContext.UserLoginLogEntries.Where(u => u.LoggedInAt >= start
+                && u.LoggedInAt < end).Select(l => new UserLoginDto { UserId = l.UserId, LoggedAt = l.LoggedInAt }).ToList();
+
+        private List<UserLoginDto> GetNewUsers(DateTimeOffset start, DateTimeOffset end)
+            => _dbContext.UserAuditLogEntries.Where(u => u.LoggedAt >= start
+                && u.LoggedAt < end && u.UserChangeType == UserChangeType.Created).Select(u => new UserLoginDto { UserId = u.UserId, LoggedAt = u.LoggedAt }).ToList();
 
         public static WeeklyStatisticsModel GetWeeklyStatistics(int lastWeek, int thisWeek, string name)
         {
@@ -137,34 +131,37 @@ namespace Tolk.BusinessLogic.Services
 
         public IEnumerable<OrderStatisticsModel> GetOrderStatistics()
         {
-            IQueryable<Order> orders = _dbContext.Orders.GetOrdersForStatistics();
-
-            yield return GetOrderRegionStatistics(orders);
-            yield return GetOrderLanguageStatistics(orders);
-            yield return GetOrderCustomerStatistics(orders);
+            yield return GetOrderRegionStatistics();
+            yield return GetOrderLanguageStatistics();
+            yield return GetOrderCustomerStatistics();
         }
 
-        public static OrderStatisticsModel GetOrderRegionStatistics(IQueryable<Order> orders)
+        public OrderStatisticsModel GetOrderRegionStatistics()
         {
-            return GetOrderStats("Mest beställda län", orders.ToList().GroupBy(o => o.Region.Name));
+            return GetOrderStats("Mest beställda län", _dbContext.Orders.Select(o => new GroupingDto { OrderId = o.OrderId, Name = o.Region.Name }).ToList().GroupBy(o => o.Name));
         }
 
-        public static OrderStatisticsModel GetOrderLanguageStatistics(IQueryable<Order> orders)
+        public OrderStatisticsModel GetOrderLanguageStatistics()
         {
-            return GetOrderStats("Mest beställda språk", orders.ToList().GroupBy(o => o.Language.Name));
+            return GetOrderStats("Mest beställda språk", _dbContext.Orders.Select(o => new GroupingDto { OrderId = o.OrderId, Name = o.Language.Name }).ToList().GroupBy(o => o.Name));
         }
 
-        public static OrderStatisticsModel GetOrderCustomerStatistics(IQueryable<Order> orders)
+        public OrderStatisticsModel GetOrderCustomerStatistics()
         {
-            return GetOrderStats("Myndigheter", orders.ToList().GroupBy(o => o.CustomerOrganisation.Name));
+            return GetOrderStats("Myndigheter", _dbContext.Orders.Select(o => new GroupingDto { OrderId = o.OrderId, Name = o.CustomerOrganisation.Name }).ToList().GroupBy(o => o.Name));
         }
 
-        private static OrderStatisticsModel GetOrderStats(string name, IEnumerable<IGrouping<string, Order>> orders)
+        private static OrderStatisticsModel GetOrderStats(string name, IEnumerable<IGrouping<string, GroupingDto>> orders)
         {
             return new OrderStatisticsModel
             {
                 Name = name,
-                TotalListItems = orders.OrderByDescending(o => o.Count()).Select(n => new OrderStatisticsListItemModel { Name = n.Key, NoOfItems = n.Count(), PercentageValueToDisplay = Math.Round((double)n.Count() * 100 / orders.Sum(o => o.Count()), 1) })
+                TotalListItems = orders
+                .OrderByDescending(o => o.Count()).Select(n => new OrderStatisticsListItemModel { 
+                    Name = n.Key, 
+                    NoOfItems = n.Count(), 
+                    PercentageValueToDisplay = Math.Round((double)n.Count() * 100 / orders.Sum(o => o.Count()), 1) 
+                })
             };
         }
 
@@ -275,7 +272,7 @@ namespace Tolk.BusinessLogic.Services
             var getOrders = connection.CreateCommand();
             getOrders.CommandText = brokerId.HasValue ?
                     $"EXEC GetOrderRequestsForExcelReport @dateFrom = '{start.Date}', @dateTo = '{end.Date}', @onlyDelivered = '{onlyDelivered}', @brokerId = '{brokerId}'" :
-                    organisationId == null ? $"EXEC GetOrdersForExcelReport @dateFrom = '{start.Date}', @dateTo = '{end.Date}', @userId = '{userId}', @onlyDelivered = '{onlyDelivered}'" : 
+                    organisationId == null ? $"EXEC GetOrdersForExcelReport @dateFrom = '{start.Date}', @dateTo = '{end.Date}', @userId = '{userId}', @onlyDelivered = '{onlyDelivered}'" :
                     $"EXEC GetOrdersForExcelReport @dateFrom = '{start.Date}', @dateTo = '{end.Date}',@userId = '{userId}', @onlyDelivered = '{onlyDelivered}', @customerId = '{organisationId}'";
             using var reader = getOrders.ExecuteReader();
             return ReadReportRows(reader, brokerId.HasValue);
@@ -351,7 +348,7 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Uppdragstyp";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentType);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolkens kompetensnivå";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterCompetenceLevelAsString?? r.InterpreterCompetenceLevel.GetDescription());
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterCompetenceLevelAsString ?? r.InterpreterCompetenceLevel.GetDescription());
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Kammarkollegiets tolknr";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterId);
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt";
