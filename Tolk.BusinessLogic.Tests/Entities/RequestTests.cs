@@ -3061,5 +3061,61 @@ namespace Tolk.BusinessLogic.Tests.Entities
 
             Assert.Throws<InvalidOperationException>(() => request.TerminateDueToEndedFrameworkAgreement(terminatedAt, message, openRequestStatuses));
         }
+
+        [Fact]
+        public void SetRequestExpiryManually_Valid()
+        {
+            var order = new Order(MockOrder);
+            order.StartAt = DateTime.Now.AddDays(1);
+            order.EndAt = DateTime.Now.AddDays(1).AddHours(1);
+            var request = new Request()
+            {
+                Status = RequestStatus.AwaitingDeadlineFromCustomer,
+                Order = order
+            };
+
+            var expiry = DateTimeOffset.Now.AddHours(6);
+
+            request.SetRequestExpiryManually(expiry, DateTimeOffset.Now, 1, null);
+            Assert.Equal(expiry, request.ExpiresAt);
+            Assert.NotNull(request.RequestUpdateLatestAnswerTime);
+        }
+
+        [Theory]
+        [InlineData(RequestStatus.AcceptedAwaitingInterpreter)]
+        [InlineData(RequestStatus.AcceptedNewInterpreterAppointed)]
+        [InlineData(RequestStatus.AnsweredAwaitingApproval)]
+        [InlineData(RequestStatus.Approved)]
+        [InlineData(RequestStatus.CancelledByBroker)]
+        [InlineData(RequestStatus.CancelledByCreator)]
+        [InlineData(RequestStatus.CancelledByCreatorWhenApprovedOrAccepted)]
+        [InlineData(RequestStatus.Created)]
+        [InlineData(RequestStatus.DeclinedByBroker)]
+        [InlineData(RequestStatus.DeniedByCreator)]
+        [InlineData(RequestStatus.Delivered)]
+        [InlineData(RequestStatus.DeniedByTimeLimit)]
+        [InlineData(RequestStatus.InterpreterReplaced)]
+        [InlineData(RequestStatus.LostDueToQuarantine)]
+        [InlineData(RequestStatus.NoDeadlineFromCustomer)]
+        [InlineData(RequestStatus.Received)]
+        [InlineData(RequestStatus.ReplacedAtAnswerAfterAccept)]
+        [InlineData(RequestStatus.ResponseNotAnsweredByCreator)]
+        [InlineData(RequestStatus.TerminatedDueToTerminatedFrameworkAgreement)]
+        [InlineData(RequestStatus.ToBeProcessedByBroker)]
+        public void SetRequestExpiryManually_InvalidStatus(RequestStatus status)
+        {
+            var order = new Order(MockOrder);
+            order.StartAt = DateTime.Now.AddDays(1);
+            order.EndAt = DateTime.Now.AddDays(1).AddHours(1);
+            var request = new Request()
+            {
+                Status = status,
+                Order = order
+            };
+
+            var expiry = DateTimeOffset.Now.AddHours(6);
+
+            Assert.Throws<InvalidOperationException>(() => request.SetRequestExpiryManually(expiry, DateTimeOffset.Now, 1, null));
+        }
     }
 }

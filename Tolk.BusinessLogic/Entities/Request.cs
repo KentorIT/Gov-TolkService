@@ -809,7 +809,18 @@ namespace Tolk.BusinessLogic.Entities
                     PriceCalculationChargeId = p.PriceCalculationChargeId,
                 }).ToList();
         }
-
+        
+        internal void SetRequestExpiryManually(DateTimeOffset expiry, DateTimeOffset updatedAt, int userId, int? impersonatingUserId)
+        {
+            if (Status != RequestStatus.AwaitingDeadlineFromCustomer)
+            {
+                throw new InvalidOperationException($"There is no request awaiting deadline from customer on this order {OrderId}");
+            }
+            ExpiresAt = expiry;
+            Order.Status = OrderStatus.Requested;
+            Status = RequestStatus.Created;
+            RequestUpdateLatestAnswerTime = new RequestUpdateLatestAnswerTime { UpdatedAt = updatedAt, UpdatedBy = userId, ImpersonatorUpdatedBy = impersonatingUserId };
+        }
 
         #endregion
 

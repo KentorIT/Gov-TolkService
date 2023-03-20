@@ -594,17 +594,10 @@ namespace Tolk.BusinessLogic.Services
         public async Task SetRequestExpiryManually(Request request, DateTimeOffset expiry, int userId, int? impersonatingUserId)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(SetRequestExpiryManually), nameof(OrderService));
-            if (request.Status != RequestStatus.AwaitingDeadlineFromCustomer)
-            {
-                throw new InvalidOperationException($"There is no request awaiting deadline from customer on this order {request.OrderId}");
-            }
-            request.ExpiresAt = expiry;
-            request.Order.Status = OrderStatus.Requested;
-            request.Status = RequestStatus.Created;
-            request.RequestUpdateLatestAnswerTime = new RequestUpdateLatestAnswerTime { UpdatedAt = _clock.SwedenNow, UpdatedBy = userId, ImpersonatorUpdatedBy = impersonatingUserId };
+            request.SetRequestExpiryManually(expiry, _clock.SwedenNow, userId, impersonatingUserId);
 
             // Log and notify
-            _logger.LogInformation($"Expiry {expiry} manually set on request {request.RequestId}");
+            _logger.LogInformation("Expiry {expiry} manually set on request {requestId}", expiry, request.RequestId);
             if (request.Order.ExpectedLength.HasValue)
             {
                 await _notificationService.FlexibleRequestCreated(request);
