@@ -1080,8 +1080,6 @@ namespace Tolk.Web.Controllers
             foreach (var key in ModelState.Keys.Where(k => k.StartsWith("CustomerSpecific"))) {
                 ModelState.Remove(key);
             }
-            ModelState.Remove("RankedInterpreterLocationFirst");
-            model.RankedInterpreterLocationFirst = null;
             SetCustomerSpecificProperties(model);
             TryValidateModel(model);
         }
