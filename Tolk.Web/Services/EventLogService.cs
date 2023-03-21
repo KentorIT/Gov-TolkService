@@ -389,7 +389,7 @@ namespace Tolk.Web.Services
                 eventLog.Add(new EventLogEntryModel
                 {
                     Timestamp = request.AcceptedAt ?? request.AnswerProcessedAt.Value,
-                    EventDetails = $"Flexibel starttid bestämd",
+                    EventDetails = $"Starttid angiven för flexibel bokning",
                     Actor = request.AcceptingUser?.FullName ?? request.AnsweringUser?.FullName,
                     Organization = brokerName,
                     ActorContactInfo = GetContactinfo(request.AcceptingUser ?? request.AnsweringUser)
