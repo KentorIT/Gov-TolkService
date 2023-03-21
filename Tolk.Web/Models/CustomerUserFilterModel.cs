@@ -6,8 +6,7 @@ namespace Tolk.Web.Models
 {
     public class CustomerUserFilterModel
     {
-        public int Id { get; set; }
-
+        public int UserFilterModelCustomerId { get; set; }        
         [Display(Name = "Sök användare")]
         [Placeholder("Söker på delar av förnamn, efternamn eller e-postadress")]
         public string SearchString { get; set; }

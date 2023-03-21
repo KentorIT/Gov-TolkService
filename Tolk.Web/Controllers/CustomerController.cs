@@ -159,7 +159,7 @@ namespace Tolk.Web.Controllers
             CustomerUserFilterModel filters = await GetUserFilters();
 
             //Get the full table
-            var data = _dbContext.Users.Where(u => u.CustomerOrganisationId == filters.Id);
+            var data = _dbContext.Users.Where(u => u.CustomerOrganisationId == filters.UserFilterModelCustomerId);
 
             //Filter and return data tables data
             return AjaxDataTableHelper.GetData(request, data.Count(), DynamicUserListItemModel.Filter(filters, data), d => d.Select(u => new DynamicUserListItemModel
@@ -175,12 +175,12 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListUnits(IDataTablesRequest request)
-        {
+        {            
             //Get filters
             AdminUnitFilterModel filters = await GetUnitFilters();
 
             //Get the full table
-            var data = _dbContext.CustomerUnits.Where(u => u.CustomerOrganisationId == filters.Id);
+            var data = _dbContext.CustomerUnits.Where(u => u.CustomerOrganisationId == filters.AdminUnitFilterModelCustomerId);
 
             //Filter and return data tables data
             return AjaxDataTableHelper.GetData(request, data.Count(), AdminUnitListItemModel.Filter(filters, data), d => d.Select(u => new AdminUnitListItemModel
@@ -201,8 +201,33 @@ namespace Tolk.Web.Controllers
             return Json(AjaxDataTableHelper.GetColumnDefinitions<AdminUnitListItemModel>());
         }
 
-        private async Task<CustomerUserFilterModel> GetUserFilters()
+        public JsonResult GetCustomerSpecificColumnDefinition()
         {
+            return Json(AjaxDataTableHelper.GetColumnDefinitions<CustomerSpecificPropertyListItemModel>());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ListSpecificProperties(IDataTablesRequest request)
+        {
+            //Get filters
+            var filters = await GetCustomerSpecificPropertyFilters();
+
+            //Get the Full Model           
+            var data = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == filters.CustomerSpecificPropertyFilterModelCustomerId).AsQueryable();
+
+            return AjaxDataTableHelper.GetData(request, data.Count(), data, d => d.Select(csp => new CustomerSpecificPropertyListItemModel
+            { 
+                CustomerOrganisationId = csp.CustomerOrganisationId,
+                DisplayName = csp.DisplayName,
+                PropertyTypeName = csp.PropertyToReplace.GetDescription(),
+                PropertyType = csp.PropertyToReplace,
+                RegexPattern = csp.RegexPattern,
+            }));
+        }
+
+        private async Task<CustomerUserFilterModel> GetUserFilters()
+        {            
             var filters = new CustomerUserFilterModel();
             await TryUpdateModelAsync(filters);
             filters.CentralAdministratorRoleId = CentralAdministratorRoleId;
@@ -214,6 +239,13 @@ namespace Tolk.Web.Controllers
         {
             var filters = new AdminUnitFilterModel();
             await TryUpdateModelAsync(filters);
+            return filters;
+        }
+
+        private async Task<CustomerSpecificPropertyFilterModel> GetCustomerSpecificPropertyFilters()
+        {
+            var filters = new CustomerSpecificPropertyFilterModel();
+            await TryUpdateModelAsync(filters);                        
             return filters;
         }
 

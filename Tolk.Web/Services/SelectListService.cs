@@ -174,6 +174,11 @@ namespace Tolk.Web.Services
             EnumHelper.GetAllDescriptions<DesireType>()
                 .OrderByDescending(e => e.Value).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
+        public static IEnumerable<SelectListItem> CustomerSpecificProperties =>
+           EnumHelper.GetAllDescriptions<PropertyType>()               
+               .OrderByDescending(e => (int)e.Value)
+               .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
+               .ToList().AsReadOnly();
 
         public static IEnumerable<ExtendedSelectListItem> ReportList(UserTypes userType)
         {

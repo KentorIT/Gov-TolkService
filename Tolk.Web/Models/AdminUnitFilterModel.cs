@@ -5,7 +5,7 @@ namespace Tolk.Web.Models
 {
     public class AdminUnitFilterModel : IModel
     {
-        public int Id { get; set; }
+        public int AdminUnitFilterModelCustomerId { get; set; }
 
         [Display(Name = "Sök enhet")]
         [Placeholder("Söker på delar av namn eller e-postadress")]

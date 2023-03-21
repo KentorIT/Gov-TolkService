@@ -300,7 +300,10 @@ namespace Tolk.Web.TagHelpers
                 tagBuilder.Attributes.Add("placeholder", property.Placeholder);
             }
             tagBuilder.Attributes.Add("data-val", "true");
-            tagBuilder.Attributes.Add("data-val-length-max", property.MaxLength.ToString());
+            if(property.MaxLength.HasValue)
+            {
+                tagBuilder.Attributes.Add("data-val-length-max", property.MaxLength.ToString());
+            }
             if (property.Required)
             {
                 tagBuilder.Attributes.Add("data-val-required", $"{property.DisplayName} Måste anges");

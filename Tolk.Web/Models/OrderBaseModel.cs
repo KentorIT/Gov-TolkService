@@ -38,7 +38,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Fakturareferens", Description = "Här anger du den beställarreferens enligt era interna instruktioner som krävs för att fakturan för tolkuppdraget ska komma till rätt mottagare i er myndighet.")]
         [StringLength(100)]
         [Placeholder("Referens för korrekt fakturering...")]
-        [Required]
+        [Required]        
         public string InvoiceReference
         {
             get { return CustomerSpecificInvoiceReference?.Value ?? _invoiceReference; }
@@ -54,7 +54,7 @@ namespace Tolk.Web.Models
                 }
             }
         }
-
+        [CustomerSpecificValidation]
         public CustomerSpecificPropertyModel CustomerSpecificInvoiceReference { get; set; }
 
         [Display(Name = "Bokning besvarad av")]

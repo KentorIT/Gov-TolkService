@@ -62,6 +62,7 @@ namespace Tolk.Web.Models
         public CustomerUserFilterModel UserFilterModel { get; set; }
 
         public AdminUnitFilterModel UnitFilterModel { get; set; }
+        public CustomerSpecificPropertyFilterModel CustomerSpecificPropertyFilterModel { get; set;} 
 
         public bool ShowUseOrderAgreementsFromDate => CustomerSettings.Any(s => s.Value && s.CustomerSettingType == CustomerSettingType.UseOrderAgreements);
 
@@ -91,6 +92,9 @@ namespace Tolk.Web.Models
                 TravelCostAgreementType = customer.TravelCostAgreementType,
                 UseOrderAgreementsFromDate = customer.UseOrderAgreementsFromDate,
                 Message = message,
+                UnitFilterModel = new AdminUnitFilterModel { AdminUnitFilterModelCustomerId = customer.CustomerOrganisationId },
+                UserFilterModel = new CustomerUserFilterModel { UserFilterModelCustomerId = customer.CustomerOrganisationId },
+                CustomerSpecificPropertyFilterModel = new CustomerSpecificPropertyFilterModel { CustomerSpecificPropertyFilterModelCustomerId = customer.CustomerOrganisationId },
                 UserPageMode = new UserPageMode
                 {
                     BackController = "Customer",

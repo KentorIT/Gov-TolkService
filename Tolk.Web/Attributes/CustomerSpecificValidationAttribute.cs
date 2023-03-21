@@ -14,7 +14,7 @@ namespace Tolk.Web.Attributes
             {
                 return null;
             }
-            if(property.Value.Length > property.MaxLength)
+            if(property.MaxLength.HasValue && property.Value.Length > property.MaxLength)
             {
                 return new ValidationResult($"Value can not be longer than {property.MaxLength}");
             }

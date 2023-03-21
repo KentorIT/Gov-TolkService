@@ -1,0 +1,56 @@
+﻿@model CustomerSpecificPropertyModel
+@using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
+@using Tolk.BusinessLogic.Utilities;
+@using Tolk.Web.Services;
+@{
+    ViewData["Title"] = "Lägg till kundspecifikt fält";
+}
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <form method="post">
+        <div class="row">
+            <input asp-for=CustomerOrganisationId type="hidden" />
+            <form-entry asp-for="PropertyToReplace" type="select" asp-items="SelectListService.CustomerSpecificProperties" />
+            <div class="col-md-12">
+                <div class="col-sm-4">
+                    <form-entry asp-for="DisplayName" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="DisplayDescription" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="Placeholder" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-sm-4">
+                    <form-entry asp-for="MaxLength" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="Required" />
+                    <form-entry asp-for="RemoteValidation" />
+                </div>
+                <div class="col-sm-4">
+                    <form-entry asp-for="RegexPattern" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-sm-4">
+                    <form-entry asp-for="RegexErrorMessage" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <button type="submit" class="btn btn-large btn-default pull-right">Spara</button>
+            </div>
+        </div>
+    </form>
+</section>

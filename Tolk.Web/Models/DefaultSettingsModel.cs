@@ -81,7 +81,7 @@ namespace Tolk.Web.Models
             get { return CustomerSpecificInvoiceReference?.Value ?? _invoiceReference; }
             set { _invoiceReference = value; }
         }
-
+        [CustomerSpecificValidation]
         public CustomerSpecificPropertyModel CustomerSpecificInvoiceReference { get; set; }
 
         public List<OrderRequirementModel> OrderRequirements { get; set; }

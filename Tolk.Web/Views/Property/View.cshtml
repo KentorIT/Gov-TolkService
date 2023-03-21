@@ -1,0 +1,61 @@
+﻿@model CustomerSpecificPropertyModel
+@using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
+@using Tolk.BusinessLogic.Utilities;
+@{
+    ViewData["Title"] = "Detaljer för kundspecifik " + Model.PropertyToReplace.GetDescription();
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row col-sm-4">
+                <display-entry asp-for="@Model.PropertyToReplace" />
+            </div>
+            <div class="row col-sm-4">
+                <display-entry asp-for="@Model.DisplayName" />
+            </div>
+            <div class="row col-sm-4">
+                <display-entry asp-for="@Model.DisplayDescription" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row col-sm-4">
+                <display-entry asp-for="@Model.Placeholder" />
+            </div>
+            <div class="row col-sm-4">
+                <display-entry asp-for="@Model.MaxLength" />
+            </div>
+            <div class="row col-sm-4">
+                <display-entry asp-for="@Model.Required" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="row col-sm-4">
+                <display-entry asp-for="@Model.RemoteValidation" />
+            </div>
+            <div class="row col-sm-4">
+                <display-entry asp-for="@Model.RegexPattern" />
+            </div>
+            <div class="row col-sm-4">
+                <display-entry asp-for="@Model.RegexErrorMessage" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <form method="post" asp-action="@nameof(Tolk.Web.Controllers.PropertyController.Delete)">
+                <input type = "hidden" asp-for="@Model.CustomerOrganisationId"/> 
+                <input type = "hidden" asp-for="@Model.PropertyToReplace"/> 
+                <button type="submit" class="btn btn-large btn-default pull-left">Ta Bort</button>                
+            </form>
+        </div>
+        <div class="row col-sm-6">
+            <a class="btn btn-large btn-primary pull-right" asp-action="@nameof(Tolk.Web.Controllers.PropertyController.Edit)" asp-route-customerOrganisationId="@Model.CustomerOrganisationId" asp-route-propertyType="@Model.PropertyToReplace">Ändra</a>
+        </div>
+    </div>
+</section>
