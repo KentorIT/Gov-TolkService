@@ -38,7 +38,7 @@ ALTER VIEW[dbo].[OrderListRows]
                 ON l.LanguageId = o.LanguageId
             LEFT JOIN Requests req
                 ON req.OrderId = o.OrderId
-                AND req.Status IN (1, 2, 3, 4, 5, 6, 10, 12, 14, 16)
+                AND req.Status IN (1, 2, 3, 4, 5, 6, 10, 12, 14, 16, 23)
             LEFT JOIN Rankings ra
                 ON ra.RankingId = req.RankingId
             LEFT JOIN Brokers br
@@ -94,7 +94,7 @@ ALTER VIEW[dbo].[OrderListRows]
                 ON l.LanguageId = o.LanguageId
             LEFT JOIN RequestGroups req
                 ON req.OrderGroupId = o.OrderGroupId
-            AND req.Status IN (1, 2, 3, 4, 5, 6, 10, 12, 14, 16)
+            AND req.Status IN (1, 2, 3, 4, 5, 6, 10, 12, 14, 16, 23)
             LEFT JOIN Rankings ra
                 ON ra.RankingId = req.RankingId
             LEFT JOIN Brokers br
