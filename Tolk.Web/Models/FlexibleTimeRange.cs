@@ -75,7 +75,7 @@ namespace Tolk.Web.Models
 
 
         public string AsSwedishString =>
-            $"Förväntad längd: {ExpectedLength.ToSwedishString("hh\\:mm")}<br/>{StartDate.ToSwedishString("yyyy-MM-dd")} mellan {FlexibleStartTime.ToSwedishString("hh\\:mm")}-{FlexibleEndTime.ToSwedishString("hh\\:mm")}";
+            $"Uppdragets längd: {ExpectedLength.ToSwedishString("%h")} tim {((ExpectedLength.Minutes % 60 == 0) ? string.Empty : (ExpectedLength.ToSwedishString("%m") + " min"))}<br/>{StartDate.ToSwedishString("yyyy-MM-dd")} mellan {FlexibleStartTime.ToSwedishString("hh\\:mm")}-{FlexibleEndTime.ToSwedishString("hh\\:mm")}";
 
     }
 }

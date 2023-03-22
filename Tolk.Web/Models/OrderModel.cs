@@ -68,10 +68,10 @@ namespace Tolk.Web.Models
         [Display(Name = "Extra tolk", Description = "Om det finns behov av två tolkar till samma tillfälle så kryssa i rutan Extra tolk. Detta innebär att arvode och förmedlingsavgift utgår för båda tolkarna för hela tillfället.")]
         public bool ExtraInterpreter { get; set; }
 
-        [Display(Name = "Flexibel startid", Description = "Om det är ok att förmedlingen sätter startiden, inom den tid som ni erbjuder så välj denna.")]
+        [Display(Name = "Flexibel tid", Description = "Om det fungerar att förmedlingen anger start- och sluttid för uppdraget inom det tidsspann och med den uppdragslängd som ni anger så välj denna.")]
         public bool FlexibleOrder { get; set; }
 
-        [Display(Name = "Förväntad längd", Description = "Hur lång tid kommer tillfället vara.")]
+        [Display(Name = "Uppdragets längd", Description = "Hur lång tid kommer tillfället vara.")]
         [RequiredIf(nameof(FlexibleOrder), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
         public TimeSpan? ExpectedLength { get; set; }
 

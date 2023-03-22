@@ -429,7 +429,7 @@ Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där be
             if (email != null)
             {
                 string bodyPlain = $"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.\nMyndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}\nMyndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}\n\nObservera att alla svar kopplat till förfrågan måste lämnas via avropstjänsten.\n\n" +
-                    "Detta är en förfrågan med flexibel starttid\n" +
+                    "Detta är en förfrågan med flexibel tid\n" +
                     //Add this text, if the request needs only acceptance
                     (answerLevel == RequiredAnswerLevel.Acceptance ? "Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där bekräftelsen måste innehålla acceptans av alla krav kopplade till bokningsförfrågan. Namngivning av tolk kan göras senare. \n" : string.Empty) +
                     $"\tUppdragstyp: {EnumHelper.GetDescription(order.AssignmentType)}\n" +
@@ -437,14 +437,14 @@ Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där be
                     $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                     $"\tFlexibel starttid: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tFlexibel sluttid: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                    $"\tFörväntad längd på uppdraget: {order.ExpectedLength?.ToSwedishString("hh\\:mm")}\n" +
+                    $"\tLängd på uppdraget: {order.ExpectedLength.Value.ToSwedishString("%h")} tim {((order.ExpectedLength.Value.Minutes % 60 == 0) ? string.Empty : (order.ExpectedLength.Value.ToSwedishString("%m") + " min"))}\n" +
                     (answerLevel == RequiredAnswerLevel.Acceptance ?
                         $"\tBekräfta senast: {request.LastAcceptAt?.ToSwedishString("yyyy-MM-dd HH:mm")} \n\tTillsätt tolk senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" :
                         $"\tSvara senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}") +
                     GoToRequestPlain(request.RequestId);
 
                 string bodyHtml = $@"Bokningsförfrågan för tolkuppdrag {order.OrderNumber} från {order.CustomerOrganisation.Name} har inkommit via {Constants.SystemName}.<br />Myndighetens organisationsnummer: {order.CustomerOrganisation.OrganisationNumber}<br />Myndighetens Peppol-ID: {order.CustomerOrganisation.PeppolId}<br /><br />Observera att alla svar kopplat till förfrågan måste lämnas via avropstjänsten.<br />
-Detta är en förfrågan med flexibel starttid<br />";
+Detta är en förfrågan med flexibel tid<br />";
                 bodyHtml += (answerLevel == RequiredAnswerLevel.Acceptance ? "Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där bekräftelsen måste innehålla acceptans av alla krav kopplade till bokningsförfrågan. Namngivning av tolk kan göras senare.<br />" : string.Empty);
 
                 bodyHtml += $@"<ul>
@@ -453,7 +453,7 @@ Detta är en förfrågan med flexibel starttid<br />";
 <li>Språk: {order.OtherLanguage ?? order.Language?.Name}</li>
 <li>Flexibel starttid: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
 <li>Flexibel sluttid: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
-<li>Förväntad längd på uppdraget: {order.ExpectedLength?.ToSwedishString("hh\\:mm")}</li>";
+<li>Längd på uppdraget: {order.ExpectedLength.Value.ToSwedishString("%h")} tim {((order.ExpectedLength.Value.Minutes % 60 == 0) ? string.Empty : (order.ExpectedLength.Value.ToSwedishString("%m") + " min"))}</li>";
                 bodyHtml += (answerLevel == RequiredAnswerLevel.Acceptance ?
 $@"<li>Bekräfta senast: {request.LastAcceptAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
 <li>Tillsätt tolk senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>" :

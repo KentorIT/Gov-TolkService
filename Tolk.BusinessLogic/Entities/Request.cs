@@ -286,7 +286,7 @@ namespace Tolk.BusinessLogic.Entities
             }
             if (respondedStartAt.HasValue && RespondedStartAt.HasValue)
             {
-                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Förväntad starttid är redan satt och kan inte ändras.");
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Uppdragets starttid är redan satt och kan inte ändras.");
             }
             ValidateRespondedStartAtAgainstOrder(respondedStartAt);
             ValidateInterpreterLocationAgainstOrder(interpreterLocation);
@@ -867,17 +867,17 @@ namespace Tolk.BusinessLogic.Entities
         {
             if (Order.ExpectedLength.HasValue && !respondedStartAt.HasValue)
             {
-                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är en bokning med flexibel start, vilket kräver att svaret innehåller en förväntad starttid.");
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är en bokning med flexibel start, vilket kräver att svaret innehåller en angiven starttid.");
             }
 
             if (!Order.ExpectedLength.HasValue && respondedStartAt.HasValue)
             {
-                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är inte en bokning med flexibel start, vilket gör att man inte får tillhandahålla en förväntad starttid.");
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är inte en bokning med flexibel start, vilket gör att man inte får tillhandahålla en starttid.");
             }
 
             if (!Order.IsValidRespondedStartAt(respondedStartAt))
             {
-                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Den förväntade starttiden är inte korrekt i relation till bokningens flexibla tider.");
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Den angivna starttiden är inte korrekt i relation till bokningens flexibla tider.");
             }
         }
 

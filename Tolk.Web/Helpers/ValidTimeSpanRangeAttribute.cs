@@ -50,7 +50,7 @@ namespace Tolk.Web.Helpers
             }
 
             MergeAttribute(context.Attributes, "data-val", "true");
-            MergeAttribute(context.Attributes, "data-val-validtimespanrange", $"{context.ModelMetadata.DisplayName} måste vara mellan valid start och slut.");
+            MergeAttribute(context.Attributes, "data-val-validtimespanrange", $"{context.ModelMetadata.DisplayName} måste sättas så att uppdragstiden ryms inom det angivna tidsspannet.");
             MergeAttribute(context.Attributes, "data-val-validtimespanrange-startatproperty", StartAtProperty);
             MergeAttribute(context.Attributes, "data-val-validtimespanrange-endatproperty", EndAtProperty);
         }

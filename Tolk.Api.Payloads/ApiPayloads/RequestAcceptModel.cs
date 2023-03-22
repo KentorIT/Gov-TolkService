@@ -27,7 +27,7 @@ namespace Tolk.Api.Payloads.ApiPayloads
         [Description ("Förmedlingens eget bokningsnummer att koppla till bokningen.")]
         public string BrokerReferenceNumber { get; set; }
 
-        [Description("Beskriver besvarad startid, om avropet har flexibel startid.")]
+        [Description("Beskriver besvarad starttid, om avropet har flexibel tid.")]
         public DateTimeOffset? RespondedStartAt { get; set; }
     }
 }

@@ -170,7 +170,7 @@ namespace Tolk.Web.Models
 
         public bool IsFlexibleOrder { get; set; } = false;
 
-        [Display(Name = "Förväntad starttid", Description = "Tiden som tolken kommer.")]
+        [Display(Name = "Ange starttid", Description = "Tiden som tolken kommer.")]
         [RequiredIf(nameof(IsFlexibleOrder), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
         [ValidTimeSpanRange(StartAtProperty = nameof(EarliestStartAt), EndAtProperty = nameof(LatestStartAt)  )]
         [DataType("Clock")]

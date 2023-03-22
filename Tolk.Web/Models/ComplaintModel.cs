@@ -36,7 +36,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighet")]
         public string CustomerName { get; set; }
 
-        [Display(Name = "Startid")]
+        [Display(Name = "Starttid")]
         public DateTimeOffset StartAt { get; set; }
 
         [Display(Name = "Sluttid")]

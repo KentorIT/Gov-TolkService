@@ -449,7 +449,7 @@ namespace Tolk.BusinessLogic.Enums
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         RequestGroupLostDueToNotFullyAnswered = 65,
 
-        [Description("Förfrågan med flexibel starttid skapad")]
+        [Description("Förfrågan med flexibel tid skapad")]
         [CustomName("flexible_request_created")]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]

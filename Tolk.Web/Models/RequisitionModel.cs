@@ -83,7 +83,7 @@ namespace Tolk.Web.Models
         [Placeholder("Uppgift om huruvida traktamente ska utgå. Ange antal i dagar eller belopp i SEK.")]
         public string PerDiem { get; set; }
 
-        [Display(Name = "Förväntad startid")]
+        [Display(Name = "Förväntad starttid")]
         public DateTimeOffset ExpectedStartedAt { get; set; }
 
         [Display(Name = "Förväntad sluttid")]
@@ -108,13 +108,13 @@ namespace Tolk.Web.Models
         [Display(Name = "Tolkens kompetensnivå")]
         public CompetenceAndSpecialistLevel? InterpreterCompetenceLevel { get; set; }
 
-        [Display(Name = "Faktisk startid")]
+        [Display(Name = "Faktisk starttid")]
         public DateTimeOffset SessionStartedAt { get; set; }
 
         [Display(Name = "Faktisk sluttid")]
         public DateTimeOffset SessionEndedAt { get; set; }
 
-        [Display(Name = "Startid för måltidspaus")]
+        [Display(Name = "Starttid för måltidspaus")]
         public DateTimeOffset MealBreakStartAt { get; set; }
 
         [Display(Name = "Sluttid för måltidspaus")]

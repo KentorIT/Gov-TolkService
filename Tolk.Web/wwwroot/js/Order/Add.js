@@ -236,7 +236,7 @@ $(function () {
                 endHour += 24;
             }
             if (((endHour - startHour) < expectedHours) || (((endHour - startHour) === expectedHours) && ((endMinute - startMinute) < expectedMinutes))) {
-                validatorMessage("ExpectedLength", "Förväntad tid kan inte vara längre än den totala flexibla tiden");
+                validatorMessage("ExpectedLength", "Uppdragets längd kan inte vara längre än den totala flexibla tiden");
                 return false;
             } else {
                 hideValidatorMessage("ExpectedLength");
@@ -261,7 +261,7 @@ $(function () {
 
             if (startHour < earliestStartHour || endHour > latestEndHour || startHour > endHour || (endHour === latestEndHour && endMinute > 0)) {
                 //Where should the error message be dispalyed?
-                validatorMessage("SplitTimeRange", "Den flexibla tiden måste starta efter " + earliestStartHour.toString() + " och inte sluta efter " + latestEndHour.toString());
+                validatorMessage("SplitTimeRange", "Den flexibla tiden måste vara mellan " + earliestStartHour.toString() + " och " + latestEndHour.toString() + " en helgfri vardag");
                 success = false;
             } else {
                 hideValidatorMessage("SplitTimeRange");
@@ -272,7 +272,7 @@ $(function () {
             var occStartDateAndTime = getDate($("#SplitTimeRange_StartDate").val(), $("#SplitTimeRange_StartTimeHour").val(), $("#SplitTimeRange_StartTimeMinutes").val());
             day = occStartDateAndTime.getDay();
             if (day < 1 || day > 5 || checkIfOnHoliday($("#SplitTimeRange_StartDate").val())) {
-                validatorMessage("FlexibleOrder", "Flexibla bokningar får bara bokas på helgfria vardagar");
+                validatorMessage("FlexibleOrder", " Flexibla bokningar får bara bokas på helgfria vardagar");
                 success = false;
            } else {
                 hideValidatorMessage("FlexibleOrder");

@@ -7,7 +7,7 @@ namespace Tolk.Web.Models
     {
 
         [Required]
-        [Display(Name = "Startid för måltidspaus")]
+        [Display(Name = "Starttid för måltidspaus")]
         public DateTime MealBreakStartAt { get; set; }
 
         [Required]
