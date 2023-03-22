@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+Ôªøusing Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -39,11 +39,11 @@ namespace Tolk.Web.Controllers
         {
             if (property == null)
             {
-                return new (false , $"Myndighet med id {property.CustomerOrganisationId} har ingen kundspecifik inst‰llning fˆr {PropertyType.InvoiceReference.GetDescription()}");
+                return new (false , $"Myndighet med id {property.CustomerOrganisationId} har ingen kundspecifik inst√§llning f√∂r {PropertyType.InvoiceReference.GetDescription()}");
             }
             if(value.Length > property.MaxLength)
             {
-                return new(false, $"V‰rdet fÂr inte vara l‰ngre ‰n {property.MaxLength}");
+                return new(false, $"V√§rdet f√•r inte vara l√§ngre √§n {property.MaxLength}");
             }
             var regexChecker = new Regex(property.RegexPattern);
             if(!regexChecker.Match(value).Success)
