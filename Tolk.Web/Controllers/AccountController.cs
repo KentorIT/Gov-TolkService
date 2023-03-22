@@ -1085,7 +1085,10 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         }
         private void RevalidateCustomerSpecificProperties(DefaultSettingsModel model)
         {
-            ModelState.Remove(nameof(model.CustomerSpecificInvoiceReference));
+            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("CustomerSpecific")).ToArray())
+            {
+                ModelState.Remove(key);
+            }            
             SetCustomerSpecficInputProperties(model);
             TryValidateModel(model);
         }

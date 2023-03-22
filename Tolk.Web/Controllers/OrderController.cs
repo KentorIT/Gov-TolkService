@@ -1077,7 +1077,7 @@ namespace Tolk.Web.Controllers
 
         private void RevalidateCustomerSpecificProperties(OrderBaseModel model)
         {            
-            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("CustomerSpecific"))) {
+            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("CustomerSpecific")).ToArray()) {
                 ModelState.Remove(key);
             }
             SetCustomerSpecificProperties(model);
