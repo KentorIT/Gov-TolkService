@@ -56,13 +56,15 @@ AS
 
 	INSERT INTO #reportOrders (orderId, latestRequestId)
 		SELECT
-			o.orderId
-		   ,(SELECT TOP 1
-					r.RequestId
-				FROM Requests r
-				WHERE r.orderId = o.orderId
-				ORDER BY r.RequestId DESC)
+			o.OrderId
+		   ,r.RequestId
 		FROM Orders o
+		Join Requests r
+		ON o.OrderId = r.OrderId
+		And r.RequestId = (
+			SELECT max(_r.requestID)
+			FROM Requests _r
+			WHERE _r.orderId = o.orderId)
 		WHERE(o.CustomerOrganisationId = @customerId
 		OR @customerId IS NULL)
 		AND((@onlyDelivered = 0
@@ -70,7 +72,7 @@ AS
 		AND CONVERT(DATE, o.CreatedAt) <= @dateTo)--ordered
 		OR(@onlyDelivered = 1
 		AND o.Status IN(4, 5, 7)
-		AND(o.EndAt <= GETDATE()
+		AND(CASE WHEN r.RespondedStartAt IS NOT NULL THEN DATEADD(mi, (datepart(HOUR,o.ExpectedLength)*60)+datepart(MINUTE,o.ExpectedLength), r.RespondedStartAt) ELSE o.EndAt END <= GETDATE()
 		AND CONVERT(DATE, o.StartAt) >= @dateFrom
 		AND CONVERT(DATE, o.StartAt) <= @dateTo))) --delivered
 
@@ -299,7 +301,7 @@ AS
 	SELECT DISTINCT
 		o.OrderNumber 'BokningsId'
 	   ,CASE
-			WHEN @onlyDelivered = 1 THEN CONVERT(CHAR(16), o.StartAt, 121)
+			WHEN @onlyDelivered = 1 THEN CONVERT(CHAR(16), COALESCE(r.RespondedStartAt, o.StartAt), 121)
 			ELSE CONVERT(CHAR(16), o.CreatedAt, 121)
 		END 'Rapportdatum'
 	   ,COALESCE(l.Name, o.OtherLanguage) 'Språk'
@@ -311,7 +313,8 @@ AS
 	   ,ISNULL(cl.compName, 'Tolk ej tillsatt') 'Tolkens kompetensnivå'
 	   ,ISNULL(ib.OfficialInterpreterId, '') 'Kammarkollegiets tolknr'
 	   ,ISNULL(ilReq.ilName, '') 'Inställelsesätt'
-	   ,CONVERT(CHAR(16), o.StartAt, 121) + '-' + SUBSTRING(CONVERT(CHAR(16), o.EndAt, 121), 12, 5) 'Tid för uppdrag'
+	   ,CONVERT(CHAR(16), COALESCE(r.RespondedStartAt, o.StartAt), 121) + '-' + SUBSTRING(CONVERT(CHAR(16), CASE WHEN r.RespondedStartAt IS NOT NULL THEN DATEADD(mi, (datepart(HOUR,o.ExpectedLength)*60)+datepart(MINUTE,o.ExpectedLength), r.RespondedStartAt) ELSE o.EndAt END, 121), 12, 5) + 
+			(Case When o.ExpectedLength IS NOT NULL And r.RespondedStartAt IS NULL THEN ' (F)' ELSE '' END) 'Tid för uppdrag'
 	   ,ISNULL(o.CustomerReferenceNumber, '') 'Myndighetens ärendenummer'
 	   ,CASE
 			WHEN(o.AllowExceedingTravelCost = 1) THEN 'Ja, och jag vill godkänna bedömd resekostnad i förväg'
@@ -352,6 +355,11 @@ AS
 	   ,ISNULL(po.hasRequisition, 0) 'Rekvisition finns'
 	   ,ISNULL(po.hasComplaint, 0) 'Reklamation finns'
 	   ,po.totalPrice 'Totalt pris'
+	   ,fa.AgreementNumber 'Avtalsnummer'
+	   ,CASE
+			WHEN o.ExpectedLength IS NOT NULL THEN 'Ja'
+			ELSE 'Nej'
+		END 'Flexibel bokning'
 	FROM Orders o
 	INNER JOIN #reportOrders po
 		ON po.orderId = o.orderId
@@ -377,6 +385,8 @@ AS
 		ON o.CreatedBy = anu.Id
 	INNER JOIN Rankings ra
 		ON r.RankingId = ra.RankingId
+	INNER JOIN FrameworkAgreements fa
+		ON ra.FrameworkAgreementId = fa.FrameworkAgreementId
 	INNER JOIN Brokers b
 		ON ra.BrokerId = b.BrokerId
 	INNER JOIN CustomerOrganisations co

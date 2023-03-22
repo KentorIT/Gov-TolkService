@@ -157,10 +157,11 @@ namespace Tolk.BusinessLogic.Services
             {
                 Name = name,
                 TotalListItems = orders
-                .OrderByDescending(o => o.Count()).Select(n => new OrderStatisticsListItemModel { 
-                    Name = n.Key, 
-                    NoOfItems = n.Count(), 
-                    PercentageValueToDisplay = Math.Round((double)n.Count() * 100 / orders.Sum(o => o.Count()), 1) 
+                .OrderByDescending(o => o.Count()).Select(n => new OrderStatisticsListItemModel
+                {
+                    Name = n.Key,
+                    NoOfItems = n.Count(),
+                    PercentageValueToDisplay = Math.Round((double)n.Count() * 100 / orders.Sum(o => o.Count()), 1)
                 })
             };
         }
@@ -321,7 +322,8 @@ namespace Tolk.BusinessLogic.Services
                     Department = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("Avdelning")),
                     InvoiceReference = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("Fakturareferens")),
                     OrderCreatorEmail = isBroker ? string.Empty : reader.GetString(reader.GetOrdinal("E-postadress")),
-                    AgreementNumber = reader.GetString(reader.GetOrdinal("Avtalsnummer"))
+                    AgreementNumber = reader.GetString(reader.GetOrdinal("Avtalsnummer")),
+                    FlexiblOrderAsString = reader.GetString(reader.GetOrdinal("Flexibel bokning")),
                 };
                 orderRows.Add(row);
             }
@@ -411,6 +413,19 @@ namespace Tolk.BusinessLogic.Services
             }
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Avtalsnummer";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AgreementNumber);
+            switch (reportType)
+            {
+                case ReportType.RequestsForBrokers:
+                case ReportType.OrdersForCustomer:
+                case ReportType.OrdersForSystemAdministrator:
+                case ReportType.DeliveredOrdersBrokers:
+                case ReportType.DeliveredOrdersCustomer:
+                case ReportType.DeliveredOrdersSystemAdministrator:
+                    rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Flexibel bokning";
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.FlexiblOrderAsString);
+                    break;
+            }
+
             rowsWorksheet.Row(1).Style.Font.Bold = true;
             MemoryStream memoryStream = new();
             workbook.SaveAs(memoryStream);

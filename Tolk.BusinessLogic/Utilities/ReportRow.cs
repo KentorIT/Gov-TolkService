@@ -50,5 +50,7 @@ namespace Tolk.BusinessLogic.Utilities
         public string InvoiceReference { get; set; }
         public string AgreementNumber { get; set; }
 
+        public string FlexiblOrderAsString { get; set; }
+
     }
 }
