@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using System;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.Web.Models;

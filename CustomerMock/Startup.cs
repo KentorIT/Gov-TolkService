@@ -1,4 +1,4 @@
-using CustomerMock.Helpers;
+﻿using CustomerMock.Helpers;
 using CustomerMock.Hubs;
 using CustomerMock.Services;
 using Microsoft.AspNetCore.Builder;

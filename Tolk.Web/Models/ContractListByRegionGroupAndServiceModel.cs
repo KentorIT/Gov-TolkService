@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.Web.Models
