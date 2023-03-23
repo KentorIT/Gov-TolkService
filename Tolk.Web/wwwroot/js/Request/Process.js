@@ -167,10 +167,9 @@ $(function () {
         return false;
     }
 
-
     var setLatestAnswerDateTimeSpan = function () {
-        if ($("#OrderViewModel_StartAt").val() !== undefined) {
-            var startTime = new Date($('#OrderViewModel_StartAt').val().replace(" ", "T").replace(" ", ""));
+        if ($("#LatestAnswerDateToSetForCustomer").val() !== undefined) {
+            var startTime = new Date($('#LatestAnswerDateToSetForCustomer').val().replace(" ", "T").replace(" ", ""));
             $("#LatestAnswerTimeForCustomer_Date").datepicker("setStartDate", new Date($("#now").val()).zeroTime());
             $("#LatestAnswerTimeForCustomer_Date").datepicker("setEndDate", startTime.zeroTime());
         }
@@ -184,7 +183,7 @@ $(function () {
             return "Angiven sista svarstid har passerats";
         }
 
-        var startTime = new Date($('#OrderViewModel_StartAt').val().replace(" ", "T").replace(" ", ""));
+        var startTime = new Date($('#LatestAnswerDateToSetForCustomer').val().replace(" ", "T").replace(" ", ""));
         if (startTime - latestAnswerTime === 0 || startTime < latestAnswerTime) {
             return "Sista svarstid ska vara innan uppdraget startar";
         }
