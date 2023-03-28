@@ -26,7 +26,7 @@
                         options.onloadHandler();
                 }
             },
-            nextHandler: function (event) {
+            nextHandler: async function (event) {
                 var $form = $wizard.closest('form');
                 var currentStep = $(".wizard").data("currentStep");
                 var $noValidation = $wizard.find(".wizard-step:not(.wizard-step-hidden)").eq(currentStep)
@@ -40,7 +40,7 @@
                     }
                 }
                 if (options.nextHandler !== undefined) {
-                    var result = options.nextHandler(event);
+                    var result = await options.nextHandler(event);
                     if (result === false) {
                         return false;
                     }

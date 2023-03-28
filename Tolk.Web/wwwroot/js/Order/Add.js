@@ -1,4 +1,11 @@
 ﻿var LastAnswerByIsShowing = false;
+var pendingRequests = false;
+var ajaxQueue = [];
+$(document).ajaxSend(function (event, request, settings) {
+    if (settings.url.includes('/Validate/CustomerSpecific')) {        
+        ajaxQueue.push(request);
+    }
+})
 
 $(function () {
     var currentOccasionId = 0;
@@ -274,7 +281,7 @@ $(function () {
             if (day < 1 || day > 5 || checkIfOnHoliday($("#SplitTimeRange_StartDate").val())) {
                 validatorMessage("FlexibleOrder", " Flexibla bokningar får bara bokas på helgfria vardagar");
                 success = false;
-           } else {
+            } else {
                 hideValidatorMessage("FlexibleOrder");
             }
         }
@@ -784,9 +791,9 @@ $(function () {
         backHandler: function (event) {
             $("#send").tooltip("destroy");
         },
-        nextHandler: function (event) {
+        nextHandler: async function (event) {
             var errors = 0;
-            $("[data-valmsg-for]").empty();
+            $("[data-valmsg-for]").empty();            
             if (!LastAnswerByIsShowing) {
                 $("#LatestAnswerBy_Date").val("");
                 $("#LatestAnswerBy_Hour").val("").trigger('change');
@@ -848,10 +855,15 @@ $(function () {
                     }
                 }
             }
+            // Make sure that all remote validation is completed
+            await Promise.all(ajaxQueue);
+            var $form = $this.closest('form');
+            if (!$form.validate().valid()) {
+                errors++;
+            }
             if (errors !== 0) {
                 return false;
             }
-            var $form = $this.closest('form');
             var currentStep = event.NextStep;
             $("#send").attr("disabled", "disabled");
             $("#back").attr("disabled", "disabled");

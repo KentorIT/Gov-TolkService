@@ -41,10 +41,6 @@ namespace Tolk.Web.Controllers
             {
                 return new (false , $"Myndighet med id {property.CustomerOrganisationId} har ingen kundspecifik inställning för {PropertyType.InvoiceReference.GetDescription()}");
             }
-            if(value.Length > property.MaxLength)
-            {
-                return new(false, $"Värdet får inte vara längre än {property.MaxLength}");
-            }
             var regexChecker = new Regex(property.RegexPattern);
             if(!regexChecker.Match(value).Success)
             {
