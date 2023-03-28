@@ -306,7 +306,7 @@ namespace Tolk.Web.TagHelpers
             }
             if (property.Required)
             {
-                tagBuilder.Attributes.Add("data-val-required", $"{property.DisplayName} Måste anges");
+                tagBuilder.Attributes.Add("data-val-required", property.RegexErrorMessage);
             }
             if (property.RemoteValidation)
             {
