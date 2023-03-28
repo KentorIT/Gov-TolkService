@@ -105,7 +105,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Datum och tid")]
         public TimeRange TimeRange { get; set; }
 
-        [Display(Name = "Flexibel datum och tid")]
+        [Display(Name = "Datum och flexibel tid")]
         public virtual FlexibleTimeRange FlexibleTimeRange { get; set; }
 
         public string DisplayMealBreakIncluded { get; set; }

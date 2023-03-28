@@ -37,7 +37,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Datum och tid", Description = "Datum och tid för tolkuppdraget")]
         public virtual TimeRange TimeRange { get; set; }
 
-        [Display(Name = "Flexibel datum och tid", Description = "Datum och tid för tolkuppdraget")]
+        [Display(Name = "Datum och flexibel tid", Description = "Datum och tid för tolkuppdraget")]
         public virtual FlexibleTimeRange FlexibleTimeRange { get; set; }
 
         public AttachmentListModel RequestAttachmentListModel { get; set; }
