@@ -875,7 +875,7 @@ namespace Tolk.Web.Controllers
         public JsonResult GetHolidays()
         {
             return Json(_cacheService.Holidays
-                .Where(h => h.Date >= _clock.SwedenNow.Date)
+                .Where(h => h.Date >= _clock.SwedenNow.Date && h.DateType != DateType.DayAfterBigHoliday && h.DateType != DateType.DayBeforeBigHoliday)
                 .Select(h => h.Date.ToSwedishString("yyyy-MM-dd") ));
         }
 
