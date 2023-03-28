@@ -143,7 +143,7 @@ namespace Tolk.Web.Controllers
                 model.AllowProcessing = !request.RequestGroupId.HasValue;
                 model.AllowAccept = request.AllowAccept;
                 model.FullAnswer = !request.AllowAccept;
-                model.IsFlexibleOrder = request.Order.ExpectedLength.HasValue;
+                model.IsFlexibleOrder = request.Order.ExpectedLength.HasValue && !request.RespondedStartAt.HasValue;
                 model.OrderViewModel.UseAttachments = true;
                 return View(model);
             }
