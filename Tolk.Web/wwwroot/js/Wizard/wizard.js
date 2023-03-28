@@ -86,12 +86,12 @@
             });
         };
         //Function to go to next step in wizard
-        var goWizardNext = function () {
+        var goWizardNext = async function () {
             currentStep = $(".wizard").data("currentStep");
             var fromPage = $steps.eq(currentStep);
             var nextPage = $steps.eq(currentStep + 1);
             if (defaultOpts.nextHandler !== null) {
-                var result = defaultOpts.nextHandler({
+                var result = await defaultOpts.nextHandler({
                     PreviousStep: currentStep,
                     NextStep: currentStep + 1,
                     LeavingPage: fromPage,
