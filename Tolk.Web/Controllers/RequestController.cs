@@ -758,6 +758,7 @@ namespace Tolk.Web.Controllers
             model.ActiveRequest.AllowInterpreterChange = request.CanChangeInterpreter(_clock.SwedenNow);
             model.ActiveRequest.RegionName = model.RegionName;
             model.ActiveRequest.TimeRange = model.TimeRange;
+            model.ActiveRequest.FlexibleTimeRange = model.FlexibleTimeRange;
             model.ActiveRequest.DisplayMealBreakIncluded = model.DisplayMealBreakIncludedText;
             model.ActiveRequest.IsCancelled = model.Status == OrderStatus.CancelledByCreator || model.Status == OrderStatus.CancelledByBroker;
             model.CustomerUseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
