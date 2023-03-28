@@ -242,7 +242,10 @@ $(function () {
                 //add full day
                 endHour += 24;
             }
-            if (((endHour - startHour) < expectedHours) || (((endHour - startHour) === expectedHours) && ((endMinute - startMinute) < expectedMinutes))) {
+            if (expectedHours === 0 && expectedMinutes === 0) {
+                validatorMessage("ExpectedLength", "Uppdragets längd kan inte vara noll minuter");
+                return false;
+            } else if (((endHour - startHour) < expectedHours) || (((endHour - startHour) === expectedHours) && ((endMinute - startMinute) < expectedMinutes))) {
                 validatorMessage("ExpectedLength", "Uppdragets längd kan inte vara längre än den totala flexibla tiden");
                 return false;
             } else {
