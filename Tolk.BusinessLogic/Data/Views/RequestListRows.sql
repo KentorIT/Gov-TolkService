@@ -13,8 +13,8 @@ SELECT
    ,og.OrderGroupNumber EntityParentNumber
    ,re.Name RegionName
    ,o.RegionId
-   ,o.StartAt
-   ,o.EndAt
+   ,CASE WHEN r.RespondedStartAt IS NOT NULL THEN r.RespondedStartAt ELSE o.StartAt END 'StartAt'
+   ,CASE WHEN r.RespondedStartAt IS NOT NULL THEN DATEADD(MINUTE, (DATEPART(HOUR, o.ExpectedLength) * 60) + DATEPART(MINUTE, o.ExpectedLength), r.RespondedStartAt) ELSE o.EndAt END 'EndAt'
    ,r.Status
    ,ra.BrokerId
    ,r.CreatedAt
