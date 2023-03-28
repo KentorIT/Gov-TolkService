@@ -10,8 +10,8 @@ ALTER VIEW[dbo].[OrderListRows]
                 ,og.OrderGroupNumber 'EntityParentNumber'
                 ,r.Name 'RegionName'
                 ,o.RegionId
-                ,o.StartAt
-                ,o.EndAt
+                ,CASE WHEN req.RespondedStartAt IS NOT NULL THEN req.RespondedStartAt ELSE o.StartAt END 'StartAt'
+				,CASE WHEN req.RespondedStartAt IS NOT NULL THEN DATEADD(MINUTE, (DATEPART(HOUR, o.ExpectedLength) * 60) + DATEPART(MINUTE, o.ExpectedLength), req.RespondedStartAt) ELSE o.EndAt END 'EndAt'
                 ,o.Status
                 ,u.NameFirst + ' ' + u.NameFamily 'CreatorName'
                 ,o.CreatedBy
