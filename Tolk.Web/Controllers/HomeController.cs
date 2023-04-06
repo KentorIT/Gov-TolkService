@@ -914,7 +914,7 @@ namespace Tolk.Web.Controllers
                 {
                     OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                     EntityId = (int)r.RequestId,
-                    LinkOverride = $"/Request/View/?tab=complaint",
+                    LinkOverride = $"/Request/View/?tab=requisition",
                     InfoDate = r.AnsweredAt.Value.DateTime,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.CustomerName,
