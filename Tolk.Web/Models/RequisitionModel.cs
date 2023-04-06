@@ -156,6 +156,8 @@ namespace Tolk.Web.Models
 
         internal static RequisitionModel GetModelFromRequest(Request request)
         {
+            var start = GetStartTime(request);
+            var end = GetEndTime(request);
             return new RequisitionModel
             {
                 RequestId = request.RequestId,
@@ -164,10 +166,10 @@ namespace Tolk.Web.Models
                 CustomerOrganizationName = request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = request.Order.CustomerReferenceNumber,
                 OrderCreatedBy = request.Order.CreatedByUser.CompleteContactInformation,
-                ExpectedEndedAt = request.Order.EndAt,
-                ExpectedStartedAt = request.Order.StartAt,
-                SessionEndedAt = request.Order.EndAt,
-                SessionStartedAt = request.Order.StartAt,
+                ExpectedEndedAt = end,
+                ExpectedStartedAt = start,
+                SessionEndedAt = end,
+                SessionStartedAt = start,
                 Interpreter = request.Interpreter.CompleteContactInformation,
                 InterpreterCompetenceLevel = (CompetenceAndSpecialistLevel?)request.CompetenceLevel,
                 LanguageName = request.Order.OtherLanguage ?? request.Order.Language?.Name ?? "-",
@@ -177,6 +179,9 @@ namespace Tolk.Web.Models
                 MealBreakIncluded = request.Order.MealBreakIncluded
             };
         }
+
+        internal static DateTimeOffset GetEndTime(Request request) => request.Order.ExpectedLength.HasValue ? request.RespondedStartAt.Value.AddMinutes(request.Order.ExpectedLength.Value.TotalMinutes) : request.Order.EndAt;
+        internal static DateTimeOffset GetStartTime(Request request) => request.Order.ExpectedLength.HasValue ? request.RespondedStartAt.Value : request.Order.StartAt;
 
         #endregion
     }

@@ -80,8 +80,8 @@ namespace Tolk.Web.Models
                 BrokerOrganizationnumber = requisition.Request.Ranking.Broker.OrganizationNumber,
                 CustomerOrganizationName = requisition.Request.Order.CustomerOrganisation.Name,
                 CustomerReferenceNumber = requisition.Request.Order.CustomerReferenceNumber,
-                ExpectedEndedAt = requisition.Request.Order.EndAt,
-                ExpectedStartedAt = requisition.Request.Order.StartAt,
+                ExpectedEndedAt = GetEndTime(requisition.Request),
+                ExpectedStartedAt = GetStartTime(requisition.Request),
                 SessionEndedAt = requisition.SessionEndedAt,
                 SessionStartedAt = requisition.SessionStartedAt,
                 PerDiem = requisition.PerDiem,
@@ -109,7 +109,7 @@ namespace Tolk.Web.Models
                 .Where(r => r.Status == RequisitionStatus.Commented || r.Status == RequisitionStatus.DeniedByCustomer)
                 .OrderByDescending(r => r.CreatedAt)
                 .First();
-            var model = RequisitionViewModel.GetViewModelFromRequisition(requisition);
+            var model = GetViewModelFromRequisition(requisition);
             model.RequestOrReplacingOrderPricesAreUsed = requisition.RequestOrReplacingOrderPeriodUsed;
             return model;
         }
