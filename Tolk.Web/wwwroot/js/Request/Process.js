@@ -25,7 +25,7 @@ $(function () {
             $("#RespondedStartAt_Minutes").val(0).trigger("change").trigger("select2:select");
         } else {
             $("#RespondedStartAt_timeHidden").forceValidation();
-       }
+        }
     });
     $("body").on("change", "#RespondedStartAt_Minutes", function () {
         $("#RespondedStartAt_timeHidden").forceValidation();
@@ -168,8 +168,8 @@ $(function () {
     }
 
     var setLatestAnswerDateTimeSpan = function () {
-        if ($("#LatestAnswerDateToSetForCustomer").val() !== undefined) {
-            var startTime = new Date($('#LatestAnswerDateToSetForCustomer').val().replace(" ", "T").replace(" ", ""));
+        if ($("#OrderViewModel_StartAt").val() !== undefined) {
+            var startTime = new Date($('#OrderViewModel_StartAt').val().replace(" ", "T").replace(" ", ""));
             $("#LatestAnswerTimeForCustomer_Date").datepicker("setStartDate", new Date($("#now").val()).zeroTime());
             $("#LatestAnswerTimeForCustomer_Date").datepicker("setEndDate", startTime.zeroTime());
         }
@@ -183,7 +183,7 @@ $(function () {
             return "Angiven sista svarstid har passerats";
         }
 
-        var startTime = new Date($('#LatestAnswerDateToSetForCustomer').val().replace(" ", "T").replace(" ", ""));
+        var startTime = new Date($('#OrderViewModel_StartAt').val().replace(" ", "T").replace(" ", ""));
         if (startTime - latestAnswerTime === 0 || startTime < latestAnswerTime) {
             return "Sista svarstid ska vara innan uppdraget startar";
         }

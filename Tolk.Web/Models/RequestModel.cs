@@ -170,8 +170,6 @@ namespace Tolk.Web.Models
 
         public bool IsFlexibleOrder { get; set; } = false;
 
-        public DateTimeOffset LatestAnswerDateToSetForCustomer => IsFlexibleOrder ? OrderViewModel.FlexibleTimeRange.FlexibleStartDateTime.Value : OrderViewModel.StartAt.Value;
-
         [Display(Name = "Ange starttid", Description = "Tiden som tolken kommer.")]
         [RequiredIf(nameof(IsFlexibleOrder), true, OtherPropertyType = typeof(bool), AlwaysDisplayRequiredStar = true)]
         [ValidTimeSpanRange(StartAtProperty = nameof(EarliestStartAt), EndAtProperty = nameof(LatestStartAt)  )]
