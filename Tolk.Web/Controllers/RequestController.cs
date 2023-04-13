@@ -742,7 +742,8 @@ namespace Tolk.Web.Controllers
         {
             var order = await _dbContext.Orders.GetFullOrderByRequestId(request.RequestId);
             var model = OrderViewModel.GetModelFromOrder(order, request, true, true);
-            model.StartAtIsInFuture = order.StartAt > _clock.SwedenNow;
+            var calculatedStartAt = request?.RespondedStartAt ?? order.StartAt;
+            model.StartAtIsInFuture = calculatedStartAt > _clock.SwedenNow;
             model.UserCanCanCreateRequisition = _authorizationService.AuthorizeAsync(User, request, Policies.Edit).Result.Succeeded;
             model.UserCanCancelRequest = _authorizationService.AuthorizeAsync(User, request, Policies.Cancel).Result.Succeeded;
 
