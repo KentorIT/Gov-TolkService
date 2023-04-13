@@ -134,7 +134,7 @@ namespace Tolk.Web.Services
                 var req = await _dbContext.Requests.GetLastRequestForOrder(orderId);
                 eventLog.Add(new EventLogEntryModel
                 {
-                    Timestamp = req.LatestAnswerTimeForCustomer ?? order.StartAt,
+                    Timestamp = req.LatestAnswerTimeForCustomer ?? req.RespondedStartAt ?? order.StartAt,
                     EventDetails = "Obesvarad tillsättning, tiden gick ut, bokning avslutad",
                     Actor = "Systemet",
                 });
@@ -437,7 +437,7 @@ namespace Tolk.Web.Services
                     {
                         eventLog.Add(new EventLogEntryModel
                         {
-                            Timestamp = request.ExpiresAt ?? request.Order.StartAt,
+                            Timestamp = request.ExpiresAt ?? request.RespondedStartAt ?? request.Order.StartAt,
                             EventDetails = "Förfrågan obesvarad efter bekräftelse, tiden gick ut",
                             Actor = "Systemet",
                         });
@@ -456,7 +456,7 @@ namespace Tolk.Web.Services
                 {
                     eventLog.Add(new EventLogEntryModel
                     {
-                        Timestamp = request.ExpiresAt ?? request.Order.StartAt,
+                        Timestamp = request.ExpiresAt ?? request.RespondedStartAt ?? request.Order.StartAt,
                         EventDetails = "Förfrågan obesvarad, tiden gick ut",
                         Actor = "Systemet",
                     });
@@ -594,7 +594,7 @@ namespace Tolk.Web.Services
             {
                 eventLog.Add(new EventLogEntryModel
                 {
-                    Timestamp = request.LatestAnswerTimeForCustomer ?? request.Order.StartAt,
+                    Timestamp = request.LatestAnswerTimeForCustomer ?? request.RespondedStartAt ?? request.Order.StartAt,
                     EventDetails = "Obesvarad tillsättning, tiden gick ut, bokning avslutad",
                     Actor = "Systemet",
                 });
