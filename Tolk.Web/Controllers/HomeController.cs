@@ -790,7 +790,7 @@ namespace Tolk.Web.Controllers
                 {
                     OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                     EntityId = (int)r.RequestId,
-                    InfoDate = r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : r.StartAt.DateTime,
+                    InfoDate = r.LatestAnswerTimeForCustomer.HasValue ? r.LatestAnswerTimeForCustomer.Value.DateTime : r.RespondedStartAt.HasValue ? r.RespondedStartAt.Value.DateTime : r.StartAt.DateTime,
                     CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                     CustomerName = r.CustomerName,
                     LanguageName = r.LanguageName,
@@ -885,12 +885,12 @@ namespace Tolk.Web.Controllers
             try
             {
                 actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
-                .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.Approved && r.StartAt < _clock.SwedenNow)
+                .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.Approved && (r.RespondedStartAt ?? r.StartAt) < _clock.SwedenNow)
                  .Select(r => new ActionStartListItemModel
                  {
                      OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
                      EntityId = (int)r.RequestId,
-                     InfoDate = r.EndAt.DateTime,
+                     InfoDate = r.RespondedStartAt.HasValue ? r.RespondedStartAt.Value.Add(r.ExpectedLength.Value).DateTime : r.EndAt.DateTime,
                      InfoDateDescription = "Utfört: ",
                      CompetenceLevel = (CompetenceAndSpecialistLevel?)r.CompetenceLevel ?? CompetenceAndSpecialistLevel.NoInterpreter,
                      CustomerName = r.CustomerName,
@@ -941,7 +941,7 @@ namespace Tolk.Web.Controllers
             {
                 acceptedRequests = _dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
                     .Where(r => r.RowType == StartListRowType.Request && ((r.RequestGroupId == null & r.RequestStatus == RequestStatus.AnsweredAwaitingApproval) || r.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) &&
-                        r.StartAt > _clock.SwedenNow)
+                        (r.RespondedStartAt ?? r.StartAt) > _clock.SwedenNow)
                     .Select(r => new StartListItemModel
                     {
                         OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
@@ -993,14 +993,14 @@ namespace Tolk.Web.Controllers
 
         private List<StartListItemModel> BrokerApprovedListItems(int brokerId, int userId)
         {
-            List<StartListItemModel> approvedRequests = new List<StartListItemModel>();
+            List<StartListItemModel> approvedRequests = new();
 
             //Approved requests (including individual requests that belong to a group) 
-            List<StartListItemModel> approvedRequestAnswers = new List<StartListItemModel>();
+            List<StartListItemModel> approvedRequestAnswers = new();
             try
             {
                 approvedRequestAnswers = _dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
-                    .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.Approved && r.StartAt > _clock.SwedenNow)
+                    .Where(r => r.RowType == StartListRowType.Request && r.RequestStatus == RequestStatus.Approved && (r.RespondedStartAt ?? r.StartAt) > _clock.SwedenNow)
                     .Select(r => new StartListItemModel
                     {
                         OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },
