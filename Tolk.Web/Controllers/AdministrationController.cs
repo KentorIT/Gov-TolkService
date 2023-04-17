@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Services;
 using Tolk.Web.Authorization;
 using Tolk.Web.Models;
@@ -16,10 +18,12 @@ namespace Tolk.Web.Controllers
     {
         private readonly CacheService _cacheService;
         private readonly TolkDbContext _dbContext;
-        public AdministrationController(CacheService cacheService, TolkDbContext dbContext)
+        private readonly TolkOptions _options;
+        public AdministrationController(CacheService cacheService, TolkDbContext dbContext, IOptions<TolkOptions> options)
         {
             _cacheService = cacheService;
             _dbContext = dbContext;
+            _options = options.Value;
         }
 
         [Authorize(Roles = Roles.ApplicationAdministrator)]
@@ -27,6 +31,12 @@ namespace Tolk.Web.Controllers
         {
             await _cacheService.FlushAll();
             return RedirectToAction("Index", "Home", new { Message = "Cachen har rensats" });
+        }
+
+        [Authorize(Roles = Roles.ApplicationAdministrator)]
+        public IActionResult ListOptions()
+        {
+            return View(AdministrationOptionsModel.GetModelFromTolkOptions(_options));
         }
 
         [Authorize(Roles = Roles.Impersonator)]

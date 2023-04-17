@@ -124,7 +124,7 @@ namespace Tolk.Web.TagHelpers
         {
             if (InputType == null)
             {
-                if (For.ModelExplorer.Metadata.DataTypeName == "Date")
+                if (For.ModelExplorer.Metadata.DataTypeName == nameof(DataType.Date))
                 {
                     InputType = InputTypeDate;
                     return;
@@ -135,7 +135,7 @@ namespace Tolk.Web.TagHelpers
                     InputType = InputTypeDateTimeOffset;
                     return;
                 }
-                if (For.ModelExplorer.Metadata.DataTypeName == "Password")
+                if (For.ModelExplorer.Metadata.DataTypeName == nameof(DataType.Password))
                 {
                     InputType = InputTypePassword;
                     return;
@@ -145,7 +145,7 @@ namespace Tolk.Web.TagHelpers
                     InputType = InputTypeCheckbox;
                     return;
                 }
-                if (For.ModelExplorer.Metadata.DataTypeName == "MultilineText")
+                if (For.ModelExplorer.Metadata.DataTypeName == nameof(DataType.MultilineText))
                 {
                     InputType = InputTypeTextArea;
                     return;

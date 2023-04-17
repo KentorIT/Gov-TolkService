@@ -18,5 +18,6 @@ namespace Tolk.BusinessLogic.Utilities
                 return UnusedIsoCodes.Split(';');
             }
         }
+        public string Description => $"Använd: {(IsActivated.ToSwedishString())}\n\tAnvänd för kompetenskontroll: {IsLanguagesCompetenceActivated.ToSwedishString()}\n\tUri för Kompetenskontroll: {Uri}\n\tUri för språklista: {LanguagesUri}\n\tUri för språk/kompletens-lista: {LanguagesCompetenceInfoUri}\n\tIgnorerade språkkoder: {UnusedIsoCodes}";
     }
 }

@@ -55,7 +55,7 @@ namespace Tolk.Web.Services
 
             if (!string.IsNullOrEmpty(user.PasswordHash))
             {
-                identity.AddClaim(new Claim(TolkClaimTypes.IsPasswordSet, true.ToSwedishString()));
+                identity.AddClaim(new Claim(TolkClaimTypes.IsPasswordSet, true.ToString()));
             }
 
             if (user.CustomerOrganisationId.HasValue)

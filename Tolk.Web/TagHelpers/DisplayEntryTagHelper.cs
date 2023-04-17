@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
@@ -19,8 +20,8 @@ namespace Tolk.Web.TagHelpers
 
         public DisplayEntryTagHelper(IHtmlGenerator htmlGenerator, HtmlEncoder htmlEncoder)
         {
-            this._htmlGenerator = htmlGenerator;
-            this._htmlEncoder = htmlEncoder;
+            _htmlGenerator = htmlGenerator;
+            _htmlEncoder = htmlEncoder;
         }
 
         private const string ForAttributeName = "asp-for";
@@ -28,6 +29,7 @@ namespace Tolk.Web.TagHelpers
         private const string ValuePrefixAttributeName = "asp-value-prefix";
         private const string EmptyAttributeName = "asp-empty";
         private const string TextAppendAttributeName = "text-append";
+        private const string DisplayRaw = "display-raw";
 
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
@@ -43,6 +45,9 @@ namespace Tolk.Web.TagHelpers
 
         [HtmlAttributeName(TextAppendAttributeName)]
         public string TextAppend { get; set; } = string.Empty;
+
+        [HtmlAttributeName(DisplayRaw)]
+        public bool IsRaw { get; set; } = false;
 
         [HtmlAttributeNotBound]
         [ViewContext]
@@ -124,10 +129,10 @@ namespace Tolk.Web.TagHelpers
                     text = ValuePrefix + EnumHelper.GetDescription(For.ModelExplorer.ModelType, (Enum)For.ModelExplorer.Model);
                     break;
                 case OutputType.Bool:
-                    text = ValuePrefix + (((bool)For.ModelExplorer.Model) ? "Ja" : "Nej");
+                    text = ValuePrefix + ((bool)For.ModelExplorer.Model).ToSwedishString();
                     break;
                 case OutputType.NullableBool:
-                    text = ValuePrefix + (For.ModelExplorer.Model != null ? ((bool)For.ModelExplorer.Model) ? "Ja" : "Nej" : "-");
+                    text = ValuePrefix + (For.ModelExplorer.Model != null ? ((bool)For.ModelExplorer.Model).ToSwedishString() : "-");
                     break;
                 case OutputType.Date:
                     text = ValuePrefix + (For.ModelExplorer.Model != null ? ((DateTime)For.ModelExplorer.Model).ToSwedishString("yyyy-MM-dd") : "-");
@@ -181,6 +186,11 @@ namespace Tolk.Web.TagHelpers
 
             text += TextAppend;
 
+            if (IsRaw)
+            {
+                text = "<pre>" + text + "</pre>";
+            }
+
             writer.WriteLine($"<div class=\"{className}\">{text}</div>");
         }
 
@@ -190,7 +200,7 @@ namespace Tolk.Web.TagHelpers
             {
                 return OutputType.Enum;
             }
-            if (For.ModelExplorer.Metadata.DataTypeName == "Date")
+            if (For.ModelExplorer.Metadata.DataTypeName == nameof(DataType.Date))
             {
                 return OutputType.Date;
             }
@@ -207,11 +217,11 @@ namespace Tolk.Web.TagHelpers
             {
                 return OutputType.NullableBool;
             }
-            if (For.ModelExplorer.Metadata.DataTypeName == "Currency")
+            if (For.ModelExplorer.Metadata.DataTypeName == nameof(DataType.Currency))
             {
                 return OutputType.Currency;
             }
-            if (For.ModelExplorer.Metadata.DataTypeName == "MultilineText")
+            if (For.ModelExplorer.Metadata.DataTypeName == nameof(DataType.MultilineText))
             {
                 return OutputType.MultilineText;
             }

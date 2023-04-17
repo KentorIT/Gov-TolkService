@@ -1,0 +1,62 @@
+﻿@model AdministrationOptionsModel
+@{
+    ViewData["Title"] = "Systeminställningar";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="SmtpDisplay" display-raw="true" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="StatusCheckerDisplay" display-raw="true" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="ExternalLinksDisplay" display-raw="true" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="EnvironmentDisplay" display-raw="true" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="SupportDisplay" display-raw="true" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="TellusDisplay" display-raw="true" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="FlexibleOrderDisplay" display-raw="true" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="PeppolDisplay" display-raw="true" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="EnabledFeatures" display-raw="true" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="EntitySchedulerSettings" display-raw="true" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="CombinedMaxSizeAttachments"/>
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="AllowedFileExtensions" />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <display-entry asp-for="UseStoredProceduresForReports"/>
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="PublicOrigin"/>
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="ExcludedNotificationTypesForCustomer" />
+        </div>
+    </div>
+</section>

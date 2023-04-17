@@ -65,6 +65,9 @@
     <Content Update="Views\Account\ConfirmAccountLinkSent.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\Administration\ListOptions.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\Customer\Create.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
