@@ -18,7 +18,7 @@ namespace Tolk.Web.Models
         public string StatusCheckerDisplay { get; set; }
         [Display(Name = "Externa länkar")]
         public string ExternalLinksDisplay { get; set; }
-        [Display(Name = "Exkluderade notifieringartyper för myndigheter")]
+        [Display(Name = "Exkluderade notifieringstyper för myndigheter")]
         public string ExcludedNotificationTypesForCustomer { get; set; }
         public int WorkDaysGracePeriodBeforeOrderAgreementCreation { get; set; }
         public int MonthsToApproveComplaints { get; set; }

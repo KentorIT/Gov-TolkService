@@ -14,6 +14,6 @@
 
         public bool UseAuthentication { get; set; } = true;
 
-        public string Description => $"Host: {Host}\nPort: {Port}\nFrånadress: {FromAddress}\nAnvänd anv/lösen: {UseAuthentication.ToSwedishString()}\nAnvändarnamn: {UserName}\nLösenord (antal tkn): {Password.Length}";
+        public string Description => $"Host: {Host}\nPort: {Port}\nFrånadress: {FromAddress}\nAnvänd anv/lösen: {UseAuthentication.ToSwedishString()}\nAnvändarnamn: {UserName}\nLösenord (antal tkn): {Password?.Length ?? 0}";
     }
 }
