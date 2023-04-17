@@ -84,6 +84,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="BaseData\Update data script\Release 2.1.1\" />
     <Folder Include="BaseData\Update data script\Release 1.7\" />
     <Folder Include="BaseData\Update data script\Next test release\" />
     <Folder Include="Data\Stored procedures\" />
