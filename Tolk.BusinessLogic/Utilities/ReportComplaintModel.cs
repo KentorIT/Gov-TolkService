@@ -22,7 +22,7 @@ namespace Tolk.BusinessLogic.Utilities
                     Language = r.Request.Order.Language.Name,
                     Region = r.Request.Order.Region.Name,
                     AssignmentType = r.Request.Order.AssignmentType,
-                    AssignmentDate = $"{r.Request.Order.StartAt.ToString("yyyy-MM-dd HH:mm")}-{r.Request.Order.EndAt.ToString("HH:mm")}",
+                    AssignmentDate = r.Request.Order.ExpectedLength.HasValue ? $"{r.Request.RespondedStartAt:yyyy-MM-dd HH:mm}-{r.Request.RespondedStartAt.Value.Add(r.Request.Order.ExpectedLength.Value):HH:mm}" : $"{r.Request.Order.StartAt:yyyy-MM-dd HH:mm}-{r.Request.Order.EndAt:HH:mm}",
                     ComplaintStatus = r.Status,
                     ComplaintType = r.ComplaintType,
                     ReportPerson = isBroker ? r.AnsweringUser != null ? r.AnsweringUser.FullName : string.Empty : r.CreatedByUser.FullName,
