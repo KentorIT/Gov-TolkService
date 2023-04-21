@@ -526,7 +526,7 @@ namespace Tolk.BusinessLogic.Services
             var now = _clock.SwedenNow;
 
             //check if late cancelling, if so we check for mealbreaks
-            bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, order.StartAt.DateTime) < 2;
+            bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, request.CalculatedStartAt.DateTime) < 2;
             List<RequisitionPriceRow> priceRows = null;
             List<MealBreak> mealbreaks = null;
             if (request.Status == RequestStatus.Approved && !isReplaced)
