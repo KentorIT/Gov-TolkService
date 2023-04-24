@@ -1,10 +1,13 @@
 ﻿@model DisplayContractModel
 <p>
-    <b>
-        Observera att det för tillfället enbart går att avropa från Jämtland, Kronoberg och Södermanlands län. Övriga län är avtalslösa och går därför inte att avropa ifrån. Det inställelsesätt (påplatstolkning, distanstolkning eller distanstolkning i anvisad lokal) som i avropet anges som enda val eller förstahandsval styr från vilket län som avrop ska ske. Vid tolkning på plats ska avrop ske från det län där tolkningen ska ske. Vid distanstolkning (telefon, video eller i anvisad lokal) sker avrop från det län där tolkanvändare sitter.
-        <br />Då även delområde "Distansbokning utan krav på förbokning" är avtalslöst innebär det att akuta tolkbehov inte kan bokas via ramavtalet. (En akut bokning är där man snarast, inom några minuter, behöver få tillgång till tolk.)
-    </b>
-
+    Det inställelsesätt (påplatstolkning, distanstolkning eller distanstolkning i anvisad lokal) som i avropet anges som enda val eller förstahandsval styr från vilket län som avrop ska ske. Vid tolkning på plats ska avrop ske från det län där tolkningen ska ske. Vid distanstolkning (telefon, video eller i anvisad lokal) sker avrop från det län där tolkanvändare sitter.
+    <br />Observera att det finns ett särskilt delområde för akut behov av tolk, vilket inte går att boka genom avropstjänsten. Information om akut bokning av tolk hittar ni på länken längst ner.
 </p>
-    Ramavtalen för <b>Jämtland, Kronoberg och Södermanlands län</b> är giltiga från och med @Model.FirstValidDate.ToString("yyyy-MM-dd") till och med @Model.LastValidDate.ToString("yyyy-MM-dd") och upphör därefter att gälla utan uppsägning. Kammarkollegiet har ensidig rätt att säga upp ramavtalet efter 24 månader, med minst 3 månaders uppsägningstid.
+    Ramavtalen för <b>Jämtland, Kronoberg och Södermanlands län</b> är giltiga från och med @Model.FirstValidDate.ToString("yyyy-MM-dd") till och med @Model.LastValidDate.ToString("yyyy-MM-dd") och upphör därefter att gälla utan uppsägning.
+</p>
+<p>
+    Ramavtalen för <b>övriga län</b> är giltiga från och med 2023-04-26 till och med 2027-04-25 och upphör därefter att gälla utan uppsägning.
+</p>
+<p>
+    Kammarkollegiet har ensidig rätt att säga upp ramavtalet efter 24 månader, med minst 3 månaders uppsägningstid.
 </p>
