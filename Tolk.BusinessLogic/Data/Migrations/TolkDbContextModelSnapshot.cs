@@ -467,6 +467,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTimeOffset?>("AnsweredAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<DateTimeOffset>("CalculatedEndAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<int>("BrokerId")
                         .HasColumnType("int");
 
@@ -870,6 +873,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset?>("AnsweredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CalculatedEndAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset?>("CancelledAt")

@@ -479,7 +479,7 @@ namespace Tolk.Web.Controllers
             {
                 sentOrders = _dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, false, false)
                     .Where(o => o.RowType == StartListRowType.Order && (o.OrderStatus == OrderStatus.Requested || o.OrderStatus == OrderStatus.RequestAcceptedAwaitingInterpreter)
-                    && o.EndAt > _clock.SwedenNow)
+                    && (o.CalculatedEndAt ?? o.EndAt) > _clock.SwedenNow)
                     .Select(o => new StartListItemModel
                     {
                         OrderDateTimeRange = new CombinedTimeRange { StartAt = o.StartAt, EndAt = o.EndAt, ExpectedLength = o.ExpectedLength, RespondedStartAt = o.RespondedStartAt },
@@ -536,7 +536,7 @@ namespace Tolk.Web.Controllers
             try
             {
                 approvedOrders = _dbContext.CustomerStartListRows.CustomerStartListRows(customerOrganisationId, userId, customerUnits, false, true)
-                    .Where(o => o.RowType == StartListRowType.Order && o.OrderStatus == OrderStatus.ResponseAccepted && o.EndAt > _clock.SwedenNow)
+                    .Where(o => o.RowType == StartListRowType.Order && o.OrderStatus == OrderStatus.ResponseAccepted && (o.CalculatedEndAt ?? o.EndAt) > _clock.SwedenNow)
                 .Select(o => new StartListItemModel
                 {
                     OrderDateTimeRange = new CombinedTimeRange { StartAt = o.StartAt, EndAt = o.EndAt, ExpectedLength = o.ExpectedLength, RespondedStartAt = o.RespondedStartAt },
@@ -809,7 +809,7 @@ namespace Tolk.Web.Controllers
             try
             {
                 actionList.AddRange(_dbContext.BrokerStartListRows.BrokerStartListRows(brokerId)
-                .Where(r => r.RowType == StartListRowType.Request && r.EndAt > _clock.SwedenNow && (r.RequestStatus == RequestStatus.Approved || r.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && r.OrderChangedAt.HasValue)
+                .Where(r => r.RowType == StartListRowType.Request && (r.CalculatedEndAt ?? r.EndAt) > _clock.SwedenNow && (r.RequestStatus == RequestStatus.Approved || r.RequestStatus == RequestStatus.AcceptedNewInterpreterAppointed) && r.OrderChangedAt.HasValue)
                 .Select(r => new ActionStartListItemModel
                 {
                     OrderDateTimeRange = new CombinedTimeRange { StartAt = r.StartAt, EndAt = r.EndAt, ExpectedLength = r.ExpectedLength, RespondedStartAt = r.RespondedStartAt },

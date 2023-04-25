@@ -33,6 +33,7 @@ DISTINCT
    ,r.CreatedAt 'LastRequestCreatedUpdatedAt'
    ,o.ExpectedLength
    ,r.RespondedStartAt
+   ,CASE WHEN r.RespondedStartAt IS NOT NULL THEN DATEADD(MINUTE, (DATEPART(HOUR, o.ExpectedLength) * 60) + DATEPART(MINUTE, o.ExpectedLength), r.RespondedStartAt) ELSE o.EndAt END 'CalculatedEndAt'
    ,NULL 'NoOfChildren'
    ,NULL 'NoOfExtraInterpreter'
    ,NULL 'RequisitionStatus'
@@ -95,6 +96,7 @@ DISTINCT
    ,rg.CreatedAt 'LastRequestCreatedUpdatedAt'
    ,NULL 'ExpectedLength'
    ,NULL 'RespondedStartAt'
+   ,NULL 'CalculatedEndAt'
    ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId) 'NoOfChildren'
    ,(SELECT COUNT(OrderId) FROM Orders WHERE OrderGroupId = og.OrderGroupId AND IsExtraInterpreterForOrderId IS NOT NULL) 'NoOfExtraInterpreter'
    ,NULL 'RequisitionStatus'
@@ -152,6 +154,7 @@ DISTINCT
    ,NULL 'LastRequestCreatedUpdatedAt'
    ,NULL 'ExpectedLength'
    ,NULL 'RespondedStartAt'
+   ,NULL 'CalculatedEndAt'
    ,NULL 'NoOfChildren'
    ,NULL 'NoOfExtraInterpreter'
    ,r.Status 'RequisitionStatus'
@@ -203,6 +206,7 @@ DISTINCT
    ,NULL 'LastRequestCreatedUpdatedAt'
    ,NULL 'ExpectedLength'
    ,NULL 'RespondedStartAt'
+   ,NULL 'CalculatedEndAt'
    ,0 'NoOfChildren'
    ,0 'NoOfExtraInterpreter'
    ,NULL 'RequisitionStatus'

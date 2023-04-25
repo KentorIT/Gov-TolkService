@@ -17,6 +17,7 @@ namespace Tolk.BusinessLogic.Entities
         public DateTimeOffset EndAt { get; set; }
         public TimeSpan? ExpectedLength { get; set; }
         public DateTimeOffset? RespondedStartAt { get; set; }
+        public DateTimeOffset? CalculatedEndAt { get; set; }
         public RequisitionStatus? RequisitionStatus { get; set; }
         public ComplaintStatus? ComplaintStatus { get; set; }
         public DateTimeOffset EntityDate { get; set; }
