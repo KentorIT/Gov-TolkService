@@ -7,18 +7,28 @@
         public const int NewInterpreterId = -1;
         public const int DeclineInterpreterId = -2;
 
-        //Order Agreement constants
+        //Peppol constants
         public const string NotApplicableNotification = "NA";
         public const string PeppolIdByGLNSchemeId = "0088"; 
         public const string PeppolIdByOrganizationNumberSchemeId = "0007";
-        public const string IdPrefix = "KamK-ID ";
-        public const string CustomizationId = "urn:fdc:peppol.eu:poacc:trns:order_agreement:3";
-        public const string ProfileId = "urn:fdc:peppol.eu:poacc:bis:order_agreement:3";
-        public const string Currency = "SEK";        
-
+        public const string Currency = "SEK";
         public const string cbc = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2";
         public const string cac = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2";
-        public const string defaultNamespace = "urn:oasis:names:specification:ubl:schema:xsd:OrderResponse-2";
+        public const string sh = "urn:sfti:documents:StandardBusinessDocumentHeader";
+        public const string defaultNamespace = "urn:oasis:names:specification:ubl:schema:xsd:OrderResponse-2";        
+
+        //Order Agreement constants
+        public const string IdPrefix = "KamK-ID ";
+        public const string OrderAgreementCustomizationId = "urn:fdc:peppol.eu:poacc:trns:order_agreement:3";        
+        public const string OrderAgreementProfileId = "urn:fdc:peppol.eu:poacc:bis:order_agreement:3";
+        public const string ContractPrice = "CON";
+
+        //Order Response constants
+        public const string OrderResponseProfileId = "urn:fdc:peppol.eu:poacc:bis:ordering:3";
+        public const string OrderResponseCustomizationId = "urn:fdc:peppol.eu:poacc:trns:order_response:3";        
+        public const string LineAcceptedWithChange = "3";        
+        public const string LineAcceptedWithoutChange = "5";        
+        public const string OrderConditionallyAccepted = "CA";        
 
     }
 }

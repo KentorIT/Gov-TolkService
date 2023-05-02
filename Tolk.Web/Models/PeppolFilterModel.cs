@@ -40,7 +40,7 @@ namespace Tolk.Web.Models
             }
 
             items = NotificationType.HasValue ? items.Where(i => i.NotificationType == NotificationType) : items;
-            items = CustomerId.HasValue ? items.Where(w => w.OrderAgreementPayload.Request.Order.CustomerOrganisationId == CustomerId) : items;
+            items = CustomerId.HasValue ? items.Where(w => w.PeppolMessagePayload.Request.Order.CustomerOrganisationId == CustomerId) : items;
 
             return items;
         }

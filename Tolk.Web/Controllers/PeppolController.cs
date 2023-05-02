@@ -53,7 +53,7 @@ namespace Tolk.Web.Controllers
                 HasBeenResent = p.ReplacedByMessage != null ? "Ja" : "Nej",
                 NotificationType = p.NotificationType.GetDescription(),
                 OutboundPeppolMessageId = p.OutboundPeppolMessageId,
-                CustomerName = p.OrderAgreementPayload.Request.Order.CustomerOrganisation.Name,
+                CustomerName = p.PeppolMessagePayload.Request.Order.CustomerOrganisation.Name,
                 ListColor = (
                          (p.FailedTries >= 5 && p.ReplacedByMessage == null) ? "red-border-left" :
                          (p.FailedTries < 5 && p.DeliveredAt == null) ? "yellow-border-left" :
@@ -81,7 +81,7 @@ namespace Tolk.Web.Controllers
                     OutboundPeppolMessageId = message.OutboundPeppolMessageId,
                     CreatedAt = message.CreatedAt,
                     DeliveredAt = message.DeliveredAt,
-                    CustomerName = message.OrderAgreementPayload.Request.Order.CustomerOrganisation.Name,
+                    CustomerName = message.PeppolMessagePayload.Request.Order.CustomerOrganisation.Name,
                     NotificationType = message.NotificationType,
                     ReplacedBy = message.ReplacedByMessage?.OutboundPeppolMessageId,
                     Replaces = message.ReplacingPeppolMessageId,

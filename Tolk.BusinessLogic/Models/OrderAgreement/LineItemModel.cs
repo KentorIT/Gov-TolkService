@@ -13,6 +13,9 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         public string Note { get; set; }
 
         [XmlElement(Namespace = Constants.cbc)]
+        public string LineStatusCode { get; set; }
+
+        [XmlElement(Namespace = Constants.cbc)]
         public QuantityModel Quantity
         {
             get => new QuantityModel { Value = "1" };
@@ -20,11 +23,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         }
 
         [XmlElement(Namespace = Constants.cbc)]
-        public AmountModel LineExtensionAmount
-        {
-            get => new AmountModel { AmountSum = Price.PriceAmount.AmountSum };
-            set { }
-        }
+        public AmountModel LineExtensionAmount { get; set; }       
 
         [XmlElement(Namespace = Constants.cac)]
         public DeliveryModel Delivery { get; set; }

@@ -1835,7 +1835,7 @@ Sammanställning:
         public async Task NotifyOnFailedPeppolMessage(int messageId)
         {
             OutboundPeppolMessage message = await _dbContext.OutboundPeppolMessages.GetOutboundPeppolMessage(messageId);
-            var recipientId = message.OrderAgreementPayload.Request.Order.CustomerOrganisationId;
+            var recipientId = message.PeppolMessagePayload.Request.Order.CustomerOrganisationId;
             if (_tolkBaseOptions.Support.ReportPeppolMessageFailures)
             {
                 CreateEmail(

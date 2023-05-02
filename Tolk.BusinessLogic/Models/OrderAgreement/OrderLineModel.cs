@@ -8,5 +8,8 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
     {
         [XmlElement(Namespace = Constants.cac)]
         public LineItemModel LineItem { get; set; }
+
+        [XmlElement(Namespace = Constants.cac)]
+        public OrderLineReferenceModel OrderLineReference { get; set; }
     }
 }

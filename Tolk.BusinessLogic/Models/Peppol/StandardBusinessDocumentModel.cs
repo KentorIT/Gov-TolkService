@@ -4,11 +4,13 @@ using Tolk.BusinessLogic.Models.OrderAgreement;
 
 namespace Tolk.BusinessLogic.Models.Peppol
 {
-    [Serializable]
-    [XmlRoot("StandardBusinessDocument")]
+    [Serializable] 
+    [XmlRoot("StandardBusinessDocument")]    
     public class StandardBusinessDocumentModel
     {
-        public StandardBusinessDocumentHeaderModel StandardBusinessDocumentHeader { get; set; }
-        public OrderAgreementModel OrderResponse { get; set; }
+        [XmlElement(Namespace = Constants.sh)]
+        public StandardBusinessDocumentHeaderModel StandardBusinessDocumentHeader { get; set; }        
+        public OrderResponseModel OrderResponse { get; set; }        
+        public OrderAgreementModel OrderAgreement { get; set; }        
     }
 }

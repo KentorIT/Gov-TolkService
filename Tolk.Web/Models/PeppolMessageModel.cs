@@ -5,23 +5,22 @@ using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models
 {
-    public class OrderAgreementModel
+    public class PeppolMessageModel
     {
-        [ColumnDefinitions(IsIdColumn = true, Index = 0, Name = nameof(OrderAgreementPayloadId), Visible = false)]
-        public int OrderAgreementPayloadId { get; set; }
-
-        [ColumnDefinitions(Index = 1, Name = nameof(Index), Visible = false)]
-        [Display(Name = "Index")]
-        public int Index { get; set; }
+        [ColumnDefinitions(IsIdColumn = true, Index = 0, Name = nameof(PeppolPayloadId), Visible = false)]
+        public int PeppolPayloadId { get; set; }
 
         [Display(Name = "Är senaste")]
-        [ColumnDefinitions(Index = 2, Name = nameof(IsLatest), Visible = false)]
+        [ColumnDefinitions(Index = 1, Name = nameof(IsLatest), Visible = false)]
         public bool IsLatest { get; set; }
 
         [Display(Name = "Identifierare")]
-        [ColumnDefinitions(Index = 3, Name = nameof(IdentificationNumber), Title = "Identifierare")]
+        [ColumnDefinitions(Index = 2, Name = nameof(IdentificationNumber), Title = "Identifierare")]
         public string IdentificationNumber { get; set; }
 
+        [Display(Name = "Typ")]
+        [ColumnDefinitions(Index = 3, Name = nameof(PeppolMessageType), Title = "Typ")]
+        public string PeppolMessageType { get; set; }
         [Display(Name = "BokningsID")]
         [ColumnDefinitions(Index = 4, Name = nameof(OrderNumber), Title = "BokningsID")]
         public string OrderNumber { get; set; }
@@ -39,14 +38,14 @@ namespace Tolk.Web.Models
         [Display(Name = "Genererad från")]
         public string BasedOn { get; set; }
 
-        internal static OrderAgreementModel GetModelFromOrderAgreement(OrderAgreementPayload payload)
+        internal static PeppolMessageModel GetModelFromPeppolPayload(PeppolPayload payload)
         {
-            return new OrderAgreementModel
+            return new PeppolMessageModel
             {
-                OrderAgreementPayloadId = payload.OrderAgreementPayloadId,
+                PeppolPayloadId = payload.PeppolPayloadId,
                 IdentificationNumber = payload.IdentificationNumber,
-                Index = payload.Index,
                 CreatedAt = payload.CreatedAt,
+                PeppolMessageType = payload.PeppolMessageType.ToString(),
                 OrderNumber = payload.Request.Order.OrderNumber,
                 CreatedBy = payload.CreatedByUser?.FullName ?? "Systemet",
                 BasedOn = payload.RequisitionId.HasValue ? "Genererad från rekvisition" : "Genererad från bekräftelse",

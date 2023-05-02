@@ -10,15 +10,8 @@ namespace Tolk.BusinessLogic.Models.Peppol
 
         public PartnerModel(string identifier)
         {
-            Identifier = identifier;
-        }
-        public string Identifier { get; set; }
-
-        [XmlAttribute]
-        public string Authority
-        {
-            get => "iso6523-actorid-upis";
-            set { }
-        }
+            Identifier = new PartnerIdentifier {Identifier = identifier } ;
+        }   
+        public PartnerIdentifier Identifier { get; set; }
     }
 }

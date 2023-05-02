@@ -62,7 +62,7 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ResentImpersonatorUserId))]
         public AspNetUser ResentImpersonatorUser { get; set; }
 
-        public OrderAgreementPayload OrderAgreementPayload { get; set; }
+        public PeppolPayload PeppolMessagePayload { get; set; }
 
         public int FailedTries { get; set; }
 

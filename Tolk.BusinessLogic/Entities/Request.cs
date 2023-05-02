@@ -120,7 +120,7 @@ namespace Tolk.BusinessLogic.Entities
                 return false;
             }
 
-            if (IsApprovedOrDelivered && OrderAgreementPayloads.Count == 0 && Requisitions.Count == 0)
+            if (IsApprovedOrDelivered && PeppolPayloads.Count == 0 && Requisitions.Count == 0)
             {
                 //The Order Agreement should be created on this request
                 return true;
@@ -130,11 +130,8 @@ namespace Tolk.BusinessLogic.Entities
             {
                 return false;
             }
-            var requisition = Requisitions.Where(r => r.Status == RequisitionStatus.Approved ||
-            r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ||
-            r.Status == RequisitionStatus.Created ||
-            r.Status == RequisitionStatus.Reviewed).SingleOrDefault();
-            if (requisition == null || OrderAgreementPayloads.Any(p => p.RequisitionId == requisition.RequisitionId))
+            
+            if (CurrentlyActiveRequisition == null || PeppolPayloads.Any(p => p.RequisitionId == CurrentlyActiveRequisition.RequisitionId))
             {
                 return false;
             }
@@ -142,6 +139,12 @@ namespace Tolk.BusinessLogic.Entities
             return true;
         }
 
+        public Requisition CurrentlyActiveRequisition => 
+            Requisitions.Where(r => (r.Status == RequisitionStatus.Approved ||
+            r.Status == RequisitionStatus.AutomaticGeneratedFromCancelledOrder ||
+            r.Status == RequisitionStatus.Created ||
+            r.Status == RequisitionStatus.Reviewed) &&
+            !r.ReplacedByRequisitionId.HasValue).SingleOrDefault();
         #endregion
 
         #region navigation
@@ -163,9 +166,9 @@ namespace Tolk.BusinessLogic.Entities
         public List<RequestView> RequestViews { get; set; }
 
         [InverseProperty(nameof(ReplacingRequest))]
-        public Request ReplacedByRequest { get; set; }
+        public Request ReplacedByRequest { get; set; }        
 
-        public List<OrderAgreementPayload> OrderAgreementPayloads { get; set; }
+        public List<PeppolPayload> PeppolPayloads { get; set; }
 
         #endregion
 

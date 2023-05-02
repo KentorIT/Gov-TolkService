@@ -8,7 +8,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class OrderAgreementFilterModel
+    public class PeppolMessageFilterModel
     {
         [Display(Name = "Identifierare")]
         [Placeholder("Ange del av Identifierare")]
@@ -27,7 +27,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Är senaste")]
         public TrueFalse? IsLatest { get; set; }
 
-        internal IQueryable<OrderAgreementPayload> Apply(IQueryable<OrderAgreementPayload> payloads)
+        internal IQueryable<PeppolPayload> Apply(IQueryable<PeppolPayload> payloads)
         {
             payloads = CustomerOrganisationId.HasValue ? payloads.Where(p => p.Request.Order.CustomerOrganisationId == CustomerOrganisationId) : payloads;
             payloads = DateCreated?.Start != null ? payloads.Where(p => p.CreatedAt.Date >= DateCreated.Start) : payloads;

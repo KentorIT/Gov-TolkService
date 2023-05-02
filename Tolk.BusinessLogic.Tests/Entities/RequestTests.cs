@@ -2533,7 +2533,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = status,
-                OrderAgreementPayloads = new List<OrderAgreementPayload>(),
+                PeppolPayloads = new List<PeppolPayload>(),
                 Requisitions = new List<Requisition>()
             };
             Assert.Equal(expected, request.AllowOrderAgreementCreation());
@@ -2553,7 +2553,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = requestStatus,
-                OrderAgreementPayloads = new List<OrderAgreementPayload>(),
+                PeppolPayloads = new List<PeppolPayload>(),
                 Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = status, Message = string.Empty } }
             };
             Assert.Equal(expected, request.AllowOrderAgreementCreation());
@@ -2565,7 +2565,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = RequestStatus.Delivered,
-                OrderAgreementPayloads = new List<OrderAgreementPayload>() { new OrderAgreementPayload { } },
+                PeppolPayloads = new List<PeppolPayload>() { new PeppolPayload { } },
                 Requisitions = new List<Requisition>()
             };
             Assert.False(request.AllowOrderAgreementCreation());
@@ -2577,7 +2577,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = RequestStatus.Delivered,
-                OrderAgreementPayloads = new List<OrderAgreementPayload>() { new OrderAgreementPayload { RequisitionId = 1 } },
+                PeppolPayloads = new List<PeppolPayload>() { new PeppolPayload { RequisitionId = 1 } },
                 Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = RequisitionStatus.Reviewed, Message = string.Empty } }
             };
             Assert.False(request.AllowOrderAgreementCreation());
@@ -2595,7 +2595,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var request = new Request()
             {
                 Status = RequestStatus.Delivered,
-                OrderAgreementPayloads = new List<OrderAgreementPayload>() { new OrderAgreementPayload { RequisitionId = 1 } },
+                PeppolPayloads = new List<PeppolPayload>() { new PeppolPayload { RequisitionId = 1 } },
                 Requisitions = new List<Requisition>() { new Requisition { RequisitionId = 1, Status = RequisitionStatus.DeniedByCustomer, Message = string.Empty }, new Requisition { RequisitionId = 2, Status = status } }
             };
             Assert.Equal(expected, request.AllowOrderAgreementCreation());

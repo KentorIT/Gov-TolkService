@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 
 namespace Tolk.BusinessLogic.Data
 {
@@ -511,12 +512,13 @@ namespace Tolk.BusinessLogic.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<OrderAgreementPayload>()
-                .HasIndex(o => new { o.RequestId, o.Index })
-                .IsUnique();
-
             builder.Entity<CustomerSpecificProperty>()
                 .HasKey(c => new { c.CustomerOrganisationId, c.PropertyType });
+
+            builder.Entity<PeppolPayload>()
+                .HasIndex(pp => new { pp.OrderId,pp.PeppolMessageType })
+                .IsUnique()
+                .HasFilter($"[PeppolMessageType] = {(int)PeppolMessageType.OrderAgreement}");
 
             //Views
             builder.Entity<OrderListRow>().HasNoKey().ToView(nameof(OrderListRows));
@@ -677,7 +679,7 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<BrokerStartListRow> BrokerStartListRows { get; set; }
         
-        public DbSet<OrderAgreementPayload> OrderAgreementPayloads { get; set; }
+        //public DbSet<OrderAgreementPayload> OrderAgreementPayloads { get; set; }
 
         public DbSet<FrameworkAgreement> FrameworkAgreements { get; set; }
 
@@ -685,6 +687,7 @@ namespace Tolk.BusinessLogic.Data
 
         public DbSet<BrokerFeeByServiceTypePriceListRow> BrokerFeeByServiceTypePriceListRows { get; set; }
         public DbSet<CustomerSpecificProperty> CustomerSpecificProperties { get; set; }
+        public DbSet<PeppolPayload> PeppolPayloads { get; set; }
 
         private static bool isUserStoreInitialized = false;
 

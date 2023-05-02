@@ -8,8 +8,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Data.Migrations;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Models.OrderAgreement;
@@ -143,25 +145,26 @@ namespace Tolk.BusinessLogic.Services
         {
             try
             {
-                var orderAgreementPayloads = await context.OrderAgreementPayloads
+                var peppolPayloads = await context.PeppolPayloads
                 .Where(p => p.OutboundPeppolMessageId == null && p.ReplacedById == null)
                 .Select(p => new
                 {
-                    p.OrderAgreementPayloadId,
+                    p.PeppolPayloadId,
                     Reciever = p.Request.Order.CustomerOrganisation.PeppolId,
-                    p.Payload
+                    p.Payload,
+                    p.PeppolMessageType
                 })
                 .ToListAsync();
-                foreach (var x in orderAgreementPayloads)
+                foreach (var x in peppolPayloads)
                 {
                     using var memoryStream = new MemoryStream();
                     using var writer = new StreamWriter(memoryStream, Encoding.UTF8);
                     var identfier = Guid.NewGuid().ToString();
-                    SerializeModel(new StandardBusinessDocumentModel
+                    var model = new StandardBusinessDocumentModel
                     {
                         StandardBusinessDocumentHeader = new StandardBusinessDocumentHeaderModel
                         {
-                            Reciever = new PartnerModel(x.Reciever),
+                            Receiver = new PartnerModel(x.Reciever),
                             Sender = new PartnerModel(_options.Peppol.SenderIdentifier),
                             DocumentIdentification = new DocumentIdentificationModel
                             {
@@ -172,28 +175,39 @@ namespace Tolk.BusinessLogic.Services
                             },
                             BusinessScope = new BusinessScopeModel
                             {
-                                Scopes = new List<ScopeModel>() { ScopeModel.DocumentScope, ScopeModel.ProcessScope }
+                                Scopes = ScopeModel.GetScopeModelForType(x.PeppolMessageType)
                             }
                         },
-                        OrderResponse = Deserialize<OrderAgreementModel>(x.Payload)
-                    },
-                        writer);
+                    };
+                    switch (x.PeppolMessageType)
+                    {
+                        case Enums.PeppolMessageType.OrderAgreement:
+                            model.OrderAgreement = Deserialize<OrderAgreementModel>(x.Payload);
+                            break;
+                        case Enums.PeppolMessageType.OrderResponse:
+                            model.OrderResponse = Deserialize<OrderResponseModel>(x.Payload);
+                            break;
+                        default:
+                            throw new InvalidOperationException($"{x.PeppolMessageType} is not a valid Messagetype");                            
+                    }                  
+                    SerializeModel(model,
+                        writer,x.Payload, memoryStream);
                     memoryStream.Position = 0;
                     byte[] byteArray = new byte[memoryStream.Length];
                     memoryStream.Read(byteArray, 0, (int)memoryStream.Length);
                     memoryStream.Close();
-                    context.OrderAgreementPayloads
-                        .Where(p => p.OrderAgreementPayloadId == x.OrderAgreementPayloadId)
+                    context.PeppolPayloads
+                        .Where(p => p.PeppolPayloadId == x.PeppolPayloadId)
                         .Single().OutboundPeppolMessage = new OutboundPeppolMessage(identfier,
                            x.Reciever,
                            byteArray,
                            DateTimeOffset.UtcNow,
-                           Enums.NotificationType.OrderAgreementCreated
+                           x.PeppolMessageType == Enums.PeppolMessageType.OrderAgreement ? Enums.NotificationType.OrderAgreementCreated : Enums.NotificationType.OrderResponseCreated
                         );
                 }
 
                 await context.SaveChangesAsync();
-                _logger.LogInformation("Created {count} peppol messages to send.", orderAgreementPayloads.Count);
+                _logger.LogInformation("Created {count} peppol messages to send.", peppolPayloads.Count);
             }
             catch (Exception ex)
             {
@@ -202,13 +216,30 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private static void SerializeModel(StandardBusinessDocumentModel model, StreamWriter writer)
+        private static void SerializeModel(StandardBusinessDocumentModel model, StreamWriter writer, byte[] payload, MemoryStream memoryStream)
         {
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            ns.Add(nameof(Constants.cac), Constants.cac);
-            ns.Add(nameof(Constants.cbc), Constants.cbc);
-            XmlSerializer xser = new XmlSerializer(typeof(StandardBusinessDocumentModel), Constants.defaultNamespace);
+            using MemoryStream stream = new MemoryStream(payload); 
+            var orderXML = XDocument.Load(stream);
+            var orderRoot = orderXML.Root;
+
+            XmlSerializerNamespaces contentNS = new XmlSerializerNamespaces();
+            contentNS.Add(nameof(Constants.cac), Constants.cac);
+            contentNS.Add(nameof(Constants.cbc), Constants.cbc);
+            XmlSerializer ser = new XmlSerializer(typeof(OrderResponseModel), Constants.defaultNamespace);   
+            
+            model.OrderResponse = null;
+
+            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();                        
+            ns.Add(nameof(Constants.sh), Constants.sh);            
+            XmlSerializer xser = new XmlSerializer(typeof(StandardBusinessDocumentModel));
             xser.Serialize(writer, model, ns);
+            memoryStream.Position = 0;
+            var document = XDocument.Load(memoryStream);
+
+            var docRoot = document.Root;
+            docRoot.Add(orderRoot);
+            docRoot.Save(writer);
+            stream.Close();
         }
         private T Deserialize<T>(byte[] param)
         {

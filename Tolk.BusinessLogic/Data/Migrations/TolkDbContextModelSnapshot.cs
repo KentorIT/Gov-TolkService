@@ -1492,70 +1492,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAgreementPayload", b =>
-                {
-                    b.Property<int>("OrderAgreementPayloadId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OrderAgreementPayloadId"), 1L, 1);
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IdentificationNumber")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<int?>("ImpersonatingCreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Index")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OutboundPeppolMessageId")
-                        .HasColumnType("int");
-
-                    b.Property<byte[]>("Payload")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<int?>("ReplacedById")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RequestId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("RequisitionId")
-                        .HasColumnType("int");
-
-                    b.HasKey("OrderAgreementPayloadId");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("ImpersonatingCreatedBy");
-
-                    b.HasIndex("OutboundPeppolMessageId")
-                        .IsUnique()
-                        .HasFilter("[OutboundPeppolMessageId] IS NOT NULL");
-
-                    b.HasIndex("ReplacedById")
-                        .IsUnique()
-                        .HasFilter("[ReplacedById] IS NOT NULL");
-
-                    b.HasIndex("RequisitionId")
-                        .IsUnique()
-                        .HasFilter("[RequisitionId] IS NOT NULL");
-
-                    b.HasIndex("RequestId", "Index")
-                        .IsUnique();
-
-                    b.ToTable("OrderAgreementPayloads");
-                });
-
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachment", b =>
                 {
                     b.Property<int>("OrderId")
@@ -2330,6 +2266,76 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("ResentUserId");
 
                     b.ToTable("OutboundWebHookCalls");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.PeppolPayload", b =>
+                {
+                    b.Property<int>("PeppolPayloadId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PeppolPayloadId"), 1L, 1);
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IdentificationNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("ImpersonatingCreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OutboundPeppolMessageId")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("Payload")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int>("PeppolMessageType")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReplacedById")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RequisitionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PeppolPayloadId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("ImpersonatingCreatedBy");
+
+                    b.HasIndex("OutboundPeppolMessageId")
+                        .IsUnique()
+                        .HasFilter("[OutboundPeppolMessageId] IS NOT NULL");
+
+                    b.HasIndex("ReplacedById")
+                        .IsUnique()
+                        .HasFilter("[ReplacedById] IS NOT NULL");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("RequisitionId")
+                        .IsUnique()
+                        .HasFilter("[RequisitionId] IS NOT NULL");
+
+                    b.HasIndex("OrderId", "PeppolMessageType")
+                        .IsUnique()
+                        .HasFilter("[PeppolMessageType] = 1");
+
+                    b.ToTable("PeppolPayloads");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.PriceCalculationCharge", b =>
@@ -4309,47 +4315,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Navigation("ReplacingOrder");
                 });
 
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAgreementPayload", b =>
-                {
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedBy");
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
-                        .WithMany()
-                        .HasForeignKey("ImpersonatingCreatedBy");
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.OutboundPeppolMessage", "OutboundPeppolMessage")
-                        .WithOne("OrderAgreementPayload")
-                        .HasForeignKey("Tolk.BusinessLogic.Entities.OrderAgreementPayload", "OutboundPeppolMessageId");
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.OrderAgreementPayload", "ReplacedByPayload")
-                        .WithOne("ReplacingPayload")
-                        .HasForeignKey("Tolk.BusinessLogic.Entities.OrderAgreementPayload", "ReplacedById");
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
-                        .WithMany("OrderAgreementPayloads")
-                        .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "BasedOnRequisition")
-                        .WithOne("OrderAgreementPayload")
-                        .HasForeignKey("Tolk.BusinessLogic.Entities.OrderAgreementPayload", "RequisitionId");
-
-                    b.Navigation("BasedOnRequisition");
-
-                    b.Navigation("CreatedByImpersonator");
-
-                    b.Navigation("CreatedByUser");
-
-                    b.Navigation("OutboundPeppolMessage");
-
-                    b.Navigation("ReplacedByPayload");
-
-                    b.Navigation("Request");
-                });
-
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachment", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.Attachment", "Attachment")
@@ -4770,6 +4735,55 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Navigation("ResentImpersonatorUser");
 
                     b.Navigation("ResentUser");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.PeppolPayload", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy");
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
+                        .WithMany()
+                        .HasForeignKey("ImpersonatingCreatedBy");
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.OutboundPeppolMessage", "OutboundPeppolMessage")
+                        .WithOne("PeppolMessagePayload")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.PeppolPayload", "OutboundPeppolMessageId");
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.PeppolPayload", "ReplacedByPayload")
+                        .WithOne("ReplacingPayload")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.PeppolPayload", "ReplacedById");
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Request", "Request")
+                        .WithMany("PeppolPayloads")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.Requisition", "BasedOnRequisition")
+                        .WithOne("PeppolPayload")
+                        .HasForeignKey("Tolk.BusinessLogic.Entities.PeppolPayload", "RequisitionId");
+
+                    b.Navigation("BasedOnRequisition");
+
+                    b.Navigation("CreatedByImpersonator");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("OutboundPeppolMessage");
+
+                    b.Navigation("ReplacedByPayload");
+
+                    b.Navigation("Request");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Quarantine", b =>
@@ -5676,11 +5690,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Navigation("Requirements");
                 });
 
-            modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAgreementPayload", b =>
-                {
-                    b.Navigation("ReplacingPayload");
-                });
-
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", b =>
                 {
                     b.Navigation("OrderAttachmentHistoryEntries");
@@ -5723,7 +5732,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                 {
                     b.Navigation("FailedCalls");
 
-                    b.Navigation("OrderAgreementPayload");
+                    b.Navigation("PeppolMessagePayload");
 
                     b.Navigation("ReplacedByMessage");
                 });
@@ -5733,6 +5742,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Navigation("FailedCalls");
 
                     b.Navigation("ReplacingWebHook");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.PeppolPayload", b =>
+                {
+                    b.Navigation("ReplacingPayload");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Quarantine", b =>
@@ -5765,7 +5779,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Navigation("Complaints");
 
-                    b.Navigation("OrderAgreementPayloads");
+                    b.Navigation("PeppolPayloads");
 
                     b.Navigation("PriceRows");
 
@@ -5803,7 +5817,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.Navigation("MealBreaks");
 
-                    b.Navigation("OrderAgreementPayload");
+                    b.Navigation("PeppolPayload");
 
                     b.Navigation("PriceRows");
 

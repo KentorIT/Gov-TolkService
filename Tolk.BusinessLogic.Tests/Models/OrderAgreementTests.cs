@@ -34,7 +34,7 @@ namespace Tolk.BusinessLogic.Tests.Models
                 {
                     Status = OrderStatus.RequestRespondedAwaitingApproval,
                 },
-                Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1,FrameworkAgreement = MockEntities.FrameworkAgreements[0]},
+                Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1, FrameworkAgreement = MockEntities.FrameworkAgreements[0] },
             };
             MockRequisition = new Requisition
             {
@@ -63,9 +63,8 @@ namespace Tolk.BusinessLogic.Tests.Models
 
             var agreement = new OrderAgreementModel(request, now, pricerows);
             Assert.Equal(request.Order.OrderNumber, agreement.SalesOrderID);
-            Assert.Equal($"{Constants.IdPrefix}{request.Order.OrderNumber}-1", agreement.ID.Value);
-            Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
-            Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
+            Assert.Equal($"{Constants.IdPrefix}{request.Order.OrderNumber}", agreement.ID.Value);
+            Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);            
             Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
             Assert.Equal(now.ToString("yyyy-MM-dd"), agreement.IssueDate);
             Assert.Equal(now.ToString("HH:mm:ss"), agreement.IssueTime);
@@ -100,9 +99,8 @@ namespace Tolk.BusinessLogic.Tests.Models
 
             var agreement = new OrderAgreementModel(requisition, now, MockEntities.MockRequisitionPriceRows);
             Assert.Equal(requisition.Request.Order.OrderNumber, agreement.SalesOrderID);
-            Assert.Equal($"{Constants.IdPrefix}{requisition.Request.Order.OrderNumber}-1", agreement.ID.Value);
-            Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);
-            Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
+            Assert.Equal($"{Constants.IdPrefix}{requisition.Request.Order.OrderNumber}", agreement.ID.Value);
+            Assert.Equal(Constants.Currency, agreement.DocumentCurrencyCode);            
             Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
             Assert.Equal(now.ToString("yyyy-MM-dd"), agreement.IssueDate);
             Assert.Equal(now.ToString("HH:mm:ss"), agreement.IssueTime);
@@ -177,36 +175,30 @@ namespace Tolk.BusinessLogic.Tests.Models
                 Assert.Equal(DateTime.Parse(generatedDateTime).ToString("HH:mm:ss"), agreement.IssueTime);
             }
         }
-
         [Theory]
-        [InlineData(null, 1)]
-        [InlineData(1, 2)]
-        [InlineData(15, 16)]
-        public void CreateOrderAgreementFromRequisition_TestIndex(int? previousIndex, int expectedIndex)
+        [InlineData(InvoiceableArticle.TravelCost)]
+        [InlineData(InvoiceableArticle.AdministrativeCharge)]
+        [InlineData(InvoiceableArticle.InterpreterCompensationIncludingSocialCharge)]
+        [InlineData(InvoiceableArticle.BrokerFee)]
+        public void CreateOrderResponseFromRequisitionWithUpdatedPrices(InvoiceableArticle articleWithUpdatedPrice)
         {
             var requisition = MockRequisition;
-            var agreement = new OrderAgreementModel(requisition, DateTime.UtcNow, MockEntities.MockRequisitionPriceRows, previousIndex);
-            Assert.Equal(agreement.Index, expectedIndex);
-            Assert.Equal($"{Constants.IdPrefix}{requisition.Request.Order.OrderNumber}-{expectedIndex}", agreement.ID.Value);
-            if (previousIndex.HasValue)
+            var articles = (InvoiceableArticle[])Enum.GetValues(typeof(InvoiceableArticle));
+            var priceRows = articles.Select(a => new PriceRowComparisonResult
             {
-                Assert.Equal($"{Constants.IdPrefix}{requisition.Request.Order.OrderNumber}-{previousIndex}", agreement.OrderReference.ID.Value);
-            }
-            else
-            {
-                Assert.Equal(Constants.NotApplicableNotification, agreement.OrderReference.ID.Value);
-            }
-        }
+                ArticleType = a,
+                TotalPrice = 100,
+                HasChanged = a == articleWithUpdatedPrice
+            }).ToList();
 
-        [Theory]
-        [InlineData(-1)]
-        [InlineData(0)]
-        [InlineData(int.MinValue)]
-        public void CreateOrderAgreementFromRequisition_InvalidIndex(int previousIndex)
-        {
-            var requisition = MockRequisition;
-            Assert.Throws<InvalidOperationException>(() => new OrderAgreementModel(requisition, DateTime.UtcNow, MockEntities.MockRequisitionPriceRows, previousIndex));
-        }
+            var response = new OrderResponseModel(requisition,new DateTime(2022,1,1), priceRows);
+            var changedLine = response.OrderLines.Where(ol => ol.LineItem.ID.Value == ((int)articleWithUpdatedPrice).ToString()).First();
+            var unchangedLines = response.OrderLines.Where(ol => ol.LineItem.ID.Value != ((int)articleWithUpdatedPrice).ToString()).ToList();
+            Assert.NotEqual($"{Constants.IdPrefix}{requisition.Request.Order.OrderNumber}", response.ID.Value);
+            Assert.Equal(Constants.LineAcceptedWithChange, changedLine.LineItem.LineStatusCode);
+            Assert.Equal(3, unchangedLines.Count());
+            Assert.True(unchangedLines.All(ucl => ucl.LineItem.LineStatusCode == Constants.LineAcceptedWithoutChange));            
+        }                
 
         private decimal GetRounding(decimal value)
         {

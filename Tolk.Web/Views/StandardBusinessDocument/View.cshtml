@@ -1,4 +1,4 @@
-﻿@model OrderAgreementModel
+﻿@model PeppolMessageModel
 @{
     ViewData["Title"] = "Order agreement";
 }
@@ -28,7 +28,7 @@
     </div>
     <div class="row">
         <div class="col-sm-12">
-            <a asp-area="" asp-controller="OrderAgreement" asp-action="GetPayload" asp-all-route-data="@(new Dictionary<string, string>{{ "id", Model.OrderAgreementPayloadId.ToString() } })">Ladda ner filen</a><br />
+            <a asp-area="" asp-controller="StandardBusinessDocument" asp-action="GetPayload" asp-all-route-data="@(new Dictionary<string, string>{{ "id", Model.PeppolPayloadId.ToString() } })">Ladda ner filen</a><br />
         </div>
     </div>
     <div class="row">

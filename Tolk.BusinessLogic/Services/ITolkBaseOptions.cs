@@ -6,8 +6,7 @@ namespace Tolk.BusinessLogic.Services
     {
         Environment Env { get; }
         System.Uri TolkWebBaseUrl { get; }
-        int MonthsToApproveComplaints { get; }
-        int WorkDaysGracePeriodBeforeOrderAgreementCreation { get; }
+        int MonthsToApproveComplaints { get; }        
         TellusApi Tellus { get; }
         SupportSettings Support { get; }
         SmtpSettings Smtp { get; }

@@ -368,9 +368,8 @@ namespace Tolk.BusinessLogic.Services
                 //Find all orders that should get order agreements
                 new StatusVerificationItem
                 {
-                    Test = "Inga order agreements väntar på att få peppol-kuvert skapade",
-                    //TODO: Behöver inte hitta de som inte är max index!
-                    Success = !(await _dbContext.OrderAgreementPayloads.AnyAsync(o => 
+                    Test = "Inga order agreements väntar på att få peppol-kuvert skapade",                    
+                    Success = !(await _dbContext.PeppolPayloads.AnyAsync(o => 
                     o.OutboundPeppolMessageId == null &&
                     o.ReplacedById  == null &&
                     o.CreatedAt < _clock.SwedenNow.AddMinutes(delay)))

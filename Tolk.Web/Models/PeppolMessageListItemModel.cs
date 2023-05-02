@@ -4,7 +4,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    public class OrderAgreementListItemModel : OrderAgreementModel
+    public class PeppolMessageListItemModel : PeppolMessageModel
     {
         [ColumnDefinitions(Index = 5, Name = nameof(CreatedAtDisplay), ColumnName = "CreatedAt", SortOnWebServer = false, Title = "Skapat")]
         public string CreatedAtDisplay => CreatedAt.ToSwedishString("yyyy-MM-dd HH:mm");

@@ -223,11 +223,11 @@ namespace Tolk.BusinessLogic.Enums
         [NotificationConsumerType(NotificationConsumerType.Customer)]
         OrderAgreementCreated = 30,
 
-        [Description("Tidigare skapad order agreement ersatt i systemet")]
+        [Description("Tidigare skapad order agreement ersatt av order response i systemet")]
         [CustomName("order_agreement_replaced", false)]
         [AvailableNotificationChannel(NotificationChannel.Peppol)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
-        OrderAgreementRepalced = 31,
+        OrderResponseCreated = 31,
 
 
         //Additional

@@ -95,8 +95,8 @@ namespace Tolk.BusinessLogic.Entities
         public List<MealBreak> MealBreaks { get; set; }
 
         public List<RequisitionStatusConfirmation> RequisitionStatusConfirmations { get; set; }
-
-        public OrderAgreementPayload OrderAgreementPayload { get; set; }
+        
+        public PeppolPayload PeppolPayload { get; set; }
 
         #region methods
 

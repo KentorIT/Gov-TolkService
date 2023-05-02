@@ -36,9 +36,7 @@ namespace Tolk.BusinessLogic.Services
 
         public bool EnableSetLatestAnswerTimeForCustomer => _options.EnableSetLatestAnswerTimeForCustomer;
 
-        public bool EnableCustomerApi => _options.EnableCustomerApi;
-
-        public int WorkDaysGracePeriodBeforeOrderAgreementCreation => _options.WorkDaysGracePeriodBeforeOrderAgreementCreation;
+        public bool EnableCustomerApi => _options.EnableCustomerApi;        
 
         public string ExcludedNotificationTypesForCustomer => _options.ExcludedNotificationTypesForCustomer;
 

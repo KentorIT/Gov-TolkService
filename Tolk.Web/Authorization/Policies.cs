@@ -410,7 +410,7 @@ namespace Tolk.Web.Authorization
                     return user.IsInRole(Roles.ApplicationAdministrator);
                 case OutboundWebHookCall webHookCall:
                     return user.IsInRole(Roles.ApplicationAdministrator) || webHookCall.RecipientUser.BrokerId == user.TryGetBrokerId();
-                case OrderAgreementPayload payload:
+                case PeppolPayload payload:
                     return user.IsInRole(Roles.SystemAdministrator) ||
                         (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && user.IsInRole(Roles.CentralAdministrator) && payload.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId());
                 case OutboundPeppolMessage message:

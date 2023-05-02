@@ -142,7 +142,7 @@ namespace Tolk.Web.Services
                     Task[] tasksToRun;
 
                     if (_clock.SwedenNow > nextFrameworkAgreementValidationTime)
-                    {
+                    {                        
                         nextFrameworkAgreementValidationTime = nextFrameworkAgreementValidationTime.AddDays(1);
                         nextFrameworkAgreementValidationTime -= nextFrameworkAgreementValidationTime.TimeOfDay;
                         nextFrameworkAgreementValidationTime = nextFrameworkAgreementValidationTime.AddHours(timeToRunFrameworkAgreementValidation);
@@ -218,7 +218,7 @@ namespace Tolk.Web.Services
             await provider.GetRequiredService<OrderService>().HandleAllScheduledTasks();
             await provider.GetRequiredService<RequestService>().DeleteRequestViews();
             await provider.GetRequiredService<RequestService>().DeleteRequestGroupViews();
-            await provider.GetRequiredService<OrderAgreementService>().HandleOrderAgreementCreation();
+            await provider.GetRequiredService<StandardBusinessDocumentService>().HandleStandardDocumentCreation();
             await provider.GetRequiredService<ErrorNotificationService>().CheckForFailedWebHookCallsToReport();
             await provider.GetRequiredService<ErrorNotificationService>().CheckForFailedPeppolMessagesToReport();
             _logger.LogInformation($"Completed {nameof(RunContinousJobs)}");

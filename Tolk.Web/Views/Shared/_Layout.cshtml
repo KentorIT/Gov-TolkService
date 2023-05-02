@@ -107,7 +107,7 @@
                                             }
                                             @if (CacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.TryGetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderAgreements)))
                                             {
-                                                <li><a class="submenu" asp-area="" asp-controller="OrderAgreement" asp-action="List">Order agreements</a></li>
+                                                <li><a class="submenu" asp-area="" asp-controller="StandardBusinessDocument" asp-action="List">Order agreements</a></li>
                                             }
                                         }
                                         <li><a class="submenu" asp-area="" asp-controller="Unit" asp-action="List">Enheter</a></li>
@@ -174,7 +174,7 @@
                                     <li><a class="submenu" asp-area="" asp-controller="Faq" asp-action="List">FAQ - Vanliga frågor</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="Contract" asp-action="List">Ramavtal</a></li>
                                     <li><a class="submenu" asp-area="" asp-controller="Email" asp-action="List">E-postmeddelanden</a></li>
-                                    <li><a class="submenu" asp-area="" asp-controller="OrderAgreement" asp-action="List">Order agreements</a></li>
+                                    <li><a class="submenu" asp-area="" asp-controller="StandardBusinessDocument" asp-action="List">Order agreements</a></li>
                                     @if (User.IsInRole(Roles.ApplicationAdministrator))
                                     {
                                         <li><a class="submenu" asp-area="" asp-controller="Language" asp-action="Index">Språk</a></li>
