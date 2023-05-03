@@ -18,7 +18,8 @@ namespace Tolk.BusinessLogic.Models.Peppol
         public PartnerModel Receiver { get; set; }
         [XmlElement(Namespace = Constants.sh)]
         public DocumentIdentificationModel DocumentIdentification { get; set; }
-        [XmlElement(Namespace = Constants.sh)]
-        public BusinessScopeModel BusinessScope { get; set; }
+        // This is Not used in SFTI:S Tekniska Kuvert but is used in the global standard, which one should be used?
+        //[XmlElement(Namespace = Constants.sh)]
+        //public BusinessScopeModel BusinessScope { get; set; }
     }
 }

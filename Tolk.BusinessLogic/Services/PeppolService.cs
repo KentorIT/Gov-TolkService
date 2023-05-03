@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Renci.SshNet;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,10 +10,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Tolk.BusinessLogic.Data;
-using Tolk.BusinessLogic.Data.Migrations;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
-using Tolk.BusinessLogic.Models.OrderAgreement;
 using Tolk.BusinessLogic.Models.Peppol;
 
 namespace Tolk.BusinessLogic.Services
@@ -173,25 +170,14 @@ namespace Tolk.BusinessLogic.Services
                                 Type = "OrderResponse",
                                 Standard = Constants.defaultNamespace
                             },
-                            BusinessScope = new BusinessScopeModel
-                            {
-                                Scopes = ScopeModel.GetScopeModelForType(x.PeppolMessageType)
-                            }
+                            //BusinessScope = new BusinessScopeModel
+                            //{
+                            //    Scopes = ScopeModel.GetScopeModelForType(x.PeppolMessageType)
+                            //}
                         },
-                    };
-                    switch (x.PeppolMessageType)
-                    {
-                        case Enums.PeppolMessageType.OrderAgreement:
-                            model.OrderAgreement = Deserialize<OrderAgreementModel>(x.Payload);
-                            break;
-                        case Enums.PeppolMessageType.OrderResponse:
-                            model.OrderResponse = Deserialize<OrderResponseModel>(x.Payload);
-                            break;
-                        default:
-                            throw new InvalidOperationException($"{x.PeppolMessageType} is not a valid Messagetype");                            
-                    }                  
-                    SerializeModel(model,
-                        writer,x.Payload, memoryStream);
+                    };                          
+                    SerializeEnvelopeAndAddPayload(model,
+                        writer,x.Payload);
                     memoryStream.Position = 0;
                     byte[] byteArray = new byte[memoryStream.Length];
                     memoryStream.Read(byteArray, 0, (int)memoryStream.Length);
@@ -216,41 +202,27 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private static void SerializeModel(StandardBusinessDocumentModel model, StreamWriter writer, byte[] payload, MemoryStream memoryStream)
+        private static void SerializeEnvelopeAndAddPayload(StandardBusinessDocumentModel model, StreamWriter writer, byte[] payload)
         {
-            using MemoryStream stream = new MemoryStream(payload); 
-            var orderXML = XDocument.Load(stream);
-            var orderRoot = orderXML.Root;
+            XElement orderRoot;
+            using (MemoryStream stream = new MemoryStream(payload))
+            {
+                var orderXML = XDocument.Load(stream);
+                orderRoot = orderXML.Root;
+            }
 
-            XmlSerializerNamespaces contentNS = new XmlSerializerNamespaces();
-            contentNS.Add(nameof(Constants.cac), Constants.cac);
-            contentNS.Add(nameof(Constants.cbc), Constants.cbc);
-            XmlSerializer ser = new XmlSerializer(typeof(OrderResponseModel), Constants.defaultNamespace);   
-            
-            model.OrderResponse = null;
-
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();                        
-            ns.Add(nameof(Constants.sh), Constants.sh);            
-            XmlSerializer xser = new XmlSerializer(typeof(StandardBusinessDocumentModel));
-            xser.Serialize(writer, model, ns);
-            memoryStream.Position = 0;
-            var document = XDocument.Load(memoryStream);
-
-            var docRoot = document.Root;
-            docRoot.Add(orderRoot);
-            docRoot.Save(writer);
-            stream.Close();
-        }
-        private T Deserialize<T>(byte[] param)
-        {
-            using (MemoryStream ms = new MemoryStream(param))
+            var doc = new XDocument();
+            using (var tempWriter = doc.CreateWriter())
             {
                 XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-                ns.Add(nameof(Constants.cac), Constants.cac);
-                ns.Add(nameof(Constants.cbc), Constants.cbc);
-                XmlSerializer xser = new XmlSerializer(typeof(T), Constants.defaultNamespace);
-                return (T)xser.Deserialize(ms);
-            }
+                ns.Add(nameof(Constants.sh), Constants.sh);
+                var xser = new XmlSerializer(typeof(StandardBusinessDocumentModel));
+                xser.Serialize(tempWriter,model,ns);
+            } 
+            
+            var docRoot = doc.Root;
+            docRoot.Add(orderRoot);            
+            docRoot.Save(writer);            
         }
     }
 }

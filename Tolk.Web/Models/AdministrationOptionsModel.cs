@@ -95,8 +95,7 @@ namespace Tolk.Web.Models
                 EnableSetLatestAnswerTimeForCustomer = options.EnableSetLatestAnswerTimeForCustomer,
                 AllowDeclineExtraInterpreterOnRequestGroups = options.AllowDeclineExtraInterpreterOnRequestGroups,
                 RoundPriceDecimals = options.RoundPriceDecimals,
-                MonthsToApproveComplaints = options.MonthsToApproveComplaints,
-                WorkDaysGracePeriodBeforeOrderAgreementCreation = options.WorkDaysGracePeriodBeforeOrderAgreementCreation
+                MonthsToApproveComplaints = options.MonthsToApproveComplaints,                
             };
         }
         #endregion
