@@ -2,7 +2,8 @@
 var pendingRequests = false;
 var ajaxQueue = [];
 $(document).ajaxSend(function (event, request, settings) {
-    if (settings.url.includes('/Validate/CustomerSpecific')) {        
+    if (settings.url.includes('/Validate/CustomerSpecific')) {         
+        ajaxQueue.pop();
         ajaxQueue.push(request);
     }
 })
@@ -859,7 +860,11 @@ $(function () {
                 }
             }
             // Make sure that all remote validation is completed
-            await Promise.all(ajaxQueue);
+            await Promise.all(ajaxQueue)
+                .catch(err => {         
+                    ajaxQueue.length = 0;                              
+                    errors++;
+                });
             var $form = $this.closest('form');
             if (!$form.validate().valid()) {
                 errors++;
