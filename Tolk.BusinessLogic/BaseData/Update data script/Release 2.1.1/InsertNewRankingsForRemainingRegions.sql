@@ -1,7 +1,7 @@
 
 
 -- OBS! Kolla och ändra eventuellt datum
-DECLARE @firstValidDate DATE = '2023-04-24'
+DECLARE @firstValidDate DATE = '2023-04-26'
 
 --72 rader
 --OBS! 3 regioner är bortkommenterade (Södermanland, Kronoberg, Jämtland - de har redan lagts in)
