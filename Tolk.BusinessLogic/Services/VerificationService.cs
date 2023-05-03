@@ -358,7 +358,7 @@ namespace Tolk.BusinessLogic.Services
                     Test = "Inga ordrar väntar på att kunden skall godkänna resekostnad, efter uppdragsstart",
                     Success = !(await _dbContext.Requests.AnyAsync(r => r.RequestGroupId == null &&
                         (r.Order.Status == OrderStatus.RequestRespondedAwaitingApproval || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
-                        ((r.RespondedStartAt != null && r.RespondedStartAt < _clock.SwedenNow.AddMinutes(delay)) || (r.RespondedStartAt == null && r.Order.StartAt < _clock.SwedenNow.AddMinutes(delay))) && (r.Status == RequestStatus.AnsweredAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)))
+                        ((r.RespondedStartAt ?? r.Order.StartAt) < _clock.SwedenNow.AddMinutes(delay)) && (r.Status == RequestStatus.AnsweredAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed)))
                 },
                 new StatusVerificationItem
                 {
