@@ -83,37 +83,34 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task<PeppolPayload> CreateAndStoreStandardDocument(int requestId)
         {
-            var request =  await _tolkDbContext.Requests.GetRequestForPeppolMessageCreation(requestId);                  
+            var request = await _tolkDbContext.Requests.GetRequestForPeppolMessageCreation(requestId);
+            PeppolPayload peppolPayload;
             // Check if there exists OrderAgreement or not                     
-            if(!request.PeppolPayloads.Any()) 
+            if (!request.Order.PeppolPayloads.Any())
             {
                 // If not create OA                 
-                var peppolPayload = CreateOrderAgreement(request);
+                peppolPayload = CreateOrderAgreement(request);
                 _tolkDbContext.PeppolPayloads.Add(peppolPayload);
-                await _tolkDbContext.SaveChangesAsync();
-                return peppolPayload;
             }
             // else check if an OR exists 
-            else if(!request.PeppolPayloads.Any(pp => pp.PeppolMessageType == PeppolMessageType.OrderResponse))
+            else if (!request.Order.PeppolPayloads.Any(pp => pp.PeppolMessageType == PeppolMessageType.OrderResponse))
             {
                 // if not create OR                           
-                var orderAgreement = request.PeppolPayloads.Single(); // Only one OA per order/request is allowed
+                var orderAgreement = request.Order.PeppolPayloads.Single(); // Only one OA per order/request is allowed
                 var priceRows = await GetPriceRowComparisonResult(request, orderAgreement);
-                if (!priceRows.Any(pr => pr.HasChanged)) 
+                if (!priceRows.Any(pr => pr.HasChanged))
                 {
                     return orderAgreement;
                 }
-                var peppolPayload = CreateOrderResponse(request, priceRows);
+                peppolPayload = CreateOrderResponse(request, priceRows);
                 peppolPayload.ReplacingPayload = orderAgreement;
                 _tolkDbContext.Add(peppolPayload);
-                orderAgreement.ReplacedByPayload = peppolPayload;
-                await _tolkDbContext.SaveChangesAsync();
-                return peppolPayload;
+                orderAgreement.ReplacedByPayload = peppolPayload;                                
             }
             else
             {
                 // else create new OR and update old ones replacedById                     
-                var latestOrderResponse = request.PeppolPayloads
+                var latestOrderResponse = request.Order.PeppolPayloads
                     .Where(pp => pp.PeppolMessageType == PeppolMessageType.OrderResponse && pp.ReplacedById == null)
                     .SingleOrDefault();
                 var priceRows = await GetPriceRowComparisonResult(request, latestOrderResponse);
@@ -121,13 +118,16 @@ namespace Tolk.BusinessLogic.Services
                 {
                     return latestOrderResponse;
                 }
-                var peppolPayload = CreateOrderResponse(request, priceRows);
+                peppolPayload = CreateOrderResponse(request, priceRows);
                 peppolPayload.ReplacingPayload = latestOrderResponse;
                 _tolkDbContext.Add(peppolPayload);
                 latestOrderResponse.ReplacedByPayload = peppolPayload;
-                await _tolkDbContext.SaveChangesAsync();                
-                return peppolPayload;
+
             }
+
+            await _tolkDbContext.SaveChangesAsync();
+            return peppolPayload;
+
         }
 
         public PeppolPayload CreateOrderResponse(Request request, List<PriceRowComparisonResult> priceRows)
@@ -255,7 +255,7 @@ namespace Tolk.BusinessLogic.Services
 
                     try
                     {
-                        await CreateAndStoreStandardDocument(requestId);              
+                        await CreateAndStoreStandardDocument(requestId);
                         _logger.LogInformation("Processing completed order agreement for {requestId}.", requestId);
                     }
                     catch (Exception ex)

@@ -270,13 +270,12 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<Request> GetRequestForPeppolMessageCreation(this IQueryable<Request> requests, int requestId)
              => await requests
                 .Include(r => r.Order).ThenInclude(o => o.CustomerOrganisation)
+                .Include(r => r.Order).ThenInclude(o => o.PeppolPayloads)
                 .Include(r => r.Ranking).ThenInclude(o => o.Broker)
                 .Include(r => r.Ranking).ThenInclude(o => o.FrameworkAgreement)
                 .Include(r => r.Requisitions).ThenInclude(r => r.CreatedByUser)
-                .Include(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)    
-                .Include(r => r.PeppolPayloads)
+                .Include(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)                                          
                 .SingleOrDefaultAsync(o => o.RequestId == requestId);
-
         #endregion
 
         #region lists connected to order

@@ -173,6 +173,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<OrderCompetenceRequirement> CompetenceRequirements { get; set; }
 
         public List<OrderInterpreterLocation> InterpreterLocations { get; set; }
+        public List<PeppolPayload> PeppolPayloads { get; set; }
 
         public List<OrderPriceRow> PriceRows { get; set; }
 
