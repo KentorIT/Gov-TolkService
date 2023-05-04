@@ -1,10 +1,8 @@
-﻿using AutoMapper;
-using DataTables.AspNet.AspNetCore;
+﻿using DataTables.AspNet.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -182,25 +180,13 @@ namespace Tolk.Web
                 SupportedCultures = cultureArray,
                 SupportedUICultures = cultureArray
             });
-            app.UseRewriter(new RewriteOptions
-            {
-                Rules =
-                {
-                    new RedirectHostRule
-                    {
-                        InternalHost = Configuration["InternalHost"],
-                        PublicOriginPath = Configuration["PublicOrigin"],
-                    }
-                }
-            });
+            app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapDefaultControllerRoute();
             });
         }
     }

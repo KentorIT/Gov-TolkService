@@ -71,9 +71,9 @@
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.97.0" />
-    <PackageReference Include="Mailkit" Version="3.6.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.14" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.14" />
+    <PackageReference Include="Mailkit" Version="4.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.16" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.16" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SSH.NET" Version="2020.0.2" />
   </ItemGroup>
