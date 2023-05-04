@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
 
@@ -7,7 +6,7 @@ namespace Tolk.Web.Attributes
 {
     public class CustomerSpecificValidationAttribute : ValidationAttribute
     {
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {                        
             var property = (CustomerSpecificPropertyModel) value;
             if (property == null || (!property.Required && string.IsNullOrEmpty(property.Value)))
