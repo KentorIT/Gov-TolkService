@@ -75,45 +75,7 @@ namespace Tolk.Web.Controllers
             }
             return Forbid();
         }
-
-        [Authorize(Roles = Roles.ApplicationAdministrator)]
-        public async Task<IActionResult> CreateFromOrderNumber(string orderNumber)
-        {
-            var order = await _dbContext.Orders.GetOrderByOrderNumber(orderNumber);
-            if (order != null)
-            {
-                return await Create(order.OrderId);
-            }
-            return Forbid();
-        }
-
-        [HttpGet]
-        [Authorize(Roles = Roles.ApplicationAdministrator)]
-        public async Task<IActionResult> Create(int orderId)
-        {
-            var request = await _dbContext.Requests.GetRequestForOrderAgreementCreation(orderId);
-            if (!_cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderAgreements)))
-            {
-                return Forbid();
-            }
-            
-            if (request != null &&
-                (await _authorizationService.AuthorizeAsync(User, request, Policies.CreateOrderAgreement)).Succeeded &&
-                request.AllowOrderAgreementCreation())
-            {                                                                
-                    var payload = await _standardBusinessDocumentService.CreateAndStoreStandardDocument(request.RequestId);
-                    await _dbContext.SaveChangesAsync();
-
-                    //return a identifier for the saved agreement, to be able to retrieve it.
-                    return RedirectToAction(nameof(View), new { id = payload.PeppolPayloadId });                
-            }
-            else
-            {
-                //Handle non-allow
-            }
-            return Forbid();
-        }
-
+     
         [HttpGet]
         public async Task<ActionResult> GetPayload(int id)
         {

@@ -9,16 +9,7 @@
     <h1>@ViewData["Title"] @HelpLinkService.HeaderAnchor()</h1>
     <div class="row filter-panel">
         @await Html.PartialAsync("_Filter", Model.FilterModel)
-    </div>
-    @if (Model.IsApplicationAdmin)
-    {
-        <div class="row">
-            <div class="col-md-12">
-                <form-entry asp-for="OrderNumber" />
-                <a class="btn btn-default btn-large pull-right add-standard-business-document">Skapa order agreement</a>
-            </div>
-        </div>
-    }
+    </div>   
     <div class="row">
         <div class="col-md-12">
             <div class="table-responsive ajax-listing table-datatable">
