@@ -684,7 +684,7 @@ namespace Tolk.Web.TagHelpers
             string hourClass = hour ? "hour" : string.Empty;
             writer.WriteLine($"<div class=\"input-group time timesplit {hourClass}\">");
             var errorMessage = hour ? $"{(useAsClock ? "Timme" : "Timmar")} måste anges" : $" {(useAsClock ? "Minut" : "Minuter" )} måste anges";
-            WriteSelect(GetSplitTimeValues(hour, useAsClock), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", errorMessage, isRequired);
+            WriteSelect(GetSplitTimeValues(hour, useAsClock), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", errorMessage, isRequired, true);
             writer.WriteLine("</div>");
         }
 
@@ -920,7 +920,7 @@ namespace Tolk.Web.TagHelpers
             WriteSelect(Items, writer, For.Name, For.ModelExplorer);
         }
 
-        private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --", string requiredMessage = null, bool isRequired = true)
+        private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --", string requiredMessage = null, bool isRequired = true, bool isPartialFromModelProperty = false)
         {
             if (selectList.FirstOrDefault() is ExtendedSelectListItem)
             {
@@ -964,7 +964,7 @@ namespace Tolk.Web.TagHelpers
                 var reqiredIfAttribute = (RequiredIfAttribute)AttributeHelper.GetAttribute<RequiredIfAttribute>(
                     For.ModelExplorer.Metadata.ContainerType,
                     For.ModelExplorer.Metadata.PropertyName);
-                if (reqiredIfAttribute != null)
+                if (reqiredIfAttribute != null && isPartialFromModelProperty)
                 {
                     tagBuilder.Attributes.Remove("data-val-required");
                     tagBuilder.Attributes.Add("data-val-requiredif", requiredMessage);
