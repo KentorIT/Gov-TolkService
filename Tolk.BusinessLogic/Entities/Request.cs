@@ -389,43 +389,38 @@ namespace Tolk.BusinessLogic.Entities
             List<OrderRequirementRequestAnswer> requirementAnswers,
             List<RequestAttachment> attachedFiles,
             PriceInformation priceInformation,
-            string brokerReferenceNumber, 
-            DateTimeOffset? respondedStartAt = null
+            string brokerReferenceNumber
             )
         {
-            if (priceInformation == null)
+            SetAcceptState(acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, priceInformation, brokerReferenceNumber);
+        }
+
+        public void AcceptFlexible(
+            DateTimeOffset acceptTime,
+            int userId,
+            int? impersonatorId,
+            InterpreterLocation interpreterLocation,
+            CompetenceAndSpecialistLevel? competenceLevel,
+            List<OrderRequirementRequestAnswer> requirementAnswers,
+            List<RequestAttachment> attachedFiles,
+            PriceInformation priceInformation,
+            string brokerReferenceNumber,
+            Request oldRequest,
+            DateTimeOffset respondedStartAt
+            )
+        {
+            if (oldRequest == null)
             {
-                throw new ArgumentNullException($"Det gick inte att bekräfta förfrågan med boknings-id {Order.OrderNumber} prisrader saknas");
-            }
-            if (!IsToBeProcessedByBroker)
-            {
-                throw new InvalidOperationException($"Det gick inte att bekräfta förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
-            }
-            if (!IsAnswerLevelAccept)
-            {
-                throw new InvalidOperationException($"Det gick inte att bekräfta på förfrågan med boknings-id {Order.OrderNumber}, den kräver fullt svar direkt");
-            }
-            if (Order.ReplacingOrderId.HasValue)
-            {
-                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
+                throw new ArgumentNullException($"Det gick inte att färdigställa tidigare bekräftad förfrågan med boknings-id {Order.OrderNumber}, hittar ingen koppling till bekräftelsen");
             }
             ValidateRespondedStartAtAgainstOrder(respondedStartAt);
-            ValidateRequirementsAgainstOrder(requirementAnswers);
-            ValidateCompetenceLevelAgainstOrder(competenceLevel);
-            ValidateInterpreterLocationAgainstOrder(interpreterLocation);
-            AcceptedAt = acceptTime;
-            AcceptedBy = userId;
-            InterpreterLocation = (int?)interpreterLocation;
-            ImpersonatingAcceptedBy = impersonatorId;
-            CompetenceLevel = (int?)competenceLevel;
-            RequirementAnswers = requirementAnswers;
-            Attachments = attachedFiles;
-            PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
-            BrokerReferenceNumber = brokerReferenceNumber;
             RespondedStartAt = respondedStartAt;
+            ReceivedBy = oldRequest.ReceivedBy;
+            RecievedAt = oldRequest.RecievedAt;
+            ImpersonatingReceivedBy = oldRequest.ImpersonatingReceivedBy;
+            ReplacingRequestId = oldRequest.RequestId;
 
-            Status = RequestStatus.AcceptedAwaitingInterpreter;
-            Order.Status = OrderStatus.RequestAcceptedAwaitingInterpreter;
+            SetAcceptState(acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, priceInformation, brokerReferenceNumber);
         }
 
         public void ConfirmDenial(DateTimeOffset confirmedAt, int userId, int? impersonatorId)
@@ -828,6 +823,40 @@ namespace Tolk.BusinessLogic.Entities
         #endregion
 
         #region private methods
+        private void SetAcceptState(DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel? competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, PriceInformation priceInformation, string brokerReferenceNumber)
+        {
+            if (priceInformation == null)
+            {
+                throw new ArgumentNullException($"Det gick inte att bekräfta förfrågan med boknings-id {Order.OrderNumber} prisrader saknas");
+            }
+            if (!IsToBeProcessedByBroker)
+            {
+                throw new InvalidOperationException($"Det gick inte att bekräfta förfrågan med boknings-id {Order.OrderNumber}, den har redan blivit besvarad");
+            }
+            if (!IsAnswerLevelAccept)
+            {
+                throw new InvalidOperationException($"Det gick inte att bekräfta på förfrågan med boknings-id {Order.OrderNumber}, den kräver fullt svar direkt");
+            }
+            if (Order.ReplacingOrderId.HasValue)
+            {
+                throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är ett ersättninguppdrag och skulle bli besvarat på annat sätt.");
+            }
+            ValidateRequirementsAgainstOrder(requirementAnswers);
+            ValidateCompetenceLevelAgainstOrder(competenceLevel);
+            ValidateInterpreterLocationAgainstOrder(interpreterLocation);
+            AcceptedAt = acceptTime;
+            AcceptedBy = userId;
+            InterpreterLocation = (int?)interpreterLocation;
+            ImpersonatingAcceptedBy = impersonatorId;
+            CompetenceLevel = (int?)competenceLevel;
+            RequirementAnswers = requirementAnswers;
+            Attachments = attachedFiles;
+            PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
+            BrokerReferenceNumber = brokerReferenceNumber;
+
+            Status = RequestStatus.AcceptedAwaitingInterpreter;
+            Order.Status = OrderStatus.RequestAcceptedAwaitingInterpreter;
+        }
 
         private void ValidateLatestAnswerTimeAndTravelCost(InterpreterLocation interpreterLocation, PriceInformation priceInformation, DateTimeOffset? latestAnswerTimeForCustomer, DateTimeOffset now)
         {

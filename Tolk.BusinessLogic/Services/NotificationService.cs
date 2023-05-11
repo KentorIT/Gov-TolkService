@@ -1418,6 +1418,41 @@ Sammanställning:
                 webhook.RecipientUserId);
             }
         }
+        
+        public void ExpiresAtChanged(Request request)
+        {
+            NullCheckHelper.ArgumentCheckNull(request, nameof(ExpiresAtChanged), nameof(NotificationService));
+            string orderNumber = request.Order.OrderNumber;
+            var frameworkAgreementNumber = request.Ranking.FrameworkAgreement.AgreementNumber;
+
+            var body = $"Sista tid för att tillsätta tolk på tolkuppdrag med flexibel starttid, boknings-ID {orderNumber} {RequestReferenceNumberInfo(request)} har ändrats. Sista svarstid beräknas från den förväntade starttiden tillhandahållen i er bekräftelse. För att komma till bokningen följ länken nedan:";
+            var email = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.ExpiresAtChanged, NotificationChannel.Email);
+            if (email != null)
+            {
+                CreateEmail(
+                    email.ContactInformation,
+                    $"Sista tid att tillsätta tolk har ändrats för {orderNumber}",
+                    body + GoToRequestPlain(request.RequestId),
+                    body + GoToRequestButton(request.RequestId),
+                    NotificationType.ExpiresAtChanged,
+                    frameworkAgreementNumber,
+                    true
+                );
+            }
+            var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.ExpiresAtChanged, NotificationChannel.Webhook);
+            if (webhook != null)
+            {
+                CreateWebHookCall(
+                new RequestExpiresAtChangedModel
+                {
+                    OrderNumber = orderNumber,
+                    ExpiresAt = request.ExpiresAt.Value
+                },
+                webhook.ContactInformation,
+                NotificationType.ExpiresAtChanged,
+                webhook.RecipientUserId);
+            }
+        }
 
         public void RequestCancelledByBroker(Request request)
         {

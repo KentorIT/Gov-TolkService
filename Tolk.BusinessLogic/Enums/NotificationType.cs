@@ -455,5 +455,12 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         FlexibleRequestCreated = 66,
+
+        [Description("Sista svarstid ändrad")]
+        [CustomName("expires_at_for_request_changed")]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [AvailableNotificationChannel(NotificationChannel.Webhook)]
+        [NotificationConsumerType(NotificationConsumerType.Broker)]
+        ExpiresAtChanged = 67,
     }
 }

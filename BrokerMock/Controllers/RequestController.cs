@@ -762,6 +762,17 @@ namespace BrokerMock.Controllers
             return new JsonResult("Success");
         }
 
+        [HttpPost]
+        public async Task<JsonResult> ExpiresAtChanged([FromBody] RequestExpiresAtChangedModel payload)
+        {
+            if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
+            {
+                await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Boknings-ID: {payload.OrderNumber} har fått en ny sista svarstid: {payload.ExpiresAt.ToSwedishString("yyyy-MM-dd HH:mm")}");
+            }
+            return new JsonResult("Success");
+        }
+
+
         #endregion
 
         #region private methods

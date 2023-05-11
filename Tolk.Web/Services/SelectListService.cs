@@ -99,6 +99,8 @@ namespace Tolk.Web.Services
                 .Where(e => e.Value != RequestStatus.AwaitingDeadlineFromCustomer &&
                     e.Value != RequestStatus.NoDeadlineFromCustomer &&
                     e.Value != RequestStatus.InterpreterReplaced &&
+                    e.Value != RequestStatus.ReplacedAtAnswerAfterAccept &&
+                    e.Value != RequestStatus.ReplacedAfterAcceptOfFlexible &&
                     e.Value != RequestStatus.PartiallyAccepted &&
                     e.Value != RequestStatus.PartiallyApproved)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })

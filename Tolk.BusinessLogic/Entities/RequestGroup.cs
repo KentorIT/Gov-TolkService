@@ -100,9 +100,9 @@ namespace Tolk.BusinessLogic.Entities
                 {
                     throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {nameof(RequestStatus.AcceptedNewInterpreterAppointed)}");
                 }
-                if (value == RequestStatus.InterpreterReplaced)
+                if (EnumHelper.Parent<RequestStatus, NegotiationState>(value) == NegotiationState.ReplacedByOtherEntity)
                 {
-                    throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {nameof(RequestStatus.InterpreterReplaced)}");
+                    throw new InvalidOperationException($"A {nameof(RequestGroup)} cannot be set to {Enum.GetName(value)}");
                 }
                 base.Status = value;
             }

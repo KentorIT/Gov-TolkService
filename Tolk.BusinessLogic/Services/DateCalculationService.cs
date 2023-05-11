@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.Linq;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Helpers;
 
 namespace Tolk.BusinessLogic.Services
 {
@@ -58,6 +60,21 @@ namespace Tolk.BusinessLogic.Services
             return fullWeeks * 5 + rest;
         }
 
+        public DateTimeOffset GetExpiryAtForType(DateTimeOffset occasionStartOffset, RequestAnswerRuleType answerRuleType)
+        {
+            int numberOfDays = 0;
+            switch (answerRuleType) {
+                case RequestAnswerRuleType.RequestCreatedMoreThanTenDaysBefore:
+                    numberOfDays = 5;
+                    break;
+                case RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore:
+                    numberOfDays = 7;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
+            return GetDateForANumberOfWorkdaysAgo(occasionStartOffset.DateTime, numberOfDays);
+        }
         public DateTime GetDateForANumberOfWorkdaysAgo(DateTime start, int numberOfWorkdays)
         {
             int counter = 0;
@@ -215,6 +232,13 @@ namespace Tolk.BusinessLogic.Services
                 break;
             }
             return date;
+        }
+
+        public DateTimeOffset GetClosestWorkingDayStartAtTime(DateTimeOffset start)
+        {
+            return IsWorkingDay(start.Date) ?
+                start :
+                GetLastWorkDay(start.Date).AddDays(1).Date.ToDateTimeOffsetSweden();
         }
     }
 }

@@ -111,7 +111,7 @@ namespace Tolk.Web.Models
         public string DisplayMealBreakIncluded { get; set; }
 
         //THINGS IN NEED OF VALIDATION!!!!!!!
-        public bool RequestIsAnswered => Status != RequestStatus.InterpreterReplaced && Status != RequestStatus.Created && Status != RequestStatus.Received && Status != RequestStatus.AcceptedAwaitingInterpreter && RequestId > 0;
+        public bool RequestIsAnswered => Status != RequestStatus.InterpreterReplaced && Status != RequestStatus.Created && Status != RequestStatus.Received && Status != RequestStatus.AcceptedAwaitingInterpreter && Status != RequestStatus.ReplacedAfterAcceptOfFlexible && Status != RequestStatus.ReplacedAtAnswerAfterAccept && RequestId > 0;
         public bool RequestIsDeclinedByBroker => Status == RequestStatus.DeclinedByBroker || Status == RequestStatus.DeniedByTimeLimit;
         public bool AnswerReplacedRequest => Status == RequestStatus.Received && IsReplacingOrderRequest;
 

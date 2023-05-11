@@ -99,5 +99,9 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Förfrågan besvarad efter en tidigare bekräftelse")]
         [Parent(NegotiationState.ReplacedByOtherEntity)]
         ReplacedAtAnswerAfterAccept = 24,
+        [CustomName("not_used", false)]
+        [Description("Förfrågan med flexibel startid bekräftad, ny sista svarstid meddelad")]
+        [Parent(NegotiationState.ReplacedByOtherEntity)]
+        ReplacedAfterAcceptOfFlexible = 25,
     }
 }
