@@ -508,6 +508,20 @@ namespace Tolk.Web.Services
                     ActorContactInfo = GetContactinfo(request.AcceptingUser),
                 });
             }
+            if (request.ReplacingRequestId.HasValue && request.ReplacingRequest.Status == RequestStatus.ReplacedAfterAcceptOfFlexible)
+            {
+                if (request.ExpiresAt != request.ReplacingRequest.ExpiresAt)
+                {
+                    eventLog.Add(new EventLogEntryModel
+                    {
+                        Weight = 200,
+                        Timestamp = request.AcceptedAt.Value,
+                        EventDetails = $"Sista svarstid ändrad på grund av flexibel starttid",
+                        Actor = "Systemet"
+                    });
+                }
+            }
+
             // Request answer processed by customer organization or system
             if (request.AnswerProcessedAt.HasValue)
             {

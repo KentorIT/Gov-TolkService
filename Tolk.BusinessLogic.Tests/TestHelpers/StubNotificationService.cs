@@ -125,8 +125,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public void RequestAccepted(Request request) { }
 
-        public void RequestGroupAccepted(RequestGroup requestGroup)
-        {            
-        }
+        public void RequestGroupAccepted(RequestGroup requestGroup) { }
+        public void ExpiresAtChanged(Request request) { }
     }
 }

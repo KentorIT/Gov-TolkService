@@ -69,7 +69,7 @@ AS
 		AND((@onlyDelivered = 0
 		AND CONVERT(DATE, r.CreatedAt) >= @dateFrom
 		AND CONVERT(DATE, r.CreatedAt) <= @dateTo
-		AND r.Status NOT IN(13, 17, 18))--ordered
+		AND r.Status NOT IN(13, 17, 18, 24, 25))--ordered
 		OR(@onlyDelivered = 1
 		AND o.Status IN(4, 5, 7)
 		AND r.Status IN(5, 6)
@@ -93,8 +93,8 @@ AS
 		(16, 'Tillsättning ej besvarad'),
 		(19, 'Förlorad på grund av karantän'),
 		(22, 'Förfrågan avbruten p.g.a. utgånget ramavtal'),
-		(23, 'Förfrågan bekräftad av förmedling, inväntar tolktillsättning'),
-		(24, 'Förfrågan besvarad efter en tidigare bekräftelse')
+		(23, 'Förfrågan bekräftad av förmedling, inväntar tolktillsättning')
+
 	UPDATE #reportOrderRequests
 	SET il1 = il.ilName
 	FROM OrderInterpreterLocation oil

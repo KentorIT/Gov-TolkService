@@ -59,7 +59,9 @@ namespace Tolk.BusinessLogic.Utilities
             return requests.Where(r => r.Ranking.BrokerId == brokerId &&
                     r.Status != RequestStatus.AwaitingDeadlineFromCustomer &&
                     r.Status != RequestStatus.NoDeadlineFromCustomer &&
-                    r.Status != RequestStatus.InterpreterReplaced);
+                    r.Status != RequestStatus.InterpreterReplaced &&
+                    r.Status != RequestStatus.ReplacedAtAnswerAfterAccept &&
+                    r.Status != RequestStatus.ReplacedAfterAcceptOfFlexible);
         }
 
         public static FrameworkAgreement GetFrameworkAgreementByDate(this IQueryable<FrameworkAgreement> agreements, DateTime today)
@@ -87,7 +89,7 @@ namespace Tolk.BusinessLogic.Utilities
                         (r.LastAcceptAt <= now &&
                             (r.Status == RequestStatus.Created || r.Status == RequestStatus.Received)
                         ) ||
-                        ((r.RespondedStartAt ?? r.Order.StartAt) <= now && 
+                        ((r.RespondedStartAt ?? r.Order.StartAt) <= now &&
                             r.Status == RequestStatus.AwaitingDeadlineFromCustomer
                         ) ||
                         (r.LatestAnswerTimeForCustomer.HasValue && r.LatestAnswerTimeForCustomer <= now &&
@@ -175,7 +177,7 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return requests.Where(r => (r.RequestGroupId == null || (r.RequestGroupId.HasValue && r.RequestGroup.Status == RequestStatus.Approved)) &&
                     (r.Order.Status == OrderStatus.RequestRespondedAwaitingApproval || r.Order.Status == OrderStatus.RequestRespondedNewInterpreter) &&
-                    (r.RespondedStartAt ?? r.Order.StartAt) <= now && 
+                    (r.RespondedStartAt ?? r.Order.StartAt) <= now &&
                     (r.Status == RequestStatus.AnsweredAwaitingApproval || r.Status == RequestStatus.AcceptedNewInterpreterAppointed));
         }
 
@@ -240,7 +242,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Order)
                 .Include(r => r.Ranking).ThenInclude(ra => ra.FrameworkAgreement)
                 .SingleAsync(r => r.RequestId == id);
-        }       
+        }
 
         public static IQueryable<Request> GetRequestsForOrderAgreementCreation(this IQueryable<Request> requests, int customerOrganisationId, DateTime validUseFrom)
             => requests.Where(r =>
@@ -274,7 +276,7 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(r => r.Ranking).ThenInclude(o => o.Broker)
                 .Include(r => r.Ranking).ThenInclude(o => o.FrameworkAgreement)
                 .Include(r => r.Requisitions).ThenInclude(r => r.CreatedByUser)
-                .Include(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)                                          
+                .Include(r => r.Requisitions).ThenInclude(r => r.ProcessedUser)
                 .SingleOrDefaultAsync(o => o.RequestId == requestId);
         #endregion
 
@@ -412,7 +414,7 @@ namespace Tolk.BusinessLogic.Utilities
             => requisitions
                 .Include(r => r.CreatedByUser)
                 .Include(r => r.ProcessedUser)
-                .Where(r => r.RequestId == id);   
+                .Where(r => r.RequestId == id);
 
         public static IQueryable<Requisition> GetRequisitionsForOrder(this IQueryable<Requisition> requisitions, int id, int? brokerId = null)
         {
@@ -797,15 +799,8 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<Request> GetActiveRequestByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
                     => await requests.GetActiveRequestsWithBaseIncludes()
-                        .SingleOrDefaultAsync(r =>
-                                            r.OrderId == orderId &&
-                                            r.Status != RequestStatus.InterpreterReplaced &&
-                                            r.Status != RequestStatus.DeniedByTimeLimit &&
-                                            r.Status != RequestStatus.DeniedByCreator &&
-                                            r.Status != RequestStatus.DeclinedByBroker &&
-                                            r.Status != RequestStatus.LostDueToQuarantine &&
-                                            r.Status != RequestStatus.ReplacedAtAnswerAfterAccept &&
-                                            (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
+                        .SingleOrDefaultAsync(r => r.OrderId == orderId &&
+                            (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
 
         public static async Task<FrameworkAgreement> GetFrameworkByOrderId(this IQueryable<Request> requests, int orderId)
             => await requests
@@ -816,15 +811,8 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<Request> GetActiveRequestIncludeProcessingUserByOrderId(this IQueryable<Request> requests, int orderId, bool includeNotAnsweredByCreator = true)
             => await requests.GetActiveRequestsWithBaseIncludes()
                 .Include(r => r.ProcessingUser)
-                .SingleOrDefaultAsync(r =>
-                                    r.OrderId == orderId &&
-                                    r.Status != RequestStatus.InterpreterReplaced &&
-                                    r.Status != RequestStatus.DeniedByTimeLimit &&
-                                    r.Status != RequestStatus.DeniedByCreator &&
-                                    r.Status != RequestStatus.DeclinedByBroker &&
-                                    r.Status != RequestStatus.LostDueToQuarantine &&
-                                    (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
-
+                .SingleOrDefaultAsync(r => r.OrderId == orderId &&
+                    (includeNotAnsweredByCreator || r.Status != RequestStatus.ResponseNotAnsweredByCreator));
         public static async Task<RequestGroup> GetLastRequestGroupForOrderGroup(this IQueryable<RequestGroup> requestGroups, int orderGroupId)
         {
             return await requestGroups.GetRequestGroupsWithUsers().OrderBy(r => r.RequestGroupId).LastAsync(r => r.OrderGroupId == orderGroupId);
@@ -927,7 +915,7 @@ namespace Tolk.BusinessLogic.Utilities
         public static async Task<CustomerOrganisation> GetParentOrganisationsByDomain(this IQueryable<CustomerOrganisation> customerOrganisations, string domain)
             => await customerOrganisations.SingleOrDefaultAsync(c => c.EmailDomain == domain && c.ParentCustomerOrganisationId == null);
 
-        public static async  Task<PeppolPayload> GetById(this IQueryable<PeppolPayload> payloads, int id)
+        public static async Task<PeppolPayload> GetById(this IQueryable<PeppolPayload> payloads, int id)
            => await payloads
                 .Include(p => p.Request).ThenInclude(r => r.Order)
                 .Include(p => p.CreatedByUser)
@@ -1033,7 +1021,15 @@ namespace Tolk.BusinessLogic.Utilities
                .Include(r => r.AcceptingUser)
                .Include(r => r.Interpreter)
                .Include(r => r.Ranking).ThenInclude(r => r.Broker)
-               .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement);
+               .Include(r => r.Ranking).ThenInclude(r => r.FrameworkAgreement)
+            .Where(r => r.Status != RequestStatus.InterpreterReplaced &&
+                        r.Status != RequestStatus.DeniedByTimeLimit &&
+                        r.Status != RequestStatus.DeniedByCreator &&
+                        r.Status != RequestStatus.DeclinedByBroker &&
+                        r.Status != RequestStatus.LostDueToQuarantine &&
+                        r.Status != RequestStatus.ReplacedAtAnswerAfterAccept &&
+                        r.Status != RequestStatus.ReplacedAfterAcceptOfFlexible
+            );
 
         private static IQueryable<RequestGroup> GetRequestGroupsWithBaseIncludes(this IQueryable<RequestGroup> requestGroups)
             => requestGroups
@@ -1249,22 +1245,22 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<Request> GetRequestOrdersForBrokerReport(this IQueryable<Request> requests, DateTime start, DateTime end, int brokerId)
             => requests
                 .Where(r => r.Ranking.BrokerId == brokerId && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
-                && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced));
+                && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced || r.Status == RequestStatus.ReplacedAtAnswerAfterAccept || r.Status == RequestStatus.ReplacedAfterAcceptOfFlexible));
 
         public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForBrokerReport(this IQueryable<OrderRequirementRequestAnswer> orderRequirementAnswers, DateTime start, DateTime end, int brokerId)
            => orderRequirementAnswers.Where(x =>
                 x.Request.Ranking.BrokerId == brokerId && x.Request.CreatedAt.Date >= start.Date && x.Request.CreatedAt.Date <= end.Date
-                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced));
+                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced || x.Request.Status == RequestStatus.ReplacedAtAnswerAfterAccept || x.Request.Status == RequestStatus.ReplacedAfterAcceptOfFlexible));
 
         public static IQueryable<Requisition> GetRequisitionsForBrokerReport(this IQueryable<Requisition> requisitions, DateTime start, DateTime end, int brokerId)
            => requisitions.Where(x =>
                 x.Request.Ranking.BrokerId == brokerId && x.Request.CreatedAt.Date >= start.Date && x.Request.CreatedAt.Date <= end.Date
-                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced));
+                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced || x.Request.Status == RequestStatus.ReplacedAtAnswerAfterAccept || x.Request.Status == RequestStatus.ReplacedAfterAcceptOfFlexible));
 
         public static IQueryable<Complaint> GetComplaintsForBrokerReport(this IQueryable<Complaint> complaints, DateTime start, DateTime end, int brokerId)
            => complaints.Where(x =>
                 x.Request.Ranking.BrokerId == brokerId && x.Request.CreatedAt.Date >= start.Date && x.Request.CreatedAt.Date <= end.Date
-                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced));
+                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced || x.Request.Status == RequestStatus.ReplacedAtAnswerAfterAccept || x.Request.Status == RequestStatus.ReplacedAfterAcceptOfFlexible));
 
         public static IQueryable<Complaint> GetComplaintsForReports(this IQueryable<Complaint> complaints, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits, int? brokerId)
            => complaints.Where(c =>
@@ -1381,7 +1377,7 @@ namespace Tolk.BusinessLogic.Utilities
         {
             return frameworkAgreement.IsActive ?
                 brokerfees.Where(bf => bf.StartDate.Date <= today && bf.EndDate >= today) :
-                brokerfees.Where(bf => bf.StartDate.Date <= today && bf.StartDate.Date <= frameworkAgreement.LastValidDate && bf.EndDate.Date >= frameworkAgreement.LastValidDate);                            
+                brokerfees.Where(bf => bf.StartDate.Date <= today && bf.StartDate.Date <= frameworkAgreement.LastValidDate && bf.EndDate.Date >= frameworkAgreement.LastValidDate);
         }
 
         public static IEnumerable<BrokerFeeByRegionAndServiceType> CurrentOrLastActiveDistanceBrokerFeesForAgreement(this IEnumerable<BrokerFeeByRegionAndServiceType> brokerfees, CurrentOrLatestFrameworkAgreement frameworkAgreement, DateTime today)
@@ -1389,7 +1385,7 @@ namespace Tolk.BusinessLogic.Utilities
             var brokerFeeQuery = brokerfees.Where(bf => bf.InterpreterLocation == InterpreterLocation.OffSiteVideo || bf.InterpreterLocation == InterpreterLocation.OffSitePhone).AsQueryable();
             return frameworkAgreement.IsActive ?
                 brokerFeeQuery.Where(bf => bf.StartDate.Date <= today && bf.EndDate.Date >= today) :
-                brokerFeeQuery.Where(bf => bf.StartDate.Date <= today && bf.StartDate.Date <= frameworkAgreement.LastValidDate && bf.EndDate >= frameworkAgreement.LastValidDate);                
+                brokerFeeQuery.Where(bf => bf.StartDate.Date <= today && bf.StartDate.Date <= frameworkAgreement.LastValidDate && bf.EndDate >= frameworkAgreement.LastValidDate);
         }
         public static IEnumerable<BrokerFeeByRegionAndServiceType> CurrentOrLastActiveOnSiteBrokerFeesForAgreement(this IEnumerable<BrokerFeeByRegionAndServiceType> brokerfees, CurrentOrLatestFrameworkAgreement frameworkAgreement, DateTime today)
         {

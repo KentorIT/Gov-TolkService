@@ -64,5 +64,6 @@ namespace Tolk.BusinessLogic.Services
         void RequestGroupExpiredDueToNoAnswerFromCustomer(RequestGroup expiredRequestGroup);
         Task NotifyOnFailedWebHook(int callId);
         Task NotifyOnFailedPeppolMessage(int messageId);
+        void ExpiresAtChanged(Request request);
     }
 }

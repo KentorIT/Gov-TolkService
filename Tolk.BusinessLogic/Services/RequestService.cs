@@ -16,6 +16,7 @@ namespace Tolk.BusinessLogic.Services
     public class RequestService
     {
         private readonly PriceCalculationService _priceCalculationService;
+        private readonly DateCalculationService _dateCalculationService;
         private readonly ILogger<RequestService> _logger;
         private readonly INotificationService _notificationService;
         private readonly OrderService _orderService;
@@ -27,6 +28,7 @@ namespace Tolk.BusinessLogic.Services
 
         public RequestService(
             PriceCalculationService priceCalculationService,
+            DateCalculationService dateCalculationService,
             ILogger<RequestService> logger,
             INotificationService notificationService,
             OrderService orderService,
@@ -38,6 +40,7 @@ namespace Tolk.BusinessLogic.Services
             )
         {
             _priceCalculationService = priceCalculationService;
+            _dateCalculationService = dateCalculationService;
             _logger = logger;
             _notificationService = notificationService;
             _orderService = orderService;
@@ -104,9 +107,13 @@ namespace Tolk.BusinessLogic.Services
             request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.Requirements = await _tolkDbContext.OrderRequirements.GetRequirementsForOrder(request.Order.OrderId).ToListAsync();
             request.Order.CompetenceRequirements = await _tolkDbContext.OrderCompetenceRequirements.GetOrderedCompetenceRequirementsForOrder(request.Order.OrderId).ToListAsync();
-            AcceptRequest(request, acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, brokerReferenceNumber, respondedStartAt);
+            var resultingRequest = AcceptRequest(request, acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, brokerReferenceNumber, respondedStartAt);
             //Create notification
-            _notificationService.RequestAccepted(request);
+            _notificationService.RequestAccepted(resultingRequest);
+            if (resultingRequest.Order.ExpectedLength.HasValue && request.ExpiresAt != resultingRequest.ExpiresAt)
+            {
+                _notificationService.ExpiresAtChanged(resultingRequest);
+            }
         }
 
         public async Task AnswerGroup(
@@ -228,7 +235,7 @@ namespace Tolk.BusinessLogic.Services
                 //2. Set the request group and order group in correct state
                 if (resultingGroup.RequiresApproval(hasTravelCosts))
                 {
-                    _notificationService.RequestGroupAnsweredAwaitingApproval(resultingGroup);                    
+                    _notificationService.RequestGroupAnsweredAwaitingApproval(resultingGroup);
                 }
                 else
                 {
@@ -271,14 +278,14 @@ namespace Tolk.BusinessLogic.Services
                     //extraAccept can be null if no requirements/competence level are set when accepting
                     //if (extraAccept.Accepted)
                     //{
-                        AcceptRequestGroupRequest(request,
-                            acceptTime,
-                            userId,
-                            impersonatorId,
-                            interpreterLocation,
-                            extraAccept,
-                            Enumerable.Empty<RequestAttachment>().ToList()
-                       );
+                    AcceptRequestGroupRequest(request,
+                        acceptTime,
+                        userId,
+                        impersonatorId,
+                        interpreterLocation,
+                        extraAccept,
+                        Enumerable.Empty<RequestAttachment>().ToList()
+                   );
                     //}
                     //else
                     //{
@@ -792,13 +799,33 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private void AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel? competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, string brokerReferenceNumber, DateTimeOffset? respondedStartAt = null)
+        private Request AcceptRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterLocation interpreterLocation, CompetenceAndSpecialistLevel? competenceLevel, List<OrderRequirementRequestAnswer> requirementAnswers, List<RequestAttachment> attachedFiles, string brokerReferenceNumber, DateTimeOffset? respondedStartAt = null)
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(AcceptRequest), nameof(RequestService));
             //Get prices
             var competenceLevelForPriceCalculation = competenceLevel ?? OrderService.SelectCompetenceLevelForPriceEstimation(request.Order.CompetenceRequirements?.Select(item => item.CompetenceLevel));
             var prices = _priceCalculationService.GetPrices(request, _clock.SwedenNow, competenceLevelForPriceCalculation, interpreterLocation, null);
-            request.Accept(acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, brokerReferenceNumber, respondedStartAt);
+            //IF THE ORDER IS FLEXIBLE, create new request with a new expiresAt
+            // Return the new (or current) request, to be able to create notification from the correct one.
+            // set the current request to a new, ReplacedByOtherEntity state.
+            // TO VERIFY: If you enter Request/View with the id of the old request, do you get the new request?
+            if (request.Order.ExpectedLength.HasValue)
+            {
+                var newExpiryAt = _dateCalculationService.GetExpiryAtForType(_dateCalculationService.GetClosestWorkingDayStartAtTime(respondedStartAt.Value), request.RequestAnswerRuleType).ClearSeconds();
+                Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = newExpiryAt, RequestAnswerRuleType = request.RequestAnswerRuleType }, acceptTime, isAReplacingRequest: true)
+                {
+                    Order = request.Order,
+                    Status = RequestStatus.AcceptedAwaitingInterpreter
+                };
+                request.Order.Requests.Add(newRequest);
+
+                newRequest.AcceptFlexible(acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, brokerReferenceNumber, request, respondedStartAt.Value);
+                request.Status = RequestStatus.ReplacedAfterAcceptOfFlexible;
+                return newRequest;
+            }
+
+            request.Accept(acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, brokerReferenceNumber);
+            return request;
         }
 
         private Request AnswerRequestGroupRequest(Request request, DateTimeOffset acceptTime, int userId, int? impersonatorId, InterpreterAnswerDto interpreter, InterpreterLocation interpreterLocation, List<RequestAttachment> attachedFiles, VerificationResult? verificationResult, DateTimeOffset? latestAnswerTimeForCustomer, bool overrideRequireAccept = false)
