@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
@@ -20,6 +21,7 @@ namespace Tolk.Web.Models
         public string ExternalLinksDisplay { get; set; }
         [Display(Name = "Exkluderade notifieringstyper för myndigheter")]
         public string ExcludedNotificationTypesForCustomer { get; set; }
+
         public int WorkDaysGracePeriodBeforeOrderAgreementCreation { get; set; }
         public int MonthsToApproveComplaints { get; set; }
         public bool AllowDeclineExtraInterpreterOnRequestGroups { get; set; }
@@ -44,7 +46,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Tillåtna filändelser för bifogade filer")]
         public string AllowedFileExtensions { get; set; }
 
-        [Display(Name = "Max kombinerad storlek på bifogade filer")]
+        [Display(Name = "Max kombinerad storlek på bifogade filer (bytes)")]
         public long CombinedMaxSizeAttachments { get; set; }
 
         [Display(Name = "Använd Stored Procedures för ladding av rapporter")]
@@ -89,7 +91,7 @@ namespace Tolk.Web.Models
                 SupportDisplay = options.Support.Description,
                 SmtpDisplay = options.Smtp.Description, 
                 StatusCheckerDisplay = options.StatusChecker.Description,
-                ExcludedNotificationTypesForCustomer = options.ExcludedNotificationTypesForCustomer,
+                ExcludedNotificationTypesForCustomer = string.Join("\n", EnumHelper.GetAllDescriptions(options.ExcludedNotificationTypesForCustomerAsEnums).Select(n => n.Description).ToArray()),
                 ExternalLinksDisplay = options.ExternalLinks.Description,
                 EnableCustomerApi = options.EnableCustomerApi,
                 EnableSetLatestAnswerTimeForCustomer = options.EnableSetLatestAnswerTimeForCustomer,

@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Helpers
@@ -30,6 +33,8 @@ namespace Tolk.BusinessLogic.Helpers
         public FlexibleOrderSettings FlexibleOrder { get; set; }
 
         public TolkConnectionStrings ConnectionStrings { get; set; }
+
+        public IEnumerable<NotificationType> ExcludedNotificationTypesForCustomerAsEnums => ExcludedNotificationTypesForCustomer.Split(",").Select(i => (NotificationType)int.Parse(i));
 
         public void Validate()
         {
