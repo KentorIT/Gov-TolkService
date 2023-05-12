@@ -321,7 +321,7 @@ namespace Tolk.BusinessLogic.Services
                             request.RequestId, request.OrderId, request.Ranking.BrokerId, request.ExpiresAt);
                         if (notify)
                         {
-                            if (request.Order.ExpectedLength.HasValue)
+                            if (request.Order.IsFlexible)
                             {
                                 await _notificationService.FlexibleRequestCreated(newRequest);
                             }
@@ -598,7 +598,7 @@ namespace Tolk.BusinessLogic.Services
 
             // Log and notify
             _logger.LogInformation("Expiry {expiry} manually set on request {requestId}", expiry, request.RequestId);
-            if (request.Order.ExpectedLength.HasValue)
+            if (request.Order.IsFlexible)
             {
                 await _notificationService.FlexibleRequestCreated(request);
             }

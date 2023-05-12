@@ -897,12 +897,12 @@ namespace Tolk.BusinessLogic.Entities
         }
         private void ValidateRespondedStartAtAgainstOrder(DateTimeOffset? respondedStartAt)
         {
-            if (Order.ExpectedLength.HasValue && !respondedStartAt.HasValue)
+            if (Order.IsFlexible && !respondedStartAt.HasValue)
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är en bokning med flexibel start, vilket kräver att svaret innehåller en angiven starttid.");
             }
 
-            if (!Order.ExpectedLength.HasValue && respondedStartAt.HasValue)
+            if (!Order.IsFlexible && respondedStartAt.HasValue)
             {
                 throw new InvalidOperationException($"Något gick fel, det gick inte att svara på förfrågan med boknings-id {Order.OrderNumber}. Detta är inte en bokning med flexibel start, vilket gör att man inte får tillhandahålla en starttid.");
             }

@@ -100,6 +100,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public TimeSpan? ExpectedLength { get; set; }
 
+        public bool IsFlexible => ExpectedLength.HasValue;
+
         public int? ReplacingOrderId { get; set; }
 
         [ForeignKey(nameof(ReplacingOrderId))]
@@ -401,7 +403,7 @@ namespace Tolk.BusinessLogic.Entities
         internal override bool UserIsContact(int userId) => ContactPersonId == userId;
 
         public bool IsValidRespondedStartAt(DateTimeOffset? respondedStartAt)
-            => (respondedStartAt.HasValue == ExpectedLength.HasValue) && (!ExpectedLength.HasValue || (ExpectedLength.HasValue && StartAt <= respondedStartAt && EndAt.Subtract(ExpectedLength.Value) >= respondedStartAt));
+            => (respondedStartAt.HasValue == IsFlexible) && (!IsFlexible || (IsFlexible && StartAt <= respondedStartAt && EndAt.Subtract(ExpectedLength.Value) >= respondedStartAt));
 
         #endregion
     }

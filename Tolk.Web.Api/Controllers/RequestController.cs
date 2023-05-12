@@ -110,20 +110,8 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "CompetenceLevel was missing");
                 }
-                if (order.ExpectedLength.HasValue && !model.RespondedStartAt.HasValue)
-                {
-                    return ReturnError(ErrorCodes.FlexibleRequestNeedsRespondedStartAt);
-                }
-                //Has respondedStartAt on an order that is not flexible:
-                if (!order.ExpectedLength.HasValue && model.RespondedStartAt.HasValue)
-                {
-                    return ReturnError(ErrorCodes.NonFlexibleRequestCannotHaveRespondedStartAt);
-                }
-                //Has respondedStartAt on a request that already recieved this from previous accept:
-                if (order.ExpectedLength.HasValue && model.RespondedStartAt.HasValue && request.RespondedStartAt.HasValue)
-                {
-                    return ReturnError(ErrorCodes.RespondedStartAtAlreadySet);
-                }
+                ValidateAcceptInput(model, order);
+
                 var now = _timeService.SwedenNow;
                 if (request.Status == RequestStatus.Created)
                 {
@@ -207,29 +195,13 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.AcceptIsNotAllowedOnTheRequest);
                 }
-                if (model.Location == null)
-                {
-                    return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
-                }
 
                 if (request.Order.SpecificCompetenceLevelRequired && model.CompetenceLevel == null)
                 {
                     return ReturnError(ErrorCodes.AllRequirementsMustBeAnsweredOnAccept);
                 }
 
-                if (order.ExpectedLength.HasValue && !model.RespondedStartAt.HasValue)
-                {
-                    return ReturnError(ErrorCodes.FlexibleRequestNeedsRespondedStartAt);
-                }
-                //Has respondedStartAt on an order that is not flexible:
-                if (!order.ExpectedLength.HasValue && model.RespondedStartAt.HasValue)
-                {
-                    return ReturnError(ErrorCodes.NonFlexibleRequestCannotHaveRespondedStartAt);
-                }
-                if (!order.IsValidRespondedStartAt(model.RespondedStartAt))
-                {
-                    return ReturnError(ErrorCodes.RespondedStartAtNotValid);
-                }
+                ValidateAcceptInput(model, order);
 
                 var now = _timeService.SwedenNow;
                 await _requestService.Accept(
@@ -249,13 +221,13 @@ namespace Tolk.Web.Api.Controllers
                         //Does not handle attachments yet.
                         new List<RequestAttachment>(),
                         model.BrokerReferenceNumber,
-                        model.RespondedStartAt 
+                        model.RespondedStartAt
                     );
                 await _dbContext.SaveChangesAsync();
                 return Ok(new ResponseBase());
             }
             catch (InvalidApiCallException ex)
-            {   
+            {
                 return ReturnError(ex.ErrorCode);
             }
             catch (Exception e)
@@ -472,7 +444,7 @@ namespace Tolk.Web.Api.Controllers
                         new List<RequestAttachment>(),
                         model.ExpectedTravelCosts,
                         model.ExpectedTravelCostInfo,
-                        model.LatestAnswerTimeForCustomer, 
+                        model.LatestAnswerTimeForCustomer,
                         model.BrokerReferenceNumber);
                     await _dbContext.SaveChangesAsync();
                 }
@@ -640,7 +612,7 @@ namespace Tolk.Web.Api.Controllers
             {
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
-                _= await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
+                _ = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
 
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 Request request = await GetOrderChangedRequest(model.OrderNumber, brokerId);
@@ -705,7 +677,7 @@ namespace Tolk.Web.Api.Controllers
                 var brokerId = User.TryGetBrokerId().Value;
                 var apiUserId = User.UserId();
                 _ = await _apiOrderService.GetOrderAsync(model.OrderNumber, brokerId);
-               
+
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 Request request = await GetConfirmedRequest(model.OrderNumber, brokerId, new[] { RequestStatus.Approved });
                 await _requestService.ConfirmNoRequisition(
@@ -795,6 +767,23 @@ namespace Tolk.Web.Api.Controllers
         #endregion
 
         #region private methods
+
+        private static void ValidateAcceptInput(RequestAcceptModel model, Order order)
+        {
+            if (order.IsFlexible && !model.RespondedStartAt.HasValue)
+            {
+                throw new InvalidApiCallException(ErrorCodes.FlexibleRequestNeedsRespondedStartAt);
+            }
+            //Has respondedStartAt on an order that is not flexible:
+            if (!order.IsFlexible && model.RespondedStartAt.HasValue)
+            {
+                throw new InvalidApiCallException(ErrorCodes.NonFlexibleRequestCannotHaveRespondedStartAt);
+            }
+            if (!order.IsValidRespondedStartAt(model.RespondedStartAt))
+            {
+                throw new InvalidApiCallException(ErrorCodes.RespondedStartAtNotValid);
+            }
+        }
 
         private async Task<Request> GetConfirmedRequest(string orderNumber, int brokerId, IEnumerable<RequestStatus> expectedStatuses)
         {

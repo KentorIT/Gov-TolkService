@@ -143,7 +143,7 @@ namespace Tolk.Web.Controllers
                 model.AllowProcessing = !request.RequestGroupId.HasValue;
                 model.AllowAccept = request.AllowAccept;
                 model.FullAnswer = !request.AllowAccept;
-                model.IsFlexibleOrder = request.Order.ExpectedLength.HasValue && !request.RespondedStartAt.HasValue;
+                model.IsFlexibleOrder = request.Order.IsFlexible && !request.RespondedStartAt.HasValue;
                 model.OrderViewModel.UseAttachments = true;
                 return View(model);
             }
@@ -342,7 +342,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Answer(RequestAnswerModel model)
         {
             var request = await _dbContext.Requests.GetRequestForAcceptById(model.RequestId);
-            if (request.Order.ExpectedLength.HasValue && !request.RespondedStartAt.HasValue)
+            if (request.Order.IsFlexible && !request.RespondedStartAt.HasValue)
             {
                 var range = new FlexibleTimeRange
                 {
@@ -423,7 +423,7 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Accept(RequestAcceptModel model)
         {
             var request = await _dbContext.Requests.GetRequestForAcceptById(model.RequestId);
-            if (request.Order.ExpectedLength.HasValue)
+            if (request.Order.IsFlexible)
             {
                 var range = new FlexibleTimeRange
                 {
@@ -469,7 +469,7 @@ namespace Tolk.Web.Controllers
                             requirementAnswers,
                             model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
                             model.BrokerReferenceNumber,
-                            request.Order.ExpectedLength.HasValue ? request.Order.StartAt.Date.Add(model.RespondedStartAt.Value).ToDateTimeOffsetSweden() : null
+                            request.Order.IsFlexible ? request.Order.StartAt.Date.Add(model.RespondedStartAt.Value).ToDateTimeOffsetSweden() : null
                         );
                         await _dbContext.SaveChangesAsync();
                     }

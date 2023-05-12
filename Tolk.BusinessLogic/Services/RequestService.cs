@@ -110,7 +110,7 @@ namespace Tolk.BusinessLogic.Services
             var resultingRequest = AcceptRequest(request, acceptTime, userId, impersonatorId, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, brokerReferenceNumber, respondedStartAt);
             //Create notification
             _notificationService.RequestAccepted(resultingRequest);
-            if (resultingRequest.Order.ExpectedLength.HasValue && request.ExpiresAt != resultingRequest.ExpiresAt)
+            if (resultingRequest.Order.IsFlexible && request.ExpiresAt != resultingRequest.ExpiresAt)
             {
                 _notificationService.ExpiresAtChanged(resultingRequest);
             }
@@ -809,7 +809,7 @@ namespace Tolk.BusinessLogic.Services
             // Return the new (or current) request, to be able to create notification from the correct one.
             // set the current request to a new, ReplacedByOtherEntity state.
             // TO VERIFY: If you enter Request/View with the id of the old request, do you get the new request?
-            if (request.Order.ExpectedLength.HasValue)
+            if (request.Order.IsFlexible)
             {
                 var newExpiryAt = _dateCalculationService.GetExpiryAtForType(_dateCalculationService.GetClosestWorkingDayStartAtTime(respondedStartAt.Value), request.RequestAnswerRuleType).ClearSeconds();
                 Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = newExpiryAt, RequestAnswerRuleType = request.RequestAnswerRuleType }, acceptTime, isAReplacingRequest: true)

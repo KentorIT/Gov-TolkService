@@ -10,7 +10,7 @@ namespace Tolk.Api.Payloads.ApiPayloads
     [JsonSchemaFlatten]
     public class RequestAcceptModel : ApiPayloadBaseModel
     {
-        [Description("Id på det avrop som skall bekräftas")]
+        [Description("Id på det avrop som skall behandlas")]
         [Required]
         public string OrderNumber { get; set; }
 

@@ -287,7 +287,7 @@ namespace Tolk.Web.Models
                 CustomerPeppolId = order.CustomerOrganisation.PeppolId,
                 LanguageHasAuthorizedInterpreter = order.LanguageHasAuthorizedInterpreter,
                 CompetenceIsRequired = order.SpecificCompetenceLevelRequired,
-                TimeRange = !order.ExpectedLength.HasValue ?
+                TimeRange = !order.IsFlexible ?
                 new TimeRange
                 {
                     StartDateTime = order.StartAt,
@@ -298,7 +298,7 @@ namespace Tolk.Web.Models
                     StartDateTime = request.RespondedStartAt.Value,
                     EndDateTime = request.RespondedStartAt.Value.Add(order.ExpectedLength.Value)
                 } : null,
-                FlexibleTimeRange = order.ExpectedLength.HasValue && (!request?.RespondedStartAt.HasValue ?? false) ?
+                FlexibleTimeRange = order.IsFlexible && (!request?.RespondedStartAt.HasValue ?? false) ?
                 new FlexibleTimeRange
                 {
                     FlexibleStartDateTime = order.StartAt,
@@ -372,13 +372,13 @@ namespace Tolk.Web.Models
                 IsCreatorInterpreterUser = order.CreatorIsInterpreterUser,
                 CustomerReferenceNumber = order.CustomerReferenceNumber,
                 InvoiceReference = order.InvoiceReference,
-                TimeRange = !order.ExpectedLength.HasValue ?
+                TimeRange = !order.IsFlexible ?
                 new TimeRange
                 {
                     StartDateTime = order.StartAt,
                     EndDateTime = order.EndAt
                 } : null,
-                FlexibleTimeRange = order.ExpectedLength.HasValue ?
+                FlexibleTimeRange = order.IsFlexible ?
                 new FlexibleTimeRange
                 {
                     FlexibleStartDateTime = order.StartAt,
