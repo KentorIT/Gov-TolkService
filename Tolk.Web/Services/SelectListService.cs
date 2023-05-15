@@ -106,7 +106,7 @@ namespace Tolk.Web.Services
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
 
-        public static IEnumerable<SelectListItem> ComplaintTypesByFrameworkAgreement(FrameworkAgreementResponseRuleset ruleset) =>  GetList(EnumHelper.GetEnumsWithParent<ComplaintType, FrameworkAgreementResponseRuleset>(ruleset).ToList());
+        public static IEnumerable<SelectListItem> ComplaintTypesByFrameworkAgreement(FrameworkAgreementResponseRuleset ruleset) => GetList(EnumHelper.GetEnumsWithParent<ComplaintType, FrameworkAgreementResponseRuleset>(ruleset).ToList());
 
         public static IEnumerable<SelectListItem> RequisitionStatuses =>
                 EnumHelper.GetAllDescriptions<RequisitionStatus>()
@@ -177,7 +177,7 @@ namespace Tolk.Web.Services
                 .OrderByDescending(e => e.Value).Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
         public static IEnumerable<SelectListItem> CustomerSpecificProperties =>
-           EnumHelper.GetAllDescriptions<PropertyType>()               
+           EnumHelper.GetAllDescriptions<PropertyType>()
                .OrderByDescending(e => (int)e.Value)
                .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                .ToList().AsReadOnly();
@@ -559,17 +559,32 @@ namespace Tolk.Web.Services
 
         public static IEnumerable<SelectListItem> ActiveStatuses => GetList<ActiveStatus>().OrderBy(li => li.Text);
 
-        public static IEnumerable<SelectListItem> NotificationTypes => GetList<NotificationType>();
-
+        public static IEnumerable<SelectListItem> GetNotificationTypes(NotificationConsumerType? consumer = null, NotificationChannel? channel = null)
+        {
+            var list = Enum.GetValues(typeof(NotificationType)).OfType<NotificationType>();
+            if (channel.HasValue)
+            {
+                list = list.Where(t => EnumHelper.GetAvailableNotificationChannels(t).Contains(channel.Value));
+            }
+            if (consumer.HasValue)
+            {
+                list = list.Where(t => EnumHelper.GetAvailableNotificationConsumerTypes(t).Contains(consumer.Value));
+            }return GetList(list, true);
+        }
         public static IEnumerable<SelectListItem> WebhookStatuses => GetList<WebhookStatus>();
 
         public static IEnumerable<SelectListItem> DisplayForUserRoles => GetList<DisplayUserRole>();
 
-        private static IEnumerable<SelectListItem> GetList<T>(IEnumerable<T> filterValues = null)
+        private static IEnumerable<SelectListItem> GetList<T>(IEnumerable<T> filterValues = null, bool sort = false)
         {
-            return EnumHelper.GetAllDescriptions(filterValues)
+            var list = EnumHelper.GetAllDescriptions(filterValues)
                 .Select(e => new SelectListItem() { Text = e.Description, Value = e.Value.ToString() })
                 .ToList().AsReadOnly();
+            if (sort)
+            {
+                return list.OrderBy(l => l.Text);
+            }
+            return list;
         }
     }
 }

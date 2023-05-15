@@ -1,5 +1,6 @@
 ﻿@model WebHookFilterModel
 @inject SelectListService SelectListService
+@using Tolk.BusinessLogic.Utilities;
 @using Tolk.Web.Services
 <section aria-label="Filtrera">
     <div class="col-sm-12">
@@ -18,7 +19,7 @@
                     <form-entry asp-for="Status" type="select" asp-items="SelectListService.WebhookStatuses" class="allow-clear" />
                 </div>
                 <div class="col-sm-4">
-                    <form-entry asp-for="NotificationType" type="select" asp-items="SelectListService.NotificationTypes" class="allow-clear" />
+                    <form-entry asp-for="NotificationType" type="select" asp-items="SelectListService.GetNotificationTypes(channel: NotificationChannel.Webhook)" class="allow-clear" />
                 </div>
                 <div class="col-sm-4">
                     <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
@@ -30,7 +31,7 @@
                     <form-entry asp-for="Status" type="select" asp-items="SelectListService.WebhookStatuses" class="allow-clear" />
                 </div>
                 <div class="col-sm-6">
-                    <form-entry asp-for="NotificationType" type="select" asp-items="SelectListService.NotificationTypes" class="allow-clear" />
+                    <form-entry asp-for="NotificationType" type="select" asp-items="SelectListService.GetNotificationTypes(NotificationConsumerType.Broker, NotificationChannel.Webhook)" class="allow-clear" />
                 </div>
             }
         </div>
