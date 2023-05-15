@@ -137,7 +137,7 @@ namespace Tolk.Web.Api.Controllers
         [ProducesResponseType(403, Type = typeof(ErrorResponse))]
         [ProducesResponseType(400, Type = typeof(ValidationProblemDetails))]
         [Description("Anropas för att bekräfta att man accepterar det sammanhållna avropets krav, men utan tillsatt tolk")]
-        [OpenApiTag("Request")]
+        [OpenApiTag("RequestGroup")]
         public async Task<IActionResult> Accept([FromBody] RequestGroupAcceptModel model)
         {
             if (model == null)
