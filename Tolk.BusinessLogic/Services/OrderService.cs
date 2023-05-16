@@ -526,7 +526,7 @@ namespace Tolk.BusinessLogic.Services
             var now = _clock.SwedenNow;
 
             //check if late cancelling, if so we check for mealbreaks
-            bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now.DateTime, request.CalculatedStartAt.DateTime) < 2;
+            bool createFullCompensationRequisition = !isReplaced && _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(now, request.CalculatedStartAt) < 2;
             List<RequisitionPriceRow> priceRows = null;
             List<MealBreak> mealbreaks = null;
             if (request.Status == RequestStatus.Approved && !isReplaced)
@@ -674,13 +674,13 @@ namespace Tolk.BusinessLogic.Services
                 if (ruleset == FrameworkAgreementResponseRuleset.VersionTwo && (daysInAdvance > 20 || (daysInAdvance == 20 && closestWorkingDayCreatedTime.TimeOfDay.Ticks <= closestWorkingDayStartAtTime.TimeOfDay.Ticks)))
                 {
                     response.RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore;
-                    response.LastAcceptedAt = _dateCalculationService.GetDateForANumberOfWorkdaysinFuture(closestWorkingDayCreatedTime.DateTime, 4).ToDateTimeOffsetSweden().ClearSeconds();
+                    response.LastAcceptedAt = _dateCalculationService.GetDateForANumberOfWorkdaysinFuture(closestWorkingDayCreatedTime, 4).ToDateTimeOffsetSweden().ClearSeconds();
                     response.ExpiryAt = _dateCalculationService.GetExpiryAtForType(closestWorkingDayStartAtTime, RequestAnswerRuleType.RequestCreatedMoreThanTwentyDaysBefore).ClearSeconds();
                 }
                 else if (ruleset == FrameworkAgreementResponseRuleset.VersionTwo && daysInAdvance <= 20 && (daysInAdvance > 10 || (daysInAdvance == 10 && closestWorkingDayCreatedTime.TimeOfDay.Ticks <= closestWorkingDayStartAtTime.TimeOfDay.Ticks)))
                 {
                     response.RequestAnswerRuleType = RequestAnswerRuleType.RequestCreatedMoreThanTenDaysBefore;
-                    response.LastAcceptedAt = _dateCalculationService.GetDateForANumberOfWorkdaysinFuture(closestWorkingDayCreatedTime.DateTime, 2).ToDateTimeOffsetSweden().ClearSeconds();
+                    response.LastAcceptedAt = _dateCalculationService.GetDateForANumberOfWorkdaysinFuture(closestWorkingDayCreatedTime, 2).ToDateTimeOffsetSweden().ClearSeconds();
                     response.ExpiryAt = _dateCalculationService.GetExpiryAtForType(closestWorkingDayStartAtTime, RequestAnswerRuleType.RequestCreatedMoreThanTenDaysBefore).ClearSeconds();
                 }
                 else if (daysInAdvance >= 2 &&
@@ -691,7 +691,7 @@ namespace Tolk.BusinessLogic.Services
                     )))
                 {
                     response.RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay;
-                    response.ExpiryAt = _dateCalculationService.GetFirstWorkDay(closestWorkingDayCreatedTime.Date.AddDays(1)).AddHours(15).ToDateTimeOffsetSweden();
+                    response.ExpiryAt = _dateCalculationService.GetFirstWorkDay(closestWorkingDayCreatedTime.Date.AddDays(1).ToDateTimeOffsetSweden()).AddHours(15).ToDateTimeOffsetSweden();
                 }
                 else if (daysInAdvance == 1 && closestWorkingDayCreatedTime.Hour < 14)
                 {
@@ -706,7 +706,7 @@ namespace Tolk.BusinessLogic.Services
         /// <summary>
         /// Used for UI validation, when to require last answer by time from customer
         /// </summary>
-        public DateTime GetLastTimeForRequiringLatestAnswerBy(DateTime now)
+        public DateTimeOffset GetLastTimeForRequiringLatestAnswerBy(DateTimeOffset now)
         {
             var lastTimeForRequiringLatestAnswerBy = _dateCalculationService.GetFirstWorkDay(now).Date;
             var dateIsWorkingDay = _dateCalculationService.IsWorkingDay(now);
@@ -718,13 +718,13 @@ namespace Tolk.BusinessLogic.Services
             }
             //if lastTimeForRequiringLatestAnswerBy is just before a non working day, get the last non working day before first working day
             var isLastTimeForRequiringLatestAnswerBy = !_dateCalculationService.IsWorkingDay(lastTimeForRequiringLatestAnswerBy.AddDays(1));
-            return isLastTimeForRequiringLatestAnswerBy ? _dateCalculationService.GetFirstWorkDay(lastTimeForRequiringLatestAnswerBy.AddDays(1).Date).Date.AddDays(-1) : lastTimeForRequiringLatestAnswerBy;
+            return isLastTimeForRequiringLatestAnswerBy ? _dateCalculationService.GetFirstWorkDay(lastTimeForRequiringLatestAnswerBy.AddDays(1).Date).Date.AddDays(-1).ToDateTimeOffsetSweden() : lastTimeForRequiringLatestAnswerBy.ToDateTimeOffsetSweden();
         }
 
         /// <summary>
         /// Used for UI validation, if clock passes 14:00 during order creation set the next last answer by time from customer
         /// </summary>
-        public DateTime GetNextLastTimeForRequiringLatestAnswerBy(DateTime lastTimeForRequiringLatestAnswerBy, DateTime now)
+        public DateTimeOffset GetNextLastTimeForRequiringLatestAnswerBy(DateTimeOffset lastTimeForRequiringLatestAnswerBy, DateTimeOffset now)
         {
             //should onnly by increased if time is before 14:00 and the order is created a workday (else it should be the same date as lastTimeForRequiringLatestAnswerBy)
             //if a workday and before 14:00 GetLastTimeForRequiringLatestAnswerBy for the same day but after 14:00

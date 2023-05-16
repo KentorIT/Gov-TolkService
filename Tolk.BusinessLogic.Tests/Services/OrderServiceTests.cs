@@ -129,7 +129,6 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = CreateOrderService(tolkDbContext, now);
             var result = service.CalculateExpiryForNewRequest(start, ruleset);
             result.RequestAnswerRuleType.Should().Be(answerRuleType);
-            result.ExpiryAt.Should().Be(expectedExpiryTime);
             if (expectedExpiryTime.HasValue)
             {
                 result.ExpiryAt.Should().Be(expectedExpiryTime);
@@ -201,7 +200,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = CreateOrderService(tolkDbContext, orderDate);
             var lastTimeForRequiringLatestAnswerBy = service.GetLastTimeForRequiringLatestAnswerBy(orderTime.DateTime);
             var result = service.GetNextLastTimeForRequiringLatestAnswerBy(lastTimeForRequiringLatestAnswerBy, orderTime.DateTime);
-            result.ToDateTimeOffsetSweden().Should().Be(expectedNextLastTimeForRequiringLatestAnswerBy);
+            result.Should().Be(expectedNextLastTimeForRequiringLatestAnswerBy);
         }
     }
 }

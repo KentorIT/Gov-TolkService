@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Services
             _cacheService = cacheService;
         }
 
-        public int GetWorkDaysBetween(DateTime firstDate, DateTime secondDate)
+        public int GetWorkDaysBetween(DateTimeOffset firstDate, DateTimeOffset secondDate)
         {
             if (secondDate < firstDate)
             {
@@ -32,10 +32,10 @@ namespace Tolk.BusinessLogic.Services
                 throw new ArgumentException($"{nameof(secondDate)} includes a time other than midnight. Use the Date property to get a pure date.", nameof(secondDate));
             }
 
-            if (firstDate.Kind != secondDate.Kind)
-            {
-                throw new ArgumentException($"{nameof(firstDate)} has kind {firstDate.Kind} which is different from {nameof(secondDate)} kind {secondDate.Kind}");
-            }
+            //if (firstDate.Kind != secondDate.Kind)
+            //{
+            //    throw new ArgumentException($"{nameof(firstDate)} has kind {firstDate.Kind} which is different from {nameof(secondDate)} kind {secondDate.Kind}");
+            //}
 
             int fullWeeks = (secondDate - firstDate).Days / 7;
 
@@ -73,12 +73,12 @@ namespace Tolk.BusinessLogic.Services
                 default:
                     throw new NotSupportedException();
             }
-            return GetDateForANumberOfWorkdaysAgo(occasionStartOffset.DateTime, numberOfDays);
+            return GetDateForANumberOfWorkdaysAgo(occasionStartOffset, numberOfDays);
         }
-        public DateTime GetDateForANumberOfWorkdaysAgo(DateTime start, int numberOfWorkdays)
+        public DateTimeOffset GetDateForANumberOfWorkdaysAgo(DateTimeOffset start, int numberOfWorkdays)
         {
             int counter = 0;
-            DateTime resultingDate;
+            DateTimeOffset resultingDate;
             while (true)
             {
                 resultingDate = start.AddDays(counter--);
@@ -88,10 +88,10 @@ namespace Tolk.BusinessLogic.Services
                 }
             }
         }
-        public DateTime GetDateForANumberOfWorkdaysinFuture(DateTime start, int numberOfWorkdays)
+        public DateTimeOffset GetDateForANumberOfWorkdaysinFuture(DateTimeOffset start, int numberOfWorkdays)
         {
             int counter = 0;
-            DateTime resultingDate;
+            DateTimeOffset resultingDate;
             while (true)
             {
                 resultingDate = start.AddDays(counter++);
@@ -108,26 +108,26 @@ namespace Tolk.BusinessLogic.Services
         /// <param name="firstDate"></param>
         /// <param name="secondDate"></param>
         /// <returns></returns>
-        public int GetNoOf24HsPeriodsWorkDaysBetween(DateTime firstDate, DateTime secondDate)
+        public int GetNoOf24HsPeriodsWorkDaysBetween(DateTimeOffset firstDate, DateTimeOffset secondDate)
         {
             return secondDate < firstDate ? -1 : ReturnWorkingPeriod(firstDate, secondDate, true);
         }
 
-        public int GetNoOfHoursOfWorkDaysBetween(DateTime firstDate, DateTime secondDate)
+        public int GetNoOfHoursOfWorkDaysBetween(DateTimeOffset firstDate, DateTimeOffset secondDate)
         {
             return ReturnWorkingPeriod(firstDate, secondDate, false);
         }
 
-        private int ReturnWorkingPeriod(DateTime firstDate, DateTime secondDate, bool returnDays)
+        private int ReturnWorkingPeriod(DateTimeOffset firstDate, DateTimeOffset secondDate, bool returnDays)
         {
             if (secondDate < firstDate)
             {
                 throw new ArgumentException("First Date must be before secondDate");
             }
-            if (firstDate.Kind != secondDate.Kind)
-            {
-                throw new ArgumentException($"{nameof(firstDate)} has kind {firstDate.Kind} which is different from {nameof(secondDate)} kind {secondDate.Kind}");
-            }
+            //if (firstDate.Kind != secondDate.Kind)
+            //{
+            //    throw new ArgumentException($"{nameof(firstDate)} has kind {firstDate.Kind} which is different from {nameof(secondDate)} kind {secondDate.Kind}");
+            //}
 
             firstDate = !IsWorkingDay(firstDate.Date) ? GetFirstWorkDay(firstDate.Date) : firstDate; //get midnight if we get a new first workday
 
@@ -137,7 +137,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 int noOfNonWorkDaysBetween = 0;
 
-                DateTime testDate = firstDate.Date;
+                DateTimeOffset testDate = firstDate.Date;
 
                 //do not try secondDate since one extra day might be added (if not we know it's a non-work-day)
                 while (testDate < secondDate.Date)
@@ -157,7 +157,7 @@ namespace Tolk.BusinessLogic.Services
             else return 0;
         }
 
-        public bool IsWorkingDay(DateTime testDate)
+        public bool IsWorkingDay(DateTimeOffset testDate)
         {
             if (testDate.DayOfWeek == DayOfWeek.Saturday || testDate.DayOfWeek == DayOfWeek.Sunday)
             {
@@ -177,7 +177,7 @@ namespace Tolk.BusinessLogic.Services
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        public DateTime GetFirstWorkDay(DateTime date)
+        public DateTimeOffset GetFirstWorkDay(DateTimeOffset date)
         {
             while (true)
             {
@@ -209,7 +209,7 @@ namespace Tolk.BusinessLogic.Services
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        public DateTime GetLastWorkDay(DateTime date)
+        public DateTimeOffset GetLastWorkDay(DateTimeOffset date)
         {
             while (true)
             {

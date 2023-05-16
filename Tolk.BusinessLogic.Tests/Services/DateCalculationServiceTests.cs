@@ -78,19 +78,6 @@ namespace Tolk.BusinessLogic.Tests.Services
                 .And.ParamName.Should().Be("secondDate");
         }
 
-        [Fact]
-        public void GetWorkDaysBetween_ThrowsDateTimeKindsAreDifferent()
-        {
-            using var tolkDbContext = CreateTolkDbContext();
-            var subject = new DateCalculationService(CreateCacheService(tolkDbContext));
-
-            Action a = () => subject.GetWorkDaysBetween(
-            new DateTime(2018, 5, 1, 0, 0, 0, DateTimeKind.Local),
-            new DateTime(2018, 6, 1, 0, 0, 0, DateTimeKind.Unspecified));
-
-            a.Should().Throw<ArgumentException>();
-        }
-
         [Theory]
         // Note 2016-08-01 was a Monday.
         [InlineData("2016-08-01", "2016-08-04", 3)] // Monday-Thursday
