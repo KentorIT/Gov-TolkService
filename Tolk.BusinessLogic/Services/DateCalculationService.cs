@@ -237,7 +237,7 @@ namespace Tolk.BusinessLogic.Services
         public DateTimeOffset GetClosestWorkingDayStartAtTime(DateTimeOffset start)
         {
             return IsWorkingDay(start.Date) ?
-                start :
+                start.ToDateTimeOffsetSweden() :
                 GetLastWorkDay(start.Date).AddDays(1).Date.ToDateTimeOffsetSweden();
         }
     }
