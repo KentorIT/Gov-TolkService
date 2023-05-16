@@ -73,7 +73,7 @@ namespace Tolk.BusinessLogic.Services
                 default:
                     throw new NotSupportedException();
             }
-            return GetDateForANumberOfWorkdaysAgo(occasionStartOffset.DateTime, numberOfDays);
+            return GetDateForANumberOfWorkdaysAgo(occasionStartOffset, numberOfDays);
         }
         public DateTimeOffset GetDateForANumberOfWorkdaysAgo(DateTimeOffset start, int numberOfWorkdays)
         {

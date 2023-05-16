@@ -200,7 +200,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = CreateOrderService(tolkDbContext, orderDate);
             var lastTimeForRequiringLatestAnswerBy = service.GetLastTimeForRequiringLatestAnswerBy(orderTime.DateTime);
             var result = service.GetNextLastTimeForRequiringLatestAnswerBy(lastTimeForRequiringLatestAnswerBy, orderTime.DateTime);
-            result.ToDateTimeOffsetSweden().Should().Be(expectedNextLastTimeForRequiringLatestAnswerBy);
+            result.Should().Be(expectedNextLastTimeForRequiringLatestAnswerBy);
         }
     }
 }

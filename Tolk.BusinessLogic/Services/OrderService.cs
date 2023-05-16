@@ -691,7 +691,7 @@ namespace Tolk.BusinessLogic.Services
                     )))
                 {
                     response.RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay;
-                    response.ExpiryAt = _dateCalculationService.GetFirstWorkDay(closestWorkingDayCreatedTime.Date.AddDays(1)).AddHours(15).ToDateTimeOffsetSweden();
+                    response.ExpiryAt = _dateCalculationService.GetFirstWorkDay(closestWorkingDayCreatedTime.Date.AddDays(1).ToDateTimeOffsetSweden()).AddHours(15).ToDateTimeOffsetSweden();
                 }
                 else if (daysInAdvance == 1 && closestWorkingDayCreatedTime.Hour < 14)
                 {
