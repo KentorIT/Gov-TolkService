@@ -129,7 +129,6 @@ namespace Tolk.BusinessLogic.Tests.Services
             var service = CreateOrderService(tolkDbContext, now);
             var result = service.CalculateExpiryForNewRequest(start, ruleset);
             result.RequestAnswerRuleType.Should().Be(answerRuleType);
-            result.ExpiryAt.Should().Be(expectedExpiryTime);
             if (expectedExpiryTime.HasValue)
             {
                 result.ExpiryAt.Should().Be(expectedExpiryTime);
