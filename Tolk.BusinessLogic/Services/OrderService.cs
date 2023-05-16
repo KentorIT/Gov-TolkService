@@ -706,7 +706,7 @@ namespace Tolk.BusinessLogic.Services
         /// <summary>
         /// Used for UI validation, when to require last answer by time from customer
         /// </summary>
-        public DateTime GetLastTimeForRequiringLatestAnswerBy(DateTime now)
+        public DateTime GetLastTimeForRequiringLatestAnswerBy(DateTimeOffset now)
         {
             var lastTimeForRequiringLatestAnswerBy = _dateCalculationService.GetFirstWorkDay(now).Date;
             var dateIsWorkingDay = _dateCalculationService.IsWorkingDay(now);
@@ -724,7 +724,7 @@ namespace Tolk.BusinessLogic.Services
         /// <summary>
         /// Used for UI validation, if clock passes 14:00 during order creation set the next last answer by time from customer
         /// </summary>
-        public DateTime GetNextLastTimeForRequiringLatestAnswerBy(DateTime lastTimeForRequiringLatestAnswerBy, DateTime now)
+        public DateTimeOffset GetNextLastTimeForRequiringLatestAnswerBy(DateTimeOffset lastTimeForRequiringLatestAnswerBy, DateTimeOffset now)
         {
             //should onnly by increased if time is before 14:00 and the order is created a workday (else it should be the same date as lastTimeForRequiringLatestAnswerBy)
             //if a workday and before 14:00 GetLastTimeForRequiringLatestAnswerBy for the same day but after 14:00

@@ -15,7 +15,7 @@ namespace Tolk.BusinessLogic.Services
             _cacheService = cacheService;
         }
 
-        public int GetWorkDaysBetween(DateTime firstDate, DateTime secondDate)
+        public int GetWorkDaysBetween(DateTimeOffset firstDate, DateTimeOffset secondDate)
         {
             if (secondDate < firstDate)
             {
@@ -32,10 +32,10 @@ namespace Tolk.BusinessLogic.Services
                 throw new ArgumentException($"{nameof(secondDate)} includes a time other than midnight. Use the Date property to get a pure date.", nameof(secondDate));
             }
 
-            if (firstDate.Kind != secondDate.Kind)
-            {
-                throw new ArgumentException($"{nameof(firstDate)} has kind {firstDate.Kind} which is different from {nameof(secondDate)} kind {secondDate.Kind}");
-            }
+            //if (firstDate.Kind != secondDate.Kind)
+            //{
+            //    throw new ArgumentException($"{nameof(firstDate)} has kind {firstDate.Kind} which is different from {nameof(secondDate)} kind {secondDate.Kind}");
+            //}
 
             int fullWeeks = (secondDate - firstDate).Days / 7;
 
@@ -137,7 +137,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 int noOfNonWorkDaysBetween = 0;
 
-                DateTime testDate = firstDate.Date;
+                DateTimeOffset testDate = firstDate.Date;
 
                 //do not try secondDate since one extra day might be added (if not we know it's a non-work-day)
                 while (testDate < secondDate.Date)
