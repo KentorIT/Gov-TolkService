@@ -569,7 +569,8 @@ namespace Tolk.Web.Services
             if (consumer.HasValue)
             {
                 list = list.Where(t => EnumHelper.GetAvailableNotificationConsumerTypes(t).Contains(consumer.Value));
-            }return GetList(list, true);
+            }
+            return GetList(list, true);
         }
         public static IEnumerable<SelectListItem> WebhookStatuses => GetList<WebhookStatus>();
 
