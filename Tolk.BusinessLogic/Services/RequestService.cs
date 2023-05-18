@@ -815,7 +815,7 @@ namespace Tolk.BusinessLogic.Services
                 Request newRequest = new Request(request.Ranking, new RequestExpiryResponse { LastAcceptedAt = request.LastAcceptAt, ExpiryAt = newExpiryAt, RequestAnswerRuleType = request.RequestAnswerRuleType }, acceptTime, isAReplacingRequest: true)
                 {
                     Order = request.Order,
-                    Status = RequestStatus.AcceptedAwaitingInterpreter
+                    Status = request.Status
                 };
                 request.Order.Requests.Add(newRequest);
 
