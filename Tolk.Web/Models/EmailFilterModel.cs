@@ -24,6 +24,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Skapat datum")]
         public DateRange DateCreated { get; set; }
 
+        [Display(Name = "Notifieringstyp")]
+        public NotificationType? NotificationType { get; set; }
+
         [NoDisplayName]
         public string FilterMessage { get; set; }
 
@@ -32,6 +35,7 @@ namespace Tolk.Web.Models
             emails = !string.IsNullOrWhiteSpace(Receipent) ? emails.Where(e => e.Recipient.Contains(Receipent)) : emails;
             emails = !string.IsNullOrWhiteSpace(Subject) ? emails.Where(e => e.Subject.Contains(Subject)) : emails;
             emails = IsSent.HasValue ? emails.Where(e => e.DeliveredAt.HasValue == (IsSent == TrueFalse.Yes)) : emails;
+            emails = NotificationType.HasValue ? emails.Where(i => i.NotificationType == NotificationType) : emails;
             emails = DateCreated?.Start != null ? emails.Where(o => o.CreatedAt.Date >= DateCreated.Start) : emails;
             emails = DateCreated?.End != null ? emails.Where(o => o.CreatedAt.Date <= DateCreated.End) : emails;
             return emails;

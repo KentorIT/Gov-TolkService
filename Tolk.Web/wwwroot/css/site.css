@@ -2,31 +2,31 @@
   font-family: 'Merriweather Sans';
   font-style: italic;
   font-weight: 300;
-  src: url(https://fonts.gstatic.com/s/merriweathersans/v22/2-cM9IRs1JiJN1FRAMjTN5zd9vgsFHXwWDvLBsPDdpWMaq2TzdsFxxA.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/merriweathersans/v26/2-cM9IRs1JiJN1FRAMjTN5zd9vgsFHXwWDvLBsPDdpWMaq2TzdsFxxA.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Merriweather Sans';
   font-style: italic;
   font-weight: 400;
-  src: url(https://fonts.gstatic.com/s/merriweathersans/v22/2-cM9IRs1JiJN1FRAMjTN5zd9vgsFHXwWDvLBsPDdpWMaq3NzdsFxxA.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/merriweathersans/v26/2-cM9IRs1JiJN1FRAMjTN5zd9vgsFHXwWDvLBsPDdpWMaq3NzdsFxxA.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Merriweather Sans';
   font-style: normal;
   font-weight: 300;
-  src: url(https://fonts.gstatic.com/s/merriweathersans/v22/2-cO9IRs1JiJN1FRAMjTN5zd9vgsFF_5asQTb6hZ2JKZ_O4ViesC.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/merriweathersans/v26/2-cO9IRs1JiJN1FRAMjTN5zd9vgsFF_5asQTb6hZ2JKZ_O4ViesC.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Merriweather Sans';
   font-style: normal;
   font-weight: 400;
-  src: url(https://fonts.gstatic.com/s/merriweathersans/v22/2-cO9IRs1JiJN1FRAMjTN5zd9vgsFF_5asQTb6hZ2JKZou4ViesC.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/merriweathersans/v26/2-cO9IRs1JiJN1FRAMjTN5zd9vgsFF_5asQTb6hZ2JKZou4ViesC.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Merriweather Sans';
   font-style: normal;
   font-weight: 700;
-  src: url(https://fonts.gstatic.com/s/merriweathersans/v22/2-cO9IRs1JiJN1FRAMjTN5zd9vgsFF_5asQTb6hZ2JKZRekViesC.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/merriweathersans/v26/2-cO9IRs1JiJN1FRAMjTN5zd9vgsFF_5asQTb6hZ2JKZRekViesC.ttf) format('truetype');
 }
 @media screen and (max-width: 767px) {
 }@media (min-width: 768px) {
@@ -1777,4 +1777,8 @@ div.form-group > div.detail-text > pre {
   background-color: transparent;
   border: 0px;
   font-family: "Merriweather Sans", sans-serif;
+}
+div.highlight-information.form-group > .detail-text,
+div.form-group.highlight-information > .detail-text {
+  background-color: #F1F4F2;
 }

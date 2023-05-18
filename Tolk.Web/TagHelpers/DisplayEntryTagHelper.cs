@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using System;
@@ -64,7 +65,8 @@ namespace Tolk.Web.TagHelpers
             {
                 output.TagName = "div";
                 output.TagMode = TagMode.StartTagAndEndTag;
-                output.Attributes.Add("class", "form-group");
+
+                output.AddClass("form-group", _htmlEncoder);
                 using var writer = new StringWriter();
                 // Check if label will be displayed
                 var type = For.ModelExplorer.Metadata.ContainerType;

@@ -9,20 +9,23 @@
 <section aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
     <div class="row">
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <display-entry asp-for="Recipient" />
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <display-entry asp-for="CreatedAt" />
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <display-entry asp-for="SentAt" />
         </div>
-        <div class="col-sm-12">
-            <display-entry asp-for="Subject" />
+        <div class="col-sm-3">
+            <display-entry asp-for="NotificationType" />
         </div>
         <div class="col-sm-12">
-            <display-entry asp-for="Body" />
+            <display-entry asp-for="Subject" class="highlight-information" />
+        </div>
+        <div class="col-sm-12">
+            <display-entry asp-for="Body" class="highlight-information" />
         </div>
     </div>
     @if (Model.DisplayResend)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.Web.Attributes;
 
 namespace Tolk.Web.Models
@@ -28,6 +29,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Skickat")]
         public DateTimeOffset? SentAt { get; set; }
 
+        [Display(Name = "Notifieringstyp")]
+        public NotificationType? NotificationType { get; set; }
+
         [Display(Name = "Detta e-postmeddelande blev omskickat")]
         public DateTimeOffset? ResentAt { get; set; }
 
@@ -53,10 +57,10 @@ namespace Tolk.Web.Models
                 ReplacingEmailId = mail.ReplacedByEmail?.OutboundEmailId,
                 ResentAt = mail.ReplacedByEmail?.CreatedAt,
                 ErrorMessage = errormessage,
-                DisplayResend = displayResend
+                DisplayResend = displayResend,
+                NotificationType = mail.NotificationType
             };
         }
-
     }
 
 }

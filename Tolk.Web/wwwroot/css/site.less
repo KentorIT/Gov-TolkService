@@ -2002,8 +2002,15 @@ div.pricing-position-sticky {
     top: 10em;
     z-index: 100;
 }
+
 div.form-group > div.detail-text > pre {
     background-color: transparent;
     border: 0px;
     font-family: @font-family;
+}
+
+div.highlight-information.form-group, div.form-group.highlight-information {
+    > .detail-text {
+        background-color: @lightestgray;
+    }
 }
