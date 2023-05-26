@@ -27,7 +27,7 @@ namespace Tolk.BusinessLogic.Utilities
                     Language = r.Request.Order.Language.Name,
                     Region = r.Request.Order.Region.Name,
                     AssignmentType = r.Request.Order.AssignmentType,
-                    AssignmentDate = r.Request.Order.IsFlexible ?  $"{r.Request.RespondedStartAt:yyyy-MM-dd HH:mm}-{r.Request.RespondedStartAt.Value.Add(r.Request.Order.ExpectedLength.Value):HH:mm}" : $"{r.Request.Order.StartAt:yyyy-MM-dd HH:mm}-{r.Request.Order.EndAt:HH:mm}",
+                    AssignmentDate = $"{r.Request.CalculatedStartAt:yyyy-MM-dd HH:mm}-{r.Request.CalculatedEndAt:HH:mm}",
                     RequisitionStatus = r.Status,
                     ReferenceNumber = r.Request.Order.CustomerReferenceNumber ?? string.Empty,
                     Department = r.Request.Order.UnitName ?? string.Empty,
