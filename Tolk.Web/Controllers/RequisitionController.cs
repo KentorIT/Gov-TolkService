@@ -102,7 +102,7 @@ namespace Tolk.Web.Controllers
                 OrderRequestId = customerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
                 Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
                 OrderNumber = r.Request.Order.OrderNumber,
-                OrderDateAndTime = r.Request.Order.IsFlexible ? $"{r.Request.RespondedStartAt:yyyy-MM-dd HH:mm}-{r.Request.RespondedStartAt.Value.Add(r.Request.Order.ExpectedLength.Value):HH:mm}" : $"{r.Request.Order.StartAt:yyyy-MM-dd HH:mm}-{r.Request.Order.EndAt:HH:mm}",
+                OrderDateAndTime = $"{r.Request.CalculatedStartAt:yyyy-MM-dd HH:mm}-{r.Request.CalculatedEndAt:HH:mm}",
                 Status = r.Status,
                 BrokerName = r.Request.Ranking.Broker.Name,
                 CustomerName = r.Request.Order.CustomerOrganisation.Name,
