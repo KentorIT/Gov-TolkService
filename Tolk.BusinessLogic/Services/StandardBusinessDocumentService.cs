@@ -11,6 +11,7 @@ using System.Xml.Serialization;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Models.Invoice;
 using Tolk.BusinessLogic.Models.OrderAgreement;
 using Tolk.BusinessLogic.Utilities;
 
@@ -295,6 +296,30 @@ namespace Tolk.BusinessLogic.Services
             return requestIds;
         }
 
+        public async Task<PeppolPayload> CreateMockInvoiceFromRequest(Request request)
+        {
+            InvoiceModel model;
+            if(request.CurrentlyActiveRequisition != null)
+            {
+                model = new InvoiceModel(request, await _tolkDbContext.RequisitionPriceRows.GetPriceRowsForRequisition(request.CurrentlyActiveRequisition.RequisitionId).ToListAsync());
+            }
+            else
+            {
+                model = new InvoiceModel(request, await _tolkDbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToListAsync());
+            }                               
+            using var memoryStream = new MemoryStream();
+            using var writer = new StreamWriter(memoryStream, Encoding.UTF8);
+            SerializeInvoiceModel(model, writer);
+            memoryStream.Position = 0;
+            byte[] byteArray = new byte[memoryStream.Length];
+            memoryStream.Read(byteArray, 0, (int)memoryStream.Length);
+            memoryStream.Close();
+            return new PeppolPayload
+            {
+                Payload = byteArray
+            };            
+        }
+
         private async Task SendErrorMail(string methodname, Exception ex)
         {
             await _emailService.SendErrorEmail(nameof(StandardBusinessDocumentService), methodname, ex);
@@ -306,6 +331,14 @@ namespace Tolk.BusinessLogic.Services
             ns.Add(nameof(Constants.cac), Constants.cac);
             ns.Add(nameof(Constants.cbc), Constants.cbc);
             XmlSerializer xser = new XmlSerializer(typeof(T), Constants.defaultNamespace);
+            xser.Serialize(writer, model, ns);
+        }
+        private static void SerializeInvoiceModel(InvoiceModel model, StreamWriter writer)
+        {
+            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+            ns.Add(nameof(Constants.cac), Constants.cac);
+            ns.Add(nameof(Constants.cbc), Constants.cbc);
+            XmlSerializer xser = new XmlSerializer(typeof(InvoiceModel), Constants.invoiceDefaultNamespace);
             xser.Serialize(writer, model, ns);
         }
     }

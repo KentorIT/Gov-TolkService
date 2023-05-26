@@ -17,6 +17,7 @@ namespace Tolk.BusinessLogic.Helpers
         public bool EnableTimeTravel { get; set; }
 
         public bool EnableOrderGroups { get; set; }
+        public bool EnableMockInvoice { get; set; }
 
         public long CombinedMaxSizeAttachments { get; set; }
 

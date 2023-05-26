@@ -38,7 +38,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Genererad från")]
         public string BasedOn { get; set; }
 
-        internal static PeppolMessageModel GetModelFromPeppolPayload(PeppolPayload payload)
+        public bool EnableMockInvoice { get; set; }
+        public int RequestId { get; set; }
+        internal static PeppolMessageModel GetModelFromPeppolPayload(PeppolPayload payload, bool EnableMockInvoice)
         {
             return new PeppolMessageModel
             {
@@ -49,7 +51,9 @@ namespace Tolk.Web.Models
                 OrderNumber = payload.Request.Order.OrderNumber,
                 CreatedBy = payload.CreatedByUser?.FullName ?? "Systemet",
                 BasedOn = payload.RequisitionId.HasValue ? "Genererad från rekvisition" : "Genererad från bekräftelse",
-                IsLatest = !payload.ReplacedById.HasValue
+                IsLatest = !payload.ReplacedById.HasValue,
+                EnableMockInvoice = EnableMockInvoice,
+                RequestId = payload.RequestId
             };
         }
     }

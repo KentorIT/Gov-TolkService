@@ -71,7 +71,7 @@ namespace Tolk.Web.Controllers
             if (peppolPayload != null &&
                 (await _authorizationService.AuthorizeAsync(User, peppolPayload, Policies.View)).Succeeded)
             {
-                return View(PeppolMessageModel.GetModelFromPeppolPayload(peppolPayload));
+                return View(PeppolMessageModel.GetModelFromPeppolPayload(peppolPayload, _options.EnableMockInvoice));
             }
             return Forbid();
         }
@@ -83,6 +83,21 @@ namespace Tolk.Web.Controllers
             if (payload != null && (await _authorizationService.AuthorizeAsync(User, payload, Policies.View)).Succeeded)
             {
                 return File(payload.Payload, System.Net.Mime.MediaTypeNames.Application.Octet, $"{payload.PeppolMessageType}-{payload.IdentificationNumber}.xml");
+            }
+            return Forbid();
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetMockInvoiceForOrder(int id)
+        {
+            if (_options.EnableMockInvoice)
+            {
+                var request = await _dbContext.Requests.GetRequestForPeppolMessageCreation(id);
+                var payload = await _standardBusinessDocumentService.CreateMockInvoiceFromRequest(request);
+                if (payload != null && (await _authorizationService.AuthorizeAsync(User, payload, Policies.View)).Succeeded)
+                {
+                    return File(payload.Payload, System.Net.Mime.MediaTypeNames.Application.Octet, $"MOCKINVOICE-FOR-{request.Order.OrderNumber}.xml");
+                }
             }
             return Forbid();
         }

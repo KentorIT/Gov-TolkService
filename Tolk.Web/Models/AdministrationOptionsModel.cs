@@ -36,6 +36,7 @@ namespace Tolk.Web.Models
         public bool EnableOrderUpdate { get; set; }
 
         public bool EnableRegisterUser { get; set; }
+        public bool EnableInvoiceMock { get; set; }
 
         public bool RunEntityScheduler { get; set; }
 
@@ -62,7 +63,7 @@ namespace Tolk.Web.Models
         public string FlexibleOrderDisplay { get; set; }
 
         [Display(Name = "Påslagna features")]
-        public string EnabledFeatures => $"Hopp i tiden: {EnableTimeTravel.ToSwedishString()}\nSammanhållna bokningar: {EnableOrderGroups.ToSwedishString()}\nOrderuppdateringar: {EnableOrderUpdate.ToSwedishString()}\nSjälvregistrering av konto: {EnableRegisterUser.ToSwedishString()}\nApi för myndigheter: {EnableCustomerApi.ToSwedishString()}\nSätta sista svarstid (myndighet): {EnableSetLatestAnswerTimeForCustomer.ToSwedishString()}\nSeparat behandling av extra tolkar: {AllowDeclineExtraInterpreterOnRequestGroups.ToSwedishString()}\nAvrunda priser: {RoundPriceDecimals.ToSwedishString()}";
+        public string EnabledFeatures => $"Hopp i tiden: {EnableTimeTravel.ToSwedishString()}\nSammanhållna bokningar: {EnableOrderGroups.ToSwedishString()}\nOrderuppdateringar: {EnableOrderUpdate.ToSwedishString()}\nSjälvregistrering av konto: {EnableRegisterUser.ToSwedishString()}\nApi för myndigheter: {EnableCustomerApi.ToSwedishString()}\nSätta sista svarstid (myndighet): {EnableSetLatestAnswerTimeForCustomer.ToSwedishString()}\nSeparat behandling av extra tolkar: {AllowDeclineExtraInterpreterOnRequestGroups.ToSwedishString()}\nAvrunda priser: {RoundPriceDecimals.ToSwedishString()}\nSkapa MockFaktura: {EnableInvoiceMock.ToSwedishString()}";
 
         [Display(Name = "Entity Scheduler")]
         public string EntitySchedulerSettings => $"Kör Entity scheduler: {RunEntityScheduler.ToSwedishString()}\n\tStarttid dagliga jobb: {HourToRunDailyJobs.ToSwedishString("D2")}\n\tNär på dygnet verifieras systemets avtal: {HourToRunFrameworkAgreementValidation.ToSwedishString("D2")}\n\tAntal månader innan aut. godkännande av reklamationer: {MonthsToApproveComplaints}\n\tAntal dagar efter utfört uppdrag för skapande av ord-agreement: {WorkDaysGracePeriodBeforeOrderAgreementCreation}";
@@ -98,6 +99,7 @@ namespace Tolk.Web.Models
                 AllowDeclineExtraInterpreterOnRequestGroups = options.AllowDeclineExtraInterpreterOnRequestGroups,
                 RoundPriceDecimals = options.RoundPriceDecimals,
                 MonthsToApproveComplaints = options.MonthsToApproveComplaints,                
+                EnableInvoiceMock = options.EnableMockInvoice
             };
         }
         #endregion

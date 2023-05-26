@@ -30,6 +30,14 @@
         <div class="col-sm-12">
             <a asp-area="" asp-controller="StandardBusinessDocument" asp-action="GetPayload" asp-all-route-data="@(new Dictionary<string, string>{{ "id", Model.PeppolPayloadId.ToString() } })">Ladda ner filen</a><br />
         </div>
+        @{
+            if (Model.EnableMockInvoice)
+            {             
+                    <div class="col-sm-12">
+                    <a asp-area="" asp-controller="StandardBusinessDocument" asp-action="GetMockInvoiceForOrder" asp-all-route-data="@(new Dictionary<string, string>{{ "id", Model.RequestId.ToString()} })">Ladda ner Mock-Faktura</a>
+                    </div>
+            }
+        }
     </div>
     <div class="row">
         <div class="col-sm-12">
