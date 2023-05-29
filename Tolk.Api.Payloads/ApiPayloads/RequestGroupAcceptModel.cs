@@ -1,5 +1,4 @@
 ﻿using NJsonSchema.Annotations;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -17,9 +16,9 @@ namespace Tolk.Api.Payloads.ApiPayloads
         [Required]
         public string Location { get; set; }
 
-         public InterpreterGroupAcceptModel InterpreterAcceptModel { get; set; }
+        public InterpreterGroupAcceptModel InterpreterAccept { get; set; }
 
-        public InterpreterGroupAcceptModel ExtraInterpreterAcceptModel { get; set; }
+        public InterpreterGroupAcceptModel ExtraInterpreterAccept { get; set; }
 
         [Description("Förmedlingens eget bokningsnummer att koppla till bokningen.")]
         public string BrokerReferenceNumber { get; set; }

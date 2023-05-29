@@ -167,12 +167,12 @@ namespace Tolk.Web.Api.Controllers
                 {
                     return ReturnError(ErrorCodes.RequestNotCorrectlyAnswered, "Location was missing");
                 }
-                var accept = GetAcceptDto(model.InterpreterAcceptModel);
+                var accept = GetAcceptDto(model.InterpreterAccept);
                 InterpreterAcceptDto extraAccept = null;
                 requestGroup.OrderGroup.Orders = await _dbContext.Orders.GetOrdersForOrderGroup(requestGroup.OrderGroup.OrderGroupId).ToListAsync();
                 if (requestGroup.HasExtraInterpreter)
                 {
-                    extraAccept = GetAcceptDto(model.ExtraInterpreterAcceptModel);
+                    extraAccept = GetAcceptDto(model.ExtraInterpreterAccept);
                 }
 
                 var now = _timeService.SwedenNow;
