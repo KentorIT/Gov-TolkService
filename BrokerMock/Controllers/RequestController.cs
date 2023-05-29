@@ -1111,8 +1111,8 @@ namespace BrokerMock.Controllers
             {
                 OrderGroupNumber = orderGroupNumber,
                 Location = location,
-                InterpreterAcceptModel = accept,
-                ExtraInterpreterAcceptModel = extraAccept,
+                InterpreterAccept = accept,
+                ExtraInterpreterAccept = extraAccept,
                 CallingUser = "regular-user@formedling1.se",
                 BrokerReferenceNumber = $"{orderGroupNumber}-vår",
             };
