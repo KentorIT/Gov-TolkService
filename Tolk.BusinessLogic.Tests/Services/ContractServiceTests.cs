@@ -151,7 +151,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         {            
             var clock = new StubSwedishClock(now);
             var context = CreateTolkDbContext(DbWithAgreementRankingsAndPriceLists);
-            var sut = new ContractService(context, clock, _notificationService, _logger);            
+            var sut = new ContractService(context, clock);            
 
             var result = sut.GetFrameworkAgreementById(frameworkAgreementId).Result;
 
@@ -177,7 +177,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             var clock = new StubSwedishClock(now);
             var context = CreateTolkDbContext(DbWithAgreementRankingsAndPriceLists);
-            var sut = new ContractService(context, clock, _notificationService, _logger);
+            var sut = new ContractService(context, clock);
             var agreement = sut.GetFrameworkAgreementById(AgreementIdForBrokerFeesByRegionBroker).Result;
             var priceList = BrokerFeesByRegionAndBroker();
 
@@ -205,7 +205,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             var clock = new StubSwedishClock(now);
             var context = CreateTolkDbContext(DbWithAgreementRankingsAndPriceLists);
-            var sut = new ContractService(context, clock, _notificationService, _logger);
+            var sut = new ContractService(context, clock);
             var agreement = sut.GetFrameworkAgreementById(AgreementIdBrokerFeeByRegionGroupAndServiceType).Result;
             var brokerFees = GenerateBrokerFeesByRegionAndServiceType(2030, 11, new int[] { 1, 2 });
             var currentOrLastActive = brokerFees.CurrentOrLastActiveDistanceBrokerFeesForAgreement(agreement, clock.SwedenNow.Date);
@@ -230,7 +230,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             var clock = new StubSwedishClock(now);
             var context = CreateTolkDbContext(DbWithAgreementRankingsAndPriceLists);
-            var sut = new ContractService(context, clock, _notificationService, _logger);
+            var sut = new ContractService(context, clock);
             var agreement = sut.GetFrameworkAgreementById(AgreementIdBrokerFeeByRegionGroupAndServiceType).Result;
             var brokerFees = GenerateBrokerFeesByRegionAndServiceType(2030, 11, new int[] { 1, 2 });
             var currentOrLastActive = brokerFees.CurrentOrLastActiveOnSiteBrokerFeesForAgreement(agreement, clock.SwedenNow.Date);

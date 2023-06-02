@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
+using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
@@ -9,16 +10,12 @@ namespace Tolk.BusinessLogic.Services
     public class ContractService
     {
         private readonly TolkDbContext _dbContext;
-        private readonly ISwedishClock _clock;
-        private readonly INotificationService _notificationService;
-        private readonly ILogger<ContractService> _logger;
+        private readonly ISwedishClock _clock;        
 
-        public ContractService(TolkDbContext dbContext, ISwedishClock clock, INotificationService notificationService, ILogger<ContractService> logger)
+        public ContractService(TolkDbContext dbContext, ISwedishClock clock)
         {
             _dbContext = dbContext;
-            _clock = clock;
-            _notificationService = notificationService;
-            _logger = logger;
+            _clock = clock;  
         }
 
         public async Task<CurrentOrLatestFrameworkAgreement> GetFrameworkAgreementById(int frameworkAgreementId)
@@ -41,7 +38,10 @@ namespace Tolk.BusinessLogic.Services
                        new CurrentOrLatestFrameworkAgreement { IsActive = false };
         }
 
-        
+        public async Task<List<Ranking>> GetLatestRankingForFrameworkAgreement(CurrentOrLatestFrameworkAgreement frameworkAgreement)
+        {
+            return await _dbContext.Rankings.GetLatestRankingsForFrameworkAgreement(frameworkAgreement.FrameworkAgreementId, frameworkAgreement.IsActive ? _clock.SwedenNow.DateTime : frameworkAgreement.LastValidDate).ToListAsync();
+        }
 
 
     }
