@@ -73,9 +73,8 @@ namespace Tolk.Web.Models
         public TimeSpan? EarliestStartAt => FlexibleStartDateTime.Value.TimeOfDay;
         public TimeSpan? LatestStartAt => FlexibleEndDateTime.Value.TimeOfDay.Subtract(ExpectedLength);
 
-
         public string AsSwedishString =>
-            $"Uppdragets längd: {ExpectedLength.ToSwedishString("%h")} tim {((ExpectedLength.Minutes % 60 == 0) ? string.Empty : (ExpectedLength.ToSwedishString("%m") + " min"))}<br/>{StartDate.ToSwedishString("yyyy-MM-dd")} mellan {FlexibleStartTime.ToSwedishString("hh\\:mm")}-{FlexibleEndTime.ToSwedishString("hh\\:mm")}";
+            $"Uppdragets längd: {ExpectedLength.ToHoursAndMinutesSwedishString()}<br/>{StartDate.ToSwedishString("yyyy-MM-dd")} mellan {FlexibleStartTime.ToSwedishString("hh\\:mm")}-{FlexibleEndTime.ToSwedishString("hh\\:mm")}";
 
     }
 }

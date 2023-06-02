@@ -16,7 +16,7 @@ namespace Tolk.Web.Models
 
         public string AsSwedishString =>
             IsAwaitingStartAt ?
-            $"<span class=\"startlist-subrow\">Flexibel:</span> {StartAt.ToSwedishString("yyyy-MM-dd")} ({StartAt.ToSwedishString("HH:mm")}-{EndAt.ToSwedishString("HH:mm")})<br /><span class=\"startlist-subrow\">Uppdragets längd:</span> {ExpectedLength.Value:%h} tim {(((ExpectedLength.Value.Minutes % 60) == 0) ? string.Empty : (ExpectedLength.Value.ToString("%m") + " min"))}" :
+            $"<span class=\"startlist-subrow\">Flexibel:</span> {StartAt.ToSwedishString("yyyy-MM-dd")} ({StartAt.ToSwedishString("HH:mm")}-{EndAt.ToSwedishString("HH:mm")})<br /><span class=\"startlist-subrow\">Uppdragets längd:</span> {ExpectedLength.Value.ToHoursAndMinutesSwedishString()}" :
             $"{CalculatedStartAt.ToSwedishString("yyyy-MM-dd")} {CalculatedStartAt.ToSwedishString("HH:mm")}-{CalculatedEndAt.ToSwedishString("hh\\:mm")}<br />";
 
     }

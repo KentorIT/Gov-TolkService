@@ -6,28 +6,21 @@ namespace Tolk.BusinessLogic.Utilities
     public static class DateExtensions
     {
         public static string ToSwedishString(this DateTime value)
-        {
-            return value.ToString(CultureInfo.GetCultureInfo("sv-SE"));
-        }
+            => value.ToString(CultureInfo.GetCultureInfo("sv-SE"));
 
         public static string ToSwedishString(this DateTime value, string format)
-        {
-            return value.ToString(format, CultureInfo.GetCultureInfo("sv-SE"));
-        }
+            => value.ToString(format, CultureInfo.GetCultureInfo("sv-SE"));
 
         public static string ToSwedishString(this DateTimeOffset value)
-        {
-            return value.ToString(CultureInfo.GetCultureInfo("sv-SE"));
-        }
+            => value.ToString(CultureInfo.GetCultureInfo("sv-SE"));
 
         public static string ToSwedishString(this DateTimeOffset value, string format)
-        {
-            return value.ToString(format, CultureInfo.GetCultureInfo("sv-SE"));
-        }
+            => value.ToString(format, CultureInfo.GetCultureInfo("sv-SE"));
 
         public static string ToSwedishString(this TimeSpan value, string format)
-        {
-            return value.ToString(format, CultureInfo.GetCultureInfo("sv-SE"));
-        }
+            => value.ToString(format, CultureInfo.GetCultureInfo("sv-SE"));
+
+        public static string ToHoursAndMinutesSwedishString(this TimeSpan ts)
+            => $"{ts.ToSwedishString("%h")} tim {((ts.Minutes % 60 == 0) ? string.Empty : (ts.ToSwedishString("%m") + " min"))}";
     }
 }

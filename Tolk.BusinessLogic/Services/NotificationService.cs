@@ -437,7 +437,7 @@ Denna bokningsförfrågan behöver endast bekräftas i ett första steg, där be
                     $"\tSpråk: {order.OtherLanguage ?? order.Language?.Name}\n" +
                     $"\tFlexibel starttid: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
                     $"\tFlexibel sluttid: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}\n" +
-                    $"\tLängd på uppdraget: {order.ExpectedLength.Value.ToSwedishString("%h")} tim {((order.ExpectedLength.Value.Minutes % 60 == 0) ? string.Empty : (order.ExpectedLength.Value.ToSwedishString("%m") + " min"))}\n" +
+                    $"\tLängd på uppdraget: {order.ExpectedLength.Value.ToHoursAndMinutesSwedishString()}\n" +
                     (answerLevel == RequiredAnswerLevel.Acceptance ?
                         $"\tBekräfta senast: {request.LastAcceptAt?.ToSwedishString("yyyy-MM-dd HH:mm")} \n\tTillsätt tolk senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}" :
                         $"\tSvara senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}") +
@@ -453,7 +453,7 @@ Detta är en förfrågan med flexibel tid<br />";
 <li>Språk: {order.OtherLanguage ?? order.Language?.Name}</li>
 <li>Flexibel starttid: {order.StartAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
 <li>Flexibel sluttid: {order.EndAt.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
-<li>Längd på uppdraget: {order.ExpectedLength.Value.ToSwedishString("%h")} tim {((order.ExpectedLength.Value.Minutes % 60 == 0) ? string.Empty : (order.ExpectedLength.Value.ToSwedishString("%m") + " min"))}</li>";
+<li>Längd på uppdraget: {order.ExpectedLength.Value.ToHoursAndMinutesSwedishString()}</li>";
                 bodyHtml += (answerLevel == RequiredAnswerLevel.Acceptance ?
 $@"<li>Bekräfta senast: {request.LastAcceptAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>
 <li>Tillsätt tolk senast: {request.ExpiresAt?.ToSwedishString("yyyy-MM-dd HH:mm")}</li>" :
