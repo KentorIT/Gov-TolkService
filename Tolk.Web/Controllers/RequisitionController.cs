@@ -102,7 +102,10 @@ namespace Tolk.Web.Controllers
                 OrderRequestId = customerOrganisationId.HasValue ? r.Request.OrderId : r.RequestId,
                 Language = r.Request.Order.OtherLanguage ?? r.Request.Order.Language.Name,
                 OrderNumber = r.Request.Order.OrderNumber,
-                OrderDateAndTime = $"{r.Request.CalculatedStartAt:yyyy-MM-dd HH:mm}-{r.Request.CalculatedEndAt:HH:mm}",
+                OrderStartAt = r.Request.Order.StartAt,
+                OrderEndAt = r.Request.Order.EndAt,
+                ExpectedLength = r.Request.Order.ExpectedLength,
+                RespondedStartAt = r.Request.RespondedStartAt,
                 Status = r.Status,
                 BrokerName = r.Request.Ranking.Broker.Name,
                 CustomerName = r.Request.Order.CustomerOrganisation.Name,
@@ -113,8 +116,8 @@ namespace Tolk.Web.Controllers
         public JsonResult ListColumnDefinition()
         {
             var definition = AjaxDataTableHelper.GetColumnDefinitions<RequisitionListItemModel>().ToList();
-            definition.Single(d => d.Name == nameof(RequisitionListItemModel.CustomerName)).Visible = User.TryGetBrokerId().HasValue; 
-            definition.Single(d => d.Name == nameof(RequisitionListItemModel.BrokerName)).Visible = User.TryGetCustomerOrganisationId().HasValue; 
+            definition.Single(d => d.Name == nameof(RequisitionListItemModel.CustomerName)).Visible = User.TryGetBrokerId().HasValue;
+            definition.Single(d => d.Name == nameof(RequisitionListItemModel.BrokerName)).Visible = User.TryGetCustomerOrganisationId().HasValue;
             return Json(definition);
         }
 

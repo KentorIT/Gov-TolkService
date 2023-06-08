@@ -1,4 +1,5 @@
-﻿using Tolk.BusinessLogic.Enums;
+﻿using System;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
 using Tolk.Web.Helpers;
@@ -20,7 +21,7 @@ namespace Tolk.Web.Models
         public string Language { get; set; }
 
         [ColumnDefinitions(Index = 4, Name = nameof(OrderDateAndTime), Title = "Datum för uppdrag")]
-        public string OrderDateAndTime { get; set; }
+        public string OrderDateAndTime => $"{CalculatedStartAt:yyyy-MM-dd HH:mm}-{CalculatedEndAt:HH:mm}";
 
         [ColumnDefinitions(Index = 5, Name = nameof(CustomerName), Title = "Myndighet", Visible = false)]
         public string CustomerName { get; set; }
@@ -31,6 +32,18 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(IsLeftCssClassName = true, Name = nameof(ColorClassName), Visible = false)]
         public string ColorClassName { get => CssClassHelper.GetColorClassNameForRequisitionStatus(Status); }
 
+        public DateTimeOffset CalculatedEndAt => RespondedStartAt.HasValue ? RespondedStartAt.Value.Add(ExpectedLength.Value) : OrderEndAt;
+
+        public DateTimeOffset CalculatedStartAt => RespondedStartAt ?? OrderStartAt;
+
         public RequisitionStatus Status { get; set; }
+        
+        public TimeSpan? ExpectedLength { get; set; }
+
+        public DateTimeOffset OrderStartAt { get; set; }
+
+        public DateTimeOffset OrderEndAt { get; set; }
+
+        public DateTimeOffset? RespondedStartAt { get; set; }
     }
 }
