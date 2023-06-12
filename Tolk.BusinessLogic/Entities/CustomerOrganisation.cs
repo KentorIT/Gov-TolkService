@@ -39,6 +39,7 @@ namespace Tolk.BusinessLogic.Entities
         public string OrganisationNumber { get; set; }
 
         [MaxLength(50)]
+        [Required]
         public string PeppolId { get; set; }
 
         [Required]
