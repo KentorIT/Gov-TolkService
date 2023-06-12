@@ -706,7 +706,7 @@ namespace Tolk.Web.Api.Controllers
         [OpenApiTag("Request")]
         public async Task<IActionResult> File(string orderNumber, int attachmentId, string callingUser)
         {
-            _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order {orderNumber}");
+            _logger.LogInformation($"{callingUser.ToLoggableFormat()} called {nameof(File)} to get the attachment {attachmentId} on order {orderNumber}");
 
             try
             {
@@ -743,7 +743,7 @@ namespace Tolk.Web.Api.Controllers
         [OpenApiTag("Request")]
         public async Task<IActionResult> View(string orderNumber, string callingUser)
         {
-            _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active request for the order {orderNumber}");
+            _logger.LogInformation($"'{callingUser?.ToLoggableFormat() ?? "Unspecified user"}' called {nameof(View)} for the active request for the order {orderNumber?.ToLoggableFormat()}");
             try
             {
                 var request = await _dbContext.Requests.GetActiveRequestForApiWithBrokerAndOrderNumber(orderNumber, User.TryGetBrokerId().Value);

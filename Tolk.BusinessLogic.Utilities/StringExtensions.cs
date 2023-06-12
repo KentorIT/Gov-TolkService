@@ -54,5 +54,12 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static string ToNotHyphenatedFormat(this string value) =>
             value?.Replace("-", string.Empty);
+
+        /// <summary>
+        /// Used to strip strings from line breaks before sending to log.
+        /// should be added to all strings recieved from browser input or calls.
+        /// </summary>
+        public static string ToLoggableFormat(this string value) =>
+            value.Replace("\r\n", string.Empty).Replace("\n", string.Empty);
     }
 }
