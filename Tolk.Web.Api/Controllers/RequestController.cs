@@ -706,7 +706,7 @@ namespace Tolk.Web.Api.Controllers
         [OpenApiTag("Request")]
         public async Task<IActionResult> File(string orderNumber, int attachmentId, string callingUser)
         {
-            _logger.LogInformation($"{callingUser.ToLoggableFormat()} called {nameof(File)} to get the attachment {attachmentId} on order {orderNumber}");
+            _logger.LogInformation($"{callingUser?.ToLoggableFormat() ?? "Unspecified user"} called {nameof(File)} to get the attachment {attachmentId} on order {orderNumber?.ToLoggableFormat()}");
 
             try
             {

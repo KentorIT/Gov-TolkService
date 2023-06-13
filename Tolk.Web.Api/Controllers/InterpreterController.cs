@@ -124,7 +124,7 @@ namespace Tolk.Web.Api.Controllers
                 return ReturnError(ErrorCodes.IncomingPayloadIsMissing);
             }
 
-            _logger.LogInformation($"'{callingUser?.ToLoggableFormat() ?? "Unspecified user"}' called {nameof(View)} to view the interpreter with {(interpreterId.HasValue ? $"interpreterId: {interpreterId}" : $"officialInterpreterId: {officialInterpreterId.ToLoggableFormat()}")}");
+            _logger.LogInformation($"'{callingUser?.ToLoggableFormat() ?? "Unspecified user"}' called {nameof(View)} to view the interpreter with {(interpreterId.HasValue ? $"interpreterId: {interpreterId}" : $"officialInterpreterId: {officialInterpreterId?.ToLoggableFormat()}")}");
             try
             {
                 var brokerId = User.TryGetBrokerId().Value;
