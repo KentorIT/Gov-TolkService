@@ -99,7 +99,7 @@ function changeRequisition(element, path, tabPaneSelector) {
 }
 
 $.urlParam = function (name) {
-    var results = new RegExp('[\?&]' + name + "=([^&#]*)").exec(window.location.href);
+    var results = new RegExp('[?&]' + name + "=([^&#]*)").exec(window.location.href);
     if (results != null) { //eslint-disable-line eqeqeq
         return decodeURI(results[1]) || 0;
     }
