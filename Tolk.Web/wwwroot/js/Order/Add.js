@@ -1,12 +1,6 @@
 ﻿var LastAnswerByIsShowing = false;
 var pendingRequests = false;
 var ajaxQueue = [];
-$(document).ajaxSend(function (event, request, settings) {
-    if (settings.url.includes('/Validate/CustomerSpecific')) {         
-        ajaxQueue.pop();
-        ajaxQueue.push(request);
-    }
-})
 
 $(function () {
     var currentOccasionId = 0;
@@ -15,7 +9,10 @@ $(function () {
 
     var occasionButtons = '<div class="pull-right">' +
         '<a class="btn btn-danger small-button remove">Ta bort <span class="btn-remove-times-small">&times;</span></a>' +
-        '</div>';
+        '</div>';    
+    $("body").on("ajaxSend", function (event, request, settings) {
+        addToAjaxQueue(request, settings)
+    });
 
     var holidays;
 
@@ -928,4 +925,11 @@ $(function () {
             $(this).removeClass("ignore-validation");
         });
     });
+    
+    var addToAjaxQueue = function (request, settings) {
+        if (settings.url.includes('/Validate/CustomerSpecific')) {
+            ajaxQueue.pop();
+            ajaxQueue.push(request);
+        }
+    };
 });
