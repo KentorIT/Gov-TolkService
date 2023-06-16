@@ -42,6 +42,7 @@ namespace Tolk.Web.Models
         public string OrganisationNumber { get; set; }
 
         [Display(Name = "Peppol-ID")]
+        [Required]
         public string PeppolId { get; set; }
 
         [Display(Name = "Använd order agreements från och med", Description = "Sätt det datum som systemet skall börja skapa order agreements från. Om datumet är i framtiden så kommer de börja skapas från och med då, och är det innan dagens datum så kommer de beställningar som faller inom regelverket skapas direkt när denna inställning sparas.")]

@@ -69,14 +69,14 @@ namespace Tolk.Web.Api.Controllers
             }
             if (!_tolkBaseOptions.EnableCustomerApi)
             {
-                _logger.LogWarning($"{model.CallingUser} called {method}, but CustomerApi is not enabled!");
+                _logger.LogWarning($"{model.CallingUser?.ToLoggableFormat()} called {method}, but CustomerApi is not enabled!");
                 return BadRequest(new ValidationProblemDetails { Title = "CustomerApi is not enabled!" });
             }
             if (string.IsNullOrEmpty(model.CallingUser))
             {
                 return ReturnError(ErrorCodes.CallingUserMissing, method);
             }
-            _logger.LogInformation($"{model.CallingUser} is creating a new order");
+            _logger.LogInformation($"{model.CallingUser?.ToLoggableFormat()} is creating a new order");
             if (ModelState.IsValid)
             {
                 try
@@ -121,14 +121,14 @@ namespace Tolk.Web.Api.Controllers
             }
             if (!_tolkBaseOptions.EnableCustomerApi)
             {
-                _logger.LogWarning($"{model.CallingUser} called {method}, but CustomerApi is not enabled!");
+                _logger.LogWarning($"{model.CallingUser?.ToLoggableFormat()} called {method}, but CustomerApi is not enabled!");
                 return BadRequest(new ValidationProblemDetails { Title = "CustomerApi is not enabled!" });
             }
             if (string.IsNullOrEmpty(model.CallingUser))
             {
                 return ReturnError(ErrorCodes.CallingUserMissing, method);
             }
-            _logger.LogInformation($"{model.CallingUser} is approving request answer on {model.OrderNumber} from {model.BrokerIdentifier} ");
+            _logger.LogInformation($"{model.CallingUser?.ToLoggableFormat()} is approving request answer on {model.OrderNumber?.ToLoggableFormat()} from {model.BrokerIdentifier?.ToLoggableFormat()} ");
             if (ModelState.IsValid)
             {
                 try
@@ -183,14 +183,14 @@ namespace Tolk.Web.Api.Controllers
             }
             if (!_tolkBaseOptions.EnableCustomerApi)
             {
-                _logger.LogWarning($"{model.CallingUser} called {method}, but CustomerApi is not enabled!");
+                _logger.LogWarning($"{model.CallingUser?.ToLoggableFormat()} called {method}, but CustomerApi is not enabled!");
                 return BadRequest(new ValidationProblemDetails { Title = "CustomerApi is not enabled!" });
             }
             if (string.IsNullOrEmpty(model.CallingUser))
             {
                 return ReturnError(ErrorCodes.CallingUserMissing, method);
             }
-            _logger.LogInformation($"{model.CallingUser} is denying request answer on {model.OrderNumber} from {model.BrokerIdentifier} ");
+            _logger.LogInformation($"{model.CallingUser?.ToLoggableFormat()} is denying request answer on {model.OrderNumber?.ToLoggableFormat()} from {model.BrokerIdentifier?.ToLoggableFormat()} ");
             if (ModelState.IsValid)
             {
                 AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());
@@ -234,14 +234,14 @@ namespace Tolk.Web.Api.Controllers
             }
             if (!_tolkBaseOptions.EnableCustomerApi)
             {
-                _logger.LogWarning($"{model.CallingUser} called {method}, but CustomerApi is not enabled!");
+                _logger.LogWarning($"{model.CallingUser?.ToLoggableFormat()} called {method}, but CustomerApi is not enabled!");
                 return BadRequest(new ValidationProblemDetails { Title = "CustomerApi is not enabled!" });
             }
             if (string.IsNullOrEmpty(model.CallingUser))
             {
                 return ReturnError(ErrorCodes.CallingUserMissing, method);
             }
-            _logger.LogInformation($"{model.CallingUser} is confirming that no-one accepted {model.OrderNumber}");
+            _logger.LogInformation($"{model.CallingUser?.ToLoggableFormat()} is confirming that no-one accepted {model.OrderNumber?.ToLoggableFormat()}");
             if (ModelState.IsValid)
             {
                 AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());
@@ -286,14 +286,14 @@ namespace Tolk.Web.Api.Controllers
             }
             if (!_tolkBaseOptions.EnableCustomerApi)
             {
-                _logger.LogWarning($"{model.CallingUser} called {method}, but CustomerApi is not enabled!");
+                _logger.LogWarning($"{model.CallingUser?.ToLoggableFormat()} called {method}, but CustomerApi is not enabled!");
                 return BadRequest(new ValidationProblemDetails { Title = "CustomerApi is not enabled!" });
             }
             if (string.IsNullOrEmpty(model.CallingUser))
             {
                 return ReturnError(ErrorCodes.CallingUserMissing, method);
             }
-            _logger.LogInformation($"{model.CallingUser} is confirming that broker cancelled {model.OrderNumber}");
+            _logger.LogInformation($"{model.CallingUser?.ToLoggableFormat()} is confirming that broker cancelled {model.OrderNumber?.ToLoggableFormat()}");
             if (ModelState.IsValid)
             {
                 AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());
@@ -338,14 +338,14 @@ namespace Tolk.Web.Api.Controllers
             }
             if (!_tolkBaseOptions.EnableCustomerApi)
             {
-                _logger.LogWarning($"{model.CallingUser} called {method}, but CustomerApi is not enabled!");
+                _logger.LogWarning($"{model.CallingUser?.ToLoggableFormat()} called {method}, but CustomerApi is not enabled!");
                 return BadRequest(new ValidationProblemDetails { Title = "CustomerApi is not enabled!" });
             }
             if (string.IsNullOrEmpty(model.CallingUser))
             {
                 return ReturnError(ErrorCodes.CallingUserMissing, method);
             }
-            _logger.LogInformation($"{model.CallingUser} is confirming that no-one accepted {model.OrderNumber}");
+            _logger.LogInformation($"{model.CallingUser?.ToLoggableFormat()} is confirming that no-one accepted {model.OrderNumber?.ToLoggableFormat()}");
             if (ModelState.IsValid)
             {
                 AspNetUser apiUser = await _dbContext.Users.GetUserWithCustomerOrganisationById(User.UserId());

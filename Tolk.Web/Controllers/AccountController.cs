@@ -280,7 +280,7 @@ namespace Tolk.Web.Controllers
                     {
                         //I want this to be done in two steps, first validating the user, then if valid user but inactive log out again, with proper message.
                         await _signInManager.SignOutAsync();
-                        _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName);
+                        _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName.ToLoggableFormat());
                         ModelState.AddModelError(nameof(model.UserName), "Ditt konto är tillfälligt inaktiverat, vänligen kontakta tolkar.avropa@kammarkollegiet.se för mer information.");
                         return View(model);
                     }
@@ -289,12 +289,12 @@ namespace Tolk.Web.Controllers
                     await _dbContext.SaveChangesAsync();
                     await _userService.LogLoginAsync(user.Id);
 
-                    _logger.LogInformation("User {userName} logged in.", model.UserName);
+                    _logger.LogInformation("User {userName} logged in.", model.UserName.ToLoggableFormat());
                     return RedirectToLocal(returnUrl);
                 }
                 if (result.IsLockedOut)
                 {
-                    _logger.LogWarning("User account {userName} locked out.", model.UserName);
+                    _logger.LogWarning("User account {userName} locked out.", model.UserName.ToLoggableFormat());
                     return RedirectToAction(nameof(Lockout));
                 }
             }
@@ -331,14 +331,13 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
-            _logger.LogDebug("Requesting password reset for {email}", model.Email);
+            _logger.LogDebug("Requesting password reset for {email}", model.Email.ToLoggableFormat());
             if (ModelState.IsValid)
             {
                 var user = await _dbContext.Users.SingleOrDefaultAsync(u => !u.IsApiUser && u.IsActive && u.NormalizedEmail == model.Email.ToUpper());
                 if (user == null)
                 {
-                    _logger.LogInformation("Tried to reset password for {email}, but found no such user.",
-                        model.Email);
+                    _logger.LogInformation("Tried to reset password for {email}, but found no such user.", model.Email.ToLoggableFormat());
                     // Don't reveal that the user does not exist
                     return RedirectToAction(nameof(ForgotPasswordConfirmation));
                 }
@@ -568,7 +567,7 @@ namespace Tolk.Web.Controllers
 
             if (result.Succeeded)
             {
-                _logger.LogInformation("Confirmed e-mail for user {userId} ({email})", userId, user.Email);
+                _logger.LogInformation("Confirmed e-mail for user {userId} ({email})", userId.ToLoggableFormat(), user.Email.ToLoggableFormat());
                 // Resetting the security stamp invalidates the code so operation cannot be redone.
                 await _userManager.UpdateSecurityStampAsync(user);
                 await _signInManager.SignInAsync(user, true);
@@ -597,7 +596,7 @@ namespace Tolk.Web.Controllers
                 }
                 else
                 {
-                    _logger.LogWarning("An account confirmation link was requested for non-existing user id {userId}", model.UserId);
+                    _logger.LogWarning("An account confirmation link was requested for non-existing user id {userId}", model.UserId.ToLoggableFormat());
                 }
             }
             return RedirectToAction(nameof(ConfirmAccountLinkSent));

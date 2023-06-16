@@ -288,7 +288,7 @@ namespace Tolk.Web.Api.Controllers
                 var requestGroup = await _apiOrderService.CheckOrderGroupAndGetRequestGroup(model.OrderGroupNumber, brokerId);
                 if (requestGroup.Status != RequestStatus.DeniedByCreator)
                 {
-                    _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm denial {model.OrderGroupNumber}, but requestgroup not in correct status.");
+                    _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm denial {model.OrderGroupNumber.ToLoggableFormat()}, but requestgroup not in correct status.");
                     throw new InvalidApiCallException(ErrorCodes.RequestGroupNotInCorrectState);
                 }
                 //Get User, if any...
@@ -330,7 +330,7 @@ namespace Tolk.Web.Api.Controllers
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 if (requestGroup.Status != RequestStatus.ResponseNotAnsweredByCreator)
                 {
-                    _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm no answer {model.OrderGroupNumber}, but requestgroup not in correct status.");
+                    _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm no answer {model.OrderGroupNumber.ToLoggableFormat()}, but requestgroup not in correct status.");
                     throw new InvalidApiCallException(ErrorCodes.RequestGroupNotInCorrectState);
                 }
                 await _requestService.AddRequestsWithConfirmationListsToRequestGroup(requestGroup);
@@ -369,7 +369,7 @@ namespace Tolk.Web.Api.Controllers
                 var user = await _apiUserService.GetBrokerUser(model.CallingUser, brokerId);
                 if (requestGroup.Status != RequestStatus.CancelledByCreator)
                 {
-                    _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm cancellation {model.OrderGroupNumber}, but requestgroup not in correct status.");
+                    _logger.LogWarning($"Broker with broker id {brokerId}, tried to confirm cancellation {model.OrderGroupNumber.ToLoggableFormat()}, but requestgroup not in correct status.");
                     throw new InvalidApiCallException(ErrorCodes.RequestGroupNotInCorrectState);
                 }
                 await _requestService.AddRequestsWithConfirmationListsToRequestGroup(requestGroup);
@@ -399,7 +399,7 @@ namespace Tolk.Web.Api.Controllers
         [OpenApiTag("RequestGroup")]
         public async Task<IActionResult> View(string orderGroupNumber, string callingUser)
         {
-            _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active request for the order group {orderGroupNumber}");
+            _logger.LogInformation($"'{callingUser?.ToLoggableFormat() ?? "Unspecified user"}' called {nameof(View)} for the active request for the order group {orderGroupNumber?.ToLoggableFormat()}");
             try
             {
                 var brokerId = User.TryGetBrokerId().Value;
@@ -430,7 +430,7 @@ namespace Tolk.Web.Api.Controllers
         [OpenApiTag("RequestGroup")]
         public async Task<IActionResult> File(string orderGroupNumber, int attachmentId, string callingUser)
         {
-            _logger.LogInformation($"{callingUser} called {nameof(File)} to get the attachment {attachmentId} on order group {orderGroupNumber}");
+            _logger.LogInformation($"{callingUser?.ToLoggableFormat() ?? "Unspecified user"} called {nameof(File)} to get the attachment {attachmentId} on order group {orderGroupNumber?.ToLoggableFormat()}");
 
             try
             {

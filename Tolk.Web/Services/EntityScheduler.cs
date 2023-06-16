@@ -112,11 +112,11 @@ namespace Tolk.Web.Services
             {
                 using TolkDbContext context = _options.GetContext();
                 await context.OutboundEmails.Where(e => e.IsHandling == true)
-                    .Select(c => c).ForEachAsync(c => c.IsHandling = false);
+                    .ExecuteUpdateAsync(c => c.SetProperty(p => p.IsHandling, false));
                 await context.OutboundWebHookCalls.Where(e => e.IsHandling == true)
-                    .Select(c => c).ForEachAsync(c => c.IsHandling = false);
+                    .ExecuteUpdateAsync(c => c.SetProperty(p => p.IsHandling, false));
                 await context.OutboundPeppolMessages.Where(e => e.IsHandling == true)
-                    .Select(c => c).ForEachAsync(c => c.IsHandling = false);
+                    .ExecuteUpdateAsync(c => c.SetProperty(p => p.IsHandling, false));
                 await context.SaveChangesAsync();
             }
 

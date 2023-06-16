@@ -123,7 +123,7 @@ namespace Tolk.Web.Api.Controllers
         [OpenApiTag("Complaint")]
         public async Task<IActionResult> View(string orderNumber, string callingUser)
         {
-            _logger.LogInformation($"'{callingUser ?? "Unspecified user"}' called {nameof(View)} for the active complaint for the order {orderNumber}");
+            _logger.LogInformation($"'{callingUser?.ToLoggableFormat() ?? "Unspecified user"}' called {nameof(View)} for the active complaint for the order {orderNumber?.ToLoggableFormat()}");
             var brokerId = User.TryGetBrokerId().Value;
             var complaint = await _dbContext.Complaints
                 .SingleOrDefaultAsync(c => c.Request.Order.OrderNumber == orderNumber &&

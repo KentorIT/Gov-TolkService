@@ -127,7 +127,8 @@ namespace CustomerMock.Services
             string message = $"Börjar beställa {numberOfOrders}st ordrar {now.ToString("yyyy-MM-dd hh:mm:ss")}, med {delay} ms fördröjning. Förväntat slut utan fördröjning: {now.AddMilliseconds(numberOfOrders * delay).ToString("yyyy-MM-dd hh:mm:ss")} ";
             for (int i = 0; i < numberOfOrders; ++i)
             {
-                await CreateOrder((i % 2 == 0) ? "ADDTRAVELCOSTS" : string.Empty);
+                var result = await CreateOrder((i % 2 == 0) ? "ADDTRAVELCOSTS" : string.Empty);
+                await _hubContext.Clients.All.SendAsync("OutgoingCall", result);
                 Thread.Sleep(delay);
             }
             return message + $" Faktisk sluttid: {DateTime.Now.AddMilliseconds(numberOfOrders * delay).ToString("yyyy-MM-dd hh:mm:ss")}";
@@ -164,7 +165,6 @@ namespace CustomerMock.Services
                 //Requirements = new[] { new RequirementRequestModel { IsRequired } }
                 //Attachments = new[] { new AttachmentModel { FileName = "xo.docx", FileBase64 = "" } }
             };
-            await _hubContext.Clients.All.SendAsync("OutgoingCall", "Order skapad!");
 
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
             var response = await client.PostAsync(_options.TolkApiBaseUrl.BuildUri("Order/Create"), content);

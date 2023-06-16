@@ -194,7 +194,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 addContractInfo: false);
             await _dbContext.SaveChangesAsync();
             _logger.LogInformation("Verification link for changed email sent to {email} for {userId}",
-                           newEmailAddress, user.Id);
+                           newEmailAddress.ToLoggableFormat(), user.Id);
         }
 
         public async Task LogOnUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatingUpdatedById = null)

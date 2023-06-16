@@ -48,7 +48,7 @@ function refreshCollapsibles() {
     $(".collapsible-section").each(function () {
         var element = $(this);
         if (!element.hasClass("disabled")) {
-            if ($(element.attr("data-target")).hasClass("in")) {
+            if ($("body").find(element.attr("data-target")).hasClass("in")) {
                 element.children("h1").children("i").remove();
                 $('<i class="glyphicon glyphicon-triangle-bottom" style="font-size:15px;margin-right:10px;"></i>').prependTo(element.children("h1"));
             }
@@ -99,7 +99,7 @@ function changeRequisition(element, path, tabPaneSelector) {
 }
 
 $.urlParam = function (name) {
-    var results = new RegExp('[\?&]' + name + "=([^&#]*)").exec(window.location.href);
+    var results = new RegExp('[?&]' + name + "=([^&#]*)").exec(window.location.href);
     if (results != null) { //eslint-disable-line eqeqeq
         return decodeURI(results[1]) || 0;
     }
@@ -420,14 +420,14 @@ $(function () {
 
     $("body").on("click", ".collapsible-section", function () {
         var element = $(this);
-
-        if ($(element.attr("data-target")).hasClass("in")) {
-            $(element.attr("data-target")).collapse("hide");
+        var $target = $("body").find(element.attr("data-target"));
+        if ($target.hasClass("in")) {
+            $target.collapse("hide");
             element.children("h2").children("span").removeClass("glyphicon-triangle-bottom");
             element.children("h2").children("span").addClass("glyphicon-triangle-right");
         }
         else {
-            $(element.attr("data-target")).collapse("show");
+            $target.collapse("show");
             element.children("h2").children("span").removeClass("glyphicon-triangle-right");
             element.children("h2").children("span").addClass("glyphicon-triangle-bottom");
         }

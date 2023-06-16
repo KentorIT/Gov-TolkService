@@ -56,7 +56,7 @@ namespace Tolk.Web.Controllers
             {
                 return WrapResultInJson(VerificationResult.NotFound);
             }
-            _logger.LogInformation($"Verifying interpreterId {officialInterpreterId} for competence {competenceLevel} on order {orderId}");
+            _logger.LogInformation($"Verifying interpreterId {officialInterpreterId?.ToLoggableFormat()} for competence {competenceLevel} on order {orderId}");
             return WrapResultInJson(await _verificationService.VerifyInterpreter(officialInterpreterId, orderId.Value, competenceLevel));
         }
 
