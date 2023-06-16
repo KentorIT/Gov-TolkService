@@ -917,8 +917,7 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<PeppolPayload> GetById(this IQueryable<PeppolPayload> payloads, int id)
            => await payloads
-                .Include(p => p.Request).ThenInclude(r => r.Order)
-                .Include(p => p.CreatedByUser)
+                .Include(p => p.Request).ThenInclude(r => r.Order)                
                 .Where(p => p.PeppolPayloadId == id).SingleOrDefaultAsync();
 
         public static DateTimeOffset ClosestStartAt(this IEnumerable<Request> requests)

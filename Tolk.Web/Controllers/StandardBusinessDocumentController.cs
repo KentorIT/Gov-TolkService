@@ -1,8 +1,8 @@
 ﻿using DataTables.AspNet.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
@@ -16,23 +16,17 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Policy = Policies.SystemCentralLocalAdmin)]
+    [Authorize(Policy = Policies.SystemOrApplicationOrCustomerCentralAdmin)]
     public class StandardBusinessDocumentController : Controller
     {
         private readonly TolkDbContext _dbContext;
         private readonly IAuthorizationService _authorizationService;
-        private readonly OrderService _orderService;
-        private readonly ISwedishClock _clock;
-        private readonly ILogger _logger;
         private readonly TolkOptions _options;        
         private readonly StandardBusinessDocumentService _standardBusinessDocumentService;
         private readonly CacheService _cacheService;
         public StandardBusinessDocumentController(
             TolkDbContext dbContext,
             IAuthorizationService authorizationService,
-            OrderService orderService,
-            ISwedishClock clock,
-            ILogger<StandardBusinessDocumentController> logger,
             IOptions<TolkOptions> options,            
             CacheService cacheService,
             StandardBusinessDocumentService standardBusinessDocumentService
@@ -40,26 +34,22 @@ namespace Tolk.Web.Controllers
         {
             _dbContext = dbContext;
             _authorizationService = authorizationService;
-            _orderService = orderService;
-            _clock = clock;
-            _logger = logger;
             _options = options?.Value;            
             _cacheService = cacheService;
             _standardBusinessDocumentService = standardBusinessDocumentService;
         }
 
         public IActionResult List()
-        {
-            if (!User.IsInRole(Roles.SystemAdministrator) && !_cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.TryGetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderAgreements)))
+        {         
+            if (!User.IsAppOrSysAdmin() && !_cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.TryGetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderAgreements)))
             {
                 return Forbid();
             }
 
             return View(new PeppolMessageListModel
             {
-                IsApplicationAdmin = User.IsInRole(Roles.ApplicationAdministrator),
                 FilterModel = new PeppolMessageFilterModel { 
-                    IsAdmin = User.IsInRole(Roles.SystemAdministrator),
+                    IsAdmin = User.IsAppOrSysAdmin()
                 }
             });
         }
@@ -108,9 +98,12 @@ namespace Tolk.Web.Controllers
         {
             var model = new PeppolMessageFilterModel();
             await TryUpdateModelAsync(model);
-            model.IsAdmin = User.IsInRole(Roles.SystemAdministrator);
+            model.IsAdmin = User.IsAppOrSysAdmin();
             int? customerOrganisationId = !model.IsAdmin ? User.TryGetCustomerOrganisationId() : null;
-
+            if(!model.IsAdmin && !customerOrganisationId.HasValue)
+            {
+                throw new InvalidOperationException($"{nameof(ListPeppolMessages)} User with ID: {User.GetUserId} is not linked to a customer organisation and is not a Sys- or  App Administrator");
+            }
             var payloads = _dbContext.PeppolPayloads.ListOrderAgreements(customerOrganisationId);
             return AjaxDataTableHelper.GetData(request, payloads.Count(), model.Apply(payloads), x => x.Select(e =>
                     new PeppolMessageListItemModel
@@ -120,8 +113,7 @@ namespace Tolk.Web.Controllers
                         CreatedAt = e.CreatedAt,
                         OrderNumber = e.Request.Order.OrderNumber,
                         PeppolMessageType = e.PeppolMessageType.ToString(),
-                        IsLatest = e.ReplacedById == null,
-                        CreatedBy = e.CreatedBy != null ? e.CreatedByUser.NameFamily + ", " + e.CreatedByUser.NameFirst : "Systemet",
+                        IsLatest = e.ReplacedById == null,                        
                         CustomerName = e.Request.Order.CustomerOrganisation.Name
                     }));
         }
@@ -130,7 +122,7 @@ namespace Tolk.Web.Controllers
         public JsonResult ListColumnDefinition()
         {
             var definition = AjaxDataTableHelper.GetColumnDefinitions<PeppolMessageListItemModel>().ToList();
-            definition.Single(d => d.Name == nameof(PeppolMessageListItemModel.CustomerName)).Visible = User.IsInRole(Roles.SystemAdministrator);
+            definition.Single(d => d.Name == nameof(PeppolMessageListItemModel.CustomerName)).Visible = User.IsAppOrSysAdmin();
             return Json(definition);
         }
     }

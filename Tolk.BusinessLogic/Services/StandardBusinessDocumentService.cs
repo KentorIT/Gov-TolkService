@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using NJsonSchema;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -45,7 +44,7 @@ namespace Tolk.BusinessLogic.Services
             _emailService = emailService;
         }       
 
-        public PeppolPayload CreateOrderAgreement(Request request)
+        private PeppolPayload CreateOrderAgreement(Request request)
         {
             // Check if OA should be created from Requisition (Cancelled Order)
             using var memoryStream = new MemoryStream();
@@ -61,25 +60,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 model = new OrderAgreementModel(request, _clock.SwedenNow, _tolkDbContext.RequestPriceRows.GetPriceRowsForRequest(request.RequestId).ToList());
             }
-            SerializeModel<OrderAgreementModel>(model, writer);
-            _logger.LogInformation("Finished serializing order agreement from {requestId}.", request.RequestId);
-            
-            memoryStream.Position = 0;
-            byte[] byteArray = new byte[memoryStream.Length];
-            memoryStream.Read(byteArray, 0, (int)memoryStream.Length);
-            memoryStream.Close();            
-           
-            var payload = new PeppolPayload
-            {
-                RequestId = request.RequestId,
-                RequisitionId = request.CurrentlyActiveRequisition?.RequisitionId,
-                OrderId = request.Order.OrderId,
-                PeppolMessageType = PeppolMessageType.OrderAgreement,
-                Payload = byteArray,
-                CreatedAt = _clock.SwedenNow,                
-                IdentificationNumber = model.ID.Value
-            };            
-            return payload;
+            return SerializeAndCreatePeppolPayload<OrderAgreementModel>(request, model,PeppolMessageType.OrderAgreement);           
         }
 
         public async Task<PeppolPayload> CreateAndStoreStandardDocument(int requestId)
@@ -131,7 +112,7 @@ namespace Tolk.BusinessLogic.Services
 
         }
 
-        public PeppolPayload CreateOrderResponse(Request request, List<PriceRowComparisonResult> priceRows)
+        private PeppolPayload CreateOrderResponse(Request request, List<PriceRowComparisonResult> priceRows)
         {                             
             OrderResponseModel model;            
 
@@ -145,37 +126,8 @@ namespace Tolk.BusinessLogic.Services
                 _logger.LogInformation("Start serializing order response from {requestId}.", request.RequestId);
                 model = new OrderResponseModel(request, _clock.SwedenNow, priceRows);
             }
-            
-            using var memoryStream = new MemoryStream();
-            using var writer = new StreamWriter(memoryStream, Encoding.UTF8);
-            SerializeModel <OrderResponseModel>(model, writer);
-
-            if(request.CurrentlyActiveRequisition != null)
-            {
-                _logger.LogInformation("Finished serializing order response from {requisitionId}.", request.CurrentlyActiveRequisition.RequisitionId);
-            }
-            else
-            {
-                _logger.LogInformation("Finished serializing order response from {requestId}.", request.RequestId);
-            }
-
-            memoryStream.Position = 0;
-            byte[] byteArray = new byte[memoryStream.Length];
-            memoryStream.Read(byteArray, 0, (int)memoryStream.Length);
-            memoryStream.Close();
-
-            var payload = new PeppolPayload
-            {
-                RequestId = request.RequestId,
-                RequisitionId = request.CurrentlyActiveRequisition?.RequisitionId,
-                OrderId = request.Order.OrderId,
-                PeppolMessageType = PeppolMessageType.OrderResponse,
-                Payload = byteArray,
-                CreatedAt = _clock.SwedenNow,
-                IdentificationNumber = model.ID.Value
-            };
-            return payload;
-        }
+            return SerializeAndCreatePeppolPayload<OrderResponseModel>(request, model, PeppolMessageType.OrderResponse); 
+        }       
 
         private async Task<List<PriceRowComparisonResult>> GetPriceRowComparisonResult(Request request, PeppolPayload payloadToReplace)
         {
@@ -231,7 +183,7 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task<bool> HandleStandardDocumentCreation()
         {
-            if (!_dateCalculationService.IsWorkingDay(_clock.SwedenNow.UtcDateTime))
+            if (!_dateCalculationService.IsWorkingDay(_clock.SwedenNow))
             {
                 return false;
             }
@@ -316,13 +268,37 @@ namespace Tolk.BusinessLogic.Services
             memoryStream.Close();
             return new PeppolPayload
             {
-                Payload = byteArray
+                Payload = byteArray,
+                Request = request
             };            
         }
 
         private async Task SendErrorMail(string methodname, Exception ex)
         {
             await _emailService.SendErrorEmail(nameof(StandardBusinessDocumentService), methodname, ex);
+        }
+
+        private PeppolPayload SerializeAndCreatePeppolPayload<T>(Request request, OrderResponseModelBase model, PeppolMessageType type) where T : OrderResponseModelBase
+        {          
+            using var memoryStream = new MemoryStream();
+            using var writer = new StreamWriter(memoryStream, Encoding.UTF8);
+            SerializeModel<T>(model, writer);
+
+            if (request.CurrentlyActiveRequisition != null)
+            {
+                _logger.LogInformation("Finished serializing {type} from {requisitionId}.", typeof(T), request.CurrentlyActiveRequisition.RequisitionId);
+            }
+            else
+            {
+                _logger.LogInformation("Finished serializing {type} from {requestId}.", typeof(T), request.RequestId);
+            }
+
+            memoryStream.Position = 0;
+            byte[] byteArray = new byte[memoryStream.Length];
+            memoryStream.Read(byteArray, 0, (int)memoryStream.Length);
+            memoryStream.Close();
+
+            return new PeppolPayload(request, type, byteArray, _clock.SwedenNow, model.ID.Value);
         }
 
         private static void SerializeModel<T>(OrderResponseModelBase model, StreamWriter writer)

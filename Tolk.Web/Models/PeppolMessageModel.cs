@@ -28,11 +28,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Skapat")]
         public DateTimeOffset CreatedAt { get; set; }
 
-        [Display(Name = "Skapat av")]
-        [ColumnDefinitions(Index = 6, Name = nameof(CreatedBy), Title = "Skapad av", Sortable = false)]
-        public string CreatedBy { get; set; }
-
-        [ColumnDefinitions(Index = 7, Name = nameof(CustomerName), Title = "Myndighet", Sortable = false)]
+        [ColumnDefinitions(Index = 6, Name = nameof(CustomerName), Title = "Myndighet", Sortable = false)]
         public string CustomerName { get; set; }
 
         [Display(Name = "Genererad från")]
@@ -48,8 +44,7 @@ namespace Tolk.Web.Models
                 IdentificationNumber = payload.IdentificationNumber,
                 CreatedAt = payload.CreatedAt,
                 PeppolMessageType = payload.PeppolMessageType.ToString(),
-                OrderNumber = payload.Request.Order.OrderNumber,
-                CreatedBy = payload.CreatedByUser?.FullName ?? "Systemet",
+                OrderNumber = payload.Request.Order.OrderNumber,                
                 BasedOn = payload.RequisitionId.HasValue ? "Genererad från rekvisition" : "Genererad från bekräftelse",
                 IsLatest = !payload.ReplacedById.HasValue,
                 EnableMockInvoice = EnableMockInvoice,

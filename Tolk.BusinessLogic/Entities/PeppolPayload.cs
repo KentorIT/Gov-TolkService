@@ -12,17 +12,12 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(50)]
         public string IdentificationNumber { get; set; }
         public int RequestId { get; set; }
-        public int OrderId { get; set; }        
+        public int OrderId { get; set; }
         [Required]
         public byte[] Payload { get; set; }
         public int? RequisitionId { get; set; }
 
         public DateTimeOffset CreatedAt { get; set; }
-
-        //This will be null if the payload was created automatically by the system
-        public int? CreatedBy { get; set; }
-
-        public int? ImpersonatingCreatedBy { get; set; }
 
         public int? ReplacedById { get; set; }
 
@@ -46,15 +41,24 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(OrderId))]
         public Order Order { get; set; }
 
-        [ForeignKey(nameof(CreatedBy))]
-        public AspNetUser CreatedByUser { get; set; }
-
-        [ForeignKey(nameof(ImpersonatingCreatedBy))]
-        public AspNetUser CreatedByImpersonator { get; set; }
-
         [ForeignKey(nameof(OutboundPeppolMessageId))]
         public OutboundPeppolMessage OutboundPeppolMessage { get; set; }
 
         #endregion
+
+        public PeppolPayload()
+        {
+        }
+
+        public PeppolPayload(Request request, PeppolMessageType type, byte[] payload, DateTimeOffset createdAt, string documentId)
+        {
+            RequestId = request.RequestId;
+            RequisitionId = request.CurrentlyActiveRequisition?.RequisitionId;
+            OrderId = request.Order.OrderId;
+            PeppolMessageType = type;
+            Payload = payload;
+            CreatedAt = createdAt;
+            IdentificationNumber = documentId;
+        }
     }
 }

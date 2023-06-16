@@ -2,11 +2,12 @@
 using System.Xml;
 using System.Xml.Serialization;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Models.OrderAgreement
-{    
+{
     [XmlRoot("OrderResponse",Namespace = Constants.defaultNamespace)]    
     [XmlInclude(typeof(OrderResponseModel))]
     [XmlInclude(typeof(OrderAgreementModel))]
@@ -19,7 +20,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         public string OrderNumber { get; set; }
 
         [XmlIgnore]
-        public DateTimeOffset IssuedAt { get; set; }        
+        public DateTimeOffset IssuedAt { get; set; }
 
         [XmlElement(Namespace = Constants.cbc, Order = 1)]        
         public string CustomizationID { get; set; }
@@ -52,7 +53,50 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
             set => IssuedAt = IssuedAt.AddTime(value);
 
         }
-       
+        protected string _note { get; set; }
+        protected string _customerReference { get; set; }
+        protected OrganizationPartyModel _sellerSupplierParty { get; set; }        
+        protected OrganizationPartyModel _buyerCustomerParty { get; set; }
+
+        public OrderResponseModelBase() { }
+        
+        public OrderResponseModelBase(Request request, DateTimeOffset generatedAt)
+        {
+            var order = request.Order;
+
+            IssuedAt = generatedAt;
+            OrderNumber = order.OrderNumber;
+            _customerReference = order.InvoiceReference;            
+            _note = "Created from request";
+            _sellerSupplierParty = GetSellerSupplierParty(request);
+            _buyerCustomerParty = GetBuyerCustomerParty(order);
+        }
+        public OrderResponseModelBase(Requisition requisition, DateTimeOffset generatedAt)
+        {
+            switch (requisition.Status)
+            {
+                case RequisitionStatus.Approved:
+                case RequisitionStatus.Reviewed:
+                    IssuedAt = requisition.ProcessedAt.Value;
+                    break;
+                case RequisitionStatus.Created:
+                case RequisitionStatus.AutomaticGeneratedFromCancelledOrder:
+                    IssuedAt = generatedAt;
+                    break;
+                case RequisitionStatus.DeniedByCustomer:
+                case RequisitionStatus.Commented:
+                    throw new InvalidOperationException($"Requisition {requisition.RequisitionId} is {requisition.Status}. If the customer is in dissagreement, an order agreement cannot be created.");
+            }
+
+            var order = requisition.Request.Order;
+
+            OrderNumber = order.OrderNumber;                        
+            _note = "Created from requisition";     
+            _sellerSupplierParty = GetSellerSupplierParty(requisition.Request);
+            _buyerCustomerParty = GetBuyerCustomerParty(order);
+            _customerReference = order.InvoiceReference;         
+        }
+
         protected static OrganizationPartyModel GetBuyerCustomerParty(Order order)
         {
             return new OrganizationPartyModel

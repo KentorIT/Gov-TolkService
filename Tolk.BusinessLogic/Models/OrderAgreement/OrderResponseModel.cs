@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
 using Tolk.BusinessLogic.Entities;
-using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Models.OrderAgreement
@@ -12,52 +11,26 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
     [XmlRoot("OrderResponse")]
     public class OrderResponseModel : OrderResponseModelBase
     {
-        public OrderResponseModel()
+        private OrderResponseModel()
         {            
         }
-        public OrderResponseModel(Request request,DateTimeOffset generatedAt, IEnumerable<PriceRowComparisonResult> prices)
+        public OrderResponseModel(Request request,DateTimeOffset generatedAt, IEnumerable<PriceRowComparisonResult> prices) : base(request,generatedAt)
         {
             var order = request.Order;
             CustomizationID = Constants.OrderResponseCustomizationId;
             ProfileID = Constants.OrderResponseProfileId;            
-            DocumentID = Guid.NewGuid().ToString();
-            IssuedAt = generatedAt;
-            Note = "Created from request";
-            OrderNumber = order.OrderNumber;
-            CustomerReference = order.InvoiceReference;
-            OrderReference = new ObjectWithIdModel { ID = new EndPointIDModel { Value = $"{Constants.IdPrefix}{OrderNumber}" } };           
-            SellerSupplierParty = GetSellerSupplierParty(request);
-            BuyerCustomerParty = GetBuyerCustomerParty(order);
+            DocumentID = Guid.NewGuid().ToString();    
+            
+            OrderReference = new ObjectWithIdModel { ID = new EndPointIDModel { Value = $"{Constants.IdPrefix}{OrderNumber}" } };                       
             OrderLines = GetOrderLines(order.StartAt, order.EndAt, prices).ToList();
         }    
-        public OrderResponseModel(Requisition requisition, DateTimeOffset generatedAt, IEnumerable<PriceRowComparisonResult> prices)
-        {
-            switch (requisition.Status)
-            {
-                case RequisitionStatus.Approved:
-                case RequisitionStatus.Reviewed:
-                    IssuedAt = requisition.ProcessedAt.Value;
-                break;
-                case RequisitionStatus.Created:
-                case RequisitionStatus.AutomaticGeneratedFromCancelledOrder:
-                    IssuedAt = generatedAt;
-                break;
-                case RequisitionStatus.DeniedByCustomer:
-                case RequisitionStatus.Commented:
-                    throw new InvalidOperationException($"Requisition {requisition.RequisitionId} is {requisition.Status}. If the customer is in dissagreement, an order response cannot be created.");
-            }
-
+        public OrderResponseModel(Requisition requisition, DateTimeOffset generatedAt, IEnumerable<PriceRowComparisonResult> prices) : base(requisition, generatedAt)
+        {          
             var order = requisition.Request.Order;             
             CustomizationID = Constants.OrderResponseCustomizationId;
             ProfileID = Constants.OrderResponseProfileId;            
-            DocumentID = Guid.NewGuid().ToString();
-            IssuedAt = generatedAt;
-            Note = "Created from requisition";
-            OrderNumber = order.OrderNumber;
-            CustomerReference = order.InvoiceReference;
+            DocumentID = Guid.NewGuid().ToString();                                                
             OrderReference = new ObjectWithIdModel { ID = new EndPointIDModel { Value = $"{Constants.IdPrefix}{OrderNumber}" } };
-            SellerSupplierParty = GetSellerSupplierParty(requisition.Request);
-            BuyerCustomerParty = GetBuyerCustomerParty(order);
             OrderLines = GetOrderLines(order.StartAt, order.EndAt, prices).ToList();
         }
         
@@ -65,7 +38,7 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
         public string OrderResponseCode = Constants.OrderConditionallyAccepted;
 
         [XmlElement(Namespace = Constants.cbc, Order = 8)]
-        public string Note { get; set; }
+        public string Note { get => _note; set { } }
 
         [XmlElement(Namespace = Constants.cbc, Order = 9)]
         public string DocumentCurrencyCode
@@ -76,17 +49,17 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
 
         //Fakturareferens        
         [XmlElement(Namespace = Constants.cbc, Order = 10)]
-        public string CustomerReference { get; set; }
+        public string CustomerReference { get => _customerReference; set { } }
 
         [XmlElement(Namespace = Constants.cac, Order = 11)]
         public ObjectWithIdModel OrderReference { get; set; }
 
         // REQUIRED for OA OPTIONAL for OR, always set on both        
         [XmlElement(Namespace = Constants.cac, Order = 13)]
-        public OrganizationPartyModel SellerSupplierParty { get; set; }
+        public OrganizationPartyModel SellerSupplierParty { get => _sellerSupplierParty; set { } }
 
         [XmlElement(Namespace = Constants.cac, Order = 14)]
-        public OrganizationPartyModel BuyerCustomerParty { get; set; }
+        public OrganizationPartyModel BuyerCustomerParty { get => _buyerCustomerParty; set { } }
         [XmlElement(ElementName = "OrderLine", Namespace = Constants.cac, Order = 15)]
         public List<OrderLineModel> OrderLines { get; set; }
 

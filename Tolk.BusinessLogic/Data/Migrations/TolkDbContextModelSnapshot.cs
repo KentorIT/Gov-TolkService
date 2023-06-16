@@ -17,7 +17,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.14")
+                .HasAnnotation("ProductVersion", "6.0.16")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
@@ -2279,15 +2279,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
                     b.Property<string>("IdentificationNumber")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<int?>("ImpersonatingCreatedBy")
-                        .HasColumnType("int");
 
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
@@ -2312,10 +2306,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("PeppolPayloadId");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("ImpersonatingCreatedBy");
 
                     b.HasIndex("OutboundPeppolMessageId")
                         .IsUnique()
@@ -4739,14 +4729,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.PeppolPayload", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedBy");
-
-                    b.HasOne("Tolk.BusinessLogic.Entities.AspNetUser", "CreatedByImpersonator")
-                        .WithMany()
-                        .HasForeignKey("ImpersonatingCreatedBy");
-
                     b.HasOne("Tolk.BusinessLogic.Entities.Order", "Order")
                         .WithMany("PeppolPayloads")
                         .HasForeignKey("OrderId")
@@ -4772,10 +4754,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasForeignKey("Tolk.BusinessLogic.Entities.PeppolPayload", "RequisitionId");
 
                     b.Navigation("BasedOnRequisition");
-
-                    b.Navigation("CreatedByImpersonator");
-
-                    b.Navigation("CreatedByUser");
 
                     b.Navigation("Order");
 
