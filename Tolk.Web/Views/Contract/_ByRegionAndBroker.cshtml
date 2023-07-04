@@ -42,7 +42,7 @@
                                                 <th class="align-top">
                                                     Förmedlingsavgift per kompetensnivå i SEK <br />
                                                     <span class="normal-weight">
-                                                        @foreach (var cd in item.Brokers.First().CompetenceDescriptions)
+                                                        @foreach (var cd in ((BrokerFeeByRankingModel)item.Brokers.First()).CompetenceDescriptions)
                                                         {
                                                             <span> @cd &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                                                         }
@@ -51,7 +51,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach (var b in item.Brokers)
+                                            @foreach (BrokerFeeByRankingModel b in item.Brokers)
                                             {
                                                 <tr class="gray-border-top">
                                                     <td>@b.Rank</td>
@@ -104,7 +104,7 @@
                                                     <th class="align-top">
                                                         Förmedlingsavgift per kompetensnivå i SEK <br />
                                                         <span class="normal-weight">
-                                                            @foreach (var cd in item.RegionRankings.First().CompetenceDescriptions)
+                                                            @foreach (var cd in ((BrokerFeeByRankingModel)item.RegionRankings.First()).CompetenceDescriptions)
                                                             {
                                                                 <span> @cd &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                                                             }
@@ -113,7 +113,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach (var b in item.RegionRankings)
+                                                @foreach (BrokerFeeByRankingModel b in item.RegionRankings)
                                                 {
                                                     <tr class="gray-border-top">
                                                         <td>@b.RegionName &nbsp; &nbsp; </td>

@@ -1,0 +1,162 @@
+﻿@model ContractListByRegionAndServiceModel
+@using Tolk.Web.Services
+
+@if (!Model.ConnectedFrameworkAgreement.IsActive)
+{
+    @await Html.PartialAsync("_ErrorMessage","Observera att detta avtal inte är aktivt!")
+    ;
+}
+
+<br />
+<div class="row">
+    <div class="col-sm-6 in" id="link-display-reg">
+        <a class="a-region-contract big-link" href="#region">Visa avtalsinformation per län <span class="font-size-14 glyphicon glyphicon-menu-right"></span></a>
+        <br /><br />
+    </div>
+    <div class="col-sm-6 in" id="link-display-brok">
+        <a class="a-broker-contract big-link" href="#broker">Visa avtalsinformation per förmedling <span class="font-size-14 glyphicon glyphicon-menu-right"></span></a>
+        <br /><br />
+    </div>
+    <div class="col-md-12 collapse" id="contract-per-region">
+        @if (Model.ItemsPerRegion.Any())
+        {
+            <h2>Avtalsinformation per län</h2>
+            <div class="table-responsive table-datatable">
+                <table class="table sortable-only-table table-hover  gray-border-bottom">
+                    <thead>
+                        <tr>
+                            <th>Län</th>
+                            <th>Rangordning</th>
+                            <th>Förmedlingsavgifter</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ItemsPerRegion)
+                        {
+                            <tr>
+                                <td class="gray-border-bottom gray-border-left bold">@item.Region</td>
+                                <td class="gray-border-bottom gray-border-right">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th class="align-top">Rang &nbsp; &nbsp; </th>
+                                                <th class="align-top">Förmedling &nbsp; &nbsp;</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var b in item.Brokers)
+                                            {
+                                                <tr class="gray-border-top">
+                                                    <td>@b.Rank</td>
+                                                    <td>@b.BrokerName &nbsp; &nbsp;</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </td>
+                                <td class="gray-border-bottom">
+                                    <div>Förmedlingsavgift per kompetensnivå i SEK</div>
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                @foreach (var competence in ((BrokerFeePerServiceTypeModel)item.Brokers.First()).DistanceBrokerFeesPerCompetence)
+                                                {
+                                                    <th>@competence.CompetenceDescription</th>
+                                                }
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="bold gray-border-right">Distans</td>
+                                                @foreach (var distanceFee in ((BrokerFeePerServiceTypeModel)item.Brokers.First()).DistanceBrokerFeesPerCompetence)
+                                                {
+                                                    <td>@distanceFee.BrokerFee</td>
+                                                }
+                                            </tr>
+                                            <tr>
+                                                <td class="bold gray-border-right">På plats</td>
+                                                @foreach (var onSite in ((BrokerFeePerServiceTypeModel)item.Brokers.First()).OnSiteBrokerFeesPerCompetence)
+                                                {
+                                                    <td>@onSite.BrokerFee</td>
+                                                }
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+    <div class="col-md-12 collapse" id="contract-per-broker">
+        @if (Model.ItemsPerBroker.Any())
+        {
+            <h2>Avtalsinformation per förmedling</h2>
+            <div class="table-responsive table-datatable">
+                <table class="table sortable-only-table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Förmedling</th>
+                            <th>Region med rangordning</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ItemsPerBroker)
+                        {
+                            @if (item.RegionRankings.Any())
+                            {
+                                <tr>
+                                    <td class="gray-border-bottom gray-border-left bold">@item.Broker</td>
+                                    <td class="gray-border-bottom gray-border-right">
+                                        <table class="col-sm-12">
+                                            <thead>
+                                                <tr>
+                                                    <th class="align-top col-sm-4 no-padding" rowspan="2">Län</th>
+                                                    <th class="align-top col-sm-2 no-padding" rowspan="2">Rang</th>
+                                                    <th class="align-top col-sm-2 no-padding" rowspan="1" colspan="5">Förmedlingsavgift per kompetensnivå i SEK</th>
+                                                </tr>
+                                                <tr>
+
+                                                    <th class="align-top col-sm-2 no-padding">Inställelsesätt</th>
+                                                    @foreach (var cd in ((BrokerFeePerServiceTypeModel)item.RegionRankings.First()).DistanceBrokerFeesPerCompetence)
+                                                    {
+                                                        <th class="align-top col-sm-1 no-padding">@cd.CompetenceDescription</th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (BrokerFeePerServiceTypeModel b in item.RegionRankings)
+                                                {
+                                                    <tr class="gray-border-top gray-border-bottom">
+                                                        <td rowspan="2">@b.RegionName</td>
+                                                        <td rowspan="2">@b.Rank</td>
+                                                        <td>Distans</td>
+                                                        @foreach (var distanceFee in b.DistanceBrokerFeesPerCompetence)
+                                                        {
+                                                            <td>@distanceFee.BrokerFee</td>
+                                                        }
+                                                    </tr>
+                                                    <tr class="gray-border-bottom">
+                                                        <td>På plats</td>
+                                                        @foreach (var OnSite in b.OnSiteBrokerFeesPerCompetence)
+                                                        {
+                                                            <td>@OnSite.BrokerFee</td>
+                                                        }
+                                                    </tr>
+                                                    <tr class="gray-border-bottom"><td></td></tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

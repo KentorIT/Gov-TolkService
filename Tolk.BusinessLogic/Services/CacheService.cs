@@ -30,7 +30,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task FlushAll()
         {
             await _cache.RemoveAsync(CacheKeys.BrokerFeesByRegionAndBroker);
-            await _cache.RemoveAsync(CacheKeys.BrokerFeesByRegionGroupAndServiceType);
+            await _cache.RemoveAsync(CacheKeys.BrokerFeesByRegionAndServiceType);
             await _cache.RemoveAsync(CacheKeys.OrganisationSettings);
             await _cache.RemoveAsync(CacheKeys.Holidays);
             await _cache.RemoveAsync(CacheKeys.CustomerSettings);
@@ -111,28 +111,24 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public IEnumerable<BrokerFeeByRegionAndServiceType> BrokerFeeByRegionGroupAndServiceTypePriceList
+        public IEnumerable<BrokerFeeByRegionAndServiceType> BrokerFeeByRegionAndServiceTypePriceList
         {
             get
             {
-                var brokerFees = _cache.Get(CacheKeys.BrokerFeesByRegionGroupAndServiceType).FromByteArray<IEnumerable<BrokerFeeByRegionAndServiceType>>();
+                var brokerFees = _cache.Get(CacheKeys.BrokerFeesByRegionAndServiceType).FromByteArray<IEnumerable<BrokerFeeByRegionAndServiceType>>();
 
                 if (brokerFees == null)
                 {
-                    brokerFees = _dbContext.BrokerFeeByServiceTypePriceListRows
-                        .Join(_dbContext.Regions, 
-                            f => f.RegionGroupId,
-                            r => r.RegionGroupId,
-                            (f, r) => new BrokerFeeByRegionAndServiceType
+                    brokerFees = _dbContext.BrokerFeeByServiceTypePriceListRows.Select(bf => new BrokerFeeByRegionAndServiceType
                     {
-                        BrokerFee = f.Price,
-                        CompetenceLevel = f.CompetenceLevel,
-                        InterpreterLocation = f.InterpreterLocation,
-                        RegionId = r.RegionId,
-                        StartDate = f.FirstValidDate,
-                        EndDate = f.LastValidDate
+                        BrokerFee = bf.Price,
+                        CompetenceLevel = bf.CompetenceLevel,
+                        InterpreterLocation = bf.InterpreterLocation,
+                        RegionId = bf.RegionId,
+                        StartDate = bf.FirstValidDate,
+                        EndDate = bf.LastValidDate
                     }).ToList();
-                    _cache.Set(CacheKeys.BrokerFeesByRegionGroupAndServiceType, brokerFees.ToByteArray());
+                    _cache.Set(CacheKeys.BrokerFeesByRegionAndServiceType, brokerFees.ToByteArray());
                 }
                 return brokerFees;
             }

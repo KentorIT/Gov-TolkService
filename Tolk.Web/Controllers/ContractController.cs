@@ -61,8 +61,8 @@ namespace Tolk.Web.Controllers
                 case BrokerFeeCalculationType.ByRegionAndBroker:
                     contractListWrapperModel = await GetContractListByRegionAndBroker(currentOrLatestFrameworkAgreement);
                     break;
-                case BrokerFeeCalculationType.ByRegionGroupAndServiceType:
-                    contractListWrapperModel = await GetContractListByRegionGroupAndServiceType(currentOrLatestFrameworkAgreement);
+                case BrokerFeeCalculationType.ByRegionAndServiceType:
+                    contractListWrapperModel = await GetContractListByRegionAndServiceType(currentOrLatestFrameworkAgreement);
                     break;
                 default:
                     break;
@@ -84,11 +84,11 @@ namespace Tolk.Web.Controllers
             }
         }       
 
-        private async Task<ContractListWrapperModel> GetContractListByRegionGroupAndServiceType(CurrentOrLatestFrameworkAgreement frameworkAgreement)
+        private async Task<ContractListWrapperModel> GetContractListByRegionAndServiceType(CurrentOrLatestFrameworkAgreement frameworkAgreement)
         {
-            var brokerFeePrices = _cacheService.BrokerFeeByRegionGroupAndServiceTypePriceList;
+            var brokerFeePrices = _cacheService.BrokerFeeByRegionAndServiceTypePriceList;
             var rankings = await _contractService.GetLatestRankingForFrameworkAgreement(frameworkAgreement);
-            return ContractListWrapperModel.CreateWrapperModelByRegionGroupAndServiceType(frameworkAgreement, brokerFeePrices, _clock.SwedenNow, rankings);                     
+            return ContractListWrapperModel.CreateWrapperModelByRegionAndServiceType(frameworkAgreement, brokerFeePrices, _clock.SwedenNow, rankings);                     
         }
 
         private async Task<ContractListWrapperModel> GetContractListByRegionAndBroker(CurrentOrLatestFrameworkAgreement frameworkAgreement)

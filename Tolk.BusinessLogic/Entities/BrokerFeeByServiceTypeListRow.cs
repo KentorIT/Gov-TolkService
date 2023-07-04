@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Tolk.BusinessLogic.Enums;
 
@@ -22,11 +20,11 @@ namespace Tolk.BusinessLogic.Entities
         public DateTime FirstValidDate { get; set; }
 
         [Column(TypeName = "date")]
-        public DateTime LastValidDate { get; set; }
+        public DateTime LastValidDate { get; set; }        
 
-        public int RegionGroupId { get; set; }
+        public int RegionId;
 
-        [ForeignKey(nameof(RegionGroupId))]
-        public RegionGroup RegionGroup { get; set; }
+        [ForeignKey(nameof(RegionId))]
+        public Region Region { get; set; }
     }
 }

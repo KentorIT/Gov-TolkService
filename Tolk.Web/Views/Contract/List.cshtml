@@ -3,7 +3,7 @@
 @using Tolk.BusinessLogic.Enums
 @inject HelpLinkService HelpLinkService
 @{
-    ViewData["Title"] = $"Information om ramavtal {Model.ContractListByRegionAndBrokerModel?.ConnectedFrameworkAgreement.AgreementNumber ?? Model.ContractListByRegionGroupAndServiceModel.ConnectedFrameworkAgreement.AgreementNumber ?? string.Empty}";
+    ViewData["Title"] = $"Information om ramavtal {Model.ContractListByRegionAndBrokerModel?.ConnectedFrameworkAgreement.AgreementNumber ?? Model.ContractListByRegionAndServiceModel.ConnectedFrameworkAgreement.AgreementNumber ?? string.Empty}";
     HelpLinkService.PageName = "ramavtal";
 }
 <section aria-label="@ViewData["Title"]">
@@ -13,8 +13,8 @@
         case BrokerFeeCalculationType.ByRegionAndBroker :
             @await Html.PartialAsync($"_{BrokerFeeCalculationType.ByRegionAndBroker}",Model.ContractListByRegionAndBrokerModel)
             break;
-        case BrokerFeeCalculationType.ByRegionGroupAndServiceType :
-            @await Html.PartialAsync($"_{BrokerFeeCalculationType.ByRegionGroupAndServiceType}",Model.ContractListByRegionGroupAndServiceModel)
+        case BrokerFeeCalculationType.ByRegionAndServiceType :
+            @await Html.PartialAsync($"_{BrokerFeeCalculationType.ByRegionAndServiceType}",Model.ContractListByRegionAndServiceModel)
             break;
         default:
         break;  

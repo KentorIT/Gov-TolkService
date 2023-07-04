@@ -446,12 +446,12 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<int>("RegionGroupId")
+                    b.Property<int>("RegionId")
                         .HasColumnType("int");
 
                     b.HasKey("BrokerFeeByServiceTypePriceListRowId");
 
-                    b.HasIndex("RegionGroupId");
+                    b.HasIndex("RegionId");
 
                     b.ToTable("BrokerFeeByServiceTypePriceListRows");
                 });
@@ -3932,13 +3932,13 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.BrokerFeeByServiceTypePriceListRow", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.RegionGroup", "RegionGroup")
-                        .WithMany("BrokerFeeByServiceTypePriceListRows")
-                        .HasForeignKey("RegionGroupId")
+                    b.HasOne("Tolk.BusinessLogic.Entities.Region", "Region")
+                        .WithMany()
+                        .HasForeignKey("RegionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("RegionGroup");
+                    b.Navigation("Region");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Complaint", b =>
@@ -5757,8 +5757,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RegionGroup", b =>
                 {
-                    b.Navigation("BrokerFeeByServiceTypePriceListRows");
-
                     b.Navigation("Regions");
                 });
 

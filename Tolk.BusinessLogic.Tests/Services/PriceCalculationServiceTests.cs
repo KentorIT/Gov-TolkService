@@ -786,40 +786,40 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
 
         [Theory]
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OnSite, 1, 111, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OnSite, 1, 211, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OnSite, 1, 311, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OnSite, 1, 411, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 1, 141, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 1, 241, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 1, 341, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 1, 441, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSitePhone, 1, 121, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSitePhone, 1, 221, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSitePhone, 1, 321, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSitePhone, 1, 421, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSiteVideo, 1, 131, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSiteVideo, 1, 231, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSiteVideo, 1, 331, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSiteVideo, 1, 431, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OnSite, 21, 112, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OnSite, 21, 212, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OnSite, 21, 312, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OnSite, 21, 412, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 21, 142, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 21, 242, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 21, 342, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 21, 442, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSitePhone, 21, 122, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSitePhone, 21, 222, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSitePhone, 21, 322, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSitePhone, 21, 422, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSiteVideo, 21, 132, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSiteVideo, 21, 232, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSiteVideo, 21, 332, 1)]//1h nwt
-        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSiteVideo, 21, 432, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OnSite, 1, 50, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OnSite, 1, 60, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OnSite, 1, 80, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OnSite, 1, 90, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 1, 50, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 1, 60, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 1, 80, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 1, 90, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSitePhone, 1, 20, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSitePhone, 1, 30, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSitePhone, 1, 50, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSitePhone, 1, 60, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSiteVideo, 1, 20, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSiteVideo, 1, 30, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSiteVideo, 1, 50, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSiteVideo, 1, 60, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OnSite, 21, 90, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OnSite, 21, 100, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OnSite, 21, 120, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OnSite, 21, 130, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 21, 90, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 21, 100, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 21, 120, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSiteDesignatedLocation, 21, 130, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSitePhone, 21, 20, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSitePhone, 21, 30, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSitePhone, 21, 50, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSitePhone, 21, 60, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OffSiteVideo, 21, 20, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.EducatedInterpreter, InterpreterLocation.OffSiteVideo, 21, 30, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.AuthorizedInterpreter, InterpreterLocation.OffSiteVideo, 21, 50, 1)]//1h nwt
+        [InlineData("2018-10-10 10:00:00", CompetenceLevel.SpecializedInterpreter, InterpreterLocation.OffSiteVideo, 21, 60, 1)]//1h nwt
         //double broker fee
-        [InlineData("2018-10-10 23:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OnSite, 1, 111 * 2, 2)]
+        [InlineData("2018-10-10 23:00:00", CompetenceLevel.OtherInterpreter, InterpreterLocation.OnSite, 1, 50 * 2, 2)]
         public void BrokerFeePriceRowFromServiceType(string calculateFrom, CompetenceLevel competenceLevel, InterpreterLocation interpreterLocation, int regionId, decimal actualPrice, int noOfrows)
         {
             using var tolkdbContext = CreateTolkDbContext(DbNameForBrokerFeeCalculation);

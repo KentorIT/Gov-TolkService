@@ -21,10 +21,10 @@ namespace Tolk.BusinessLogic.Tests.Services
         private readonly INotificationService _notificationService;
         private const string DbWithAgreementRankingsAndPriceLists = nameof(DbWithAgreementRankingsAndPriceLists);
         private const int AgreementIdForBrokerFeesByRegionBroker = 1;
-        private const int AgreementIdBrokerFeeByRegionGroupAndServiceType = 2;
+        private const int AgreementIdBrokerFeeByRegionAndServiceType = 2;
         public static FrameworkAgreement[] FrameworkAgreements => new[] {
             new FrameworkAgreement { FrameworkAgreementId = 1, AgreementNumber= "1234", Description = "", FirstValidDate = new DateTime(2016, 01, 01), LastValidDate = new DateTime(2030, 06, 01), BrokerFeeCalculationType = BrokerFeeCalculationType.ByRegionAndBroker, FrameworkAgreementResponseRuleset = FrameworkAgreementResponseRuleset.VersionOne },
-            new FrameworkAgreement { FrameworkAgreementId = 2, AgreementNumber= "4321", Description = "", FirstValidDate = new DateTime(2030, 06, 02), LastValidDate = new DateTime(2040, 12, 31), BrokerFeeCalculationType = BrokerFeeCalculationType.ByRegionGroupAndServiceType, FrameworkAgreementResponseRuleset = FrameworkAgreementResponseRuleset.VersionTwo },
+            new FrameworkAgreement { FrameworkAgreementId = 2, AgreementNumber= "4321", Description = "", FirstValidDate = new DateTime(2030, 06, 02), LastValidDate = new DateTime(2040, 12, 31), BrokerFeeCalculationType = BrokerFeeCalculationType.ByRegionAndServiceType, FrameworkAgreementResponseRuleset = FrameworkAgreementResponseRuleset.VersionTwo },
         };
 
 
@@ -141,12 +141,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2030-06-01 00:00:00 +02:00", AgreementIdForBrokerFeesByRegionBroker, true)]
         [InlineData("2030-06-01 23:59:00 +02:00", AgreementIdForBrokerFeesByRegionBroker, true)]
 
-        [InlineData("2030-06-02 00:00:00 +02:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, true)]       
-        [InlineData("2030-06-01 00:00:00 +02:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, false)]
-        [InlineData("2030-06-01 23:59:00 +02:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, false)]
-        [InlineData("2041-01-01 00:00:00 +01:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, false)]
-        [InlineData("2040-12-31 00:00:00 +01:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, true)]
-        [InlineData("2040-12-31 23:59:00 +01:00", AgreementIdBrokerFeeByRegionGroupAndServiceType, true)]
+        [InlineData("2030-06-02 00:00:00 +02:00", AgreementIdBrokerFeeByRegionAndServiceType, true)]       
+        [InlineData("2030-06-01 00:00:00 +02:00", AgreementIdBrokerFeeByRegionAndServiceType, false)]
+        [InlineData("2030-06-01 23:59:00 +02:00", AgreementIdBrokerFeeByRegionAndServiceType, false)]
+        [InlineData("2041-01-01 00:00:00 +01:00", AgreementIdBrokerFeeByRegionAndServiceType, false)]
+        [InlineData("2040-12-31 00:00:00 +01:00", AgreementIdBrokerFeeByRegionAndServiceType, true)]
+        [InlineData("2040-12-31 23:59:00 +01:00", AgreementIdBrokerFeeByRegionAndServiceType, true)]
         public void Should_Get_Agreement_And_CorrectStatus(string now, int frameworkAgreementId,bool isActive)
         {            
             var clock = new StubSwedishClock(now);
@@ -201,12 +201,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2031-06-12 00:00:00 +02:00", 16, "2031-01-01", "2031-12-31")]
         [InlineData("2040-07-20 00:00:00 +02:00", 16, "2040-01-01", "2040-12-31")]
         [InlineData("2100-02-20 00:00:00 +01:00", 16, "2040-01-01", "2040-12-31")]        
-        public void Should_Return_Current_Or_LastActive_OffSite_BrokerFeeByRegionGroupAndServiceTypePriceList_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
+        public void Should_Return_Current_Or_LastActive_OffSite_BrokerFeeByRegionAndServiceTypePriceList_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
         {
             var clock = new StubSwedishClock(now);
             var context = CreateTolkDbContext(DbWithAgreementRankingsAndPriceLists);
             var sut = new ContractService(context, clock);
-            var agreement = sut.GetFrameworkAgreementById(AgreementIdBrokerFeeByRegionGroupAndServiceType).Result;
+            var agreement = sut.GetFrameworkAgreementById(AgreementIdBrokerFeeByRegionAndServiceType).Result;
             var brokerFees = GenerateBrokerFeesByRegionAndServiceType(2030, 11, new int[] { 1, 2 });
             var currentOrLastActive = brokerFees.CurrentOrLastActiveDistanceBrokerFeesForAgreement(agreement, clock.SwedenNow.Date);
             currentOrLastActive.Count().Should().Be(activeBrokerFees);
@@ -226,12 +226,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2031-06-12 00:00:00 +02:00", 16, "2031-01-01", "2031-12-31")]
         [InlineData("2040-07-20 00:00:00 +02:00", 16, "2040-01-01", "2040-12-31")]
         [InlineData("2100-02-20 00:00:00 +01:00", 16, "2040-01-01", "2040-12-31")]
-        public void Should_Return_Current_Or_LastActive_OnSite_BrokerFeeByRegionGroupAndServiceTypePriceList_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
+        public void Should_Return_Current_Or_LastActive_OnSite_BrokerFeeByRegionAndServiceTypePriceList_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
         {
             var clock = new StubSwedishClock(now);
             var context = CreateTolkDbContext(DbWithAgreementRankingsAndPriceLists);
             var sut = new ContractService(context, clock);
-            var agreement = sut.GetFrameworkAgreementById(AgreementIdBrokerFeeByRegionGroupAndServiceType).Result;
+            var agreement = sut.GetFrameworkAgreementById(AgreementIdBrokerFeeByRegionAndServiceType).Result;
             var brokerFees = GenerateBrokerFeesByRegionAndServiceType(2030, 11, new int[] { 1, 2 });
             var currentOrLastActive = brokerFees.CurrentOrLastActiveOnSiteBrokerFeesForAgreement(agreement, clock.SwedenNow.Date);
             currentOrLastActive.Count().Should().Be(activeBrokerFees);

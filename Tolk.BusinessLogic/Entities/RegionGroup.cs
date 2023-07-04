@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -17,8 +16,7 @@ namespace Tolk.BusinessLogic.Entities
         #region Navigation properties
 
         public List<Region> Regions { get;  set; }
-
-        public List<BrokerFeeByServiceTypePriceListRow> BrokerFeeByServiceTypePriceListRows { get; private set; }
+        
 
         #endregion
 

@@ -8,6 +8,6 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Förmedlingsavgiften beräknas från region och förmedling")]
         ByRegionAndBroker = 1,
         [Description("Förmedlingsavgiften beräknas från region och vald tolktjänst")]
-        ByRegionGroupAndServiceType = 2
+        ByRegionAndServiceType = 2
     }
 }
