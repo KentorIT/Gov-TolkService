@@ -43,7 +43,7 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
 
         public static Ranking[] MockRankings => new[]
             {
-                        new Ranking {
+            new Ranking {
                 RankingId = 1,
                 Rank = 1,
                 FirstValidDate = new DateTime(2018, 01, 01),
@@ -431,7 +431,27 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
                                         r.Status != RequestStatus.LostDueToQuarantine)?.Ranking.BrokerId
                 }).ToArray();
         }
-
+        public static Order[] MockFlexibleOrders(Language[] mockLanguages, Ranking[] mockRankings, AspNetUser[] mockCustomerUsers)
+        {
+            return new Order[]
+            {
+                new Order(mockCustomerUsers[2], null, mockCustomerUsers[2].CustomerOrganisation, new DateTimeOffset(2018,05,07,13,00,00, new TimeSpan(02,00,00)))
+                    {
+                        OrderId = 1,
+                        CreatedBy = mockCustomerUsers[2].Id,
+                        CustomerOrganisationId = mockCustomerUsers[2].CustomerOrganisation.CustomerOrganisationId,
+                        CustomerReferenceNumber = "FirstFlexible",
+                        OrderNumber = "2018-000001",
+                        StartAt = new DateTimeOffset(2023,09,19,08,00,00, new TimeSpan(02,00,00)),
+                        EndAt = new DateTimeOffset(2023,09,19,17,00,00, new TimeSpan(02,00,00)),
+                        ExpectedLength = new TimeSpan(3, 0, 0),
+                        Region = Region.Regions.Where(r => r.Name == "Södermanland").Single(),
+                        Language = mockLanguages.Where(l => l.Name == "French").Single(),
+                        Status = OrderStatus.Delivered,
+                        Requests = new List<Request>()                      
+                    }
+            };
+        }
         public static OrderGroup[] MockOrderGroups(Language[] mockLanguages, Ranking[] mockRankings, AspNetUser[] mockCustomerUsers)
         {
             var baseDate = new DateTimeOffset(2018, 06, 07, 13, 00, 00, new TimeSpan(02, 00, 00));

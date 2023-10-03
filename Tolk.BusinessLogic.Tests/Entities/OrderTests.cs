@@ -13,6 +13,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
     public class OrderTests
     {
         private readonly Order[] MockOrders;
+        private readonly Order[] MockFlexibleOrders;
 
         public OrderTests()
         {
@@ -20,6 +21,7 @@ namespace Tolk.BusinessLogic.Tests.Entities
             var mockRankings = MockEntities.MockRankings;
             var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
             MockOrders = MockEntities.MockOrders(mockLanguages, mockRankings, mockCustomerUsers);
+            MockFlexibleOrders = MockEntities.MockFlexibleOrders(mockLanguages, mockRankings, mockCustomerUsers);
         }
 
         [Theory]
@@ -609,6 +611,24 @@ namespace Tolk.BusinessLogic.Tests.Entities
             order.Status = OrderStatus.ResponseAccepted;
             Assert.Throws<InvalidOperationException>(() => order.Update(null));
 
+        }
+
+        
+        [Theory]
+        [InlineData("2018-05-06 23:59:00 +02:00",1,1)]
+        [InlineData("2018-05-07 00:00:00 +02:00",3,3)]
+        [InlineData("2019-05-07 00:00:00 +02:00",3,3)]        
+        [InlineData("2019-05-07 00:00:01 +02:00",1,1)]        
+        public void Should_Skip_Quarantined_Broker_For_Flexible_Request(string now,int brokerId, int createdRequests)
+        {
+            RequestExpiryResponse response = new RequestExpiryResponse { RequestAnswerRuleType = RequestAnswerRuleType.ResponseSetByCustomer };
+            var nowDate = DateTimeOffset.Parse(now);
+            var order = MockFlexibleOrders.Where(o => o.OrderId == 1).First();            
+            order.ExpectedLength = new TimeSpan(3, 0, 0);
+            var request = order.CreateRequest(MockEntities.MockRankingsWithQuarantines.AsQueryable(), response, nowDate);
+            Assert.Equal(RequestStatus.Created, request.Status);
+            Assert.Equal(createdRequests, order.Requests.Count);
+            Assert.Equal(brokerId, request.Ranking.BrokerId);
         }
     }
 }
