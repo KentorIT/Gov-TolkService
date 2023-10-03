@@ -942,5 +942,34 @@ namespace Tolk.BusinessLogic.Services
         {
             await _emailService.SendErrorEmail(nameof(RequestService), methodname, ex);
         }
+        
+        public async Task SyncRequestPrices()
+        {
+            var requestsToUpdate = await _tolkDbContext.Requests.GetActiveRequestWithPriceRowsToUpdate();
+
+            foreach (var request in requestsToUpdate)
+            {
+                var newRequest = UpdatePricesForRequest(request);
+                _tolkDbContext.Add(newRequest);
+            }
+            await _tolkDbContext.SaveChangesAsync();               
+        }
+
+        private Request UpdatePricesForRequest(Request request)
+        {
+            // Recalculate price rows                
+            var reCalculatedPriceRows = _priceCalculationService.GetPrices(
+                 request,
+                 request.CreatedAt,
+                 (CompetenceAndSpecialistLevel)request.CompetenceLevel,
+                 (InterpreterLocation?)request.InterpreterLocation.Value,
+                 request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0);
+            var newRequest = Request.CopyRequestWithUpdatedPriceRows(request, reCalculatedPriceRows);
+            request.Status = RequestStatus.ReplacedAfterPriceUpdate;
+            request.Order.Requests.Add(newRequest);
+            request.ReplacedByRequest = newRequest;
+            return newRequest;
+        }
+
     }
 }

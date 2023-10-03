@@ -1027,7 +1027,8 @@ namespace Tolk.BusinessLogic.Utilities
                         r.Status != RequestStatus.DeclinedByBroker &&
                         r.Status != RequestStatus.LostDueToQuarantine &&
                         r.Status != RequestStatus.ReplacedAtAnswerAfterAccept &&
-                        r.Status != RequestStatus.ReplacedAfterAcceptOfFlexible
+                        r.Status != RequestStatus.ReplacedAfterAcceptOfFlexible &&
+                        r.Status != RequestStatus.ReplacedAfterPriceUpdate
             );
 
         private static IQueryable<RequestGroup> GetRequestGroupsWithBaseIncludes(this IQueryable<RequestGroup> requestGroups)
@@ -1391,5 +1392,26 @@ namespace Tolk.BusinessLogic.Utilities
                 brokerFeeQuery.Where(bf => bf.StartDate.Date <= today && bf.EndDate.Date >= today) :
                 brokerFeeQuery.Where(bf => bf.StartDate.Date <= today && bf.StartDate.Date <= frameworkAgreement.LastValidDate && bf.EndDate >= frameworkAgreement.LastValidDate);
         }
+
+        public static async Task<IEnumerable<Request>> GetActiveRequestWithPriceRowsToUpdate(this IQueryable<Request> requests)
+            =>await requests
+                 .Include(r => r.PriceRows)
+                 .Include(r => r.Order)
+                    .ThenInclude(o => o.CustomerOrganisation)
+                 .Include(r => r.Ranking)
+                    .ThenInclude(ra => ra.FrameworkAgreement)
+                .Where(r => (r.PriceRows.Any(pr => pr.StartAt.Date > pr.PriceListRow.EndDate)) &&
+                    r.Status != RequestStatus.InterpreterReplaced &&
+                    r.Status != RequestStatus.DeniedByTimeLimit &&
+                    r.Status != RequestStatus.DeniedByCreator &&
+                    r.Status != RequestStatus.DeclinedByBroker &&
+                    r.Status != RequestStatus.LostDueToQuarantine &&
+                    r.Status != RequestStatus.ReplacedAtAnswerAfterAccept &&
+                    r.Status != RequestStatus.ReplacedAfterAcceptOfFlexible &&
+                    r.Status != RequestStatus.ReplacedAfterPriceUpdate
+                )
+                 .ToListAsync();
+
+
     }
 }

@@ -31,6 +31,29 @@ namespace Tolk.BusinessLogic.Entities
             RespondedStartAt = respondedStartAt;
         }
 
+        private Request(Request requestToCopy, string[] propertiesToSkip)
+        {            
+            var properties = requestToCopy.GetType().GetProperties().Where(p => !propertiesToSkip.Contains(p.Name));
+            // Copy all writeable values to new RequestObject
+            foreach (var property in properties)
+            {                
+                if(property.CanWrite)
+                {
+                    var propertyToSet = this.GetType().GetProperty(property.Name);                                    
+                    propertyToSet.SetValue(this,property.GetValue(requestToCopy));
+
+                }
+            }           
+        }
+
+        public static Request CopyRequestWithUpdatedPriceRows(Request requestToCopy, PriceInformation recalculatedPriceRows)
+        {
+            var propertiesToSkip = new[] { nameof(RequestId), nameof(PriceRows) };
+            var request = new Request(requestToCopy, propertiesToSkip);
+            request.PriceRows = recalculatedPriceRows.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
+            return request;
+        }
+
         internal Request(Ranking ranking, DateTimeOffset creationTime, Quarantine quarantine)
         {
             Ranking = ranking;
