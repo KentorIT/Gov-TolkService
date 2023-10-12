@@ -49,6 +49,8 @@ namespace Tolk.BusinessLogic.Entities
 
         public DateTime? UseOrderAgreementsFromDate { get; set; }
 
+        public List<CustomerSpecificProperty> CustomerSpecificProperties { get; set; }
+
         public List<CustomerChangeLogEntry> CustomerChangeLogEntries { get; set; } = new List<CustomerChangeLogEntry>();
 
         public void UpdateCustomerSettingsAndHistory(DateTimeOffset changedAt, int userId, IEnumerable<CustomerSetting> updatedCustomerSettings)
@@ -68,5 +70,43 @@ namespace Tolk.BusinessLogic.Entities
             }
         }
 
+        public void UpdateCustomerSpecificPropertySettings(DateTimeOffset changedAt, int userId, CustomerSpecificProperty updatedCustomerSpecificProperty)
+        {
+            var customerSpecificProperties = CustomerSpecificProperties.Select(c => new CustomerSpecificPropertyHistoryEntry
+            {
+                DisplayName = c.DisplayName,
+                DisplayDescription = c.DisplayDescription,
+                InputPlaceholder = c.InputPlaceholder,
+                Required = c.Required,
+                RemoteValidation = c.RemoteValidation,
+                RegexPattern = c.RegexPattern,
+                RegexErrorMessage = c.RegexErrorMessage,
+                MaxLength = c.MaxLength,
+                CustomerOrganisationId = c.CustomerOrganisationId,
+                PropertyType = c.PropertyType,
+                Enabled = c.Enabled,                
+            });
+            CustomerChangeLogEntries.Add(new CustomerChangeLogEntry
+            {
+                LoggedAt = changedAt,
+                UpdatedByUserId = userId,
+                CustomerChangeLogType = CustomerChangeLogType.CustomerSpecificProperty,
+                CustomerSpecificPropertyHistories = customerSpecificProperties.ToList(),
+                CustomerOrganisationHistoryEntry = new CustomerOrganisationHistoryEntry(this)
+            });
+
+            var propertyToUpdate = CustomerSpecificProperties.SingleOrDefault(c => c.PropertyType == updatedCustomerSpecificProperty.PropertyType);
+            propertyToUpdate.DisplayName = updatedCustomerSpecificProperty.DisplayName;
+            propertyToUpdate.DisplayDescription = updatedCustomerSpecificProperty.DisplayDescription;
+            propertyToUpdate.InputPlaceholder = updatedCustomerSpecificProperty.InputPlaceholder;
+            propertyToUpdate.Required = updatedCustomerSpecificProperty.Required;
+            propertyToUpdate.RemoteValidation = updatedCustomerSpecificProperty.RemoteValidation;
+            propertyToUpdate.RegexPattern = updatedCustomerSpecificProperty.RegexPattern;
+            propertyToUpdate.RegexErrorMessage = updatedCustomerSpecificProperty.RegexErrorMessage;
+            propertyToUpdate.MaxLength = updatedCustomerSpecificProperty.MaxLength;
+            propertyToUpdate.CustomerOrganisationId = updatedCustomerSpecificProperty.CustomerOrganisationId;
+            propertyToUpdate.PropertyType = updatedCustomerSpecificProperty.PropertyType;
+            propertyToUpdate.Enabled = updatedCustomerSpecificProperty.Enabled;
+        }
     }
 }

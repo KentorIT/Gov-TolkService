@@ -1,5 +1,7 @@
 ﻿using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Attributes;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
@@ -18,6 +20,11 @@ namespace Tolk.Web.Models
         public PropertyType PropertyType { get; set; }
         [ColumnDefinitions(Index = 5, Name = nameof(CustomerOrganisationId), Visible = false)]
         public int CustomerOrganisationId { get; set; }
-      
+        public bool Enabled { get; set; }
+        [ColumnDefinitions(Index = 6, Name = nameof(EnabledDisplay), Title = "Aktivt")]
+        public string EnabledDisplay => Enabled.ToSwedishString();
+        [ColumnDefinitions(Visible = false, Name = nameof(ColorClassName), IsLeftCssClassName = true)]
+        public string ColorClassName => CssClassHelper.GetColorClassNameForItemStatus(Enabled);
+
     }
 }

@@ -1412,6 +1412,11 @@ namespace Tolk.BusinessLogic.Utilities
                 )
                  .ToListAsync();
 
+        public static IQueryable<CustomerSpecificProperty> GetCustomerSpecificPropertiesWithCustomerOrganisation(this IQueryable<CustomerSpecificProperty> customerSpecificProperties, int customerOrganisationId, PropertyType propertyToReplace)
+            => customerSpecificProperties
+                .Where(csp => csp.CustomerOrganisationId == customerOrganisationId && csp.PropertyType == propertyToReplace)
+                .Include(csp => csp.CustomerOrganisation)
+                    .ThenInclude(co => co.CustomerChangeLogEntries);
 
     }
 }

@@ -19,10 +19,35 @@ namespace Tolk.BusinessLogic.Entities
         public int? MaxLength { get; set; }
         public int CustomerOrganisationId { get; set; }
         public PropertyType PropertyType { get; set; }
+        public bool Enabled { get; set; }
         #region foreign keys
 
         [ForeignKey(nameof(CustomerOrganisationId))]
         public CustomerOrganisation CustomerOrganisation { get; set; }
         #endregion
+
+        public CustomerSpecificProperty()
+        {                
+        }
+
+        private CustomerSpecificProperty(CustomerSpecificProperty toCopy)
+        {
+            DisplayName = toCopy.DisplayName;
+            DisplayDescription = toCopy.DisplayDescription;
+            InputPlaceholder = toCopy.InputPlaceholder;
+            Required = toCopy.Required;
+            RemoteValidation = toCopy.RemoteValidation;
+            RegexPattern = toCopy.RegexPattern;
+            RegexErrorMessage = toCopy.RegexErrorMessage;
+            MaxLength = toCopy.MaxLength;
+            CustomerOrganisationId = toCopy.CustomerOrganisationId;
+            PropertyType = toCopy.PropertyType;
+            Enabled = toCopy.Enabled;
+        }
+
+        public static CustomerSpecificProperty CopyCustomerSpecificProperty(CustomerSpecificProperty toCopy)
+        {
+            return new CustomerSpecificProperty(toCopy);
+        }
     }
 }

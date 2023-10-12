@@ -214,7 +214,7 @@ namespace Tolk.Web.Controllers
             var filters = await GetCustomerSpecificPropertyFilters();
 
             //Get the Full Model           
-            var data = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == filters.CustomerSpecificPropertyFilterModelCustomerId).AsQueryable();
+            var data = _cacheService.AllCustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == filters.CustomerSpecificPropertyFilterModelCustomerId).AsQueryable();
 
             return AjaxDataTableHelper.GetData(request, data.Count(), data, d => d.Select(csp => new CustomerSpecificPropertyListItemModel
             { 
@@ -223,6 +223,7 @@ namespace Tolk.Web.Controllers
                 PropertyTypeName = csp.PropertyToReplace.GetDescription(),
                 PropertyType = csp.PropertyToReplace,
                 RegexPattern = csp.RegexPattern,
+                Enabled = csp.Enabled,
             }));
         }
 

@@ -237,12 +237,24 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        public IEnumerable<CustomerSpecificPropertyModel> CustomerSpecificProperties
+        public IEnumerable<CustomerSpecificPropertyModel> ActiveCustomerSpecificProperties
         {
             get
             {
                 var customerSpecificProperties = _cache.Get(CacheKeys.CustomerSpecificProperties).FromByteArray<IEnumerable<CustomerSpecificPropertyModel>>();
                 if (customerSpecificProperties == null)
+                {
+                    customerSpecificProperties = _dbContext.CustomerSpecificProperties.Select(c => new CustomerSpecificPropertyModel(c)).ToList();
+                    _cache.Set(CacheKeys.CustomerSpecificProperties, customerSpecificProperties.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
+                }
+                return customerSpecificProperties.Where(csp => csp.Enabled);
+            }
+        }
+
+        public IEnumerable<CustomerSpecificPropertyModel> AllCustomerSpecificProperties
+        {
+            get {
+                var customerSpecificProperties = _cache.Get(CacheKeys.CustomerSpecificProperties).FromByteArray<IEnumerable<CustomerSpecificPropertyModel>>();
                 {
                     customerSpecificProperties = _dbContext.CustomerSpecificProperties.Select(c => new CustomerSpecificPropertyModel(c)).ToList();
                     _cache.Set(CacheKeys.CustomerSpecificProperties, customerSpecificProperties.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));

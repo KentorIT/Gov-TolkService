@@ -29,7 +29,7 @@ namespace Tolk.Web.Controllers
         public IActionResult CustomerSpecificInvoiceReference([Bind(Prefix = CustomerSpecificInvoice)] string value)
         {
             var customerOrganisationId = User.GetCustomerOrganisationId();
-            var invoiceProperty = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == customerOrganisationId && csp.PropertyToReplace == PropertyType.InvoiceReference).Single();        
+            var invoiceProperty = _cacheService.ActiveCustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == customerOrganisationId && csp.PropertyToReplace == PropertyType.InvoiceReference).Single();        
             var validationResult = ValidateCustomerSpecificProperty(invoiceProperty, value);
 
             if (!validationResult.Success)

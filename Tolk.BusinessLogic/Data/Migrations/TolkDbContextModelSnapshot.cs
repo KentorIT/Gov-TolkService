@@ -846,6 +846,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("bit");
+
                     b.Property<string>("InputPlaceholder")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -868,6 +871,65 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasKey("CustomerOrganisationId", "PropertyType");
 
                     b.ToTable("CustomerSpecificProperties");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSpecificPropertyHistoryEntry", b =>
+                {
+                    b.Property<int>("CustomerSpecificPropertyHistoryEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CustomerSpecificPropertyHistoryEntryId"));
+
+                    b.Property<int>("CustomerChangeLogEntryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CustomerOrganisationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DisplayDescription")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("InputPlaceholder")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("MaxLength")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PropertyType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RegexErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RegexPattern")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("RemoteValidation")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Required")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CustomerSpecificPropertyHistoryEntryId");
+
+                    b.HasIndex("CustomerChangeLogEntryId");
+
+                    b.HasIndex("CustomerOrganisationId");
+
+                    b.ToTable("CustomerSpecificPropertyChangeHistoryEntries");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerStartListRow", b =>
@@ -4073,10 +4135,29 @@ namespace Tolk.BusinessLogic.Data.Migrations
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSpecificProperty", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
+                        .WithMany("CustomerSpecificProperties")
+                        .HasForeignKey("CustomerOrganisationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomerOrganisation");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSpecificPropertyHistoryEntry", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerChangeLogEntry", "CustomerChangeLogEntry")
+                        .WithMany("CustomerSpecificPropertyHistories")
+                        .HasForeignKey("CustomerChangeLogEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
                         .WithMany()
                         .HasForeignKey("CustomerOrganisationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("CustomerChangeLogEntry");
 
                     b.Navigation("CustomerOrganisation");
                 });
@@ -5614,6 +5695,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Navigation("CustomerOrganisationHistoryEntry");
 
                     b.Navigation("CustomerSettingHistories");
+
+                    b.Navigation("CustomerSpecificPropertyHistories");
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisation", b =>
@@ -5621,6 +5704,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Navigation("CustomerChangeLogEntries");
 
                     b.Navigation("CustomerSettings");
+
+                    b.Navigation("CustomerSpecificProperties");
 
                     b.Navigation("SubCustomerOrganisations");
 

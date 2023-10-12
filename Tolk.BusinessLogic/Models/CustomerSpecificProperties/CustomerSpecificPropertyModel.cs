@@ -30,6 +30,8 @@ namespace Tolk.BusinessLogic.Models.CustomerSpecificProperties
         [Required]
         [Display(Name = "Originalfält")]
         public PropertyType PropertyToReplace { get; set; }
+        [Display(Name = "Aktivt")]
+        public bool Enabled { get; set; }        
         public CustomerSpecificPropertyModel(CustomerSpecificProperty propEntity)
         {
             CustomerOrganisationId = propEntity.CustomerOrganisationId;
@@ -42,6 +44,7 @@ namespace Tolk.BusinessLogic.Models.CustomerSpecificProperties
             RegexErrorMessage = propEntity.RegexErrorMessage;
             MaxLength = propEntity.MaxLength;
             PropertyToReplace = propEntity.PropertyType;
+            Enabled = propEntity.Enabled;
         }
         public CustomerSpecificPropertyModel()
         {

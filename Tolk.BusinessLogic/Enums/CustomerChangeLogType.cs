@@ -5,6 +5,8 @@ namespace Tolk.BusinessLogic.Enums
     public enum CustomerChangeLogType
     {
         [Description("Inställningar")]
-        Settings = 1
+        Settings = 1,
+        [Description("Kundspecifika Fält")]
+        CustomerSpecificProperty = 2
     }
 }

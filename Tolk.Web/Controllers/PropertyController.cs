@@ -10,6 +10,7 @@ using Tolk.BusinessLogic.Models.CustomerSpecificProperties;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Controllers
 {
@@ -20,12 +21,14 @@ namespace Tolk.Web.Controllers
         private readonly TolkDbContext _tolkDbContext;
         private readonly CacheService _cacheService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly ISwedishClock _clock;
 
-        public PropertyController(TolkDbContext tolkDbContext, CacheService cacheService, IAuthorizationService authorizationService)
+        public PropertyController(TolkDbContext tolkDbContext, CacheService cacheService, IAuthorizationService authorizationService, ISwedishClock clock)
         {
             _tolkDbContext = tolkDbContext;
             _cacheService = cacheService;
             _authorizationService = authorizationService;
+            _clock = clock;
         }
 
         public ActionResult Index()
@@ -36,13 +39,13 @@ namespace Tolk.Web.Controllers
         [HttpGet("{customerOrganisationId}/{propertyType}")]
         public ActionResult View(int customerOrganisationId, PropertyType propertyType)
         {
-            var property = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == customerOrganisationId && csp.PropertyToReplace == propertyType).Single();
+            var property = _cacheService.AllCustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == customerOrganisationId && csp.PropertyToReplace == propertyType).Single();
 
             return View(property);
         }
         public ActionResult Edit(int customerOrganisationId, PropertyType propertyType)
         {
-            var property = _cacheService.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == customerOrganisationId && csp.PropertyToReplace == propertyType).Single();
+            var property = _cacheService.AllCustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == customerOrganisationId && csp.PropertyToReplace == propertyType).Single();
             return View(property);
         }
 
@@ -52,15 +55,10 @@ namespace Tolk.Web.Controllers
         {
             if(ModelState.IsValid)
             {
-                var propEntity = await _tolkDbContext.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == propertyModel.CustomerOrganisationId && csp.PropertyType == propertyModel.PropertyToReplace).SingleAsync();
-                propEntity.RemoteValidation = propertyModel.RemoteValidation;
-                propEntity.InputPlaceholder = propertyModel.Placeholder;
-                propEntity.Required = propertyModel.Required;
-                propEntity.MaxLength = propertyModel.MaxLength;
-                propEntity.RegexPattern = propertyModel.RegexPattern;
-                propEntity.RegexErrorMessage = propertyModel.RegexErrorMessage;
-                propEntity.DisplayName = propertyModel.DisplayName;
-                propEntity.DisplayDescription = propertyModel.DisplayDescription;
+                var propertyEntity = propertyModel.ToEntity();
+
+                var existingProperty = await _tolkDbContext.CustomerSpecificProperties.GetCustomerSpecificPropertiesWithCustomerOrganisation(propertyModel.CustomerOrganisationId, propertyModel.PropertyToReplace).SingleAsync();                  
+                existingProperty.CustomerOrganisation.UpdateCustomerSpecificPropertySettings(_clock.SwedenNow, User.GetUserId(), propertyEntity);  
                 await _tolkDbContext.SaveChangesAsync();
                 await _cacheService.Flush(CacheKeys.CustomerSpecificProperties);
                 return RedirectToAction(nameof(View), new { customerOrganisationId = propertyModel.CustomerOrganisationId, propertyType = propertyModel.PropertyToReplace });
@@ -83,19 +81,9 @@ namespace Tolk.Web.Controllers
             {
                 return Forbid();
             }
-            var propEntity = new CustomerSpecificProperty();
-            propEntity.CustomerOrganisationId = propertyModel.CustomerOrganisationId;
-            propEntity.PropertyType = propertyModel.PropertyToReplace;
-            propEntity.RemoteValidation = propertyModel.RemoteValidation;
-            propEntity.InputPlaceholder = propertyModel.Placeholder;
-            propEntity.Required = propertyModel.Required;
-            propEntity.MaxLength = propertyModel.MaxLength;
-            propEntity.RegexPattern = propertyModel.RegexPattern;
-            propEntity.RegexErrorMessage = propertyModel.RegexErrorMessage;
-            propEntity.DisplayName = propertyModel.DisplayName;
-            propEntity.DisplayDescription = propertyModel.DisplayDescription;
+            var propertyEntity = propertyModel.ToEntity();         
 
-            await _tolkDbContext.AddAsync(propEntity);
+            await _tolkDbContext.AddAsync(propertyEntity);
 
             await _tolkDbContext.SaveChangesAsync();
             await _cacheService.Flush(CacheKeys.CustomerSpecificProperties);
@@ -105,19 +93,31 @@ namespace Tolk.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Delete(CustomerSpecificPropertyModel propertyModel)
+        public async Task<ActionResult> Disable(CustomerSpecificPropertyModel propertyModel)
+            => await ChangeEnabled(propertyModel, enabledStatus: false);
+        
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Enable(CustomerSpecificPropertyModel propertyModel)
+            => await ChangeEnabled(propertyModel, enabledStatus: true);         
+        
+        private async Task<ActionResult> ChangeEnabled(CustomerSpecificPropertyModel propertyModel, bool enabledStatus)
         {
-            var existingProperty = await _tolkDbContext.CustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == propertyModel.CustomerOrganisationId && csp.PropertyType == propertyModel.PropertyToReplace).FirstOrDefaultAsync();
-            if(existingProperty != null)
+            var existingProperty = await _tolkDbContext.CustomerSpecificProperties.GetCustomerSpecificPropertiesWithCustomerOrganisation(propertyModel.CustomerOrganisationId, propertyModel.PropertyToReplace).FirstOrDefaultAsync();
+
+            if (existingProperty != null)
             {
-                _tolkDbContext.Remove(existingProperty);
+                var newProperty = CustomerSpecificProperty.CopyCustomerSpecificProperty(existingProperty);
+                newProperty.Enabled = enabledStatus;
+                existingProperty.CustomerOrganisation.UpdateCustomerSpecificPropertySettings(_clock.SwedenNow, User.GetUserId(), newProperty);
                 await _tolkDbContext.SaveChangesAsync();
                 await _cacheService.Flush(CacheKeys.CustomerSpecificProperties);
-                return RedirectToAction(nameof(CustomerController.View),"Customer", new {id=propertyModel.CustomerOrganisationId, message = $"Kundspecifik {propertyModel.PropertyToReplace.GetDescription()} borttaget" });
+                return RedirectToAction(nameof(CustomerController.View), "Customer", new { id = propertyModel.CustomerOrganisationId, message = $"Kundspecifik {propertyModel.PropertyToReplace.GetDescription()} uppdaterat" });
             }
             else
             {
-                return RedirectToAction(nameof(CustomerController.View),"Customer", new { customerOrganisationId = propertyModel.CustomerOrganisationId, message = "Fält redan borttaget" });
+                return RedirectToAction(nameof(CustomerController.View), "Customer", new { customerOrganisationId = propertyModel.CustomerOrganisationId, message = "Kundspecifikt fält existerar inte" });
             }
         }
     }

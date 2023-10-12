@@ -688,6 +688,7 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<BrokerFeeByServiceTypePriceListRow> BrokerFeeByServiceTypePriceListRows { get; set; }
         public DbSet<CustomerSpecificProperty> CustomerSpecificProperties { get; set; }
         public DbSet<PeppolPayload> PeppolPayloads { get; set; }
+        public DbSet<CustomerSpecificPropertyHistoryEntry> CustomerSpecificPropertyChangeHistoryEntries { get; set; }
 
         private static bool isUserStoreInitialized = false;
 
