@@ -104,8 +104,8 @@ jobs:
           ${{ github.workspace }}/artifacts/packages/Tolk.Web.${{ needs.build.outputs.full_version_number }}.zip
           ${{ github.workspace }}/artifacts/packages/Tolk.Web.Api.${{ needs.build.outputs.full_version_number }}.zip
           ${{ github.workspace }}/artifacts/packages/Tolk.Migration.${{ needs.build.outputs.full_version_number }}.zip
-          name: Create tag
-    - uses: actions/github-script@v5
+    - name: Create tag
+      uses: actions/github-script@v5
       with:
         script: |
             github.rest.git.createRef({
