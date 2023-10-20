@@ -16,7 +16,7 @@ namespace Tolk.Web.Models
         public string DenyMessage { get; set; }
 
         internal static async Task<IEnumerable<BrokerListModel>> GetFromList(IQueryable<Request> requests)
-            => await requests.Select(r => new BrokerListModel
+            => await requests.OrderBy(r => r.Ranking.Rank).Select(r => new BrokerListModel
             {
                 Status = r.Status,
                 BrokerName = r.Ranking.Broker.Name,
