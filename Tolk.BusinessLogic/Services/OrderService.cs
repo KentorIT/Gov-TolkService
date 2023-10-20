@@ -595,6 +595,7 @@ namespace Tolk.BusinessLogic.Services
         {
             NullCheckHelper.ArgumentCheckNull(request, nameof(SetRequestExpiryManually), nameof(OrderService));
             request.SetRequestExpiryManually(expiry, _clock.SwedenNow, userId, impersonatingUserId);
+            request.Order.InterpreterLocations = await _tolkDbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(request.OrderId).ToListAsync();
 
             // Log and notify
             _logger.LogInformation("Expiry {expiry} manually set on request {requestId}", expiry, request.RequestId);
