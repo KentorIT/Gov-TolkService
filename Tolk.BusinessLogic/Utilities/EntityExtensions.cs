@@ -1245,7 +1245,7 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<Request> GetRequestOrdersForBrokerReport(this IQueryable<Request> requests, DateTime start, DateTime end, int brokerId)
             => requests
                 .Where(r => r.Ranking.BrokerId == brokerId && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
-                && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced || r.Status == RequestStatus.ReplacedAtAnswerAfterAccept || r.Status == RequestStatus.ReplacedAfterAcceptOfFlexible));
+                && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced || r.Status == RequestStatus.ReplacedAtAnswerAfterAccept || r.Status == RequestStatus.ReplacedAfterAcceptOfFlexible || r.Status == RequestStatus.LostDueToQuarantine));
 
         public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForBrokerReport(this IQueryable<OrderRequirementRequestAnswer> orderRequirementAnswers, DateTime start, DateTime end, int brokerId)
            => orderRequirementAnswers.Where(x =>

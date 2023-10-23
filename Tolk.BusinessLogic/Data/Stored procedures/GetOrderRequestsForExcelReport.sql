@@ -69,7 +69,7 @@ AS
 		AND((@onlyDelivered = 0
 		AND CONVERT(DATE, r.CreatedAt) >= @dateFrom
 		AND CONVERT(DATE, r.CreatedAt) <= @dateTo
-		AND r.Status NOT IN(13, 17, 18, 24, 25))--ordered
+		AND r.Status NOT IN(13, 17, 18, 24, 25, 19))--ordered
 		OR(@onlyDelivered = 1
 		AND o.Status IN(4, 5, 7)
 		AND r.Status IN(5, 6)
@@ -90,8 +90,7 @@ AS
 		(10, 'Uppdrag avbokat av myndighet'),
 		(12, 'Bekräftelse är skickad - Ny tolk'),
 		(14, 'Uppdrag avbokat av förmedling'),
-		(16, 'Tillsättning ej besvarad'),
-		(19, 'Förlorad på grund av karantän'),
+		(16, 'Tillsättning ej besvarad'),	
 		(22, 'Förfrågan avbruten p.g.a. utgånget ramavtal'),
 		(23, 'Förfrågan bekräftad av förmedling, inväntar tolktillsättning')
 
