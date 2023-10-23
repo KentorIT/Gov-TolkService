@@ -69,7 +69,7 @@ AS
 		AND((@onlyDelivered = 0
 		AND CONVERT(DATE, r.CreatedAt) >= @dateFrom
 		AND CONVERT(DATE, r.CreatedAt) <= @dateTo
-		AND r.Status NOT IN(13, 17, 18, 24, 25, 19))--ordered
+		AND r.Status NOT IN(13, 17, 18, 24, 25, 19, 26))--ordered
 		OR(@onlyDelivered = 1
 		AND o.Status IN(4, 5, 7)
 		AND r.Status IN(5, 6)

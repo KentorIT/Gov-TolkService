@@ -61,7 +61,10 @@ namespace Tolk.BusinessLogic.Utilities
                     r.Status != RequestStatus.NoDeadlineFromCustomer &&
                     r.Status != RequestStatus.InterpreterReplaced &&
                     r.Status != RequestStatus.ReplacedAtAnswerAfterAccept &&
-                    r.Status != RequestStatus.ReplacedAfterAcceptOfFlexible);
+                    r.Status != RequestStatus.ReplacedAfterAcceptOfFlexible &&
+                    r.Status != RequestStatus.ReplacedAfterPriceUpdate &&
+                    r.Status != RequestStatus.LostDueToQuarantine);
+
         }
 
         public static FrameworkAgreement GetFrameworkAgreementByDate(this IQueryable<FrameworkAgreement> agreements, DateTime today)
@@ -1245,22 +1248,46 @@ namespace Tolk.BusinessLogic.Utilities
         public static IQueryable<Request> GetRequestOrdersForBrokerReport(this IQueryable<Request> requests, DateTime start, DateTime end, int brokerId)
             => requests
                 .Where(r => r.Ranking.BrokerId == brokerId && r.CreatedAt.Date >= start.Date && r.CreatedAt.Date <= end.Date
-                && !(r.Status == RequestStatus.NoDeadlineFromCustomer || r.Status == RequestStatus.AwaitingDeadlineFromCustomer || r.Status == RequestStatus.InterpreterReplaced || r.Status == RequestStatus.ReplacedAtAnswerAfterAccept || r.Status == RequestStatus.ReplacedAfterAcceptOfFlexible || r.Status == RequestStatus.LostDueToQuarantine));
+                && !(r.Status == RequestStatus.NoDeadlineFromCustomer || 
+                     r.Status == RequestStatus.AwaitingDeadlineFromCustomer ||
+                     r.Status == RequestStatus.InterpreterReplaced || 
+                     r.Status == RequestStatus.ReplacedAtAnswerAfterAccept || 
+                     r.Status == RequestStatus.ReplacedAfterAcceptOfFlexible || 
+                     r.Status == RequestStatus.LostDueToQuarantine ||
+                     r.Status == RequestStatus.ReplacedAfterPriceUpdate));
 
         public static IQueryable<OrderRequirementRequestAnswer> GetRequirementAnswersForBrokerReport(this IQueryable<OrderRequirementRequestAnswer> orderRequirementAnswers, DateTime start, DateTime end, int brokerId)
            => orderRequirementAnswers.Where(x =>
                 x.Request.Ranking.BrokerId == brokerId && x.Request.CreatedAt.Date >= start.Date && x.Request.CreatedAt.Date <= end.Date
-                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced || x.Request.Status == RequestStatus.ReplacedAtAnswerAfterAccept || x.Request.Status == RequestStatus.ReplacedAfterAcceptOfFlexible));
+                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || 
+                     x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer ||
+                     x.Request.Status == RequestStatus.InterpreterReplaced || 
+                     x.Request.Status == RequestStatus.ReplacedAtAnswerAfterAccept || 
+                     x.Request.Status == RequestStatus.ReplacedAfterAcceptOfFlexible || 
+                     x.Request.Status == RequestStatus.LostDueToQuarantine ||
+                     x.Request.Status == RequestStatus.ReplacedAfterPriceUpdate));
 
         public static IQueryable<Requisition> GetRequisitionsForBrokerReport(this IQueryable<Requisition> requisitions, DateTime start, DateTime end, int brokerId)
            => requisitions.Where(x =>
                 x.Request.Ranking.BrokerId == brokerId && x.Request.CreatedAt.Date >= start.Date && x.Request.CreatedAt.Date <= end.Date
-                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced || x.Request.Status == RequestStatus.ReplacedAtAnswerAfterAccept || x.Request.Status == RequestStatus.ReplacedAfterAcceptOfFlexible));
+                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer ||
+                     x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer ||
+                     x.Request.Status == RequestStatus.InterpreterReplaced ||
+                     x.Request.Status == RequestStatus.ReplacedAtAnswerAfterAccept ||
+                     x.Request.Status == RequestStatus.ReplacedAfterAcceptOfFlexible ||
+                     x.Request.Status == RequestStatus.LostDueToQuarantine ||
+                     x.Request.Status == RequestStatus.ReplacedAfterPriceUpdate));
 
         public static IQueryable<Complaint> GetComplaintsForBrokerReport(this IQueryable<Complaint> complaints, DateTime start, DateTime end, int brokerId)
            => complaints.Where(x =>
                 x.Request.Ranking.BrokerId == brokerId && x.Request.CreatedAt.Date >= start.Date && x.Request.CreatedAt.Date <= end.Date
-                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer || x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer || x.Request.Status == RequestStatus.InterpreterReplaced || x.Request.Status == RequestStatus.ReplacedAtAnswerAfterAccept || x.Request.Status == RequestStatus.ReplacedAfterAcceptOfFlexible));
+                && !(x.Request.Status == RequestStatus.NoDeadlineFromCustomer ||
+                     x.Request.Status == RequestStatus.AwaitingDeadlineFromCustomer ||
+                     x.Request.Status == RequestStatus.InterpreterReplaced ||
+                     x.Request.Status == RequestStatus.ReplacedAtAnswerAfterAccept ||
+                     x.Request.Status == RequestStatus.ReplacedAfterAcceptOfFlexible ||
+                     x.Request.Status == RequestStatus.LostDueToQuarantine ||
+                     x.Request.Status == RequestStatus.ReplacedAfterPriceUpdate));
 
         public static IQueryable<Complaint> GetComplaintsForReports(this IQueryable<Complaint> complaints, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits, int? brokerId)
            => complaints.Where(c =>

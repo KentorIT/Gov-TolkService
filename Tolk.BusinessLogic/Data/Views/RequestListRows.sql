@@ -39,7 +39,7 @@ LEFT JOIN OrderGroups og
 	ON og.OrderGroupId = o.OrderGroupId
 LEFT JOIN Languages l
 	ON l.LanguageId = o.LanguageId
-WHERE r.Status NOT IN (13, 17, 18, 24, 25, 19)
+WHERE r.Status NOT IN (13, 17, 18, 24, 25, 19, 26)
 UNION
 SELECT
 	2
@@ -87,4 +87,4 @@ JOIN CustomerOrganisations c
 	ON c.CustomerOrganisationId = og.CustomerOrganisationId
 LEFT JOIN Languages l
 	ON l.LanguageId = og.LanguageId
-WHERE r.Status NOT IN (13, 17, 18, 24, 25, 19)
+WHERE r.Status NOT IN (13, 17, 18, 24, 25, 19, 26)
