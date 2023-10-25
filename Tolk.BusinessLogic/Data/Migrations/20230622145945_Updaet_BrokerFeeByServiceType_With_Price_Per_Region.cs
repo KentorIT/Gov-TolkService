@@ -11,7 +11,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"
+            migrationBuilder.Sql(@"Exec('
 SELECT	
        PRICEROW.[Price]
       ,PRICEROW.[CompetenceLevel]
@@ -41,7 +41,7 @@ SELECT
 	,RankingLastValidDate
 	,RegionId
 	FROM #TempBrokerFeesByServiceType 
-");
+')");
         }
 
         /// <inheritdoc />
