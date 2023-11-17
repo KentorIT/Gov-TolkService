@@ -76,7 +76,7 @@ namespace Tolk.BusinessLogic.Enums
         [Parent(NegotiationState.TerminatedPrematurely)]
         NoDeadlineFromCustomer = 18,
         [CustomName("not_used", false)]
-        [Description("Förlorad på grund av karantän")]
+        [Description("Ej tillfrågad på grund av tillfällig karantän")]
         [Parent(NegotiationState.TerminatedPrematurely)]
         LostDueToQuarantine = 19,
         [CustomName("not_used", false)]
