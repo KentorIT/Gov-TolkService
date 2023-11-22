@@ -275,13 +275,13 @@ namespace Tolk.Web.TagHelpers
         }
         private void WriteCustomerSpecificValidation(StringWriter writer)
         {
-           var tagBuilder = _htmlGenerator.GenerateValidationMessage(
-           ViewContext,
-           For.ModelExplorer,
-           $"{For.ModelExplorer.Metadata.Name}.{nameof(CustomerSpecificPropertyModel.Value)}",
-           message: null,
-           tag: null,
-           htmlAttributes: new { @class = "text-danger" });
+            var tagBuilder = _htmlGenerator.GenerateValidationMessage(
+            ViewContext,
+            For.ModelExplorer,
+            $"{For.ModelExplorer.Metadata.Name}.{nameof(CustomerSpecificPropertyModel.Value)}",
+            message: null,
+            tag: null,
+            htmlAttributes: new { @class = "text-danger" });
 
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
@@ -333,7 +333,7 @@ namespace Tolk.Web.TagHelpers
             {
                 writer.WriteLine(InformationSpan.FormatSwedish(DescriptionOverride ?? property.DisplayDescription));
             }
-        }      
+        }
         private const string RequiredStarSpan = "<span class=\"required-star\">*</span>";
         private const string InformationSpan = " <span class=\"form-entry-information glyphicon glyphicon-info-sign\" title=\"{0}\"></span>";
         private const string HelpAnchor = " <a href=\"{0}\" aria-label=\"Hjälp från manual\" target=\"_blank\"><span class=\"form-entry-help glyphicon glyphicon-question-sign\"></span></a>";
@@ -737,6 +737,10 @@ namespace Tolk.Web.TagHelpers
             string extraGroupDivClass = "",
             IDictionary<string, string> extraAttributes = null)
         {
+            bool IsNoAutoComplete = AttributeHelper.IsAttributeDefined<NoAutoCompleteAttribute>(
+               For.ModelExplorer.Metadata.ContainerType,
+               For.ModelExplorer.Metadata.PropertyName);
+
             writer.WriteLine("<div class=\"input-group date " + extraGroupDivClass + "\">");
 
             var tagBuilder = _htmlGenerator.GenerateTextBox(
@@ -754,6 +758,11 @@ namespace Tolk.Web.TagHelpers
                     title = "Datum",
                     aria_labelledby = DateLabelId + For.Name
                 });
+            if (IsNoAutoComplete)
+            {
+                tagBuilder.Attributes.Add("autofill", "off");
+                tagBuilder.Attributes.Add("autocomplete", "off");
+            }
             if (extraAttributes != null)
             {
                 foreach (var pair in extraAttributes)

@@ -83,6 +83,7 @@ namespace Tolk.Web.Models
 
         [Display(Name = "Datum och tid", Description = "Sluttid kan anges för nästa dag vid dygnspassering, t ex 01:00.")]
         [ClientRequired(ErrorMessage = "Ange datum")]
+        [NoAutoComplete]
         public virtual SplitTimeRange SplitTimeRange { get; set; }
 
         [Display(Name = "Sista svarstid", Description = "Eftersom att uppdraget sker i närtid måste sista svarstid anges. Observera dock att det i vissa, och särskilt akuta fall, kan vara bättre att ringa förmedlingarna för att få svar direkt.")]
