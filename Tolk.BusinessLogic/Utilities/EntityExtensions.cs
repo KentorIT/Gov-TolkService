@@ -1304,6 +1304,7 @@ namespace Tolk.BusinessLogic.Utilities
                 && (organisationId.HasValue ? r.Request.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
                 && (customerUnits == null || (r.Request.Order.CustomerUnitId.HasValue && customerUnits.Contains(r.Request.Order.CustomerUnitId.Value)))
                 && (brokerId == null || r.Request.Ranking.BrokerId == brokerId))
+                .Include(r => r.Request).ThenInclude(re => re.Order)
                 .Include(r => r.Request).ThenInclude(re => re.Ranking).ThenInclude(ra => ra.FrameworkAgreement);
 
         public static IQueryable<RequisitionPriceRow> GetRequisitionPriceRowsForRequisitionReport(this IQueryable<RequisitionPriceRow> requisitionPriceRows, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits, int? brokerId)
