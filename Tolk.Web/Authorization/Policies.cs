@@ -338,10 +338,10 @@ namespace Tolk.Web.Authorization
                     }
                     return user.IsInRole(Roles.SystemAdministrator);
                 case Request request:
-                    return (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && request.Ranking.BrokerId == user.GetBrokerId()) ||
+                    return (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && request.Ranking.BrokerId == user.GetBrokerId() && request.Status != RequestStatus.LostDueToQuarantine) ||
                         (user.HasClaim(c => c.Type == TolkClaimTypes.InterpreterId) && request.Interpreter.InterpreterId == user.GetInterpreterId());
                 case RequestGroup requestGroup:
-                    return (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && requestGroup.Ranking.BrokerId == user.GetBrokerId());
+                    return (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && requestGroup.Ranking.BrokerId == user.GetBrokerId() && requestGroup.Status != RequestStatus.LostDueToQuarantine);
                 case Complaint complaint:
                     if (user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId))
                     {
