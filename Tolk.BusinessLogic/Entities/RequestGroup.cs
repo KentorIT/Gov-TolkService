@@ -118,7 +118,8 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset declinedAt,
             int userId,
             int? impersonatorId,
-            string message)
+            string message,
+            RequestStatus requestStatus = RequestStatus.DeclinedByBroker)
         {
             if (!CanDecline)
             {
@@ -126,7 +127,7 @@ namespace Tolk.BusinessLogic.Entities
             }
             base.Decline(declinedAt, userId, impersonatorId, message);
             Requests.ForEach(r => r.DeclineInGroup(declinedAt, userId, impersonatorId, message));
-            SetStatus(RequestStatus.DeclinedByBroker, false);
+            SetStatus(requestStatus, false);
             OrderGroup.SetStatus(OrderStatus.Requested, false);
         }
 

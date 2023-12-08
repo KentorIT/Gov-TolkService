@@ -160,9 +160,10 @@ namespace Tolk.BusinessLogic.Entities
             DateTimeOffset declinedAt,
             int userId,
             int? impersonatorId,
-            string message)
+            string message,
+            RequestStatus requestStatus = RequestStatus.DeclinedByBroker)
         {
-            Status = RequestStatus.DeclinedByBroker;
+            Status = requestStatus;
             AnswerDate = declinedAt;
             AnsweredBy = userId;
             ImpersonatingAnsweredBy = impersonatorId;

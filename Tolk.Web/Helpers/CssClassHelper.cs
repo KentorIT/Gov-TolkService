@@ -19,7 +19,7 @@ namespace Tolk.Web.Helpers
 
         public static string GetColorClassNameForRequestStatus(RequestStatus status)
         {
-            return (status == RequestStatus.CancelledByBroker || status == RequestStatus.CancelledByCreator || status == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted || status == RequestStatus.DeniedByCreator || status == RequestStatus.DeniedByTimeLimit || status == RequestStatus.ResponseNotAnsweredByCreator || status == RequestStatus.DeclinedByBroker || status == RequestStatus.NoDeadlineFromCustomer || status == RequestStatus.TerminatedDueToTerminatedFrameworkAgreement) ? "red-border-left"
+            return (status == RequestStatus.CancelledByBroker || status == RequestStatus.CancelledByCreator || status == RequestStatus.CancelledByCreatorWhenApprovedOrAccepted || status == RequestStatus.DeniedByCreator || status == RequestStatus.DeniedByTimeLimit || status == RequestStatus.ResponseNotAnsweredByCreator || status == RequestStatus.DeclinedByBroker || status == RequestStatus.NoDeadlineFromCustomer || status == RequestStatus.TerminatedDueToTerminatedFrameworkAgreement || status == RequestStatus.BrokerDeclinedReplacementWithTimeSlotOutsideOriginalRequestTimeSlot) ? "red-border-left"
                 : (status == RequestStatus.Approved || status == RequestStatus.Delivered) ? "green-border-left"
                 : (status == RequestStatus.AnsweredAwaitingApproval || status == RequestStatus.AcceptedNewInterpreterAppointed || status == RequestStatus.AwaitingDeadlineFromCustomer) ? "yellow-border-left"
                 : "blue-border-left";

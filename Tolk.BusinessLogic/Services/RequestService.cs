@@ -382,6 +382,19 @@ namespace Tolk.BusinessLogic.Services
                 if (replacedRequest.CalculatedStartAt > request.Order.StartAt || replacedRequest.CalculatedEndAt < request.Order.EndAt)
                 {
                     (priceRows, mealbreaks) = _orderService.GetCompensationPriceRowsForCancelledRequest(replacedRequest, true);
+                    // Add priceRows from replacedRequest on replacingRequest, since a declined ReplacementRequest does not get any pricerows
+                    var replacedRequestPriceListCopy = replacedRequest.PriceRows.Select(pr => new RequestPriceRow
+                    {
+                        PriceCalculationChargeId = pr.PriceCalculationChargeId,
+                        StartAt = pr.StartAt,
+                        EndAt = pr.EndAt,
+                        Price = pr.Price,
+                        Quantity = pr.Quantity,
+                        PriceRowType = pr.PriceRowType,
+                        PriceListRow = pr.PriceListRow,
+                        PriceCalculationCharge = pr.PriceCalculationCharge
+                    });
+                    request.PriceRows = replacedRequestPriceListCopy.ToList();
                 }
             }
             request.DeclineRequest(declinedAt, userId, impersonatorId, message, mealbreaks, priceRows);
@@ -397,7 +410,7 @@ namespace Tolk.BusinessLogic.Services
                 }
             }
             else
-            {
+            {                
                 if (notify)
                 {
                     _notificationService.RequestReplamentOrderDeclinedByBroker(request);

@@ -562,24 +562,37 @@ namespace Tolk.BusinessLogic.Entities
             }
             if (priceRows != null)
             {
-                Requisitions.Add(
-                    new Requisition
-                    {
-                        CreatedAt = declinedAt,
-                        CreatedBy = userId,
-                        ImpersonatingCreatedBy = impersonatorId,
-                        Message = "Genererad av systemet. Full ersättning utgår pga att avbokning skett mindre än 48 timmar före bokat tolktillfälle och att tolken inte kan inställa sig efter de förändrade tidsramarna.",
-                        Status = RequisitionStatus.AutomaticGeneratedFromCancelledOrder,
-                        SessionStartedAt = CalculatedStartAt,
-                        SessionEndedAt = CalculatedEndAt,
-                        PriceRows = priceRows,
-                        MealBreaks = mealbreaks
-                    }
-                );
-
+                DeclineReplacementRequestEligbleForRequisitions(declinedAt, userId, impersonatorId,message, mealbreaks, priceRows);               
             }
-            base.Decline(declinedAt, userId, impersonatorId, message);
+            else
+            {
+                base.Decline(declinedAt, userId, impersonatorId, message);            
+            }          
             Order.Status = !Order.ReplacingOrderId.HasValue ? OrderStatus.Requested : OrderStatus.NoBrokerAcceptedOrder;
+        }
+
+        private void DeclineReplacementRequestEligbleForRequisitions(DateTimeOffset declinedAt,
+            int userId,
+            int? impersonatorId,
+            string message,
+            List<MealBreak> mealbreaks,
+            List<RequisitionPriceRow> priceRows)
+        {
+            Requisitions.Add(
+                   new Requisition
+                   {
+                       CreatedAt = declinedAt,
+                       CreatedBy = userId,
+                       ImpersonatingCreatedBy = impersonatorId,
+                       Message = "Genererad av systemet. Full ersättning utgår pga att avbokning skett mindre än 48 timmar före bokat tolktillfälle och att tolken inte kan inställa sig efter de förändrade tidsramarna.",
+                       Status = RequisitionStatus.AutomaticGeneratedFromCancelledOrder,
+                       SessionStartedAt = CalculatedStartAt,
+                       SessionEndedAt = CalculatedEndAt,
+                       PriceRows = priceRows,
+                       MealBreaks = mealbreaks
+                   }
+               );
+            base.Decline(declinedAt, userId, impersonatorId, message, RequestStatus.BrokerDeclinedReplacementWithTimeSlotOutsideOriginalRequestTimeSlot);
         }
 
         internal void DeclineInGroup(

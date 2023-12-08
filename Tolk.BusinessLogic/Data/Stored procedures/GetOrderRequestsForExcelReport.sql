@@ -92,7 +92,8 @@ AS
 		(14, 'Uppdrag avbokat av förmedling'),
 		(16, 'Tillsättning ej besvarad'),	
 		(22, 'Förfrågan avbruten p.g.a. utgånget ramavtal'),
-		(23, 'Förfrågan bekräftad av förmedling, inväntar tolktillsättning')
+		(23, 'Förfrågan bekräftad av förmedling, inväntar tolktillsättning'),
+		(27,'Ersättningsuppdrag avböjt då tiderna inte var inom det ersatta uppdragets tidsram')
 
 	UPDATE #reportOrderRequests
 	SET il1 = il.ilName

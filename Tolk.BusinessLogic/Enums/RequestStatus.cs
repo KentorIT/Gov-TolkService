@@ -107,5 +107,10 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Förfrågan uppdaterad efter uppdatering av prislistor")]
         [Parent(NegotiationState.ReplacedByOtherEntity)]
         ReplacedAfterPriceUpdate = 26,
+        [CustomName("not_used", false)]
+        [Description("Ersättningsuppdrag avböjt då tiderna inte var inom det ersatta uppdragets tidsram")]
+        [Parent(NegotiationState.TerminatedPrematurely)]
+        BrokerDeclinedReplacementWithTimeSlotOutsideOriginalRequestTimeSlot = 27,
+
     }
 }

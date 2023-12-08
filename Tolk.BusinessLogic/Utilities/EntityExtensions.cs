@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Entities;
@@ -1437,7 +1436,8 @@ namespace Tolk.BusinessLogic.Utilities
                     r.Status != RequestStatus.LostDueToQuarantine &&
                     r.Status != RequestStatus.ReplacedAtAnswerAfterAccept &&
                     r.Status != RequestStatus.ReplacedAfterAcceptOfFlexible &&
-                    r.Status != RequestStatus.ReplacedAfterPriceUpdate
+                    r.Status != RequestStatus.ReplacedAfterPriceUpdate &&
+                    r.Status != RequestStatus.BrokerDeclinedReplacementWithTimeSlotOutsideOriginalRequestTimeSlot
                 )
                  .ToListAsync();
 
