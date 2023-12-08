@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Enums;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
     public class ReportSearchModel : IModel
     {
         [Display(Name = "Välj datumintervall")]
+        [NoAutoComplete]
         public DateRange ReportDate { get; set; }
 
         [Required]
