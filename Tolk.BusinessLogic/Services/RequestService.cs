@@ -956,19 +956,21 @@ namespace Tolk.BusinessLogic.Services
         }
 
         private Request UpdatePricesForRequest(Request request)
-        {
+        {            
+            var competenceLevelForPriceCalculation = ((CompetenceAndSpecialistLevel?)request.CompetenceLevel) ?? OrderService.SelectCompetenceLevelForPriceEstimation(request.Order.CompetenceRequirements?.Select(item => item.CompetenceLevel));
             // Recalculate price rows                
             var reCalculatedPriceRows = _priceCalculationService.GetPrices(
-                 request,
-                 request.CreatedAt,
-                 (CompetenceAndSpecialistLevel)request.CompetenceLevel,
-                 (InterpreterLocation?)request.InterpreterLocation.Value,
-                 request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0);
+                    request,
+                    request.CreatedAt,
+                    competenceLevelForPriceCalculation,
+                    (InterpreterLocation?)request.InterpreterLocation.Value,
+                    request.PriceRows.FirstOrDefault(pr => pr.PriceRowType == PriceRowType.TravelCost)?.Price ?? 0);
             var newRequest = Request.CopyRequestWithUpdatedPriceRows(request, reCalculatedPriceRows);
             request.Status = RequestStatus.ReplacedAfterPriceUpdate;
             request.Order.Requests.Add(newRequest);
             request.ReplacedByRequest = newRequest;
             return newRequest;
+      
         }
 
     }

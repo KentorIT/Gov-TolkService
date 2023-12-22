@@ -204,12 +204,12 @@ namespace Tolk.Web.Services
         private async Task RunDailyJobs(IServiceProvider provider)
         {
             _logger.LogInformation($"Starting {nameof(RunDailyJobs)}");
-            await provider.GetRequiredService<RequestService>().SyncRequestPrices();
             await provider.GetRequiredService<OrderService>().CleanTempAttachments();
             await provider.GetRequiredService<RequestService>().SendEmailRemindersNonApprovedRequests();
             await provider.GetRequiredService<RequestService>().SendEmailRemindersNonApprovedRequestGroups();
             await provider.GetRequiredService<VerificationService>().HandleTellusVerifications(true);
             await provider.GetRequiredService<OrderService>().HandleExpiredComplaints();            
+            await provider.GetRequiredService<RequestService>().SyncRequestPrices();
             _logger.LogInformation($"Completed {nameof(RunDailyJobs)}");
         }
 

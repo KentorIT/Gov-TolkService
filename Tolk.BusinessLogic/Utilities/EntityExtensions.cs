@@ -1430,14 +1430,21 @@ namespace Tolk.BusinessLogic.Utilities
                  .Include(r => r.Ranking)
                     .ThenInclude(ra => ra.FrameworkAgreement)
                 .Where(r => (r.PriceRows.Any(pr => pr.StartAt.Date > pr.PriceListRow.EndDate)) &&
-                    r.Status != RequestStatus.InterpreterReplaced &&
-                    r.Status != RequestStatus.DeniedByTimeLimit &&
-                    r.Status != RequestStatus.DeniedByCreator &&
+                    r.Status != RequestStatus.CancelledByCreator &&
+                    r.Status != RequestStatus.Delivered &&
                     r.Status != RequestStatus.DeclinedByBroker &&
+                    r.Status != RequestStatus.DeniedByCreator &&
+                    r.Status != RequestStatus.DeniedByTimeLimit &&
+                    r.Status != RequestStatus.CancelledByCreatorWhenApprovedOrAccepted &&
+                    r.Status != RequestStatus.InterpreterReplaced &&                    
+                    r.Status != RequestStatus.CancelledByBroker && 
+                    r.Status != RequestStatus.ResponseNotAnsweredByCreator && 
+                    r.Status != RequestStatus.NoDeadlineFromCustomer && 
                     r.Status != RequestStatus.LostDueToQuarantine &&
+                    r.Status != RequestStatus.TerminatedDueToTerminatedFrameworkAgreement &&
                     r.Status != RequestStatus.ReplacedAtAnswerAfterAccept &&
                     r.Status != RequestStatus.ReplacedAfterAcceptOfFlexible &&
-                    r.Status != RequestStatus.ReplacedAfterPriceUpdate
+                    r.Status != RequestStatus.ReplacedAfterPriceUpdate                    
                 )
                  .ToListAsync();
 
