@@ -28,6 +28,7 @@ namespace Tolk.Web.Controllers
         private readonly INotificationService _notificationService;
         private readonly CacheService _cacheService;
         private readonly ISwedishClock _clock;
+        private readonly CustomerOrganisationService _customerService;
 
         private int CentralAdministratorRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralAdministrator).Id;
         private int CentralOrderHandlerRoleId => _roleManager.Roles.Single(r => r.Name == Roles.CentralOrderHandler).Id;
@@ -38,7 +39,8 @@ namespace Tolk.Web.Controllers
             RoleManager<IdentityRole<int>> roleManager,
             INotificationService notificationService,
             CacheService cacheService,
-            ISwedishClock clock)
+            ISwedishClock clock,
+            CustomerOrganisationService customerService)
         {
             _dbContext = dbContext;
             _authorizationService = authorizationService;
@@ -46,6 +48,7 @@ namespace Tolk.Web.Controllers
             _notificationService = notificationService;
             _cacheService = cacheService;
             _clock = clock;
+            _customerService = customerService;
         }
 
         public ActionResult Index()
@@ -102,17 +105,19 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.ApplicationAdministrator)]
         public async Task<ActionResult> Edit(CustomerModel model)
         {
-            var customer = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == model.CustomerId);
+            var customer = _dbContext.CustomerOrganisations.Include(c => c.CustomerOrderAgreementSettings).Single(c => c.CustomerOrganisationId == model.CustomerId);
             customer.CustomerSettings = await _dbContext.CustomerSettings.GetCustomerSettingsForCustomer(customer.CustomerOrganisationId).ToListAsync();
             if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.Edit)).Succeeded)
             {
                 if (ModelState.IsValid)
                 {
                     var customerSettings = model.CustomerSettings.Select(cs => new CustomerSetting { CustomerSettingType = cs.CustomerSettingType, Value = cs.Value });
-                    customer.UpdateCustomerSettingsAndHistory(_clock.SwedenNow, User.GetUserId(), customerSettings);
-                    
+                    customer.UpdateCustomerSettingsAndHistory(_clock.SwedenNow, User.GetUserId(), customerSettings);                  
+                    customer.CustomerOrderAgreementSettings = await _customerService.UpdateOrderAgreementSettings(customer, model.ShowUseOrderAgreementsFromDate ? model.UseOrderAgreementsFromDate : null, User.GetUserId());
                     model.UpdateCustomer(customer);
                     await _dbContext.SaveChangesAsync();
+
+                    await _cacheService.Flush(CacheKeys.CustomerOrderAgreementSettings);
                     await _cacheService.Flush(CacheKeys.CustomerSettings);
                     await _cacheService.Flush(CacheKeys.OrganisationSettings);
                     return RedirectToAction(nameof(View), new { Id = model.CustomerId, Message = "Myndighet har uppdaterats" });
@@ -128,7 +133,7 @@ namespace Tolk.Web.Controllers
             return View(new CustomerModel { IsCreating = true, CustomerSettings = EmptyCustomerSettings });
         }
 
-        private static List<CustomerSettingModel> EmptyCustomerSettings => 
+        private static List<CustomerSettingModel> EmptyCustomerSettings =>
             EnumHelper.GetAllDescriptions<CustomerSettingType>().OrderBy(e => e.Description)
             .Select(e => new CustomerSettingModel() { CustomerSettingType = e.Value, Value = false }).ToList();
 
@@ -142,8 +147,13 @@ namespace Tolk.Web.Controllers
                 CustomerOrganisation customer = new CustomerOrganisation();
                 model.UpdateCustomer(customer, true);
                 _dbContext.Add(customer);
-                await _cacheService.Flush(CacheKeys.CustomerSettings);
+                customer.CustomerOrderAgreementSettings = await _customerService.CreateInitialCustomerOrderAgreementSettings(customer.UseOrderAgreementsFromDate);
                 await _dbContext.SaveChangesAsync();
+                if (customer.UseOrderAgreementsFromDate.HasValue)
+                {
+                    await _cacheService.Flush(CacheKeys.CustomerOrderAgreementSettings);
+                }
+                await _cacheService.Flush(CacheKeys.CustomerSettings);
                 customer = await _dbContext.CustomerOrganisations.GetCustomerById(customer.CustomerOrganisationId);
                 _notificationService.CustomerCreated(customer);
                 return RedirectToAction(nameof(View), new { Id = customer.CustomerOrganisationId, Message = "Myndighet har skapats" });
@@ -175,7 +185,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ListUnits(IDataTablesRequest request)
-        {            
+        {
             //Get filters
             AdminUnitFilterModel filters = await GetUnitFilters();
 
@@ -217,7 +227,7 @@ namespace Tolk.Web.Controllers
             var data = _cacheService.AllCustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == filters.CustomerSpecificPropertyFilterModelCustomerId).AsQueryable();
 
             return AjaxDataTableHelper.GetData(request, data.Count(), data, d => d.Select(csp => new CustomerSpecificPropertyListItemModel
-            { 
+            {
                 CustomerOrganisationId = csp.CustomerOrganisationId,
                 DisplayName = csp.DisplayName,
                 PropertyTypeName = csp.PropertyToReplace.GetDescription(),
@@ -228,7 +238,7 @@ namespace Tolk.Web.Controllers
         }
 
         private async Task<CustomerUserFilterModel> GetUserFilters()
-        {            
+        {
             var filters = new CustomerUserFilterModel();
             await TryUpdateModelAsync(filters);
             filters.CentralAdministratorRoleId = CentralAdministratorRoleId;
@@ -246,10 +256,9 @@ namespace Tolk.Web.Controllers
         private async Task<CustomerSpecificPropertyFilterModel> GetCustomerSpecificPropertyFilters()
         {
             var filters = new CustomerSpecificPropertyFilterModel();
-            await TryUpdateModelAsync(filters);                        
+            await TryUpdateModelAsync(filters);
             return filters;
         }
-
         private bool ValidateCustomer(CustomerModel model)
         {
             bool valid = true;
@@ -262,6 +271,53 @@ namespace Tolk.Web.Controllers
                 valid = false;
             }
             return valid;
+        }
+
+        [Authorize(Roles = Roles.ApplicationAdministrator)]
+        public async Task<IActionResult> EditOrderAgreementSettings(int customerOrganisationId, string message = null, string errorMessage = null)
+        {
+            var customer = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == customerOrganisationId);
+            if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.Edit)).Succeeded)
+            {
+                var customerOrderAgreementSettings = _cacheService.CustomerOrderAgreementSettings.Where(coas => coas.CustomerOrganisationId == customerOrganisationId).ToList();
+                var settingsModel = new CustomerOrderAgreementSettingsViewModel()
+                {
+                    CustomerOrganisationId = customerOrderAgreementSettings.First().CustomerOrganisationId,
+                    CustomerOrganisation = customerOrderAgreementSettings.First().CustomerName,
+                    Message = message,
+                    ErrorMessage = errorMessage
+                };
+                settingsModel.CustomerOrderAgreementBrokerSettings =
+                    customerOrderAgreementSettings
+                        .Select(coas => new CustomerOrderAgreementBrokerListModel
+                        {
+                            BrokerId = coas.BrokerId,
+                            BrokerName = coas.BrokerName,
+                            Disabled = coas.Disabled
+                        }).ToList();
+
+                return View(settingsModel);
+            }
+            return Forbid();
+        }
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Roles = Roles.ApplicationAdministrator)]
+        public async Task<IActionResult> ChangeOrderAgreementSettings(int customerOrganisationId, int brokerId)
+        {            
+            var customer = _dbContext.CustomerOrganisations.Include(c => c.CustomerOrderAgreementSettings).Single(c => c.CustomerOrganisationId == customerOrganisationId);
+            if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.Edit)).Succeeded)
+            {
+                await _customerService.ToggleSpecificOrderAgreementSettings(customerOrganisationId, brokerId, User.GetUserId());
+                await _cacheService.Flush(CacheKeys.CustomerOrderAgreementSettings);
+                return RedirectToAction(nameof(EditOrderAgreementSettings), "Customer", new
+                {
+                    customerOrganisationId,
+                    message = "Inställningarna har uppdaterats"
+                });
+            }
+
+            return Forbid();
         }
     }
 }

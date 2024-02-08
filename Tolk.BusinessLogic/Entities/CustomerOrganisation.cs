@@ -52,6 +52,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<CustomerSpecificProperty> CustomerSpecificProperties { get; set; }
 
         public List<CustomerChangeLogEntry> CustomerChangeLogEntries { get; set; } = new List<CustomerChangeLogEntry>();
+        public List<CustomerOrderAgreementSettings> CustomerOrderAgreementSettings { get; set; }
 
         public void UpdateCustomerSettingsAndHistory(DateTimeOffset changedAt, int userId, IEnumerable<CustomerSetting> updatedCustomerSettings)
         {
@@ -107,6 +108,23 @@ namespace Tolk.BusinessLogic.Entities
             propertyToUpdate.CustomerOrganisationId = updatedCustomerSpecificProperty.CustomerOrganisationId;
             propertyToUpdate.PropertyType = updatedCustomerSpecificProperty.PropertyType;
             propertyToUpdate.Enabled = updatedCustomerSpecificProperty.Enabled;
+        }
+
+        public void UpdateCustomerOrderAgreementBrokerSettings(DateTimeOffset changedAt, int userId)
+        {
+            var customerOrderAgreementSettings = CustomerOrderAgreementSettings.Select(c => new CustomerOrderAgreementSettingsHistoryEntry
+            {
+                EnabledAt = c.EnabledAt,
+                BrokerId = c.BrokerId,
+            });
+            CustomerChangeLogEntries.Add(new CustomerChangeLogEntry
+            {
+                LoggedAt = changedAt,
+                UpdatedByUserId = userId,
+                CustomerChangeLogType = CustomerChangeLogType.CustomerOrderAgreementBrokerSettings,
+                CustomerOrderAgreementSettingsHistoryEntry = customerOrderAgreementSettings.ToList(),
+                CustomerOrganisationHistoryEntry = new CustomerOrganisationHistoryEntry(this)
+            });
         }
     }
 }

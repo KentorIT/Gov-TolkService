@@ -520,6 +520,9 @@ namespace Tolk.BusinessLogic.Data
                 .IsUnique()
                 .HasFilter($"[PeppolMessageType] = {(int)PeppolMessageType.OrderAgreement}");
 
+            builder.Entity<CustomerOrderAgreementSettings>()
+                .HasKey(coas => new { coas.BrokerId, coas.CustomerOrganisationId });            
+
             //Views
             builder.Entity<OrderListRow>().HasNoKey().ToView(nameof(OrderListRows));
             builder.Entity<RequestListRow>().HasNoKey().ToView(nameof(RequestListRows));
@@ -689,6 +692,8 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<CustomerSpecificProperty> CustomerSpecificProperties { get; set; }
         public DbSet<PeppolPayload> PeppolPayloads { get; set; }
         public DbSet<CustomerSpecificPropertyHistoryEntry> CustomerSpecificPropertyChangeHistoryEntries { get; set; }
+        public DbSet<CustomerOrderAgreementSettings> CustomerOrderAgreementSettings { get; set; }
+        public DbSet<CustomerOrderAgreementSettingsHistoryEntry> CustomerOrderAgreementSettingsHistoryEntries { get; set; }
 
         private static bool isUserStoreInitialized = false;
 

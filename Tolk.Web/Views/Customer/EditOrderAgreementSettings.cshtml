@@ -1,0 +1,60 @@
+﻿@model CustomerOrderAgreementSettingsViewModel
+@{
+    ViewData["Title"] = "Hantera Order Agreement inställningar för " + Model.CustomerOrganisation;
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-12">
+        </div>
+    </div>
+    @if (!string.IsNullOrEmpty(@Model.ErrorMessage))
+    {
+        @await Html.PartialAsync("_ErrorMessage",@Model.ErrorMessage)
+    }
+    @if (!string.IsNullOrEmpty(@Model.Message))
+    {
+        @await Html.PartialAsync("_InfoMessage",@Model.Message)
+    }
+    
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Orderagreementinställningar per myndighet</h2>
+            <br />
+            <div class="table-responsive standard-table table-paging table-datatable">
+                <table class="table table-hover full-row-height search-table">
+                    <thead>
+                        <tr>
+                            <th>Förmedling</th>
+                            <th>Generera Order Agreement</th>                                                    
+                            <th></th>                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var brokerSetting in Model.CustomerOrderAgreementBrokerSettings)
+                        {
+                            <tr>                                
+                                <td class="@brokerSetting.ColorClassName gray-border-bottom"> @brokerSetting.BrokerName</td>
+                                <td class="gray-border-bottom"> @brokerSetting.DisabledDisplay</td>                                
+                                <td class="gray-border-bottom">
+                                    @if (brokerSetting.Disabled)
+                                    {
+                                        <form class="do-not-check-dirty" method="post" asp-action="ChangeOrderAgreementSettings" asp-controller="Customer" asp-route-brokerId="@brokerSetting.BrokerId" asp-route-customerOrganisationId="@Model.CustomerOrganisationId">
+                                            <button type="submit" class="btn btn-default do-not-check-dirty">Aktivera Order agreement <span class="glyphicon glyphicon-ok"></span></button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form class="do-not-check-dirty" method="post" asp-action="ChangeOrderAgreementSettings" asp-controller="Customer" asp-route-brokerId="@brokerSetting.BrokerId" asp-route-customerOrganisationId="@Model.CustomerOrganisationId">
+                                            <button type="submit" class="btn btn-warning do-not-check-dirty">Inaktivera Order Agreement <span class="btn-remove-times-small">&times;</span></button>
+                                        </form>                                   
+                                    }
+                                </td>                             
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
