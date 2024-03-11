@@ -34,7 +34,8 @@ function getAntiForgeryToken() {
 }
 
 function updateTime() {
-    var date = new Date(new Date().getTime() + Number($('#now').attr('data-timetravel-milliseconds')));
+    var milliSecondsValue = Number($('#now').attr('data-timetravel-milliseconds').replace(/−/, "-"));
+    var date = new Date(new Date().getTime() + milliSecondsValue);
     $('#now').val(date);
     $('#now_display').text(date.toLocaleString("sv-SE"));
 }
