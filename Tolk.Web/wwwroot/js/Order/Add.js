@@ -219,6 +219,13 @@ $(function () {
         }
     };
 
+    var toggleLastTimeForRequiringLatestAnswerBy = function () {
+        var now = new Date($("#now").val());
+        if (!hasToggledLastTimeForRequiringLatestAnswerBy && now.getHours() === 14) {
+            $("#LastTimeForRequiringLatestAnswerBy").val($("#NextLastTimeForRequiringLatestAnswerBy").val());
+            hasToggledLastTimeForRequiringLatestAnswerBy = true;
+        }
+    }
     var validateFlexibleOrderTimes = function () {
         // Before starting, all select-boxes in ".order-datepicker select" nust have a value
         var $allSet = true;
@@ -524,10 +531,7 @@ $(function () {
 
     $("body").on("change", "#SplitTimeRange_StartDate", function () {
         var now = new Date($("#now").val());
-        if (!hasToggledLastTimeForRequiringLatestAnswerBy && now.getHours() === 14) {
-            $("#LastTimeForRequiringLatestAnswerBy").val($("#NextLastTimeForRequiringLatestAnswerBy").val());
-            hasToggledLastTimeForRequiringLatestAnswerBy = true;
-        }
+        toggleLastTimeForRequiringLatestAnswerBy();
         var lastTimeForRequiringLatestAnswerBy = new Date($("#LastTimeForRequiringLatestAnswerBy").val());
         var chosenDate = new Date($(this).val());
         allowLatestAnswerBy = true;
@@ -714,16 +718,19 @@ $(function () {
         return true;
     };
 
-    var checkIfTimeForLatestAnswerByHasPassed = function () {
-        var now = new Date($("#now").val());
-        if (!hasToggledLastTimeForRequiringLatestAnswerBy && now.getHours() === 14 && (!$("#LatestAnswerBy_Date").is(":visible"))) {
-            $("#LastTimeForRequiringLatestAnswerBy").val($("#NextLastTimeForRequiringLatestAnswerBy").val());
-            hasToggledLastTimeForRequiringLatestAnswerBy = true;
+    var checkIfTimeForLatestAnswerByHasPassed = function () {        
+        toggleLastTimeForRequiringLatestAnswerBy()       
+        var chosenDate = new Date($("#SplitTimeRange_StartDate").val());
+        var lastTimeForRequiringLatestAnswerBy = new Date($("#LastTimeForRequiringLatestAnswerBy").val());
+
+        if (chosenDate <= lastTimeForRequiringLatestAnswerBy && !LastAnswerByIsShowing) {
             $("#LatestAnswerBy").show();
             LastAnswerByIsShowing = true;
             return false;
         }
-        return true;
+        else {            
+            return true;
+        }        
     }
 
     var validateStartTime = function () {
