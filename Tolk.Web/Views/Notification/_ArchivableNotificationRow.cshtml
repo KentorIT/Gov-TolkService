@@ -1,0 +1,7 @@
+﻿@using Tolk.BusinessLogic.Models.Notification
+@using Tolk.BusinessLogic.Utilities
+@model NotificationDisplayModel
+@{
+    var id = $"SelectedTypes_{Model.NotificationType.ToString()}";
+}
+<input type="checkbox" name="SelectedTypes" id="@id" value="@Model.NotificationType.ToString()" /><label for="@id">@Model.Description</label><br />

@@ -1,0 +1,46 @@
+﻿@using Tolk.Web.Services
+@inject SelectListService SelectListService
+@model ArchivableNotificationsModel
+@{
+    ViewData["Title"] = "Startsidenotifieringar";
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    @using (Html.BeginForm("Archive", "Notification", FormMethod.Post))
+    {
+        <div class="row">
+            @if (Model.IsApplicationAdministrator)
+            {
+                <div class="col-sm-3">
+                    <form-entry asp-for="BrokerId" type="select" asp-items="SelectListService.Brokers" class="allow-clear" />
+                </div>
+            }
+            else
+            {
+                <input type="hidden" asp-for="BrokerId" />
+            }
+            <div class="col-sm-3">
+                <form-entry asp-for="ArchiveToDate" type="date" />
+            </div>
+        </div>
+        <div class="row archivable-notifications">
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-action="Index" asp-controller="Home">Avbryt <span class="btn-remove-times">&times;</span></a>
+            </div>
+            <div class="col-sm-8">
+                <button type="submit" class="btn btn-large btn-success pull-right">Arkivera</button>
+            </div>
+        </div>
+    }
+</section>
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/Notification/List.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/Notification/List.min.js" asp-append-version="true"></script>
+    </environment>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

@@ -1,0 +1,10 @@
+﻿@using Tolk.BusinessLogic.Models.Notification
+@using Tolk.BusinessLogic.Utilities
+@model IEnumerable<NotificationDisplayModel>
+<div class="col-sm-12">
+
+    @foreach (var item in Model)
+    {
+        @await Html.PartialAsync("_ArchivableNotificationRow", item)
+    }
+</div>

@@ -50,6 +50,7 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
+        [NotificationConsumerType(NotificationConsumerType.BrokerStartPage)]
         RequestAnswerDenied = 6,
 
         [Description("Förlorad förfrågan på grund av inaktivitet")]
@@ -173,6 +174,7 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
+        [NotificationConsumerType(NotificationConsumerType.BrokerStartPage)]
         RequestLostDueToNoAnswerFromCustomer = 23,
 
         [Description("Förlorad sammanhållen förfrågan på grund av ej besvarad av myndighet")]
@@ -187,6 +189,7 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
+        [NotificationConsumerType(NotificationConsumerType.BrokerStartPage)]
         RequestAssignmentTimePassed = 25,
 
         [Description("Beställning fullständigt besvarad")]

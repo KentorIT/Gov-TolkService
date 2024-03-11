@@ -216,5 +216,11 @@
     "inputFiles": [
       "wwwroot/js/Customer/ToggleUseOrderAgreementsFromDate.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/Notification/List.min.js",
+    "inputFiles": [
+      "wwwroot/js/Notification/List.js"
+    ]
   }
 ]

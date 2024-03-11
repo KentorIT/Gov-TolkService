@@ -5,8 +5,9 @@
         Broker,
         Customer,
         User,
-        SecondLineSupport
+        SecondLineSupport,
         //Owner (KamK)
         //SystemsAdministrator
+        BrokerStartPage
     }
 }
