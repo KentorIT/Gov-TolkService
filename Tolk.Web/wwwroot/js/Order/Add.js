@@ -874,6 +874,9 @@ $(function () {
                 errors++;
             }
             if (errors !== 0) {
+                if (event.NextStep === 2) {
+                    $("#back").trigger("click");
+                };
                 return false;
             }
             var currentStep = event.NextStep;
