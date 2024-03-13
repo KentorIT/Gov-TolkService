@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Renci.SshNet;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<PeppolService> _logger;
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
-        private const int NumberOfTries = 5;
+        private const int NumberOfTries = 5;        
 
         public PeppolService(
             ILogger<PeppolService> logger,
@@ -30,13 +31,14 @@ namespace Tolk.BusinessLogic.Services
         {
             _logger = logger;
             _options = options?.Value;
-            _clock = clock;
+            _clock = clock;            
         }
 
         public async Task SendOrderAgreements()
         {
             using TolkDbContext context = _options.GetContext();
-            await CreatePeppolMessagesToSend(context);
+
+            await CreatePeppolEnvelopedMessagesToSend(context);            
             if (_options.Peppol.UsePeppol)
             {
                 //then get all waiting to be sent(to also get previously failed)
@@ -65,7 +67,7 @@ namespace Tolk.BusinessLogic.Services
                         string errorMessage = string.Empty;
                         foreach (var messageId in peppolMessageIds)
                         {
-                            var message = await context.OutboundPeppolMessages
+                            var message = await context.OutboundPeppolMessages.Include(opm => opm.PeppolMessagePayload)
                                 .SingleOrDefaultAsync(e => e.OutboundPeppolMessageId == messageId && e.DeliveredAt == null);
                             try
                             {
@@ -79,8 +81,9 @@ namespace Tolk.BusinessLogic.Services
                                     try
                                     {
                                         //send file to peppol sftp
-                                        using MemoryStream ms = new MemoryStream(message.Payload);
-                                        sftpClient.UploadFile(ms, $"{message.Identifier}.xml");
+                                        var payloadToSend = _options.Peppol.UseEnvelope ? message.Payload : message.PeppolMessagePayload.Payload;
+                                        using (MemoryStream ms = new MemoryStream(payloadToSend))                                        
+                                        sftpClient.UploadFile(ms, $"{message.Identifier}.xml");                                                                                    
                                         success = true;
                                     }
                                     catch (Exception e)
@@ -138,7 +141,7 @@ namespace Tolk.BusinessLogic.Services
             }
         }
 
-        private async Task CreatePeppolMessagesToSend(TolkDbContext context)
+        private async Task CreatePeppolEnvelopedMessagesToSend(TolkDbContext context)
         {
             try
             {
@@ -151,7 +154,7 @@ namespace Tolk.BusinessLogic.Services
                     p.Payload,
                     p.PeppolMessageType
                 })
-                .ToListAsync();
+                .ToListAsync();               
                 foreach (var x in peppolPayloads)
                 {
                     using var memoryStream = new MemoryStream();
@@ -200,6 +203,11 @@ namespace Tolk.BusinessLogic.Services
                 //TOTOTOTOTOTOOTODO: Is this enough? Shouldn't this send som kind of email too?
                 _logger.LogError(ex, "Something went wrong when creating peppol messages to send.");
             }
+        }
+
+        private void CreateAndSerializeEnvolpedPayload(List<object> peppolPayloads)
+        {
+            throw new NotImplementedException();
         }
 
         private static void SerializeEnvelopeAndAddPayload(StandardBusinessDocumentModel model, StreamWriter writer, byte[] payload)
