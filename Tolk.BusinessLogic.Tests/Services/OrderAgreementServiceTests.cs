@@ -233,7 +233,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 Status = RequestStatus.Delivered,
                 Order = new Order(mockOrder)
                 {
-                    CustomerOrganisationId = 1,
+                    CustomerOrganisationId = mockOrder.CustomerOrganisationId,
                     OrderNumber = orderNumber,
                     Status = OrderStatus.RequestRespondedAwaitingApproval,
                     StartAt = DateTime.Parse("2021-10-25 10:00:00").ToDateTimeOffsetSweden(),
@@ -603,5 +603,21 @@ namespace Tolk.BusinessLogic.Tests.Services
             Assert.True(await service.HandleStandardDocumentCreation());         
             Assert.Equal(3,tolkDbContext.PeppolPayloads.Count());
         }
+
+        [Fact]
+        public async Task Service_Should_Not_Create_OrderResponse_If_Not_Enabled()
+        {
+            using var tolkDbContext = GetContextWithoutRequisition(nameof(Service_Should_Not_Create_OrderResponse_If_Not_Enabled),mockCustomerIndex:1);
+            var service = CreateStandardBusinessDocumentService(tolkDbContext, new StubSwedishClock("2021-10-25 10:00:00 +01:00"));
+            await service.HandleStandardDocumentCreation();
+            Assert.Equal(2, tolkDbContext.PeppolPayloads.Count());
+
+            var requests = tolkDbContext.Requests.Where(r => r.RequestId == 1).ToList();
+            AddRequisitionsToContext(tolkDbContext, requests);
+            Assert.True(await service.HandleStandardDocumentCreation());
+            Assert.Equal(2, tolkDbContext.PeppolPayloads.Where(pp => pp.PeppolMessageType == PeppolMessageType.OrderAgreement).Count());
+            Assert.Empty(tolkDbContext.PeppolPayloads.Where(pp => pp.PeppolMessageType == PeppolMessageType.OrderResponse));            
+        }
+        
     }
 }

@@ -50,6 +50,11 @@ namespace Tolk.Web.Models
         [DataType(DataType.Date)]
         public DateTime? UseOrderAgreementsFromDate { get; set; }
 
+        [Display(Name = "Använd order responses från och med", Description = "Sätt det datum som systemet skall börja skapa order responses från. Om datumet är i framtiden så kommer de börja skapas från och med då, och är det innan dagens datum så kommer de beställningar som faller inom regelverket skapas direkt när denna inställning sparas.")]
+        [ClientRequired]
+        [DataType(DataType.Date)]
+        public DateTime? UseOrderResponsesFromDate { get; set; }
+
         [Display(Name = "EmailDomän", Description = "Detta används när en användare som kopplar upp sig själv, för att kunna räkna ut med vilken organisation hen skall kopplas till.")]
         [Required]
         public string EmailDomain { get; set; }
@@ -66,6 +71,7 @@ namespace Tolk.Web.Models
         public CustomerSpecificPropertyFilterModel CustomerSpecificPropertyFilterModel { get; set;} 
 
         public bool ShowUseOrderAgreementsFromDate => CustomerSettings.Any(s => s.Value && s.CustomerSettingType == CustomerSettingType.UseOrderAgreements);
+        public bool ShowUseOrderResponseFromDate => ShowUseOrderAgreementsFromDate && CustomerSettings.Any(s => s.Value && s.CustomerSettingType == CustomerSettingType.UseOrderResponses);
 
         [SubItem]
         public List<CustomerSettingModel> CustomerSettings { get; set; }
@@ -92,6 +98,7 @@ namespace Tolk.Web.Models
                 PeppolId = customer.PeppolId,
                 TravelCostAgreementType = customer.TravelCostAgreementType,
                 UseOrderAgreementsFromDate = customer.UseOrderAgreementsFromDate,
+                UseOrderResponsesFromDate = customer.UseOrderResponsesFromDate,
                 Message = message,
                 UnitFilterModel = new AdminUnitFilterModel { AdminUnitFilterModelCustomerId = customer.CustomerOrganisationId },
                 UserFilterModel = new CustomerUserFilterModel { UserFilterModelCustomerId = customer.CustomerOrganisationId },
@@ -115,6 +122,7 @@ namespace Tolk.Web.Models
             customer.OrganisationNumber = OrganisationNumber;
             customer.PeppolId = PeppolId;
             customer.UseOrderAgreementsFromDate = ShowUseOrderAgreementsFromDate ? UseOrderAgreementsFromDate : null;
+            customer.UseOrderResponsesFromDate = ShowUseOrderResponseFromDate ? UseOrderResponsesFromDate : null;
             if (isNewCustomer)
             {
                 customer.PriceListType = PriceListType.Value;

@@ -11,8 +11,8 @@ namespace Tolk.BusinessLogic.Tests.TestHelpers
     {
         public static CustomerOrganisation[] MockCustomers => new[]
             {
-                new CustomerOrganisation{CustomerOrganisationId = 1, Name = "Myndighet A", PeppolId = "ignore", OrganisationNumber = "734001-9810", UseOrderAgreementsFromDate = new DateTime(1990,1,1,13,0,0) },
-                new CustomerOrganisation{CustomerOrganisationId = 2, Name = "Myndighet B", PeppolId = "ignore", OrganisationNumber = "734001-9811" },
+                new CustomerOrganisation{CustomerOrganisationId = 1, Name = "Myndighet A", PeppolId = "ignore", OrganisationNumber = "734001-9810", UseOrderAgreementsFromDate = new DateTime(1990,1,1,13,0,0), UseOrderResponsesFromDate=new DateTime(1990,1,1,13,0,0) },
+                new CustomerOrganisation{CustomerOrganisationId = 2, Name = "Myndighet B", PeppolId = "ignore", OrganisationNumber = "734001-9811", UseOrderAgreementsFromDate = new DateTime(1990,1,1,13,0,0) },
                 new CustomerOrganisation{CustomerOrganisationId = 3, Name = "Myndighet C", PeppolId = "ignore", OrganisationNumber = "734001-9812" },
                 new CustomerOrganisation{CustomerOrganisationId = 4, Name = "Myndighet D", PeppolId = "ignore", OrganisationNumber = "734001-9813" },
                 new CustomerOrganisation{CustomerOrganisationId = 5, Name = "Myndighet E", PeppolId = "ignore", OrganisationNumber = "734001-9814" },

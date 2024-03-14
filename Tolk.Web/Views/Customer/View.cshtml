@@ -36,7 +36,13 @@
             {
             <div class="row col-sm-12">
                 <display-entry asp-for="UseOrderAgreementsFromDate" />
-            </div>
+            </div>           
+            }
+            @if(Model.ShowUseOrderResponseFromDate)
+            {
+                <div class="row col-sm-12">
+                    <display-entry asp-for="UseOrderResponsesFromDate" />
+                </div>
             }
         </div>
         <div class="col-md-4">

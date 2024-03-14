@@ -13,6 +13,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Dölj fält Bifoga filer")]
         HideAttachmentField = 3,
         [Description("Hanterar order agreements")]
-        UseOrderAgreements = 4
+        UseOrderAgreements = 4,
+        [Description("Hanterar order response")]
+        UseOrderResponses = 5
     }
 }

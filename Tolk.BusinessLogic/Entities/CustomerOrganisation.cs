@@ -48,6 +48,7 @@ namespace Tolk.BusinessLogic.Entities
         public List<CustomerSetting> CustomerSettings { get; set; } = new List<CustomerSetting>();
 
         public DateTime? UseOrderAgreementsFromDate { get; set; }
+        public DateTime? UseOrderResponsesFromDate { get; set; }
 
         public List<CustomerSpecificProperty> CustomerSpecificProperties { get; set; }
 

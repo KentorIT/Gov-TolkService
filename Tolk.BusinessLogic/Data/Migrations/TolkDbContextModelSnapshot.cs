@@ -775,6 +775,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<DateTime?>("UseOrderAgreementsFromDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("UseOrderResponsesFromDate")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("CustomerOrganisationId");
 
                     b.HasIndex("ParentCustomerOrganisationId");
