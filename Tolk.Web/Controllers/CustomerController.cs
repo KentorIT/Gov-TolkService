@@ -102,15 +102,15 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.ApplicationAdministrator)]
         public async Task<ActionResult> Edit(CustomerModel model)
         {
-            var customer = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == model.CustomerId);
+            var customer = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == model.CustomerId);            
             customer.CustomerSettings = await _dbContext.CustomerSettings.GetCustomerSettingsForCustomer(customer.CustomerOrganisationId).ToListAsync();
             if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.Edit)).Succeeded)
             {
-                if (ModelState.IsValid)
+                if (ModelState.IsValid && ValidateOrderResponseDate(model))
                 {
                     var customerSettings = model.CustomerSettings.Select(cs => new CustomerSetting { CustomerSettingType = cs.CustomerSettingType, Value = cs.Value });
                     customer.UpdateCustomerSettingsAndHistory(_clock.SwedenNow, User.GetUserId(), customerSettings);
-                    
+
                     model.UpdateCustomer(customer);
                     await _dbContext.SaveChangesAsync();
                     await _cacheService.Flush(CacheKeys.CustomerSettings);
@@ -136,8 +136,8 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         [Authorize(Roles = Roles.ApplicationAdministrator)]
         public async Task<ActionResult> Create(CustomerModel model)
-        {
-            if (ModelState.IsValid && ValidateCustomer(model))
+        {            
+            if (ModelState.IsValid && ValidateCustomer(model) && ValidateOrderResponseDate(model))
             {
                 CustomerOrganisation customer = new CustomerOrganisation();
                 model.UpdateCustomer(customer, true);
@@ -259,6 +259,21 @@ namespace Tolk.Web.Controllers
                  c.OrganisationPrefix != null && c.OrganisationPrefix.ToLower() == model.OrganisationPrefix.ToLower()))
             {
                 ModelState.AddModelError(nameof(model.OrganisationPrefix), $"Denna Namnprefix används redan i tjänsten.");
+                valid = false;
+            }
+            if (model.UseOrderResponsesFromDate < model.UseOrderAgreementsFromDate)
+            {
+                ModelState.AddModelError(nameof(model.UseOrderResponsesFromDate), $"Order Response kan inte skickas tidigare än Order Agreement.");
+                valid = false;
+            }
+            return valid;
+        }
+        private bool ValidateOrderResponseDate(CustomerModel model)
+        {
+            bool valid = true;
+            if (model.UseOrderResponsesFromDate < model.UseOrderAgreementsFromDate)
+            {
+                ModelState.AddModelError(nameof(model.UseOrderResponsesFromDate), $"Order Response kan inte skickas tidigare än Order Agreement.");
                 valid = false;
             }
             return valid;

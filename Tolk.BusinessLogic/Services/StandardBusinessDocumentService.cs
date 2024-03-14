@@ -66,7 +66,7 @@ namespace Tolk.BusinessLogic.Services
         public async Task<PeppolPayload> CreateAndStoreStandardDocument(int requestId)
         {
             var request = await _tolkDbContext.Requests.GetRequestForPeppolMessageCreation(requestId);
-            PeppolPayload peppolPayload;
+            PeppolPayload peppolPayload = null;
             // Check if there exists OrderAgreement or not                     
             if (!request.Order.PeppolPayloads.Any())
             {
@@ -74,37 +74,39 @@ namespace Tolk.BusinessLogic.Services
                 peppolPayload = CreateOrderAgreement(request);
                 _tolkDbContext.PeppolPayloads.Add(peppolPayload);
             }
-            // else check if an OR exists 
-            else if (!request.Order.PeppolPayloads.Any(pp => pp.PeppolMessageType == PeppolMessageType.OrderResponse))
-            {
-                // if not create OR                           
-                var orderAgreement = request.Order.PeppolPayloads.Single(); // Only one OA per order/request is allowed
-                var priceRows = await GetPriceRowComparisonResult(request, orderAgreement);
-                if (!priceRows.Any(pr => pr.HasChanged))
+            else if(request.Order.CustomerOrganisation.UseOrderResponsesFromDate <= _clock.SwedenNow)
+            { 
+                // check if an OR exists 
+                if (!request.Order.PeppolPayloads.Any(pp => pp.PeppolMessageType == PeppolMessageType.OrderResponse))
                 {
-                    return orderAgreement;
+                    // if not create OR                           
+                    var orderAgreement = request.Order.PeppolPayloads.Single(); // Only one OA per order/request is allowed
+                    var priceRows = await GetPriceRowComparisonResult(request, orderAgreement);
+                    if (!priceRows.Any(pr => pr.HasChanged))
+                    {
+                        return orderAgreement;
+                    }
+                    peppolPayload = CreateOrderResponse(request, priceRows);
+                    peppolPayload.ReplacingPayload = orderAgreement;
+                    _tolkDbContext.Add(peppolPayload);
+                    orderAgreement.ReplacedByPayload = peppolPayload;                                
                 }
-                peppolPayload = CreateOrderResponse(request, priceRows);
-                peppolPayload.ReplacingPayload = orderAgreement;
-                _tolkDbContext.Add(peppolPayload);
-                orderAgreement.ReplacedByPayload = peppolPayload;                                
-            }
-            else
-            {
-                // else create new OR and update old ones replacedById                     
-                var latestOrderResponse = request.Order.PeppolPayloads
-                    .Where(pp => pp.PeppolMessageType == PeppolMessageType.OrderResponse && pp.ReplacedById == null)
-                    .SingleOrDefault();
-                var priceRows = await GetPriceRowComparisonResult(request, latestOrderResponse);
-                if (!priceRows.Any(pr => pr.HasChanged))
+                else
                 {
-                    return latestOrderResponse;
+                    // else create new OR and update old ones replacedById                     
+                    var latestOrderResponse = request.Order.PeppolPayloads
+                        .Where(pp => pp.PeppolMessageType == PeppolMessageType.OrderResponse && pp.ReplacedById == null)
+                        .SingleOrDefault();
+                    var priceRows = await GetPriceRowComparisonResult(request, latestOrderResponse);
+                    if (!priceRows.Any(pr => pr.HasChanged))
+                    {
+                        return latestOrderResponse;
+                    }
+                    peppolPayload = CreateOrderResponse(request, priceRows);
+                    peppolPayload.ReplacingPayload = latestOrderResponse;
+                    _tolkDbContext.Add(peppolPayload);
+                    latestOrderResponse.ReplacedByPayload = peppolPayload;
                 }
-                peppolPayload = CreateOrderResponse(request, priceRows);
-                peppolPayload.ReplacingPayload = latestOrderResponse;
-                _tolkDbContext.Add(peppolPayload);
-                latestOrderResponse.ReplacedByPayload = peppolPayload;
-
             }
 
             await _tolkDbContext.SaveChangesAsync();

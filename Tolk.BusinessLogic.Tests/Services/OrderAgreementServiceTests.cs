@@ -92,21 +92,21 @@ namespace Tolk.BusinessLogic.Tests.Services
             return tolkDbContext;
         }
 
-        private TolkDbContext GetContextWithoutRequisition(string name, bool customerHasOrderAgreementSetting = true)
+        private TolkDbContext GetContextWithoutRequisition(string name, bool customerHasOrderAgreementSetting = true, int mockCustomerIndex = 0)
         {
             var tolkDbContext = CreateTolkDbContext(name);
             var mockCustomerUsers = MockEntities.MockCustomerUsers(MockEntities.MockCustomers);
             var id = 1;
             var mockCustomerSettings = new CustomerSetting
             {
-                CustomerOrganisationId = id,
+                CustomerOrganisationId = mockCustomerUsers[mockCustomerIndex].CustomerOrganisation.CustomerOrganisationId,
                 CustomerSettingType = CustomerSettingType.UseOrderAgreements,
                 Value = customerHasOrderAgreementSetting
             };
-            var mockRequestAgreementVersionOne = CreateMockRequest(CreateMockOrder(mockCustomerUsers[0], id, OrderNumberVersionOne), FrameworkAgreementResponseRuleset.VersionOne, OrderNumberVersionOne, requestId: id, rankingId: id, brokerId: id);
+            var mockRequestAgreementVersionOne = CreateMockRequest(CreateMockOrder(mockCustomerUsers[mockCustomerIndex], id, OrderNumberVersionOne), FrameworkAgreementResponseRuleset.VersionOne, OrderNumberVersionOne, requestId: id, rankingId: id, brokerId: id);
 
             id = 2;
-            var mockRequestAgreementVersionTwo = CreateMockRequest(CreateMockOrder(mockCustomerUsers[0], id, OrderNumberVersionTwo), FrameworkAgreementResponseRuleset.VersionTwo, OrderNumberVersionTwo, requestId: id, rankingId: id, brokerId: id);
+            var mockRequestAgreementVersionTwo = CreateMockRequest(CreateMockOrder(mockCustomerUsers[mockCustomerIndex], id, OrderNumberVersionTwo), FrameworkAgreementResponseRuleset.VersionTwo, OrderNumberVersionTwo, requestId: id, rankingId: id, brokerId: id);
 
             if (!tolkDbContext.Requests.Any(r => r.RequestId == mockRequestAgreementVersionOne.RequestId))
             {
@@ -229,7 +229,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 Status = RequestStatus.Delivered,
                 Order = new Order(mockOrder)
                 {
-                    CustomerOrganisationId = 1,
+                    CustomerOrganisationId = mockOrder.CustomerOrganisationId,
                     OrderNumber = orderNumber,
                     Status = OrderStatus.RequestRespondedAwaitingApproval,
                     StartAt = DateTime.Parse("2021-10-25 10:00:00").ToDateTimeOffsetSweden(),
@@ -480,6 +480,21 @@ namespace Tolk.BusinessLogic.Tests.Services
             var requestIds = await service.GetRequestIdsForDocumentCreation(1, new DateTime(1900, 1, 1));
             Assert.Single(requestIds);
             Assert.Contains(1, requestIds);            
+        }
+
+        [Fact]
+        public async Task Service_Should_Not_Create_OrderResponse_If_Not_Enabled()
+        {
+            using var tolkDbContext = GetContextWithoutRequisition(nameof(Service_Should_Not_Create_OrderResponse_If_Not_Enabled),mockCustomerIndex:1);
+            var service = CreateStandardBusinessDocumentService(tolkDbContext, new StubSwedishClock("2021-10-25 10:00:00 +01:00"));
+            await service.HandleStandardDocumentCreation();
+            Assert.Equal(2, tolkDbContext.PeppolPayloads.Count());
+
+            var requests = tolkDbContext.Requests.Where(r => r.RequestId == 1).ToList();
+            AddRequisitionsToContext(tolkDbContext, requests);
+            Assert.True(await service.HandleStandardDocumentCreation());
+            Assert.Equal(2, tolkDbContext.PeppolPayloads.Where(pp => pp.PeppolMessageType == PeppolMessageType.OrderAgreement).Count());
+            Assert.Empty(tolkDbContext.PeppolPayloads.Where(pp => pp.PeppolMessageType == PeppolMessageType.OrderResponse));            
         }
         
     }
