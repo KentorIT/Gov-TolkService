@@ -1,12 +1,13 @@
 ALTER VIEW [dbo].[RequestListRows]
 AS
 
+
 --NOTE! When ALTER VIEW - also change file \GOV Tolk\Tolk.BusinessLogic\Data\Views\RequestListRows.sql
 
 SELECT
 	1 RowType
    ,r.RequestId EntityId
-   ,CASE WHEN (r.LastAcceptAt IS NOT NULL AND r.AcceptedAt IS NULL) THEN [LastAcceptAt] ELSE r.ExpiresAt END as ExpiresAt
+   ,CASE WHEN (r.LastAcceptAt IS NOT NULL AND r.AcceptedAt IS NULL AND r.AnswerDate IS NULL) THEN [LastAcceptAt] ELSE r.ExpiresAt END as ExpiresAt
    ,COALESCE(l.Name, o.OtherLanguage) LanguageName
    ,o.LanguageId
    ,o.OrderNumber EntityNumber
@@ -39,12 +40,12 @@ LEFT JOIN OrderGroups og
 	ON og.OrderGroupId = o.OrderGroupId
 LEFT JOIN Languages l
 	ON l.LanguageId = o.LanguageId
-WHERE r.Status NOT IN (13, 17, 18, 24, 25, 19, 26)
+WHERE r.Status NOT IN (13, 17, 18, 24)
 UNION
 SELECT
 	2
    ,r.RequestGroupId
-   ,CASE WHEN (r.LastAcceptAt IS NOT NULL AND r.AcceptedAt IS NULL) THEN [LastAcceptAt] ELSE r.ExpiresAt END as ExpiresAt
+   ,CASE WHEN (r.LastAcceptAt IS NOT NULL AND r.AcceptedAt IS NULL AND r.AnswerDate IS NULL) THEN [LastAcceptAt] ELSE r.ExpiresAt END as ExpiresAt
    ,COALESCE(l.Name, og.OtherLanguage)
    ,og.LanguageId
    ,og.OrderGroupNumber
@@ -87,4 +88,5 @@ JOIN CustomerOrganisations c
 	ON c.CustomerOrganisationId = og.CustomerOrganisationId
 LEFT JOIN Languages l
 	ON l.LanguageId = og.LanguageId
-WHERE r.Status NOT IN (13, 17, 18, 24, 25, 19, 26)
+WHERE r.Status NOT IN (13, 17, 18, 24)
+GO
