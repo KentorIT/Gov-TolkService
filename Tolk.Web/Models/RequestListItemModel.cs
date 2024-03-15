@@ -32,7 +32,7 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(Index = 6, Name = nameof(CustomerName), Title = "Myndighet")]
         public string CustomerName { get; set; }
 
-        [ColumnDefinitions(Index = 7, Name = nameof(ExpiresAtDisplay), ColumnName = nameof(ExpiresAt), SortOnWebServer = false, Title = "Svar innan")]
+        [ColumnDefinitions(Index = 7, Name = nameof(ExpiresAtDisplay), ColumnName = nameof(ExpiresAt), SortOnWebServer = false, Title = "Återkoppla innan")]
         public string ExpiresAtDisplay => ExpiresAt.HasValue ? ExpiresAt.Value.ToSwedishString("yyyy-MM-dd HH:mm") : null;
 
         [ColumnDefinitions(IsLeftCssClassName = true, Name = nameof(ColorClassName), Visible = false)]
