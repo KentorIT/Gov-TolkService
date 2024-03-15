@@ -6,7 +6,7 @@ AS
 SELECT
 	1 RowType
    ,r.RequestId EntityId
-   ,r.ExpiresAt
+   ,CASE WHEN (r.LastAcceptAt IS NOT NULL AND r.AcceptedAt IS NULL) THEN [LastAcceptAt] ELSE r.ExpiresAt END as ExpiresAt
    ,COALESCE(l.Name, o.OtherLanguage) LanguageName
    ,o.LanguageId
    ,o.OrderNumber EntityNumber
@@ -44,7 +44,7 @@ UNION
 SELECT
 	2
    ,r.RequestGroupId
-   ,r.ExpiresAt
+   ,CASE WHEN (r.LastAcceptAt IS NOT NULL AND r.AcceptedAt IS NULL) THEN [LastAcceptAt] ELSE r.ExpiresAt END as ExpiresAt
    ,COALESCE(l.Name, og.OtherLanguage)
    ,og.LanguageId
    ,og.OrderGroupNumber

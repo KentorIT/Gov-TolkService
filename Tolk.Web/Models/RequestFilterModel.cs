@@ -28,7 +28,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Datum för uppdrag")]
         public DateRange OrderDateRange { get; set; }
 
-        [Display(Name = "Svarsdatum")]
+        [Display(Name = "Datum för återkoppling")]
         public DateRange AnswerByDateRange { get; set; }
 
         public RequestStatus? Status { get; set; }
