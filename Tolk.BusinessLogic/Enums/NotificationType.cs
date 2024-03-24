@@ -167,6 +167,7 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
+        [NotificationConsumerType(NotificationConsumerType.BrokerStartPage)]
         RequestGroupAnswerDenied = 22,
 
         [Description("Förlorad förfrågan på grund av ej besvarad av myndighet")]
@@ -232,13 +233,12 @@ namespace Tolk.BusinessLogic.Enums
         [NotificationConsumerType(NotificationConsumerType.Customer)]
         OrderResponseCreated = 31,
 
-
-        //Additional
         [Description("Uppdrag avbokat av myndighet efter godkänd bekräftelse")]
         [CustomName("request_cancelled_by_customer_when_approved", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationConsumerType(NotificationConsumerType.BrokerStartPage)]
         RequestCancelledByCustomerWhenApproved = 32,
 
         [Description("Behörighet att granska rekvisition tillagd")]
@@ -450,6 +450,7 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
+        [NotificationConsumerType(NotificationConsumerType.BrokerStartPage)]
         RequestGroupLostDueToNotFullyAnswered = 65,
 
         [Description("Förfrågan med flexibel tid skapad")]

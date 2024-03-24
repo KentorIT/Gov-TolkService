@@ -30,7 +30,8 @@ namespace Tolk.Web.Controllers
             _dbContext = dbContext;
             _listNotificationService = listNotificationService;
         }
-        public async Task<IActionResult> Index()
+
+        public IActionResult Index()
         {
             bool isAppAdmin = User.IsInRole(Roles.ApplicationAdministrator);
             return View(new ArchivableNotificationsModel
@@ -46,29 +47,41 @@ namespace Tolk.Web.Controllers
         {
             return PartialView("_ListArchivableNotifications", _listNotificationService.GetAllArchivableNotificationsForBroker(id));
         }
-        //Move list to a roundtrip!
+
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> Archive(ArchiveNotificationsModel model)
         {
-            //Get broker from user, if broker-admin
+            if (User.IsInRole(Roles.CentralAdministrator))
+            {
+                model.BrokerId = User.GetBrokerId();
+            }
             if (ModelState.IsValid)
             {
                 try
                 {
-                    //TODO: Log
-                    _listNotificationService.Archive(model.ArchiveToDate, User.GetUserId(), User.TryGetImpersonatorId(), model.SelectedTypes);
-                    await _dbContext.SaveChangesAsync();
-
+                    foreach (var notificationType in model.SelectedTypes)
+                    {
+                        try
+                        {
+                            await _listNotificationService.Archive(model.BrokerId, model.ArchiveToDate, User.GetUserId(), User.TryGetImpersonatorId(), notificationType);
+                            await _dbContext.SaveChangesAsync();
+                        }
+                        catch (Exception ex)
+                        {
+                            // handle, logg and continue
+                        }
+                    }
                     return RedirectToAction("Index", "Home", new { message = "meddelanden har blivit arkiverade" });
 
                 }
                 catch (Exception ex)
                 {
-                    //TODO: Log
+                    //TODO: Log, and send a much better message to home page!
                     return RedirectToAction("Index", "Home", new { errorMessage = ex.Message });
                 }
             }
+            //Todo: anta att det är fel med något som de kan se meddelande om på sidan
             return RedirectToAction(nameof(Index), new { errorMessage = "All data var inte korrekt ifylld"});
         }
 

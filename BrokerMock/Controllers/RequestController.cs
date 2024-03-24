@@ -534,7 +534,11 @@ namespace BrokerMock.Controllers
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Boknings-ID: {payload.OrderNumber} har blivit avbokad, med meddelande: '{payload.Message}'");
-                await ConfirmCancellation(payload.OrderNumber);
+                var extraInstructions = GetExtraInstructions(payload.Message);
+                if (!extraInstructions.Contains("NOCONFIRM"))
+                {
+                    await ConfirmCancellation(payload.OrderNumber);
+                }
             }
 
             return new JsonResult("Success");
@@ -546,7 +550,11 @@ namespace BrokerMock.Controllers
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Boknings-ID: {payload.OrderGroupNumber} har blivit avbokad, med meddelande: '{payload.Message}'");
-                await ConfirmGroupCancellation(payload.OrderGroupNumber);
+                var extraInstructions = GetExtraInstructions(payload.Message);
+                if (!extraInstructions.Contains("NOCONFIRM"))
+                {
+                    await ConfirmGroupCancellation(payload.OrderGroupNumber);
+                }
             }
 
             return new JsonResult("Success");
@@ -558,7 +566,11 @@ namespace BrokerMock.Controllers
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Svaret på Boknings-ID: {payload.OrderNumber} har nekats, med meddelande: '{payload.Message}'");
-                await ConfirmDenial(payload.OrderNumber);
+                var extraInstructions = GetExtraInstructions(payload.Message);
+                if (!extraInstructions.Contains("NOCONFIRM"))
+                {
+                    await ConfirmDenial(payload.OrderNumber);
+                }
             }
 
             return new JsonResult("Success");
@@ -570,7 +582,11 @@ namespace BrokerMock.Controllers
             if (Request.Headers.TryGetValue("X-Kammarkollegiet-InterpreterService-Event", out var type))
             {
                 await _hubContext.Clients.All.SendAsync("IncommingCall", $"[{type}]:: Svaret på sammanhållen Boknings-ID: {payload.OrderGroupNumber} har nekats, med meddelande: '{payload.Message}'");
-                await ConfirmGroupDenial(payload.OrderGroupNumber);
+                var extraInstructions = GetExtraInstructions(payload.Message);
+                if (!extraInstructions.Contains("NOCONFIRM"))
+                {
+                    await ConfirmGroupDenial(payload.OrderGroupNumber);
+                }
             }
 
             return new JsonResult("Success");
@@ -734,7 +750,7 @@ namespace BrokerMock.Controllers
                                 Answer = "Japp",
                                 CanMeetRequirement = true,
                                 RequirementId = r.RequirementId
-                            }), 
+                            }),
                             respondedStartAt
                         );
                         }
@@ -1037,7 +1053,7 @@ namespace BrokerMock.Controllers
                 ExpectedTravelCosts = expectedTravelCosts,
                 CallingUser = "regular-user@formedling1.se",
                 RequirementAnswers = requirementAnswers,
-                LatestAnswerTimeForCustomer = latestAnswerAt, 
+                LatestAnswerTimeForCustomer = latestAnswerAt,
                 RespondedStartAt = respondedStartAt
             };
             using var content = new StringContent(JsonConvert.SerializeObject(payload, Formatting.Indented), Encoding.UTF8, "application/json");
