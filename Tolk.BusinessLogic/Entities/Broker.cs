@@ -25,6 +25,9 @@ namespace Tolk.BusinessLogic.Entities
         [MaxLength(8)]
         public string OrganizationPrefix { get; set; }
 
+        [MaxLength(32)]
+        public string PeppolId { get; set; }
+
         #region navigation properites
 
         public List<Ranking> Rankings { get; private set; }

@@ -235,7 +235,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                     StartAt = DateTime.Parse("2021-10-25 10:00:00").ToDateTimeOffsetSweden(),
                     EndAt = DateTime.Parse("2021-10-25 12:00:00").ToDateTimeOffsetSweden()
                 },
-                Ranking = new Ranking { RankingId = rankingId, Broker = new Broker { BrokerId = brokerId, Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1, FrameworkAgreement = MockEntities.FrameworkAgreements.First(f => f.FrameworkAgreementResponseRuleset == ruleset) },
+                Ranking = new Ranking { RankingId = rankingId, Broker = new Broker { BrokerId = brokerId, Name = "MockBroker", OrganizationNumber = "123123-1234", PeppolId = "0007:1231231234" }, Rank = 1, FrameworkAgreement = MockEntities.FrameworkAgreements.First(f => f.FrameworkAgreementResponseRuleset == ruleset) },
             };
         }
 

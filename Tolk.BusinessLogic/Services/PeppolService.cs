@@ -83,7 +83,7 @@ namespace Tolk.BusinessLogic.Services
                                         //send file to peppol sftp
                                         var payloadToSend = _options.Peppol.UseEnvelope ? message.Payload : message.PeppolMessagePayload.Payload;
                                         using (MemoryStream ms = new MemoryStream(payloadToSend))                                        
-                                        sftpClient.UploadFile(ms, $"{message.Identifier}.xml");                                                                                    
+                                        sftpClient.UploadFile(ms, $"{sftpSettings.UploadFolder}/{message.Identifier}.xml");                                                                                    
                                         success = true;
                                     }
                                     catch (Exception e)
