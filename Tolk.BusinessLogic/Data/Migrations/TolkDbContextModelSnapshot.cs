@@ -418,6 +418,10 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasMaxLength(8)
                         .HasColumnType("nvarchar(8)");
 
+                    b.Property<string>("PeppolId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
                     b.HasKey("BrokerId");
 
                     b.ToTable("Brokers");

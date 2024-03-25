@@ -34,7 +34,7 @@ namespace Tolk.BusinessLogic.Tests.Models
                 {
                     Status = OrderStatus.RequestRespondedAwaitingApproval,
                 },
-                Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234" }, Rank = 1, FrameworkAgreement = MockEntities.FrameworkAgreements[0] },
+                Ranking = new Ranking { RankingId = 1, Broker = new Broker { Name = "MockBroker", OrganizationNumber = "123123-1234",PeppolId= "0007:1231231234" }, Rank = 1, FrameworkAgreement = MockEntities.FrameworkAgreements[0] },
             };
             MockRequisition = new Requisition
             {

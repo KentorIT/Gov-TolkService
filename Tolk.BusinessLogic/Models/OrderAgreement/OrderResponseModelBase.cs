@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MimeKit.Encodings;
+using System;
 using System.Xml;
 using System.Xml.Serialization;
 using Tolk.BusinessLogic.Entities;
@@ -111,11 +112,17 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
 
         protected static OrganizationPartyModel GetSellerSupplierParty(Request request)
         {
+            var brokerPeppolId = request.Ranking.Broker.PeppolId.Split(':');
+            if (brokerPeppolId[0] != Constants.PeppolIdByOrganizationNumberSchemeId && brokerPeppolId[0] != Constants.PeppolIdByGLNSchemeId)
+            {
+                throw new ArgumentException($"{brokerPeppolId[0]} är inte ett giltigt SchemeID för peppolid");
+            }
+
             return new OrganizationPartyModel
             {
                 Party = new PartyModel
                 {
-                    EndpointID = new EndPointIDModel { SchemeId = Constants.PeppolIdByOrganizationNumberSchemeId, Value = request.Ranking.Broker.OrganizationNumber.ToNotHyphenatedFormat() },
+                    EndpointID = new EndPointIDModel { SchemeId = brokerPeppolId[0], Value = brokerPeppolId[1]},
                     PartyLegalEntity = new PartyLegalEntityModel { RegistrationName = request.Ranking.Broker.Name }
                 }
             };
