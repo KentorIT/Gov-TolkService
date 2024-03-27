@@ -694,6 +694,48 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.ToTable("CustomerChangeLogEntries");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrderAgreementSettings", b =>
+                {
+                    b.Property<int>("BrokerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CustomerOrganisationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("EnabledAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("BrokerId", "CustomerOrganisationId");
+
+                    b.HasIndex("CustomerOrganisationId");
+
+                    b.ToTable("CustomerOrderAgreementSettings");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrderAgreementSettingsHistoryEntry", b =>
+                {
+                    b.Property<int>("CustomerOrderAgreementSettingsHistoryEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CustomerOrderAgreementSettingsHistoryEntryId"));
+
+                    b.Property<int>("BrokerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CustomerChangeLogEntryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("EnabledAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("CustomerOrderAgreementSettingsHistoryEntryId");
+
+                    b.HasIndex("CustomerChangeLogEntryId");
+
+                    b.ToTable("CustomerOrderAgreementSettingsHistoryEntries");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisation", b =>
                 {
                     b.Property<int>("CustomerOrganisationId")
@@ -4097,6 +4139,36 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Navigation("UpdatedByUser");
                 });
 
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrderAgreementSettings", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.Broker", "Broker")
+                        .WithMany("CustomerOrderAgreementSettings")
+                        .HasForeignKey("BrokerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
+                        .WithMany("CustomerOrderAgreementSettings")
+                        .HasForeignKey("CustomerOrganisationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Broker");
+
+                    b.Navigation("CustomerOrganisation");
+                });
+
+            modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrderAgreementSettingsHistoryEntry", b =>
+                {
+                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerChangeLogEntry", "CustomerChangeLogEntry")
+                        .WithMany("CustomerOrderAgreementSettingsHistoryEntry")
+                        .HasForeignKey("CustomerChangeLogEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomerChangeLogEntry");
+                });
+
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisation", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "ParentCustomerOrganisation")
@@ -5692,6 +5764,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Broker", b =>
                 {
+                    b.Navigation("CustomerOrderAgreementSettings");
+
                     b.Navigation("Rankings");
 
                     b.Navigation("Users");
@@ -5699,6 +5773,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerChangeLogEntry", b =>
                 {
+                    b.Navigation("CustomerOrderAgreementSettingsHistoryEntry");
+
                     b.Navigation("CustomerOrganisationHistoryEntry");
 
                     b.Navigation("CustomerSettingHistories");
@@ -5709,6 +5785,8 @@ namespace Tolk.BusinessLogic.Data.Migrations
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisation", b =>
                 {
                     b.Navigation("CustomerChangeLogEntries");
+
+                    b.Navigation("CustomerOrderAgreementSettings");
 
                     b.Navigation("CustomerSettings");
 

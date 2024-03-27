@@ -7,6 +7,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Inställningar")]
         Settings = 1,
         [Description("Kundspecifika Fält")]
-        CustomerSpecificProperty = 2
+        CustomerSpecificProperty = 2,
+        [Description("Förmedlingsspecifik inställning för Order Agreement")]
+        CustomerOrderAgreementBrokerSettings = 3
     }
 }

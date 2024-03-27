@@ -188,64 +188,55 @@ namespace Tolk.BusinessLogic.Services
             if (!_dateCalculationService.IsWorkingDay(_clock.SwedenNow))
             {
                 return false;
-            }
-            var startAtSettings = _cacheService.OrganisationNotificationSettings
-                .Where(n => n.NotificationType == NotificationType.OrderAgreementCreated)
-                .Select(n => new { n.ReceivingOrganisationId, n.StartUsingNotificationAt }).ToList();
-            var orderAgreementCustomerIds = _cacheService.CustomerSettings
-                .Where(c => c.UsedCustomerSettingTypes.Contains(CustomerSettingType.UseOrderAgreements))
-                .Select(c => c.CustomerOrganisationId).ToList();
-                        
-            foreach (int customerOrganisationId in orderAgreementCustomerIds)
-            {
-                var validUseFrom = startAtSettings.SingleOrDefault(s => s.ReceivingOrganisationId == customerOrganisationId)?.StartUsingNotificationAt ??
-                    new DateTime(1900, 1, 1);
-                var requestIds = await GetRequestIdsForDocumentCreation(customerOrganisationId, validUseFrom);
-
-                _logger.LogInformation("For customer {customerOrganisationId}:  Found {count} requests to create order agreements for: {requestIds}",
-                    customerOrganisationId, requestIds.Count, string.Join(", ", requestIds.Select(r => r)));
-
-                foreach (var requestId in requestIds)
-                {
-
-                    try
-                    {
-                        await CreateAndStoreStandardDocument(requestId);
-                        _logger.LogInformation("Processing completed order agreement for {requestId}.", requestId);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failure processing order agreement creation for {requestId}", requestId);
-                        await SendErrorMail(nameof(HandleStandardDocumentCreation), ex);
-                    }
-                }
             }            
+
+            var customerOrderAgreementSettings = _cacheService.CustomerOrderAgreementSettings.Where(coas => !coas.Disabled);
+           
+            var requestIds = await GetRequestIdsForDocumentCreation(customerOrderAgreementSettings.ToList());
+            foreach (var requestId in requestIds)
+            {
+                try
+                {
+                    await CreateAndStoreStandardDocument(requestId);
+                    _logger.LogInformation("Processing completed order agreement for {requestId}.", requestId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failure processing order agreement creation for {requestId}", requestId);
+                    await SendErrorMail(nameof(HandleStandardDocumentCreation), ex);
+                }
+            }
+
             return true;
         }
 
-        public async Task<List<int>> GetRequestIdsForDocumentCreation(int customerOrganisationId, DateTime validUseFrom)
+        public async Task<List<int>> GetRequestIdsForDocumentCreation(List<CustomerOrderAgreementSettingsModel> customerOrganisationSettingGroup)
         {
             DateTimeOffset occasionStartedAtOrBefore = _clock.SwedenNow;
+            List<int> requestIds = new List<int>();
+            foreach (var setting in customerOrganisationSettingGroup)
+            {
+                //GetRequestsForOrderAgreementCreation(this IQueryable<Request> requests, int customerOrganisationId,int brokerId,DateTimeOffset? enabledAt, DateTime validUseFrom)
+                //// Get all requestIds where it DOES NOT EXISTS any PeppolPayloads OR Requisitions and Starttime for Occasion has passed.    
+                requestIds.AddRange(await _tolkDbContext.Requests
+                    .GetRequestsForOrderAgreementCreation(setting.CustomerOrganisationId,setting.BrokerId,setting.EnabledAt)
+                    .Where(r => r.Order.StartAt <= occasionStartedAtOrBefore)
+                    .Select(r => r.RequestId)
+                    .ToListAsync());              
 
-            // Get all requestIds where it DOES NOT EXISTS any PeppolPayloads OR Requisitions and Starttime for Occasion has passed.      
-            var requestIds = await _tolkDbContext.Requests
-                .GetRequestsForOrderAgreementCreation(customerOrganisationId, validUseFrom)
-                .Where(r => r.Order.StartAt <= occasionStartedAtOrBefore)
-                .Select(r => r.RequestId)
-                .ToListAsync();
+                //// Get all requestIds from Requisitions where no PeppolPayload has been created,   
+                requestIds.AddRange(await _tolkDbContext.Requisitions
+                    .GetRequisitionForPeppolMessageCreation(setting.CustomerOrganisationId, setting.BrokerId, setting.EnabledAt)
+                    .Where(r => r.Request.Order.StartAt <= occasionStartedAtOrBefore)
+                    .Select(r => r.Request.RequestId)
+                    .ToListAsync());
 
-            // Get all requestIds from Requisitions where no PeppolPayload has been created,             
-            requestIds.AddRange(await _tolkDbContext.Requisitions
-                .GetRequisitionForPeppolMessageCreation(customerOrganisationId, validUseFrom)                                       
-                .Where(r => r.Request.Order.StartAt <= occasionStartedAtOrBefore)
-                .Select(r => r.Request.RequestId)
-                .ToListAsync());          
-
-            // Get all requestIds from Automatically created Requisitions where no PeppolPayload has been created
-             requestIds.AddRange(await _tolkDbContext.Requisitions
-                .GetAutoGeneratedRequisitionForOrderAgreementCreation(customerOrganisationId, validUseFrom)
-                .Select(r => r.Request.RequestId)
-                .ToListAsync());
+                //// Get all requestIds from Automatically created Requisitions where no PeppolPayload has been created
+                requestIds.AddRange(await _tolkDbContext.Requisitions
+                    .GetAutoGeneratedRequisitionForOrderAgreementCreation(setting.CustomerOrganisationId, setting.BrokerId, setting.EnabledAt)
+                   .Select(r => r.Request.RequestId)
+                   .ToListAsync());
+            }
 
             return requestIds;
         }

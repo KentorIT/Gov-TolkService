@@ -10,5 +10,6 @@
         public const string CurrentOrLatestFrameworkAgreement = nameof(CurrentOrLatestFrameworkAgreement);
         public const string FrameworkAgreementList = nameof(FrameworkAgreementList);
         public const string CustomerSpecificProperties = nameof(CustomerSpecificProperties);
+        public const string CustomerOrderAgreementSettings = nameof(CustomerOrderAgreementSettings);
     }
 }

@@ -91,7 +91,15 @@
                 <a class="btn btn-large btn-default" asp-controller="Property" asp-action="@nameof(Tolk.Web.Controllers.PropertyController.Create)" asp-route-customerOrganisationId="@Model.CustomerId">Lägg till kundspecifikt fält</a>
             </div>
         </div>
-    </div>
+        @if (Model.ShowUseOrderAgreementsFromDate)
+        {
+            <div class="col-md-4">
+                <div class="row col-sm-12">
+                    <a class="btn btn-large btn-default" asp-controller="Customer" asp-action="@nameof(Tolk.Web.Controllers.CustomerController.EditOrderAgreementSettings)" asp-route-customerOrganisationId="@Model.CustomerId">Ändra OA Inställningar</a>
+                </div>
+            </div>
+        }
+    </div>   
     <section aria-label="Enheter">
         <a class="collapsible-section" data-toggle="collapse" data-target="#units">
             <h2><span class="glyphicon glyphicon-triangle-right" style="font-size:15px;margin-right:10px;"></span> Myndighetens enheter</h2>
@@ -166,5 +174,5 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section>    
 </section>

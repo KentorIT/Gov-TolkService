@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,7 @@ namespace Tolk.BusinessLogic.Services
             await _cache.RemoveAsync(CacheKeys.CurrentOrLatestFrameworkAgreement);
             await _cache.RemoveAsync(CacheKeys.FrameworkAgreementList);
             await _cache.RemoveAsync(CacheKeys.CustomerSpecificProperties);
+            await _cache.RemoveAsync(CacheKeys.CustomerOrderAgreementSettings);
         }
 
         public async Task Flush(string id)
@@ -255,6 +257,7 @@ namespace Tolk.BusinessLogic.Services
         {
             get {
                 var customerSpecificProperties = _cache.Get(CacheKeys.CustomerSpecificProperties).FromByteArray<IEnumerable<CustomerSpecificPropertyModel>>();
+                if(customerSpecificProperties == null)
                 {
                     customerSpecificProperties = _dbContext.CustomerSpecificProperties.Select(c => new CustomerSpecificPropertyModel(c)).ToList();
                     _cache.Set(CacheKeys.CustomerSpecificProperties, customerSpecificProperties.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
@@ -262,6 +265,27 @@ namespace Tolk.BusinessLogic.Services
                 return customerSpecificProperties;
             }
         }
+
+        public IEnumerable<CustomerOrderAgreementSettingsModel> CustomerOrderAgreementSettings
+        {
+            get {
+                var customerOrderAgreementSettings = _cache.Get(CacheKeys.CustomerOrderAgreementSettings).FromByteArray<IEnumerable<CustomerOrderAgreementSettingsModel>>();
+                if (customerOrderAgreementSettings == null)
+                {
+                    customerOrderAgreementSettings = _dbContext.CustomerOrderAgreementSettings.Include(coas => coas.Broker).Include(coas => coas.CustomerOrganisation).Select(
+                        coas => new CustomerOrderAgreementSettingsModel{
+                            CustomerOrganisationId = coas.CustomerOrganisationId,
+                            CustomerName = coas.CustomerOrganisation.Name,
+                            BrokerId = coas.BrokerId,
+                            BrokerName = coas.Broker.Name,
+                            EnabledAt = coas.EnabledAt,                            
+                    }).ToList();
+
+                    _cache.Set(CacheKeys.CustomerOrderAgreementSettings, customerOrderAgreementSettings.ToByteArray(), new DistributedCacheEntryOptions().SetAbsoluteExpiration(DateTimeOffset.Now.AddDays(1)));
+                }
+                return customerOrderAgreementSettings;
+            }
+        }        
     }
 }
 

@@ -29,5 +29,6 @@ namespace Tolk.BusinessLogic.Entities
         public CustomerOrganisationHistoryEntry CustomerOrganisationHistoryEntry { get; set; }
 
         public List<CustomerSpecificPropertyHistoryEntry> CustomerSpecificPropertyHistories{ get; set; }
+        public List<CustomerOrderAgreementSettingsHistoryEntry> CustomerOrderAgreementSettingsHistoryEntry { get; set; }
     }
 }
