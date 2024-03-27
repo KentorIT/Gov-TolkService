@@ -141,7 +141,6 @@
                                         <li><a class="submenu" asp-area="" asp-controller="Interpreter" asp-action="List">Tolkar</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="Language" asp-action="List">Språk</a></li>
                                         <li><a class="submenu" asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Inställningar</a></li>
-                                        <li><a class="submenu" asp-area="" asp-controller="Notification" asp-action="Index">Startsidenotifieringar</a></li>
                                     </ul>
                                 </li>
                             }
@@ -243,7 +242,6 @@
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Interpreter" asp-action="List">Tolkar</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Language" asp-action="List">Språk</a></li>
                                         <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="User" asp-action="ViewOrganisationSettings">Inställningar</a></li>
-                                        <li class="hidden-xs visible-sm hidden-md hidden-lg"><a class="submenu" asp-area="" asp-controller="Notification" asp-action="Index">Startsidenotifieringar</a></li>
                                     }
                                 }
                                 else if (User.IsInRole(Roles.SystemAdministrator) || User.IsInRole(Roles.ApplicationAdministrator))
