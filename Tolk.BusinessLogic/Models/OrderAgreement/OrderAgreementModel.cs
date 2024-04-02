@@ -163,9 +163,14 @@ namespace Tolk.BusinessLogic.Models.OrderAgreement
                 };
             }
         }
-        private decimal GetRounding(decimal value)
+        public static decimal GetRounding(decimal value)
         {
+            //value -= Math.Floor(value);
+            //return value > Convert.ToDecimal(0.5) ? 1 - value : -value;
+
             value -= Math.Floor(value);
+            // Rounding to avoid mismatch if rounding up, (ex. Taxinclusive non rounded = XX.575) rounded will then be saved as 0.425, when writing they will both round upwards (0.58 and 0.43 which together equals 1.01)
+            value = decimal.Round(value, 2, MidpointRounding.AwayFromZero);
             return value > Convert.ToDecimal(0.5) ? 1 - value : -value;
         }
     }

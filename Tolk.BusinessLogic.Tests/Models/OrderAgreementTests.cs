@@ -85,8 +85,9 @@ namespace Tolk.BusinessLogic.Tests.Models
             decimal totalTaxInclusiveAmount = sum * (decimal)1.25;
             Assert.Equal(taxAmount, agreement.TaxTotal.TaxAmount.AmountSum);
             Assert.Equal(totalTaxInclusiveAmount, agreement.LegalMonetaryTotal.TaxInclusiveAmount.AmountSum);
-            decimal rounding = GetRounding(totalTaxInclusiveAmount);
+            decimal rounding = OrderAgreementModel.GetRounding(totalTaxInclusiveAmount);
             decimal roundedSum = totalTaxInclusiveAmount + rounding;
+          
             Assert.Equal(rounding, agreement.LegalMonetaryTotal.PayableRoundingAmount.AmountSum);
             Assert.Equal(roundedSum, agreement.LegalMonetaryTotal.PayableAmount.AmountSum);
         }
@@ -120,7 +121,7 @@ namespace Tolk.BusinessLogic.Tests.Models
             decimal totalTaxInclusiveAmount = sum * (decimal)1.25;
             Assert.Equal(taxAmount, agreement.TaxTotal.TaxAmount.AmountSum);
             Assert.Equal(totalTaxInclusiveAmount, agreement.LegalMonetaryTotal.TaxInclusiveAmount.AmountSum);
-            decimal rounding = GetRounding(totalTaxInclusiveAmount);
+            decimal rounding = OrderAgreementModel.GetRounding(totalTaxInclusiveAmount);
             decimal roundedSum = totalTaxInclusiveAmount + rounding;
             Assert.Equal(rounding, agreement.LegalMonetaryTotal.PayableRoundingAmount.AmountSum);
             Assert.Equal(roundedSum, agreement.LegalMonetaryTotal.PayableAmount.AmountSum);
@@ -198,12 +199,23 @@ namespace Tolk.BusinessLogic.Tests.Models
             Assert.Equal(Constants.LineAcceptedWithChange, changedLine.LineItem.LineStatusCode);
             Assert.Equal(3, unchangedLines.Count());
             Assert.True(unchangedLines.All(ucl => ucl.LineItem.LineStatusCode == Constants.LineAcceptedWithoutChange));            
-        }                
-
-        private decimal GetRounding(decimal value)
+        }           
+        
+        [Theory]
+        [InlineData(10.575, 0.42, 10.58, 11)]
+        [InlineData(10.875, 0.12, 10.88, 11)]
+        [InlineData(10.445, -0.45,10.45, 10)]
+        [InlineData(10.505, 0.49,10.51, 11)]
+        public void ShouldRoundCorrectlyWithTwoDecimals(decimal taxInclusiveAmount, decimal expectedPayableRoundingAmount,decimal expectedRoundedTaxInclusive,int expectedTotal)
         {
-            value -= Math.Floor(value);
-            return value > Convert.ToDecimal(0.5) ? 1 - value : -value;
+            // Rounding to avoid mismatch if rounding up, (ex. Taxinclusive non rounded = XX.575) rounded will then be saved as 0.425, when writing they will both round upwards (0.58 and 0.43 which together equals 1.01)
+            var payableRoundedValue = OrderAgreementModel.GetRounding(taxInclusiveAmount);
+            var roundedTaxInclusive = decimal.Round(taxInclusiveAmount, 2, MidpointRounding.AwayFromZero);
+            var sum = roundedTaxInclusive + payableRoundedValue;
+
+            Assert.Equal(expectedPayableRoundingAmount, payableRoundedValue);
+            Assert.Equal(expectedRoundedTaxInclusive, roundedTaxInclusive);
+            Assert.Equal(expectedTotal, sum);
         }
     }
 }
