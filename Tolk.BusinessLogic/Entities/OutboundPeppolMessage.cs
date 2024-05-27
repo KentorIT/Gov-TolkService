@@ -1,5 +1,4 @@
-﻿using MimeKit;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -37,7 +36,7 @@ namespace Tolk.BusinessLogic.Entities
 
         [Required]
         public string Recipient { get; private set; }
-
+        
         [Required]
         public byte[] Payload { get; private set; }
 
@@ -57,7 +56,7 @@ namespace Tolk.BusinessLogic.Entities
         [ForeignKey(nameof(ResentByUserId))]
         public AspNetUser ResentByUser { get; set; }
 
-        public int? ResentImpersonatorUserId { get; private set; }
+        public int? ResentImpersonatorUserId { get; set; }
 
         [ForeignKey(nameof(ResentImpersonatorUserId))]
         public AspNetUser ResentImpersonatorUser { get; set; }
@@ -65,6 +64,7 @@ namespace Tolk.BusinessLogic.Entities
         public PeppolPayload PeppolMessagePayload { get; set; }
 
         public int FailedTries { get; set; }
+        public DateTimeOffset? ManualResendSetAt { get; set; }        
 
         public ICollection<FailedPeppolMessage> FailedCalls { get; set; }
         public bool? HasNotifiedFailure { get; set; }

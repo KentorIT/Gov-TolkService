@@ -10,7 +10,7 @@ namespace Tolk.Web.Models
         [ColumnDefinitions(IsIdColumn = true, Index = 0, Name = nameof(PeppolPayloadId), Visible = false)]
         public int PeppolPayloadId { get; set; }
 
-        [Display(Name = "Är senaste")]
+        [Display(Name = "Senast giltiga")]
         [ColumnDefinitions(Index = 1, Name = nameof(IsLatest), Visible = false)]
         public bool IsLatest { get; set; }
 

@@ -2292,6 +2292,9 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.Property<bool>("IsHandling")
                         .HasColumnType("bit");
 
+                    b.Property<DateTimeOffset?>("ManualResendSetAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<int>("NotificationType")
                         .HasColumnType("int");
 
@@ -4142,7 +4145,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrderAgreementSettings", b =>
                 {
                     b.HasOne("Tolk.BusinessLogic.Entities.Broker", "Broker")
-                        .WithMany("CustomerOrderAgreementSettings")
+                        .WithMany()
                         .HasForeignKey("BrokerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5764,8 +5767,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Broker", b =>
                 {
-                    b.Navigation("CustomerOrderAgreementSettings");
-
                     b.Navigation("Rankings");
 
                     b.Navigation("Users");

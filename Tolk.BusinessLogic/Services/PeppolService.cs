@@ -22,7 +22,7 @@ namespace Tolk.BusinessLogic.Services
         private readonly ILogger<PeppolService> _logger;
         private readonly TolkOptions _options;
         private readonly ISwedishClock _clock;
-        private const int NumberOfTries = 5;        
+        private readonly int NumberOfTries = 5;        
 
         public PeppolService(
             ILogger<PeppolService> logger,
@@ -31,7 +31,8 @@ namespace Tolk.BusinessLogic.Services
         {
             _logger = logger;
             _options = options?.Value;
-            _clock = clock;            
+            _clock = clock;
+            NumberOfTries = _options.Peppol.MaxUploadRetries;
         }
 
         public async Task SendOrderAgreements()
@@ -43,7 +44,7 @@ namespace Tolk.BusinessLogic.Services
             {
                 //then get all waiting to be sent(to also get previously failed)
                 var peppolMessageIds = await context.OutboundPeppolMessages
-                .Where(e => e.DeliveredAt == null && e.FailedTries < NumberOfTries && !e.IsHandling)
+                .Where(e => e.DeliveredAt == null && (e.FailedTries < NumberOfTries || e.ManualResendSetAt != null) && !e.IsHandling)
                 .Select(e => e.OutboundPeppolMessageId)
                 .ToListAsync();
 
@@ -173,10 +174,6 @@ namespace Tolk.BusinessLogic.Services
                                 Type = "OrderResponse",
                                 Standard = Constants.defaultNamespace
                             },
-                            //BusinessScope = new BusinessScopeModel
-                            //{
-                            //    Scopes = ScopeModel.GetScopeModelForType(x.PeppolMessageType)
-                            //}
                         },
                     };                          
                     SerializeEnvelopeAndAddPayload(model,

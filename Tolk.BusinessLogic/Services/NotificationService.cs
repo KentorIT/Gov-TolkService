@@ -1918,21 +1918,15 @@ Sammanställning:
             return true;
         }
 
-        public bool ResendPeppolMessage(OutboundPeppolMessage failedMessage, int? resentUserId = null, int? resentImpersonatorUserId = null)
+        public bool ResendPeppolMessage(OutboundPeppolMessage failedMessage,int? resentUserId = null, int? resentImpersonatorUserId = null)
         {
             NullCheckHelper.ArgumentCheckNull(failedMessage, nameof(ResendPeppolMessage), nameof(NotificationService));
-
-            OutboundPeppolMessage newMessage = new OutboundPeppolMessage(
-                Guid.NewGuid().ToString(),
-                failedMessage.Recipient,
-                failedMessage.Payload,
-                _clock.SwedenNow,
-                failedMessage.NotificationType,
-                resentUserId,
-                resentImpersonatorUserId,
-                failedMessage.OutboundPeppolMessageId);
-
-            _dbContext.OutboundPeppolMessages.Add(newMessage);
+            // Check for envelope
+            // Flag message for resend
+            failedMessage.ManualResendSetAt = _clock.SwedenNow;
+            failedMessage.ResentByUserId = resentUserId;
+            failedMessage.ResentImpersonatorUserId = resentImpersonatorUserId;
+            
             _dbContext.SaveChanges();
 
             return true;

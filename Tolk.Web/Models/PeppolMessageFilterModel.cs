@@ -24,7 +24,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighet")]
         public int? CustomerOrganisationId { get; set; }
 
-        [Display(Name = "Är senaste")]
+        [Display(Name = "Senast Giltiga")]
         public TrueFalse? IsLatest { get; set; }
 
         internal IQueryable<PeppolPayload> Apply(IQueryable<PeppolPayload> payloads)
