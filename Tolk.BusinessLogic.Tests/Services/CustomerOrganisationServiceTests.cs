@@ -176,7 +176,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var context = GetBaseContext();
             var customerService = new CustomerOrganisationService(context, _clock);
             var customer = context.CustomerOrganisations.Include(c => c.CustomerOrderAgreementSettings).Single(c => c.CustomerOrganisationId == 1);
-            var enabledDate = DateTime.Parse("2021-10-26 10:00:00 +02:00").ToDateTimeOffsetSweden();
+            var enabledDate = DateTime.Parse("2021-10-26 10:00:00 +02:00");
             var orderAgreementSettings = new List<CustomerOrderAgreementSettings>{
                 CreateMockCustomerOrderAgreementSettings(customerOrganisationId:1,brokerId:1, null),
                 CreateMockCustomerOrderAgreementSettings(customerOrganisationId:1,brokerId:2, enabledDate),
