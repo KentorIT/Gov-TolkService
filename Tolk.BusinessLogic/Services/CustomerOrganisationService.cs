@@ -68,11 +68,11 @@ namespace Tolk.BusinessLogic.Services
 
         public async Task<CustomerOrganisation> ToggleSpecificOrderAgreementSettings(int customerOrganisationId, int brokerId, int userId)
         {
-            var customer = await _dbContext.CustomerOrganisations.Include(c => c.CustomerOrderAgreementSettings).GetCustomerById(customerOrganisationId);
-
+            var customer = await _dbContext.CustomerOrganisations.Include(c => c.CustomerOrderAgreementSettings).GetCustomerById(customerOrganisationId);            
             customer.UpdateCustomerOrderAgreementBrokerSettings(_clock.SwedenNow, userId);
             var setting = customer.CustomerOrderAgreementSettings.Where(coas => coas.CustomerOrganisationId == customerOrganisationId && coas.BrokerId == brokerId).SingleOrDefault();
-            setting.EnabledAt = setting.Disabled ? _clock.SwedenNow : null;
+            var enabledAt = _clock.SwedenNow.DateTime < customer.UseOrderAgreementsFromDate ? customer.UseOrderAgreementsFromDate : _clock.SwedenNow.DateTime;
+            setting.EnabledAt = setting.Disabled ? enabledAt : null;
 
             await _dbContext.SaveChangesAsync();
             return customer;
