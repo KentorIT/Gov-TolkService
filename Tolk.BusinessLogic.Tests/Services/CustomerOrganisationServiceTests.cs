@@ -18,7 +18,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         private readonly List<Broker> _brokers;
         public CustomerOrganisationServiceTests()
         {            
-             _clock = new StubSwedishClock("2024-02-08 00:00:00");
+             _clock = new StubSwedishClock("2024-02-08 00:00:00 +01:00");
             _brokers = new List<Broker>
             {
                 new Broker{BrokerId=1,Name="FirstBroker"},
@@ -176,7 +176,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var context = GetBaseContext();
             var customerService = new CustomerOrganisationService(context, _clock);
             var customer = context.CustomerOrganisations.Include(c => c.CustomerOrderAgreementSettings).Single(c => c.CustomerOrganisationId == 1);
-            var enabledDate = DateTime.Parse("2021-10-26 10:00:00").ToDateTimeOffsetSweden();
+            var enabledDate = DateTime.Parse("2021-10-26 10:00:00 +02:00").ToDateTimeOffsetSweden();
             var orderAgreementSettings = new List<CustomerOrderAgreementSettings>{
                 CreateMockCustomerOrderAgreementSettings(customerOrganisationId:1,brokerId:1, null),
                 CreateMockCustomerOrderAgreementSettings(customerOrganisationId:1,brokerId:2, enabledDate),
@@ -186,7 +186,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             context.SaveChanges();
             var settings = (await customerService.ToggleSpecificOrderAgreementSettings(customerOrganisationId:1, brokerId:1, userId: 1)).CustomerOrderAgreementSettings;
             Assert.True(settings.All(s => !s.Disabled));
-            Assert.Single(settings.Where(s => s.EnabledAt == _clock.SwedenNow));
+            Assert.Single(settings.Where(s => s.EnabledAt == _clock.SwedenNow.DateTime));
             Assert.Single(settings.Where(s => s.EnabledAt == enabledDate));
             Assert.Equal(2,settings.Count);
         }
