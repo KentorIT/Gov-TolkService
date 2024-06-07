@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
+using Tolk.BusinessLogic.Helpers;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
@@ -71,7 +72,7 @@ namespace Tolk.BusinessLogic.Services
             var customer = await _dbContext.CustomerOrganisations.Include(c => c.CustomerOrderAgreementSettings).GetCustomerById(customerOrganisationId);            
             customer.UpdateCustomerOrderAgreementBrokerSettings(_clock.SwedenNow, userId);
             var setting = customer.CustomerOrderAgreementSettings.Where(coas => coas.CustomerOrganisationId == customerOrganisationId && coas.BrokerId == brokerId).SingleOrDefault();
-            var enabledAt = _clock.SwedenNow.DateTime < customer.UseOrderAgreementsFromDate ? customer.UseOrderAgreementsFromDate : _clock.SwedenNow.DateTime;
+            var enabledAt = _clock.SwedenNow < customer.UseOrderAgreementsFromDate.Value.ToDateTimeOffsetSweden() ? customer.UseOrderAgreementsFromDate.Value.ToDateTimeOffsetSweden() : _clock.SwedenNow;
             setting.EnabledAt = setting.Disabled ? enabledAt : null;
 
             await _dbContext.SaveChangesAsync();
