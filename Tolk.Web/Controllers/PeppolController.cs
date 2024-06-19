@@ -15,7 +15,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-    [Authorize(Roles = Roles.ApplicationAdministrator)]
+    [Authorize(Roles = Roles.AppOrSysAdmin)]
     public class PeppolController : Controller
     {
         private readonly TolkDbContext _dbContext;

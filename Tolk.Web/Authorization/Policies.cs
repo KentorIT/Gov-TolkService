@@ -218,7 +218,7 @@ namespace Tolk.Web.Authorization
                         !webHookCall.ResentHookId.HasValue &&
                         webHookCall.RecipientUser.BrokerId == user.TryGetBrokerId();
                 case OutboundPeppolMessage peppolMessage:
-                    return user.IsInRole(Roles.ApplicationAdministrator) &&
+                    return (user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator)) &&
                         peppolMessage.ReplacedByMessage == null;
                 default:
                     throw new NotImplementedException();
@@ -408,7 +408,7 @@ namespace Tolk.Web.Authorization
                     return user.IsInRole(Roles.ApplicationAdministrator) ||
                         (user.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) && user.IsInRole(Roles.CentralAdministrator) && payload.Request.Order.CustomerOrganisationId == user.GetCustomerOrganisationId());
                 case OutboundPeppolMessage message:
-                    return user.IsInRole(Roles.ApplicationAdministrator);
+                    return user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator);
                 default:
                     throw new NotImplementedException();
             }
