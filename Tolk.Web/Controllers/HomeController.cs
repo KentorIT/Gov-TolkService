@@ -125,7 +125,7 @@ namespace Tolk.Web.Controllers
                 {
                     messages = messages.Union(statusMessages.Items.Where(i => !i.Success).Select(i => new SystemMessage
                     {
-                        CreatedAt = DateTimeOffset.UtcNow,
+                        CreatedAt = _clock.SwedenNow,
                         SystemMessageType = SystemMessageType.Warning,
                         SystemMessageHeader = "Statusvarning",
                         SystemMessageText = $"Systemtestet \"{i.Test}\" fungerade inte. Se dokumentation för mer information!"

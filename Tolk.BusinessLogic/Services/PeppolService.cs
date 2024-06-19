@@ -187,7 +187,7 @@ namespace Tolk.BusinessLogic.Services
                         .Single().OutboundPeppolMessage = new OutboundPeppolMessage(identfier,
                            x.Reciever,
                            byteArray,
-                           DateTimeOffset.UtcNow,
+                           _clock.SwedenNow,
                            x.PeppolMessageType == Enums.PeppolMessageType.OrderAgreement ? Enums.NotificationType.OrderAgreementCreated : Enums.NotificationType.OrderResponseCreated
                         );
                 }
