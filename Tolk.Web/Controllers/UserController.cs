@@ -779,8 +779,13 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+                AspNetUser apiUser = await GetApiUser();                               
+                if(!await IsValidApiUserEmail(apiUser,model.EmailRequests))
+                {
+                    ModelState.AddModelError(nameof(model.EmailRequests), "Denna email-adress används redan");
+                    return View(model);
+                }              
                 //Save all Claims and Notification settings and stuff here...
-                AspNetUser apiUser = await GetApiUser();
                 if (apiUser != null)
                 {
                     using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
@@ -1171,6 +1176,12 @@ namespace Tolk.Web.Controllers
                 errorMessage += error.ErrorMessage + "\n";
             }
             return errorMessage;
+        }
+
+        private async Task<bool> IsValidApiUserEmail(AspNetUser apiUser,string email)
+        {
+
+            return apiUser.Email == email || await _userManager.FindByEmailAsync(email) == null;
         }
     }
 }
