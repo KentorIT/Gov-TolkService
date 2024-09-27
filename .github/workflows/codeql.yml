@@ -16,7 +16,7 @@ on:
     branches: 
       - codeql
   schedule:
-    - cron: '0 19 * * *'
+    - cron: '0 19 * * 6'
 
 jobs:
   analyze:
