@@ -1,4 +1,5 @@
-﻿using DataTables.AspNet.AspNetCore;
+﻿using AutoMapper;
+using DataTables.AspNet.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
