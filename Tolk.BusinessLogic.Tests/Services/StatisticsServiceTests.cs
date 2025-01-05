@@ -293,16 +293,16 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
             if (noOfTotalOrdersToCheck != (noOfTop1 + noOfTop2 + noOfTop3 + noOfTop4 + noOfTop5))
-                Assert.True(false, "Incorrect InlineData, noOfTotalOrdersToCheck cant differ from the amount of each no of top value");
+                Assert.Fail("Incorrect InlineData, noOfTotalOrdersToCheck cant differ from the amount of each no of top value");
             if ((noOfTop1 < noOfTop2) || (noOfTop2 < noOfTop3) || (noOfTop3 < noOfTop4) || (noOfTop4 < noOfTop5))
-                Assert.True(false, "Incorrect InlineData, wrong relationship between no of top values");
+                Assert.Fail("Incorrect InlineData, wrong relationship between no of top values");
 
             int[] listValues = { noOfTop1, noOfTop2, noOfTop3, noOfTop4, noOfTop5 };
 
             var orders = tolkDbContext.Orders.ToList();
 
             if (noOfTotalOrdersToCheck > orders.Count)
-                Assert.True(false, "Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
+                Assert.Fail("Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
 
             for (int i = 0; i < orders.Count; i++)
             {
@@ -380,16 +380,16 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
             if (noOfTotalOrdersToCheck != (noOfTop1 + noOfTop2 + noOfTop3 + noOfTop4 + noOfTop5))
-                Assert.True(false, "Incorrect InlineData, noOfTotalOrdersToCheck cant differ from the amount of each no of top value");
+                Assert.Fail("Incorrect InlineData, noOfTotalOrdersToCheck cant differ from the amount of each no of top value");
             if ((noOfTop1 < noOfTop2) || (noOfTop2 < noOfTop3) || (noOfTop3 < noOfTop4) || (noOfTop4 < noOfTop5))
-                Assert.True(false, "Incorrect InlineData, wrong relationship between no of top values");
+                Assert.Fail("Incorrect InlineData, wrong relationship between no of top values");
 
             int[] listValues = { noOfTop1, noOfTop2, noOfTop3, noOfTop4, noOfTop5 };
 
             var orders = tolkDbContext.Orders.ToList();
 
             if (noOfTotalOrdersToCheck > orders.Count)
-                Assert.True(false, "Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
+                Assert.Fail("Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
             for (int i = 0; i < orders.Count; i++)
             {
                 orders[i].RegionId = Region.Regions[5].RegionId;
@@ -466,16 +466,16 @@ namespace Tolk.BusinessLogic.Tests.Services
         {
             using var tolkDbContext = CreateTolkDbContext(DbNameForStatistics);
             if (noOfTotalOrdersToCheck != (noOfTop1 + noOfTop2 + noOfTop3 + noOfTop4 + noOfTop5))
-                Assert.True(false, "Incorrect InlineData, noOfTotalOrdersToCheck cant differ from the amount of each no of top value");
+                Assert.Fail("Incorrect InlineData, noOfTotalOrdersToCheck cant differ from the amount of each no of top value");
             if ((noOfTop1 < noOfTop2) || (noOfTop2 < noOfTop3) || (noOfTop3 < noOfTop4) || (noOfTop4 < noOfTop5))
-                Assert.True(false, "Incorrect InlineData, wrong relationship between no of top values");
+                Assert.Fail("Incorrect InlineData, wrong relationship between no of top values");
 
             int[] listValues = { noOfTop1, noOfTop2, noOfTop3, noOfTop4, noOfTop5 };
 
             var orders = tolkDbContext.Orders.ToList();
 
             if (noOfTotalOrdersToCheck > orders.Count)
-                Assert.True(false, "Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
+                Assert.Fail("Too many noOfTotalOrdersToCheck in inlinedata, change InlineData or no of mock orders");
             for (int i = 0; i < orders.Count; i++)
             {
                 orders[i].CustomerOrganisationId = MockEntities.MockCustomers[5].CustomerOrganisationId;

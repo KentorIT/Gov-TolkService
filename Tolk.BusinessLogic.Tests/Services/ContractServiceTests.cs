@@ -5,6 +5,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -147,13 +148,13 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2041-01-01 00:00:00 +01:00", AgreementIdBrokerFeeByRegionAndServiceType, false)]
         [InlineData("2040-12-31 00:00:00 +01:00", AgreementIdBrokerFeeByRegionAndServiceType, true)]
         [InlineData("2040-12-31 23:59:00 +01:00", AgreementIdBrokerFeeByRegionAndServiceType, true)]
-        public void Should_Get_Agreement_And_CorrectStatus(string now, int frameworkAgreementId,bool isActive)
+        public async Task Should_Get_Agreement_And_CorrectStatus(string now, int frameworkAgreementId,bool isActive)
         {            
             var clock = new StubSwedishClock(now);
             var context = CreateTolkDbContext(DbWithAgreementRankingsAndPriceLists);
             var sut = new ContractService(context, clock);            
 
-            var result = sut.GetFrameworkAgreementById(frameworkAgreementId).Result;
+            var result = await sut.GetFrameworkAgreementById(frameworkAgreementId);
 
             result.IsActive.Should().Be(isActive);            
         }        
@@ -173,12 +174,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2030-12-31 23:59:00 +01:00", 2, "2030-01-01", "2030-12-31")]
         [InlineData("2035-01-01 00:00:00 +01:00", 2, "2030-01-01", "2030-12-31")]
         [InlineData("2035-07-20 00:00:00 +02:00", 2, "2030-01-01", "2030-12-31")]
-        public void Should_Return_Current_Or_LastActive_BrokerFeesByRegionBroker_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
+        public async Task Should_Return_Current_Or_LastActive_BrokerFeesByRegionBroker_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
         {
             var clock = new StubSwedishClock(now);
             var context = CreateTolkDbContext(DbWithAgreementRankingsAndPriceLists);
             var sut = new ContractService(context, clock);
-            var agreement = sut.GetFrameworkAgreementById(AgreementIdForBrokerFeesByRegionBroker).Result;
+            var agreement = await sut.GetFrameworkAgreementById(AgreementIdForBrokerFeesByRegionBroker);
             var priceList = BrokerFeesByRegionAndBroker();
 
             var filteredList = priceList.CurrentOrLastActiveBrokerFeesForAgreement(agreement, clock.SwedenNow.Date).ToList();
@@ -201,12 +202,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2031-06-12 00:00:00 +02:00", 16, "2031-01-01", "2031-12-31")]
         [InlineData("2040-07-20 00:00:00 +02:00", 16, "2040-01-01", "2040-12-31")]
         [InlineData("2100-02-20 00:00:00 +01:00", 16, "2040-01-01", "2040-12-31")]        
-        public void Should_Return_Current_Or_LastActive_OffSite_BrokerFeeByRegionAndServiceTypePriceList_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
+        public async Task Should_Return_Current_Or_LastActive_OffSite_BrokerFeeByRegionAndServiceTypePriceList_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
         {
             var clock = new StubSwedishClock(now);
             var context = CreateTolkDbContext(DbWithAgreementRankingsAndPriceLists);
             var sut = new ContractService(context, clock);
-            var agreement = sut.GetFrameworkAgreementById(AgreementIdBrokerFeeByRegionAndServiceType).Result;
+            var agreement = await sut.GetFrameworkAgreementById(AgreementIdBrokerFeeByRegionAndServiceType);
             var brokerFees = GenerateBrokerFeesByRegionAndServiceType(2030, 11, new int[] { 1, 2 });
             var currentOrLastActive = brokerFees.CurrentOrLastActiveDistanceBrokerFeesForAgreement(agreement, clock.SwedenNow.Date);
             currentOrLastActive.Count().Should().Be(activeBrokerFees);
@@ -226,12 +227,12 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData("2031-06-12 00:00:00 +02:00", 16, "2031-01-01", "2031-12-31")]
         [InlineData("2040-07-20 00:00:00 +02:00", 16, "2040-01-01", "2040-12-31")]
         [InlineData("2100-02-20 00:00:00 +01:00", 16, "2040-01-01", "2040-12-31")]
-        public void Should_Return_Current_Or_LastActive_OnSite_BrokerFeeByRegionAndServiceTypePriceList_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
+        public async Task Should_Return_Current_Or_LastActive_OnSite_BrokerFeeByRegionAndServiceTypePriceList_For_Agreement(string now, int activeBrokerFees, string brokerFeeStartDate, string brokerFeeEndDate)
         {
             var clock = new StubSwedishClock(now);
             var context = CreateTolkDbContext(DbWithAgreementRankingsAndPriceLists);
             var sut = new ContractService(context, clock);
-            var agreement = sut.GetFrameworkAgreementById(AgreementIdBrokerFeeByRegionAndServiceType).Result;
+            var agreement = await sut.GetFrameworkAgreementById(AgreementIdBrokerFeeByRegionAndServiceType);
             var brokerFees = GenerateBrokerFeesByRegionAndServiceType(2030, 11, new int[] { 1, 2 });
             var currentOrLastActive = brokerFees.CurrentOrLastActiveOnSiteBrokerFeesForAgreement(agreement, clock.SwedenNow.Date);
             currentOrLastActive.Count().Should().Be(activeBrokerFees);

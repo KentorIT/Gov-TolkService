@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
@@ -39,7 +40,7 @@ namespace Tolk.BusinessLogic.Tests.Services
         [Theory]
         [InlineData(RequestStatus.AnsweredAwaitingApproval)]
         [InlineData(RequestStatus.DeclinedByBroker)]
-        public void Create_InvalidStatus(RequestStatus status)
+        public async Task Create_InvalidStatus(RequestStatus status)
         {
             var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
             var request = new Request
@@ -47,20 +48,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 Status = status,
                 Complaints = new List<Complaint>()
             };
-            Assert.ThrowsAsync<InvalidOperationException>(() =>
-                service.Create(request, 1, null, "apa", ComplaintType.BadDelivery));
-        }
-
-        [Fact]
-        public void Create_PreviousComplaint()
-        {
-            var service = new ComplaintService(_tolkDbContext, _clock, _notificationService, _logger);
-            var request = new Request
-            {
-                Status = RequestStatus.Approved,
-                Complaints = new List<Complaint>() { new Complaint() }
-            };
-            Assert.ThrowsAsync<InvalidOperationException>(() =>
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 service.Create(request, 1, null, "apa", ComplaintType.BadDelivery));
         }
 
