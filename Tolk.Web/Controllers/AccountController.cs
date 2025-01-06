@@ -168,12 +168,15 @@ namespace Tolk.Web.Controllers
 
         public async Task<IActionResult> ChangeEmail()
         {
-            if (!await _userManager.HasPasswordAsync(await _userManager.GetUserAsync(User)))
+            var user = await _userManager.GetUserAsync(User);
+            if (!await _userManager.HasPasswordAsync(user))
             {
                 return Forbid();
             }
-
-            return View();
+            return View(new ChangeEmailModel { 
+                CurrentEmailDomain = user.Email.GetEmailDomain(), 
+                ValidateEmailDomain = user.CustomerOrganisationId.HasValue
+            });
         }
 
         [HttpPost]
@@ -1087,7 +1090,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             foreach (var key in ModelState.Keys.Where(k => k.StartsWith("CustomerSpecific")).ToArray())
             {
                 ModelState.Remove(key);
-            }            
+            }
             SetCustomerSpecficInputProperties(model);
             TryValidateModel(model);
         }

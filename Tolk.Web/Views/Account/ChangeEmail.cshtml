@@ -8,6 +8,8 @@
     <form method="post" class="do-not-check-dirty">
         <div class="row">
             <div class="col-sm-4">
+                <input type="hidden" asp-for="ValidateEmailDomain" />
+                <input type="hidden" asp-for="CurrentEmailDomain" />
                 <form-entry asp-for="NewEmailAddress" />
                 <form-entry asp-for="CurrentPassword" />
             </div>

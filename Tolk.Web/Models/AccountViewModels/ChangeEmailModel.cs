@@ -18,6 +18,10 @@ namespace Tolk.Web.Models.AccountViewModels
         [RegularExpression(@"^[\w!#$%&'*+\-/=?\^_`{|}~]+(\.[\w!#$%&'*+\-/=?\^_`{|}~]+)*@((([\-\w]+\.)+[a-zA-Z]{2,4})|(([0-9]{1,3}\.){3}[0-9]{1,3}))$", ErrorMessage = "Felaktig e-postadress")]
         [Display(Name = "Ny e-postadress")]
         [StringLength(255)]
+        [RequireSameEmailDomain(ValidEmailDomainProperty = nameof(CurrentEmailDomain), ValidateIfTrue = nameof(ValidateEmailDomain))]
         public string NewEmailAddress { get; set; }
+
+        public string CurrentEmailDomain { get; set; }
+        public bool ValidateEmailDomain { get; set; }
     }
 }

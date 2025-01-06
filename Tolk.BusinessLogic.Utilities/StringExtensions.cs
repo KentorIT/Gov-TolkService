@@ -61,5 +61,8 @@ namespace Tolk.BusinessLogic.Utilities
         /// </summary>
         public static string ToLoggableFormat(this string value) =>
             value.Replace("\r\n", string.Empty).Replace("\n", string.Empty);
+        public static string GetEmailDomain(this string email) =>
+            (email.Contains('@')) ? email[(email.IndexOf('@') + 1)..] : null;
+
     }
 }

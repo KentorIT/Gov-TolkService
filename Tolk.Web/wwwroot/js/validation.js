@@ -85,11 +85,24 @@ $.validator.addMethod('requiredchecked', function (value, element, params) {
 
     return true;
 });
+$.validator.addMethod('requiresameemaildomain', function (value, element, params) {
+    var validate = $(params[1]).val() !== "True";
+    var currentEmailDomain = $(params[0]).val();
+    validate &= !isNullOrEmpty(currentEmailDomain) && value.indexOf("@") > -1; 
+    return validate || value.split("@")[1].toLowerCase() === currentEmailDomain.toLowerCase();
+});
 
 // Swedish decimals and thousand separators
 $.validator.methods.number = function (value, element) {
     return this.optional(element) || /^-?(?: ?\d{0,3})+(?:,\d{0,3})?$/.test(value);
 };
+
+$.validator.unobtrusive.adapters.add('requiresameemaildomain', ['validemaildomainproperty', 'validateiftrue'], function (options) {
+    var validEmailDomainProperty = $(options.form).find("#" + options.params['validemaildomainproperty'])[0];
+    var validateIfTrue = $(options.form).find("#" + options.params['validateiftrue'])[0];
+    options.rules['requiresameemaildomain'] = [validEmailDomainProperty, validateIfTrue];
+    options.messages['requiresameemaildomain'] = options.message;
+});
 
 $.validator.unobtrusive.adapters.add('requiredif', ['otherproperty', 'otherpropertytype', 'otherpropertyvalue'], function (options) {
     var element = $(options.form).find("#" + options.params['otherproperty'])[0];
