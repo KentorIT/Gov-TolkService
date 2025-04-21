@@ -57,7 +57,7 @@ jobs:
         dotnet tool install --global dotnet-ef --version 7.0.13
         dotnet ef migrations script -o "${{ github.workspace }}/artifacts/Tolk.Migration/TolkMigrate.sql" --startup-project "./Tolk.Web/Tolk.Web.csproj" -p "./Tolk.BusinessLogic/Tolk.BusinessLogic.csproj" -i
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: github.ref == 'refs/heads/deploy'
       with:
         name: package-artifacts
