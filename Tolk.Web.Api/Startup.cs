@@ -91,7 +91,7 @@ namespace Tolk.Web.Api
             app.UseStaticFiles();
 
             app.UseOpenApi();
-            app.UseSwaggerUi3();
+            app.UseSwaggerUi();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
