@@ -340,27 +340,27 @@ namespace Tolk.BusinessLogic.Services
             var rowsWorksheet = workbook.Worksheets.Add(EnumHelper.GetDescription(reportType));
             char columnLetter = 'A';
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "BokningsId";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderNumber);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.OrderNumber));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = reportType.GetCustomName();
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportDate);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.ReportDate));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Språk";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Language);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Language));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Län";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Region);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Region));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Uppdragstyp";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentType);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.AssignmentType));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolkens kompetensnivå";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterCompetenceLevelAsString ?? r.InterpreterCompetenceLevel.GetDescription());
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.InterpreterCompetenceLevelAsString ?? r.InterpreterCompetenceLevel.GetDescription()));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Kammarkollegiets tolknr";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterId);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.InterpreterId));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InterpreterLocation);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.InterpreterLocation));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tid för uppdrag";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AssignmentDate);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.AssignmentDate));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighetens ärendenummer";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReferenceNumber);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.ReferenceNumber));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Accepterar restid";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AllowExceedingTravelCost);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.AllowExceedingTravelCost));
             switch (reportType)
             {
                 case ReportType.RequestsForBrokers:
@@ -373,18 +373,18 @@ namespace Tolk.BusinessLogic.Services
                 case ReportType.ComplaintsForBroker:
                 case ReportType.ComplaintsForSystemAdministrator:
                     rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Status";
-                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Status.ToString());
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Status.ToString()));
                     break;
                 case ReportType.DeliveredOrdersBrokers:
                 case ReportType.DeliveredOrdersCustomer:
                 case ReportType.DeliveredOrdersSystemAdministrator:
                     rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Rekvisition finns";
-                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasRequisition ? "Ja" : "Nej");
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.HasRequisition ? "Ja" : "Nej"));
                     rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Reklamation finns";
-                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasComplaint ? "Ja" : "Nej");
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.HasComplaint ? "Ja" : "Nej"));
                     rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Belopp enligt bekräftelse (SEK)";
                     rowsWorksheet.Column(columnLetter.ToString()).Style.NumberFormat.Format = "#,##0.00";
-                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Price));
                     break;
             }
             if (rows.FirstOrDefault() is ReportRequisitionRow)
@@ -412,7 +412,7 @@ namespace Tolk.BusinessLogic.Services
                     break;
             }
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Avtalsnummer";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.AgreementNumber);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.AgreementNumber));
             switch (reportType)
             {
                 case ReportType.RequestsForBrokers:
@@ -422,7 +422,7 @@ namespace Tolk.BusinessLogic.Services
                 case ReportType.DeliveredOrdersCustomer:
                 case ReportType.DeliveredOrdersSystemAdministrator:
                     rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Flexibel bokning";
-                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.FlexiblOrderAsString);
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.FlexiblOrderAsString));
                     break;
             }
 
@@ -437,43 +437,43 @@ namespace Tolk.BusinessLogic.Services
         private static void CreateColumnsForOrder(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, bool useStoredProcedure, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Dialekt";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Dialect);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Dialect));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Dialekt är krav";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = useStoredProcedure ? rows.Select(r => r.DialectIsRequirementAsString) : rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.DialectIsRequirement ? "Ja" : "Nej");
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(useStoredProcedure ? rows.Select(r => r.DialectIsRequirementAsString) : rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.DialectIsRequirement ? "Ja" : "Nej"));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Uppfyllt krav/önskemål om dialekt";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = useStoredProcedure ? rows.Select(r => r.FulfilledDialectRequirementAsString) : rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.FulfilledDialectRequirement ? "Ja" : "Nej");
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(useStoredProcedure ? rows.Select(r => r.FulfilledDialectRequirementAsString) : rows.Select(r => string.IsNullOrWhiteSpace(r.Dialect) ? string.Empty : r.FulfilledDialectRequirement ? "Ja" : "Nej"));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt 1:a hand";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderedInterpreterLocation1);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.OrderedInterpreterLocation1));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt 2:a hand";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderedInterpreterLocation2);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.OrderedInterpreterLocation2));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Inställelsesätt 3:e hand";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderedInterpreterLocation3);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.OrderedInterpreterLocation3));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Önskad kompetensnivå 1:a hand";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CompetenceLevelDesired1);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CompetenceLevelDesired1));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Önskad kompetensnivå 2:a hand";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CompetenceLevelDesired2);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CompetenceLevelDesired2));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Krav på kompetensnivå";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CompetenceLevelRequired1);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CompetenceLevelRequired1));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Ytterligare krav på kompetensnivå";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CompetenceLevelRequired2);
+                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CompetenceLevelRequired2));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal övriga krav";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderRequirements);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.OrderRequirements));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal uppfyllda övriga krav";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.FulfilledOrderRequirements);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.FulfilledOrderRequirements));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal övriga önskemål";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderDesiredRequirements);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.OrderDesiredRequirements));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal uppfyllda övriga önskemål";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.FulfilledOrderDesiredRequirements);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.FulfilledOrderDesiredRequirements));
         }
 
         private static void CreateColumnsForCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isOrder = false)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Enhet";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CustomerUnitName);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CustomerUnitName));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Avdelning";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Department);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Department));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Förmedling";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.BrokerName);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.BrokerName));
             if (isOrder)
             {
                 CreateColumnsForOrderCustomer(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter);
@@ -483,17 +483,17 @@ namespace Tolk.BusinessLogic.Services
         private static void CreateColumnsForOrderCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Fakturareferens";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.InvoiceReference);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.InvoiceReference));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Beställd av";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.ReportPersonToDisplay));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "E-postadress beställare";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.OrderCreatorEmail);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.OrderCreatorEmail));
         }
 
         private static void CreateColumnsForBroker(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isRequest = false)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighet";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CustomerName);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CustomerName));
             if (isRequest)
             {
                 CreateColumnsForBrokerRequest(rowsWorksheet, (rows as IEnumerable<ReportOrderRow>).Select(r => r), ref columnLetter);
@@ -503,51 +503,51 @@ namespace Tolk.BusinessLogic.Services
         private static void CreateColumnsForBrokerRequest(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Besvarad av";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.ReportPersonToDisplay));
         }
 
         private static void CreateColumnsForSystemAdministrator(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighet";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CustomerName);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CustomerName));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Förmedling";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.BrokerName);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.BrokerName));
         }
 
         private static void CreateColumnsForRequisition(IXLWorksheet rowsWorksheet, IEnumerable<ReportRequisitionRow> rows, ref char columnLetter, ReportType reportType)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Måltidspauser finns";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.HasMealbreaks ? "Ja" : "Nej");
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.HasMealbreaks ? "Ja" : "Nej"));
             switch (reportType)
             {
                 case ReportType.RequisitionsForBroker:
                     rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Skapad av";
-                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.ReportPersonToDisplay));
                     break;
                 case ReportType.RequisitionsForCustomer:
                     rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Granskad/kommenterad av";
-                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay ?? "");
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.ReportPersonToDisplay ?? ""));
                     break;
             }
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Spilltid normaltid (min)";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.WaisteTime);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.WaisteTime));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Spilltid OB-tid (min)";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.WaisteTimeIWH);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.WaisteTimeIWH));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Tolkens skattsedel";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.TaxCard);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.TaxCard));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Utlägg (SEK)";
             rowsWorksheet.Column(columnLetter.ToSwedishString()).Style.NumberFormat.Format = "#,##0.00";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Outlay);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Outlay));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Bilersättning (km)";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.CarCompensation);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CarCompensation));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Traktamente";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.PerDiem ?? string.Empty);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.PerDiem ?? string.Empty));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Total summa (SEK)";
             rowsWorksheet.Column(columnLetter.ToSwedishString()).Style.NumberFormat.Format = "#,##0.00";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.Price);
+                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Price));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Belopp enligt bekräftelse (SEK)";
             rowsWorksheet.Column(columnLetter.ToSwedishString()).Style.NumberFormat.Format = "#,##0.00";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.PreliminaryCost);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.PreliminaryCost));
         }
 
         private static void CreateColumnsForComplaint(IXLWorksheet rowsWorksheet, IEnumerable<ReportComplaintRow> rows, ref char columnLetter, ReportType reportType)
@@ -556,15 +556,15 @@ namespace Tolk.BusinessLogic.Services
             {
                 case ReportType.ComplaintsForBroker:
                     rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Besvarad av";
-                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay ?? "");
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.ReportPersonToDisplay ?? ""));
                     break;
                 case ReportType.ComplaintsForCustomer:
                     rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Skapad av";
-                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ReportPersonToDisplay);
+                    rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.ReportPersonToDisplay));
                     break;
             }
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Typ av reklamation";
-            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).Value = rows.Select(r => r.ComplaintType);
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.ComplaintType));
         }
 
         private static string GetColumnName(char columnLetter, int index)

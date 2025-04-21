@@ -1,5 +1,4 @@
-﻿using Irony.Parsing;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
