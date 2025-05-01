@@ -129,7 +129,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                         StartDate = DateTime.Parse(DefaultPriceListRowStartDate),
                         EndDate = DateTime.Parse(DefaultPriceListRowEndDate),
                         MaxMinutes = 30
-                    }            
+                    }
             };
 
             mockBrokerFeeByRegionAndServiceType = new BrokerFeeByServiceTypePriceListRow[]
@@ -164,7 +164,7 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         }
 
-        private void AddOrderAndRequest(DateTimeOffset orderCreatedAt, DateTimeOffset requestStartAt, DateTimeOffset requestEndAt, int id, TolkDbContext tolkDbContext,Ranking mockRanking)
+        private void AddOrderAndRequest(DateTimeOffset orderCreatedAt, DateTimeOffset requestStartAt, DateTimeOffset requestEndAt, int id, TolkDbContext tolkDbContext, Ranking mockRanking, bool withoutCompetenceLevel = false)
         {
             var mockOrder = new Order(mockCustomerUser, null, mockCustomerUser.CustomerOrganisation, orderCreatedAt)
             {
@@ -184,7 +184,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                         new Request(mockRanking, new RequestExpiryResponse { ExpiryAt = new DateTimeOffset(2099,12,31,12,00,00, new TimeSpan(02,00,00)), RequestAnswerRuleType = RequestAnswerRuleType.AnswerRequiredNextDay },orderCreatedAt)
                         {
                             RequestId = id,
-                            CompetenceLevel = 1,
+                            CompetenceLevel = withoutCompetenceLevel ? null : 1,
                             InterpreterLocation = 1,
                             PriceRows = new List<RequestPriceRow> {
                                 new RequestPriceRow()
@@ -243,8 +243,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             tolkDbContext.Add(mockCustomerUser.CustomerOrganisation);
         }
 
-        private void AddNewPriceRows(DateTime startDate, string database,int priceIncrease)
-        {            
+        private void AddNewPriceRows(DateTime startDate, string database, int priceIncrease)
+        {
             var endDate = DateTime.Parse(DefaultPriceListRowEndDate);
             //Update current rows
             using var context = CreateTolkDbContext(database);
@@ -273,48 +273,16 @@ namespace Tolk.BusinessLogic.Tests.Services
 
 
         [Theory]
-        [InlineData("2018-05-01 13:00:00 +02:00", "2018-06-10 13:00:00 +02:00", "2018-06-01",1,1)]
-        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-30 13:00:00 +02:00", "2018-06-01",1,0)]
-        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-10 13:00:00 +02:00", "2018-06-01",5,1)]
-        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-10 13:00:00 +02:00", "2018-05-01",10,10)]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-06-10 13:00:00 +02:00", "2018-06-01", 1, 1)]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-30 13:00:00 +02:00", "2018-06-01", 1, 0)]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-10 13:00:00 +02:00", "2018-06-01", 5, 1)]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-10 13:00:00 +02:00", "2018-05-01", 10, 10)]
         public async Task Should_Return_Correct_Number_Of_Requests_To_Update(string orderCreatedAtString, string initialRequestStartAtString, string priceRowsStartDateString, int numberOfOrdersToCreate, int expectedRequestsToUpdate)
         {
             var dbGuid = Guid.NewGuid();
             var orderCreatedAt = DateTimeOffset.Parse(orderCreatedAtString);
             var initialRequestStart = DateTimeOffset.Parse(initialRequestStartAtString);
             var priceRowsStartDate = DateTime.Parse(priceRowsStartDateString);
-            using (var tolkDbContext = CreateTolkDbContext(dbGuid.ToString()))
-            {
-                InitialDbSetup(tolkDbContext);
-                for (int i = 0; i < numberOfOrdersToCreate; i++)
-                {                   
-                    AddOrderAndRequest(orderCreatedAt, initialRequestStart, initialRequestStart.AddHours(3), i + 1, tolkDbContext, mockRankings[0]);                    
-                    initialRequestStart = initialRequestStart.AddDays(7);
-                }
-                tolkDbContext.SaveChanges();
-            }
-
-            using (var tolkDbContext = CreateTolkDbContext(dbGuid.ToString()))
-            {
-                AddNewPriceRows(priceRowsStartDate, dbGuid.ToString(),priceIncrease:100);
-                var requests = await tolkDbContext.Requests.GetActiveRequestWithPriceRowsToUpdate();
-                Assert.Equal(expectedRequestsToUpdate,requests.Count());
-            }     
-        }
-
-        [Theory]
-        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-30 13:00:00 +02:00", "2018-06-01", 1, 500, 0)]
-        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-10 13:00:00 +02:00", "2018-06-01", 5, 100, 1)]
-        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-10 13:00:00 +02:00", "2018-05-01", 10, 30, 10)]
-        [InlineData("2018-05-01 13:00:00 +02:00", "2018-06-11 13:00:00 +02:00", "2018-05-01", 1, 30, 1)]
-        public async Task Should_Create_New_Request_With_Updated_PriceRows_FrameworkAgreementVersionOne(string orderCreatedAtString, string initialRequestStartAtString, string priceRowsStartDateString, int numberOfOrdersToCreate,int priceIncrease, int expectedRequestsToUpdate)
-        {
-            var dbGuid = Guid.NewGuid();
-            var orderCreatedAt = DateTimeOffset.Parse(orderCreatedAtString);
-            var initialRequestStart = DateTimeOffset.Parse(initialRequestStartAtString);
-            var priceRowsStartDate = DateTime.Parse(priceRowsStartDateString);
-            var numberOfUpdatedRequests = numberOfOrdersToCreate - expectedRequestsToUpdate;
-            var totalNumberOfRequests = numberOfOrdersToCreate + expectedRequestsToUpdate;            
             using (var tolkDbContext = CreateTolkDbContext(dbGuid.ToString()))
             {
                 InitialDbSetup(tolkDbContext);
@@ -327,8 +295,70 @@ namespace Tolk.BusinessLogic.Tests.Services
             }
 
             using (var tolkDbContext = CreateTolkDbContext(dbGuid.ToString()))
-            {             
-                AddNewPriceRows(priceRowsStartDate, dbGuid.ToString(),priceIncrease);
+            {
+                AddNewPriceRows(priceRowsStartDate, dbGuid.ToString(), priceIncrease: 100);
+                var requests = await tolkDbContext.Requests.GetActiveRequestWithPriceRowsToUpdate();
+                Assert.Equal(expectedRequestsToUpdate, requests.Count());
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-06-10 13:00:00 +02:00", "2018-06-01", 1, 0)]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-30 13:00:00 +02:00", "2018-06-01", 1, 0)]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-10 13:00:00 +02:00", "2018-06-01", 5, 0)]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-10 13:00:00 +02:00", "2018-05-01", 10, 0)]
+        public async Task Should_Not_Return_RequestsToUpdate_DueToNoCompetenceLevel(string orderCreatedAtString, string initialRequestStartAtString, string priceRowsStartDateString, int numberOfOrdersToCreate, int expectedRequestsToUpdate)
+        {
+            var dbGuid = Guid.NewGuid();
+            var orderCreatedAt = DateTimeOffset.Parse(orderCreatedAtString);
+            var initialRequestStart = DateTimeOffset.Parse(initialRequestStartAtString);
+            var priceRowsStartDate = DateTime.Parse(priceRowsStartDateString);
+            using (var tolkDbContext = CreateTolkDbContext(dbGuid.ToString()))
+            {
+                InitialDbSetup(tolkDbContext);
+                for (int i = 0; i < numberOfOrdersToCreate; i++)
+                {
+                    AddOrderAndRequest(orderCreatedAt, initialRequestStart, initialRequestStart.AddHours(3), i + 1, tolkDbContext, mockRankings[0], true);
+                    initialRequestStart = initialRequestStart.AddDays(7);
+                }
+                tolkDbContext.SaveChanges();
+            }
+
+            using (var tolkDbContext = CreateTolkDbContext(dbGuid.ToString()))
+            {
+                AddNewPriceRows(priceRowsStartDate, dbGuid.ToString(), priceIncrease: 100);
+                var requests = await tolkDbContext.Requests.GetActiveRequestWithPriceRowsToUpdate();
+                Assert.Equal(expectedRequestsToUpdate, requests.Count());
+            }
+        }
+
+        [Theory]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-30 13:00:00 +02:00", "2018-06-01", 1, 500, 0)]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-10 13:00:00 +02:00", "2018-06-01", 5, 100, 1)]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-05-10 13:00:00 +02:00", "2018-05-01", 10, 30, 10)]
+        [InlineData("2018-05-01 13:00:00 +02:00", "2018-06-11 13:00:00 +02:00", "2018-05-01", 1, 30, 1)]
+        public async Task Should_Create_New_Request_With_Updated_PriceRows_FrameworkAgreementVersionOne(string orderCreatedAtString, string initialRequestStartAtString, string priceRowsStartDateString, int numberOfOrdersToCreate, int priceIncrease, int expectedRequestsToUpdate)
+        {
+            var dbGuid = Guid.NewGuid();
+            var orderCreatedAt = DateTimeOffset.Parse(orderCreatedAtString);
+            var initialRequestStart = DateTimeOffset.Parse(initialRequestStartAtString);
+            var priceRowsStartDate = DateTime.Parse(priceRowsStartDateString);
+            var numberOfUpdatedRequests = numberOfOrdersToCreate - expectedRequestsToUpdate;
+            var totalNumberOfRequests = numberOfOrdersToCreate + expectedRequestsToUpdate;
+            using (var tolkDbContext = CreateTolkDbContext(dbGuid.ToString()))
+            {
+                InitialDbSetup(tolkDbContext);
+                for (int i = 0; i < numberOfOrdersToCreate; i++)
+                {
+                    AddOrderAndRequest(orderCreatedAt, initialRequestStart, initialRequestStart.AddHours(3), i + 1, tolkDbContext, mockRankings[0]);
+                    initialRequestStart = initialRequestStart.AddDays(7);
+                }
+                tolkDbContext.SaveChanges();
+            }
+
+            using (var tolkDbContext = CreateTolkDbContext(dbGuid.ToString()))
+            {
+                AddNewPriceRows(priceRowsStartDate, dbGuid.ToString(), priceIncrease);
 
                 var sut = CreateRequestService(tolkDbContext);
                 await sut.SyncRequestPrices();
@@ -337,7 +367,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 var replacedRequests = requests.Where(r => r.Status == RequestStatus.ReplacedAfterPriceUpdate).ToList();
                 var newRequests = requests.Where(r => r.ReplacingRequestId.HasValue).ToList();
 
-                Assert.Equal(totalNumberOfRequests, requests.Count());                
+                Assert.Equal(totalNumberOfRequests, requests.Count());
                 Assert.Equal(expectedRequestsToUpdate, newRequests.Count());
 
                 foreach (var request in replacedRequests)
@@ -346,8 +376,8 @@ namespace Tolk.BusinessLogic.Tests.Services
                     var oldCompensationRow = request.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Single();
                     var newCompensationRow = replacingRequest.PriceRows.Where(pr => pr.PriceRowType == PriceRowType.InterpreterCompensation).Single();
                     var diff = newCompensationRow.Price - oldCompensationRow.Price;
-                    Assert.Equal(priceIncrease, diff);                    
-                }             
+                    Assert.Equal(priceIncrease, diff);
+                }
             }
         }
 
@@ -388,7 +418,7 @@ namespace Tolk.BusinessLogic.Tests.Services
                 var newRequests = requests.Where(r => r.ReplacingRequestId.HasValue).ToList();
 
                 Assert.Equal(totalNumberOfRequests, requests.Count());
-                Assert.Equal(expectedRequestsToUpdate, newRequests.Count());                
+                Assert.Equal(expectedRequestsToUpdate, newRequests.Count());
                 foreach (var request in replacedRequests)
                 {
                     var replacingRequest = request.ReplacedByRequest;

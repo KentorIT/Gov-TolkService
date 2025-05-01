@@ -1432,6 +1432,7 @@ namespace Tolk.BusinessLogic.Utilities
                  .Include(r => r.Ranking)
                     .ThenInclude(ra => ra.FrameworkAgreement)
                 .Where(r => (r.PriceRows.Any(pr => pr.StartAt.Date > pr.PriceListRow.EndDate)) &&
+                    r.CompetenceLevel != null && 
                     r.Status != RequestStatus.InterpreterReplaced &&
                     r.Status != RequestStatus.DeniedByTimeLimit &&
                     r.Status != RequestStatus.DeniedByCreator &&
