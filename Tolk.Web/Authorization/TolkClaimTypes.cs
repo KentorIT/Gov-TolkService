@@ -23,5 +23,7 @@
         public const string AllCustomerUnits = nameof(AllCustomerUnits);
 
         public const string LocalAdminCustomerUnits = nameof(LocalAdminCustomerUnits);
+
+        public const string ResetDefaultSettings = nameof(ResetDefaultSettings);
     }
 }

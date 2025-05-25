@@ -11,5 +11,6 @@ namespace Tolk.BusinessLogic.Enums
         UpdatedCustomerUnitUserOnly = 5,
         UpdatedDefaultSettings = 6,
         ChangedEmail = 7,
+        ChangedOrganisation = 8,
     }
 }

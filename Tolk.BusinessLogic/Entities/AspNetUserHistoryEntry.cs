@@ -15,6 +15,7 @@ namespace Tolk.BusinessLogic.Entities
             NameFamily = userInformation.NameFamily;
             IsActive = userInformation.IsActive;
             IsApiUser = userInformation.IsApiUser;
+            CustomerOrganisationId = userInformation.CustomerOrganisationId;
         }
 
         private AspNetUserHistoryEntry() { }
@@ -42,7 +43,12 @@ namespace Tolk.BusinessLogic.Entities
 
         public bool IsApiUser { get; set; }
 
+        public int? CustomerOrganisationId { get; set; }
+
         [ForeignKey(nameof(UserAuditLogEntryId))]
         public UserAuditLogEntry UserAuditLogEntry { get; set; }
+
+        [ForeignKey(nameof(CustomerOrganisationId))]
+        public CustomerOrganisation CustomerOrganisation { get; set; }
     }
 }

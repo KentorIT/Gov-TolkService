@@ -22,6 +22,7 @@ namespace Tolk.Web.Authorization
         public const string CreateRequisition = nameof(CreateRequisition);        
         public const string CreateComplaint = nameof(CreateComplaint);
         public const string View = nameof(View);
+        public const string Move = nameof(Move);
         public const string Delete = nameof(Delete);
         public const string ViewDefaultSettings = nameof(ViewDefaultSettings);
         public const string Accept = nameof(Accept);
@@ -56,6 +57,7 @@ namespace Tolk.Web.Authorization
                 opt.AddPolicy(Accept, builder => builder.RequireAssertion(AcceptHandler));
                 opt.AddPolicy(Cancel, builder => builder.RequireAssertion(CancelHandler));
                 opt.AddPolicy(Replace, builder => builder.RequireAssertion(ReplaceHandler));
+                opt.AddPolicy(Move, builder => builder.RequireAssertion(MoveHandler));
                 opt.AddPolicy(Print, builder => builder.RequireAssertion(PrintHandler));
                 opt.AddPolicy(ViewMenuAndStartLists, builder => builder.RequireAssertion(ViewMenuAndStartListsHandler));
                 opt.AddPolicy(HasPassword, builder => builder.RequireAssertion(HasPasswordHandler));
@@ -220,6 +222,22 @@ namespace Tolk.Web.Authorization
                 case OutboundPeppolMessage peppolMessage:
                     return (user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator)) &&
                         peppolMessage.ReplacedByMessage == null;
+                default:
+                    throw new NotImplementedException();
+            }
+        };
+
+        private static readonly Func<AuthorizationHandlerContext, bool> MoveHandler = (context) =>
+        {
+            var user = context.User;
+            switch (context.Resource)
+            {
+                case AspNetUser moveUser:
+                    // check if said user is from a customer with a parent or that is a parent. And is not an api user
+                    bool isMovableUser = !moveUser.IsApiUser && moveUser.CustomerOrganisationId.HasValue &&
+                        moveUser.CustomerOrganisation.ParentCustomerOrganisationId.HasValue;
+                    //Check role
+                    return isMovableUser && (user.IsInRole(Roles.SystemAdministrator) || user.IsInRole(Roles.ApplicationAdministrator));
                 default:
                     throw new NotImplementedException();
             }

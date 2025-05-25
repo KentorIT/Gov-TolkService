@@ -68,7 +68,7 @@ namespace Tolk.BusinessLogic.Services
 
             plainBody = plainBody.FormatSwedish(link);
             htmlBody = HtmlHelper.ToHtmlBreak(htmlBody).FormatSwedish(HtmlHelper.GetButtonDefaultLargeTag(link.AsUri(), "Registrera användarkonto"), link);
-            _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody, NotificationType.UserInvitation,addContractInfo:false);
+            _notificationService.CreateEmail(user.Email, subject, plainBody, htmlBody, NotificationType.UserInvitation, addContractInfo: false);
             await _dbContext.SaveChangesAsync();
             _logger.LogInformation("Sent account confirmation link to {userId} ({email})", user.Id, user.Email);
         }
@@ -228,6 +228,57 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             });
             await _dbContext.SaveChangesAsync();
         }
+        public async Task LogOnMoveAccountAsync(int userId, int? updatedByUserId = null, int? impersonatingUpdatedById = null)
+        {
+            AspNetUser currentUserInformation = await _dbContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
+            var roles = _dbContext.UserRoles.GetRolesForUser(userId);
+            var claims = await _dbContext.UserClaims.GetClaimsForUser(userId);
+            var customerUnits = _dbContext.CustomerUnitUsers.GetCustomerUnitsForUser(userId);
+            var defaultSettings = _dbContext.UserDefaultSettings.GetDefaultSettingsForUser(userId);
+            var defaultSettingOrderRequirements = _dbContext.UserDefaultSettingOrderRequirements.GetDefaultSettingOrderRequirementsForUser(userId);
+
+            await _dbContext.AddAsync(new UserAuditLogEntry
+            {
+                LoggedAt = _clock.SwedenNow,
+                UserId = userId,
+                UpdatedByUserId = updatedByUserId,
+                UpdatedByImpersonatorId = impersonatingUpdatedById,
+                UserChangeType = UserChangeType.ChangedOrganisation,
+                UserHistory = new AspNetUserHistoryEntry(currentUserInformation),
+                RolesHistory = await roles.Select(r => new AspNetUserRoleHistoryEntry
+                {
+                    RoleId = r.RoleId,
+                }).ToListAsync(),
+                ClaimsHistory = claims.Select(c => new AspNetUserClaimHistoryEntry
+                {
+                    ClaimType = c.ClaimType,
+                    ClaimValue = c.ClaimValue,
+                }).ToList(),
+                CustomerUnitUsersHistory = await customerUnits.Select(c => new CustomerUnitUserHistoryEntry
+                {
+                    CustomerUnitId = c.CustomerUnitId,
+                    IsLocalAdmin = c.IsLocalAdmin,
+                }).ToListAsync(),
+                DefaultsHistory = await defaultSettings.Select(n => new UserDefaultSettingHistoryEntry
+                {
+                    DefaultSettingType = n.DefaultSettingType,
+                    Value = n.Value
+                }).ToListAsync(),
+                DefaultOrderRequirementsHistory = await defaultSettingOrderRequirements.Select(n => new UserDefaultSettingsOrderRequirementHistoryEntry
+                {
+                    RequirementType = n.RequirementType,
+                    Description = n.Description,
+                    IsRequired = n.IsRequired
+                }).ToListAsync(),
+            });
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public void RemoveAllDefaultSettings(int userId, int? updatedByUserId = null, int? impersonatingUpdatedById = null)
+        {
+            _dbContext.UserDefaultSettings.RemoveRange(_dbContext.UserDefaultSettings.Where(uds => uds.UserId == userId));
+            _dbContext.UserDefaultSettingOrderRequirements.RemoveRange(_dbContext.UserDefaultSettingOrderRequirements.Where(uds => uds.UserId == userId));
+        }
 
         public async Task LogNotificationSettingsUpdateAsync(int userId, int? updatedByUserId = null, int? impersonatorUpdatedById = null)
         {
@@ -356,10 +407,10 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             }
             _logger.LogWarning("There are at least 100 users starting with the string {userName}.", userNameStart);
             _notificationService.CreateEmail(
-                _options.Support.SecondLineEmail, 
-                $"Det har skapats mer än hundra användare med prefix {userNameStart}", "Detta kan vara ett tecken på att systemet är under attack...", 
-                null, 
-                NotificationType.GeneraratedUserPrefixLimitWarning, 
+                _options.Support.SecondLineEmail,
+                $"Det har skapats mer än hundra användare med prefix {userNameStart}", "Detta kan vara ett tecken på att systemet är under attack...",
+                null,
+                NotificationType.GeneraratedUserPrefixLimitWarning,
                 addContractInfo: false
             );
             for (int i = 1; i < 1000; ++i)

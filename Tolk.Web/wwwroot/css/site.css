@@ -28,15 +28,7 @@
   font-weight: 700;
   src: url(https://fonts.gstatic.com/s/merriweathersans/v26/2-cO9IRs1JiJN1FRAMjTN5zd9vgsFF_5asQTb6hZ2JKZRekViesC.ttf) format('truetype');
 }
-@media screen and (max-width: 767px) {
-}@media (min-width: 768px) {
-}@media (min-width: 768px) {
-}@media (max-width: 767px) {
-}@media (min-width: 768px) {
-}@media (min-width: 768px) {
-}@media (max-width: 767px) {
-}@media (max-width: 767px) {
-}.bg-gray {
+.bg-gray {
   background-color: #F1F4F2;
 }
 .bg-white {
@@ -996,6 +988,9 @@ li.placeholder::before {
   background-color: #ffffe0;
   border: 1px solid #F5971C;
   padding: 12px 12px 12px 12px;
+}
+.warning-info-yellow .warning-info-yellow-text {
+  color: #F5971C;
 }
 .system-message {
   color: #333333;

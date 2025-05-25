@@ -893,6 +893,12 @@ namespace Tolk.BusinessLogic.Utilities
 
         #endregion
 
+        #region validations
+
+        public static async Task<bool> IsOrganisationAChild(this IQueryable<CustomerOrganisation> customers, int parentId, int childId)
+            => await customers.Where(c => c.CustomerOrganisationId == childId && c.ParentCustomerOrganisationId == parentId).AnyAsync();
+
+        #endregion
         public static async Task<OrderAttachment> GetOrderAttachmentByAttachmentId(this IQueryable<OrderAttachment> attachments, int id)
             => await attachments.Include(a => a.Attachment).Include(a => a.Order)
             .Where(a => a.Attachment.AttachmentId == id).FirstOrDefaultAsync();

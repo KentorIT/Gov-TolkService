@@ -1,0 +1,55 @@
+﻿@model UserMoveModel
+@inject SelectListService SelectListService
+@using Tolk.Web.Services
+@using Tolk.BusinessLogic.Enums
+@{
+    ViewData["Title"] = "Flytta användare " + Model.NameFull;
+    string buttonClass = Model.UserMoveValidationModel.DenyMove ? "disabled" : string.Empty;
+}
+<section aria-label="@ViewData["Title"]">
+    <h1>@ViewData["Title"]</h1>
+    <div class="row">
+        <div class="col-sm-12">
+            När en användare flyttas till en annan myndighet så tas alla bokningsinställningar bort, och man tas bort ur alla eventuella enheter man ingår i.
+            <br /> 
+            Första gången den flyttade användaren loggar in så kommer denne få se över sina kontaktuppgifter och erbjudas möjligheten att sätta nya bokningsinställningar.
+        </div>
+    </div>
+    @if (Model.UserMoveValidationModel.IsSoleUnitAdmin)
+    {
+        @await Html.PartialAsync("_ErrorMessage", "Användaren är ensam administratör för en eller flera enheter. Innan användaren kan flyttas behöver dessa enheter få en annan administratör")
+    }
+    @if (Model.UserMoveValidationModel.WarnOpenOrders)
+    {
+        @await Html.PartialAsync("_WarningMessage", $"Användaren har {Model.UserMoveValidationModel.NoOfOpenOrders}st aktiva beställningar. Myndighetens användare med rätten att hantera alla myndighetens avrop behöver hantera dessa beställningar när användaren flyttas.")
+    }
+    @if (Model.UserMoveValidationModel.StopOpenOrders)
+    {
+        @await Html.PartialAsync("_ErrorMessage", $"Användaren har {Model.UserMoveValidationModel.NoOfOpenOrders}st aktiva beställningar. Myndigheten har inga aktiva användare med rätten att hantera alla myndighetens avrop. Myndigheten behöver tillsätta en användare med denna rättighet innan en användare med aktiva beställningar kan flyttas. ")
+    }
+    <form method="post">
+        <div class="row">
+            <div class="col-sm-4">
+                <display-entry asp-for="CurrentCustomerOrganisationName" />
+            </div>
+            <div class="col-sm-4">
+                <form-entry asp-for="NewCustomerOrganisationId" type="select" asp-items="SelectListService.SubOrganisations(Model.ParentOrganisationId, Model.CurrentCustomerOrganisationId, false)" class="allow-clear" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-4">
+                <a class="btn btn-warning btn-large pull-left do-not-check-dirty" href="@Url.Action("View", new { id = Model.UserId, ba = Model.UserPageMode.BackAction, bi = Model.UserPageMode.BackId, bc = Model.UserPageMode.BackController })">Avbryt <span class="btn-remove-times">&times;</span></a>
+            </div>
+            <div class="col-sm-4">
+                <input asp-for="UserId" type="hidden" />
+                <input asp-for="UserPageMode.BackController" type="hidden" />
+                <input asp-for="UserPageMode.BackId" type="hidden" />
+                <input asp-for="UserPageMode.BackAction" type="hidden" />
+                <button type="submit" class="btn btn-large btn-primary pull-right @buttonClass" @buttonClass>Flytta</button>
+            </div>
+        </div>
+    </form>
+</section>
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

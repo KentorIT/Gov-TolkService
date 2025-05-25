@@ -374,10 +374,11 @@ namespace Tolk.Web.Services
             }
         }
 
-        public IEnumerable<SelectListItem> SubOrganisations(int parentOrganisationId)
+        public IEnumerable<SelectListItem> SubOrganisations(int parentOrganisationId, int? filterOrganisationId = null, bool includeParent = true)
         {
             return _dbContext.CustomerOrganisations
-                .Where(co => co.CustomerOrganisationId == parentOrganisationId || co.ParentCustomerOrganisationId == parentOrganisationId)
+                .Where(co => ((includeParent && co.CustomerOrganisationId == parentOrganisationId) || co.ParentCustomerOrganisationId == parentOrganisationId) &&
+                    (filterOrganisationId == null || co.CustomerOrganisationId != filterOrganisationId))
                 .OrderBy(c => c.ParentCustomerOrganisationId).ThenBy(c => c.Name)
                     .Select(c => new SelectListItem
                     {

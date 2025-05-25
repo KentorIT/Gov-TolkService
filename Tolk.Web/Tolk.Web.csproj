@@ -150,6 +150,9 @@
     <Content Update="Views\User\ChangeApiKey.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
+    <Content Update="Views\User\Move.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
     <Content Update="Views\User\ViewDefaultSettings.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

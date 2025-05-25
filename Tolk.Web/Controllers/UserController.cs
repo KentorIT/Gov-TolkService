@@ -123,7 +123,7 @@ namespace Tolk.Web.Controllers
         }
 
         [Authorize(Policies.SystemCentralLocalAdmin)]
-        public async Task<ActionResult> View(int id, string message, string bc = null, string ba = null, string bi = null)
+        public async Task<ActionResult> View(int id, string message, string errorMessage = null, string bc = null, string ba = null, string bi = null)
         {
             var user = await GetUserToHandle(id);
             if ((await _authorizationService.AuthorizeAsync(User, user, Policies.View)).Succeeded)
@@ -136,8 +136,10 @@ namespace Tolk.Web.Controllers
                 var model = new UserModel
                 {
                     Message = message,
+                    ErrorMessage = errorMessage,
                     Id = id,
                     AllowDefaultSettings = user.CustomerOrganisationId.HasValue,
+                    AllowUserMove = (await _authorizationService.AuthorizeAsync(User, user, Policies.Move)).Succeeded,
                     SendNewInvite = !user.EmailConfirmed,
                     UserName = user.UserName,
                     NameFirst = user.NameFirst,
@@ -682,9 +684,8 @@ namespace Tolk.Web.Controllers
                     {
                         return RedirectToAction("Users", "Unit", new { id = unitUser.CustomerUnitId, errorMessage = $"Det går inte att ta bort {user.FullName} som lokal administratör då enheten måste ha minst en användare som lokal administratör. Gör en annan användare till lokal administratör före borttag." });
                     }
-                    await _userService.LogCustomerUnitUserUpdateAsync(unitUser.UserId, User.GetUserId(), User.TryGetImpersonatorId());
-                    _dbContext.CustomerUnitUsers.Remove(unitUser);
-                    _dbContext.SaveChanges();
+                    await DisconnectUserFromUnit(unitUser);
+                    await _dbContext.SaveChangesAsync();
                     return RedirectToAction("Users", "Unit", new
                     {
                         id = unitUser.CustomerUnitId,
@@ -779,12 +780,12 @@ namespace Tolk.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                AspNetUser apiUser = await GetApiUser();                               
-                if(!await IsValidApiUserEmail(apiUser,model.EmailRequests))
+                AspNetUser apiUser = await GetApiUser();
+                if (!await IsValidApiUserEmail(apiUser, model.EmailRequests))
                 {
                     ModelState.AddModelError(nameof(model.EmailRequests), "Denna email-adress används redan");
                     return View(model);
-                }              
+                }
                 //Save all Claims and Notification settings and stuff here...
                 if (apiUser != null)
                 {
@@ -943,8 +944,6 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
-
-
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> SendNewInvite(int id, string bc, string ba, string bi)
         {
@@ -986,6 +985,132 @@ namespace Tolk.Web.Controllers
                 return RedirectToAction(nameof(View), new { id = model.Id, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId, message = "En ny inbjudan med aktiveringslänk är skickad till användaren" });
             }
             return View(model);
+        }
+
+        [Authorize(Roles = Roles.AdminRoles)]
+        public async Task<ActionResult> Move(int id, string bc, string ba, string bi)
+        {
+            var user = await GetUserToHandle(id);
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Move)).Succeeded)
+            {
+                var model = new UserMoveModel
+                {
+                    UserId = user.Id,
+                    NameFirst = user.NameFirst,
+                    NameFamily = user.NameFamily,
+                    CurrentCustomerOrganisationName = user.CustomerOrganisation.Name,
+                    CurrentCustomerOrganisationId = user.CustomerOrganisationId,
+                    ParentOrganisationId = user.CustomerOrganisation.ParentCustomerOrganisationId.Value,
+                    UserMoveValidationModel = CheckIfUserCanBeMoved(user),
+                    UserPageMode = new UserPageMode
+                    {
+                        BackController = bc ?? BackController,
+                        BackAction = ba ?? BackAction,
+                        BackId = bi ?? BackId
+                    }
+                };
+                return View(model);
+            }
+            return Forbid();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = Roles.AdminRoles)]
+        public async Task<ActionResult> Move(UserMoveModel model)
+        {
+            var user = await GetUserToHandle(model.UserId);
+            if ((await _authorizationService.AuthorizeAsync(User, user, Policies.Move)).Succeeded)
+            {
+                if (ModelState.IsValid)
+                {
+                    if (CheckIfUserCanBeMoved(user).DenyMove)
+                    {
+                        //Something must have changed since the move initiated, return to move page to present correct information
+                        return View(new { id = model.UserId, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId});
+                    }
+
+                    // validate that the moved to id is child to the same parent
+                    bool isChild = await _dbContext.CustomerOrganisations.IsOrganisationAChild(user.CustomerOrganisation.ParentCustomerOrganisationId.Value, model.NewCustomerOrganisationId.Value);
+                    if (!isChild)
+                    {
+                        //Return with error message if false
+                        return RedirectToAction(nameof(View), new { id = model.UserId, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId, errorMessage = "Användaren kan inte flyttas till den organisationen!" });
+                    }
+
+                    using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
+                    await _userService.LogOnMoveAccountAsync(user.Id, impersonatingUpdatedById: User.TryGetImpersonatorId());
+
+                    // Remove the user from any units 
+                    _dbContext.CustomerUnitUsers.RemoveRange(user.CustomerUnits);
+
+                    // clear any user settings
+                    _userService.RemoveAllDefaultSettings(user.Id, User.GetUserId(), User.TryGetImpersonatorId());
+
+                    // remove any extra roles
+                    foreach (var role in user.Roles.ToList())
+                    {
+                        if (role.RoleId == CentralAdministratorRoleId)
+                        {
+                            await _userManager.RemoveFromRoleAsync(user, Roles.CentralAdministrator);
+                        }
+                        else if (role.RoleId == CentralOrderHandlerRoleId)
+                        {
+                            await _userManager.RemoveFromRoleAsync(user, Roles.CentralOrderHandler);
+                        }
+                    }
+
+                    // move the user
+                    user.CustomerOrganisationId = model.NewCustomerOrganisationId;
+
+                    // Flag the user for initial setup, to set the default settings
+                    await _userManager.AddClaimAsync(user, new Claim(TolkClaimTypes.ResetDefaultSettings, "true"));
+
+                    await _dbContext.SaveChangesAsync();
+                    transaction.Complete();
+
+                    return RedirectToAction(nameof(View), new { id = model.UserId, bc = model.UserPageMode.BackController, ba = model.UserPageMode.BackAction, bi = model.UserPageMode.BackId, message = "Användaren har flyttats" });
+                }
+                return View(model);
+            }
+            return Forbid();
+        }
+
+        private UserMoveValidationModel CheckIfUserCanBeMoved(AspNetUser user)
+        {
+            var openOrderStatuses = EnumHelper.GetEnumsWithParent<OrderStatus, NegotiationState>(NegotiationState.UnderNegotiation);
+
+            //Check one: do the user have any active orders? This should catch the orders in order groups too
+            var openOrders = _dbContext.Orders.Where(o => o.CreatedBy == user.Id && openOrderStatuses.Contains(o.Status)).Count();
+            // Check two: Does the organisation have a CentralOrderHandler
+            var organisationHasCentralOrderHandler = openOrders == 0 ? true :
+                _dbContext.Users.Where(u => u.CustomerOrganisationId == user.CustomerOrganisationId &&
+                u.Roles.Any(r => r.RoleId == CentralOrderHandlerRoleId) && u.IsActive && u.Id != user.Id).Any();
+            // only one is true, the move is not allowed, if both a warning should be presented.
+
+            //Check three: Is the user the only local admin on any Units
+            var units = user.CustomerUnits.Where(cu => cu.IsLocalAdmin && cu.UserId == user.Id)
+                .Select(cu => cu.CustomerUnitId);
+            var isSoleUnitAdmin = _dbContext.CustomerUnits
+                .Include(cu => cu.CustomerUnitUsers)
+                .Where(cu => cu.IsActive &&
+                    units.Contains(cu.CustomerUnitId) &&
+                    !cu.CustomerUnitUsers.Where(cuu => cuu.IsLocalAdmin && cuu.UserId != user.Id && cuu.User.IsActive).Any()
+            ).Any();
+            // If true the move is not allowed, present a text why
+            return new UserMoveValidationModel
+            {
+                NoOfOpenOrders = openOrders,
+                OrganisationHasCentralOrderHandler = organisationHasCentralOrderHandler,
+                IsSoleUnitAdmin = isSoleUnitAdmin
+            };
+        }
+
+        private async Task DisconnectUserFromUnit(CustomerUnitUser unitUser)
+        {
+            await _userService.LogCustomerUnitUserUpdateAsync(unitUser.UserId, User.GetUserId(), User.TryGetImpersonatorId());
+            _dbContext.CustomerUnitUsers.Remove(unitUser);
         }
 
         private async Task<AspNetUser> GetApiUser()
@@ -1178,7 +1303,7 @@ namespace Tolk.Web.Controllers
             return errorMessage;
         }
 
-        private async Task<bool> IsValidApiUserEmail(AspNetUser apiUser,string email)
+        private async Task<bool> IsValidApiUserEmail(AspNetUser apiUser, string email)
         {
 
             return apiUser.Email == email || await _userManager.FindByEmailAsync(email) == null;

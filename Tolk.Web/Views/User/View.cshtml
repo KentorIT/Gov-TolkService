@@ -7,8 +7,15 @@
     <h1>@ViewData["Title"]</h1>
     @if (!string.IsNullOrEmpty(@Model.Message))
     {
-        @await Html.PartialAsync("_InfoMessage",@Model.Message)
+        @await Html.PartialAsync("_InfoMessage", @Model.Message)
     }
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="row">
+            @await Html.PartialAsync("_ErrorMessage", @Model.ErrorMessage)
+        </div>
+    }
+
     <div class="row">
         <div class="col-sm-4">
             <display-entry asp-for="Organisation" />
@@ -95,6 +102,12 @@
         {
             <div class="col-sm-4">
                 <a class="btn btn-primary btn-large" asp-action="ViewDefaultSettings" asp-route-id="@Model.Id" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Se bokningsinställningar</a>
+            </div>
+        }
+        @if (Model.AllowUserMove)
+        {
+            <div class="col-sm-4">
+                <a class="btn btn-primary btn-large" asp-action="Move" asp-route-id="@Model.Id" asp-route-bi="@Model.UserPageMode.BackId" asp-route-bc="@Model.UserPageMode.BackController" asp-route-ba="@Model.UserPageMode.BackAction">Flytta användare</a>
             </div>
         }
     </div>

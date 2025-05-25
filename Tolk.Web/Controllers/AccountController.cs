@@ -173,8 +173,9 @@ namespace Tolk.Web.Controllers
             {
                 return Forbid();
             }
-            return View(new ChangeEmailModel { 
-                CurrentEmailDomain = user.Email.GetEmailDomain(), 
+            return View(new ChangeEmailModel
+            {
+                CurrentEmailDomain = user.Email.GetEmailDomain(),
                 ValidateEmailDomain = user.CustomerOrganisationId.HasValue
             });
         }
@@ -293,6 +294,16 @@ namespace Tolk.Web.Controllers
                     await _userService.LogLoginAsync(user.Id);
 
                     _logger.LogInformation("User {userName} logged in.", model.UserName.ToLoggableFormat());
+                    var resetClaim = (await _userManager.GetClaimsAsync(user)).SingleOrDefault(c => c.Type == TolkClaimTypes.ResetDefaultSettings);
+
+                    if (resetClaim != null)
+                    {
+                        //remove the temporary claim
+                        await _userManager.RemoveClaimAsync(user, resetClaim);
+                        _logger.LogInformation("Moved user {userName} redirected to settings page.", model.UserName.ToLoggableFormat());
+
+                        return RedirectToAction(nameof(ConfirmMovedAccount));
+                    }
                     return RedirectToLocal(returnUrl);
                 }
                 if (result.IsLockedOut)
@@ -817,6 +828,59 @@ namespace Tolk.Web.Controllers
                         RedirectToAction(nameof(ViewDefaultSettings), new { message = "Ändringar sparade" });
                 }
                 return Forbid();
+            }
+            return View(model);
+        }
+
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<ActionResult> ConfirmMovedAccount()
+        {
+            if (User.IsImpersonated())
+            {
+                // An impersonating user cannot confirm a move
+                return Forbid();
+            }
+            var user = await _userManager.GetUserAsync(User);
+            return View(new ConfirmMovedAccountModel
+            {
+                UserId = user.Id,
+                NameFirst = user.NameFirst,
+                NameFamily = user.NameFamily,
+                PhoneCellphone = user.PhoneNumberCellphone,
+                PhoneWork = user.PhoneNumber,
+            });
+        }
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        [Authorize(Policy = Policies.Customer)]
+        public async Task<ActionResult> ConfirmMovedAccount(ConfirmMovedAccountModel model)
+        {
+            if (User.IsImpersonated())
+            {
+                // An impersonating user cannot confirm a move
+                return Forbid();
+            }
+            var user = await _userManager.GetUserAsync(User);
+            if (ModelState.IsValid)
+            {
+                await _userService.LogOnUpdateAsync(user.Id);
+
+                user.NameFirst = model.NameFirst.Trim();
+                user.NameFamily = model.NameFamily.Trim();
+                user.PhoneNumber = model.PhoneWork?.Trim();
+                user.PhoneNumberCellphone = model.PhoneCellphone?.Trim();
+                var result = await _userManager.UpdateAsync(user);
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("Successfully confirmed moved user: {userId}", user.Id);
+                    //when user is updated refresh sign in to get possible updated claims
+                    if (!User.IsImpersonated())
+                    {
+                        await _signInManager.RefreshSignInAsync(user);
+                    }
+
+                    return RedirectToAction(nameof(EditDefaultSettings), new { isFirstTimeUser = true });
+                }
             }
             return View(model);
         }

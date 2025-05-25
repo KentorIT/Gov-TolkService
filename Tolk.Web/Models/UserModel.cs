@@ -94,6 +94,8 @@ namespace Tolk.Web.Models
 
         public bool SendNewInvite { get; set; }
 
+        public bool AllowUserMove { get; set; }
+
         public bool IsEditOrCreate { get; set; } = true;
 
         public string Message { get; set; }
