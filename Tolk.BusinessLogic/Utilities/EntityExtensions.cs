@@ -1217,6 +1217,10 @@ namespace Tolk.BusinessLogic.Utilities
                  && (organisationId.HasValue ? r.Order.CustomerOrganisationId == organisationId : !organisationId.HasValue)
                  && (customerUnits == null || (r.Order.CustomerUnitId.HasValue && customerUnits.Contains(r.Order.CustomerUnitId.Value))));
 
+        public static IQueryable<AspNetUser> GetUersForReport(this IQueryable<AspNetUser> users, int organisationId, IEnumerable<int> customerUnits = null)
+            => users.Where(u => u.CustomerOrganisationId == organisationId && !u.IsApiUser &&
+            (customerUnits == null || (u.CustomerUnits.Count > 0 && customerUnits.Any(x => u.CustomerUnits.Select(cu => cu.CustomerUnitId).Contains(x)))));
+
         public static IQueryable<OrderInterpreterLocation> GetInterpreterLocationsForOrdersForReport(this IQueryable<OrderInterpreterLocation> interpreterLocations, DateTime start, DateTime end, int? organisationId, IEnumerable<int> customerUnits)
             => interpreterLocations.Where(x =>
                x.Order.CreatedAt.Date >= start.Date && x.Order.CreatedAt.Date <= end.Date

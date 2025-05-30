@@ -1,17 +1,27 @@
-﻿$(document).ready(function () {
-    setReportDateText();
+﻿$(function () {
+    setReportChanges();
 });
 
 $("body").on("change", "#ReportType", function() {
-    setReportDateText();
+    setReportChanges();
+    $("#ReportResult").hide();
 });
 
-function setReportDateText() {
+function setReportChanges() {
+    $("#CustomerSelector, #CustomerHolder").hide();
+    $("#ReportDateSelector, #ReportDateHolder").show();
     if ($("#ReportType option:selected").val() === "") {
         $("#ReportDateHolder").html("Typ av datum som gäller för vald rapport");
     }
     else {
         $("#ReportDateHolder").html("För denna rapport kan du göra urval med " + $("#ReportType option:selected").data('additional'));
+    }
+    if ($("#ReportType option:selected").val() === "UsersForSystemAndAppAdmins") {
+        $("#CustomerSelector, #CustomerHolder").show();
+        $("#ReportDateSelector, #ReportDateHolder").hide();
+    }
+    if ($("#ReportType option:selected").val() === "UsersForCustomer") {
+        $("#ReportDateSelector, #ReportDateHolder").hide();
     }
 }
 

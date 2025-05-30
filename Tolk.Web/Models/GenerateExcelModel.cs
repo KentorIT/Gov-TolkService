@@ -9,5 +9,7 @@ namespace Tolk.Web.Models
         public string StartDate { get; set; }
 
         public string EndDate { get; set; }
+
+        public int? CustomerOrganisationId { get; set; }
     }
 }

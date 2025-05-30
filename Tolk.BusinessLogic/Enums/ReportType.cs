@@ -65,5 +65,13 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Reklamationer")]
         [Parent(ReportGroup.SystemAdminReport)]
         ComplaintsForSystemAdministrator = 12,
+
+        [Description("Användare")]
+        [Parent(ReportGroup.SystemAdminReport)]
+        UsersForSystemAndAppAdmins = 13,
+
+        [Description("Användare")]
+        [Parent(ReportGroup.SystemAdminReport)]
+        UsersForCustomer = 14,
     }
 }

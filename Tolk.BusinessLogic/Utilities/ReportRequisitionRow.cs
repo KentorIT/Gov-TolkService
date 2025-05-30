@@ -1,7 +1,7 @@
 ﻿
 namespace Tolk.BusinessLogic.Utilities
 {
-    public class ReportRequisitionRow : ReportRow
+    public class ReportRequisitionRow : ReportBookingInfoRow
     {
         public bool HasMealbreaks { get; set; }
 

@@ -25,5 +25,10 @@ namespace Tolk.Web.Models
 
         public ReportType SelectedReportType { get; set; }
 
+        [RequiredIf(nameof(ReportType), ReportType.UsersForSystemAndAppAdmins, OtherPropertyType = typeof(ReportType), AlwaysDisplayRequiredStar = true)]
+
+        [Display(Name = "Myndighet")]
+        public int? CustomerOrganisationId { get; set; }
+
     }
 }

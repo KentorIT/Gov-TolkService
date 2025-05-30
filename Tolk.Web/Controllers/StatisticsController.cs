@@ -62,6 +62,7 @@ namespace Tolk.Web.Controllers
                 var brokerId = User.TryGetBrokerId();
                 var organisationId = User.TryGetCustomerOrganisationId();
                 var customerUnits = User.IsInRole(Roles.CentralAdministrator) ? null : User.TryGetLocalAdminCustomerUnits();
+                var orgIdToUse = organisationId ?? model.CustomerOrganisationId;
                 switch (model.ReportType)
                 {
                     case ReportType.OrdersForCustomer:
@@ -86,6 +87,10 @@ namespace Tolk.Web.Controllers
                     case ReportType.ComplaintsForBroker:
                         model.ReportItems = _statService.GetNoOfComplaints(start, end, organisationId, customerUnits, brokerId);
                         break;
+                    case ReportType.UsersForSystemAndAppAdmins:
+                    case ReportType.UsersForCustomer:
+                        model.ReportItems = _statService.GetNoOfUsers(orgIdToUse.Value, customerUnits);
+                        break;
                 }
                 model.StartDate = start.ToSwedishString();
                 model.EndDate = end.ToSwedishString();
@@ -105,6 +110,7 @@ namespace Tolk.Web.Controllers
             var brokerId = User.TryGetBrokerId();
             var organisationId = User.TryGetCustomerOrganisationId();
             var customerUnits = User.IsInRole(Roles.CentralAdministrator) ? null : User.TryGetLocalAdminCustomerUnits();
+            var orgIdToUse = organisationId ?? model.CustomerOrganisationId;
             switch (model.SelectedReportType)
             {
                 case ReportType.OrdersForCustomer:
@@ -173,11 +179,15 @@ namespace Tolk.Web.Controllers
                 case ReportType.ComplaintsForCustomer:
                     var complaintsForCustomer = _statService.GetComplaints(start, end, organisationId, customerUnits);
                     return CreateExcelFile(StatisticsService.GetComplaintsExcelFileRows(complaintsForCustomer, model.SelectedReportType), complaintsForCustomer.Complaints.First().CustomerName, model.SelectedReportType);
+                case ReportType.UsersForSystemAndAppAdmins:
+                case ReportType.UsersForCustomer:
+                    var users = _statService.GetUsersByStoredProcedure(orgIdToUse.Value, User.GetUserId());
+                    return CreateExcelFile(users, users.First().CustomerName, model.SelectedReportType);
             }
             return RedirectToAction(nameof(List));
         }
 
-        private ActionResult CreateExcelFile(IEnumerable<ReportRow> rows, string organisationName, ReportType reportType)
+        private FileStreamResult CreateExcelFile(IEnumerable<ReportRow> rows, string organisationName, ReportType reportType)
         {
             string fileName = $"{EnumHelper.GetDescription(reportType)}_{organisationName}_{_clock.SwedenNow.DateTime.ToSwedishString("yyyy-MM-dd HH:mm")}.xlsx";
             return File(StatisticsService.CreateExcelFile(rows, reportType, _options.UseStoredProceduresForReports), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);

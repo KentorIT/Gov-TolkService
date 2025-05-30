@@ -1,6 +1,6 @@
 ﻿namespace Tolk.BusinessLogic.Utilities
 {
-    public class ReportOrderRow : ReportRow
+    public class ReportOrderRow : ReportBookingInfoRow
     {
 
         public string Dialect { get; set; }

@@ -1,7 +1,7 @@
 ﻿
 namespace Tolk.BusinessLogic.Utilities
 {
-    public class ReportComplaintRow : ReportRow
+    public class ReportComplaintRow : ReportBookingInfoRow
     {
         public string ComplaintType { get; set; }
     }

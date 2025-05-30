@@ -213,6 +213,11 @@ namespace Tolk.Web.Services
                         Text = ReportType.ComplaintsForCustomer.GetDescription(),
                         AdditionalDataAttribute = ReportType.ComplaintsForCustomer.GetCustomName()
                     });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.UsersForCustomer.ToString(),
+                        Text = ReportType.UsersForCustomer.GetDescription(),
+                    });
                     break;
                 case UserTypes.Broker:
                     reports.Add(new ExtendedSelectListItem
@@ -264,6 +269,11 @@ namespace Tolk.Web.Services
                         Value = ReportType.ComplaintsForSystemAdministrator.ToString(),
                         Text = ReportType.ComplaintsForSystemAdministrator.GetDescription(),
                         AdditionalDataAttribute = ReportType.ComplaintsForSystemAdministrator.GetCustomName()
+                    });
+                    reports.Add(new ExtendedSelectListItem
+                    {
+                        Value = ReportType.UsersForSystemAndAppAdmins.ToString(),
+                        Text = ReportType.UsersForSystemAndAppAdmins.GetDescription(),
                     });
                     break;
             }

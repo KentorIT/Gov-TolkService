@@ -219,6 +219,11 @@ namespace Tolk.BusinessLogic.Services
             return _dbContext.Requests.GetRequestsOrdersForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits).Select(r => r.OrderId).Distinct().Count();
         }
 
+        public int GetNoOfUsers(int organisationId, IEnumerable<int> localAdminCustomerUnits)
+        {
+            return _dbContext.Users.GetUersForReport(organisationId, localAdminCustomerUnits).Count();
+        }
+
         public ReportOrderModel GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)
         {
             var requestOrders = _dbContext.Requests.GetDeliveredRequestsWithOrders(start.Date, end.Date, _clock.SwedenNow.DateTime, organisationId, localAdminCustomerUnits);
@@ -256,7 +261,6 @@ namespace Tolk.BusinessLogic.Services
             var mealbreaks = _dbContext.MealBreaks.GetMealBreaksForReport(start.Date, end.Date, organisationId, localAdminCustomerUnits, brokerId);
             var requestIds = requisitions.Select(r => r.RequestId).ToList();
             var requestPricerows = _dbContext.RequestPriceRows.GetRequestPriceRowsForRequisitionReport(requestIds);
-
             return ReportRequistionModel.GetModelFromRequisitions(requisitions, mealbreaks, requisitionPricerows, requestPricerows, brokerId.HasValue);
         }
 
@@ -266,7 +270,7 @@ namespace Tolk.BusinessLogic.Services
             return ReportComplaintModel.GetModelFromComplaints(complaints, brokerId.HasValue);
         }
 
-        public IEnumerable<ReportRow> GetOrdersByStoredProcedure(DateTimeOffset start, DateTimeOffset end, bool onlyDelivered, int? brokerId, int? userId, int? organisationId)
+        public IEnumerable<ReportBookingInfoRow> GetOrdersByStoredProcedure(DateTimeOffset start, DateTimeOffset end, bool onlyDelivered, int? brokerId, int? userId, int? organisationId)
         {
             var connection = _dbContext.Database.GetDbConnection();
             connection.Open();
@@ -279,12 +283,45 @@ namespace Tolk.BusinessLogic.Services
             return ReadReportRows(reader, brokerId.HasValue);
         }
 
-        private List<ReportOrderRow> ReadReportRows(DbDataReader reader, bool isBroker)
+        public IEnumerable<ReportUserRow> GetUsersByStoredProcedure(int organisationId, int userId)
         {
-            List<ReportOrderRow> orderRows = new List<ReportOrderRow>();
+            var connection = _dbContext.Database.GetDbConnection();
+            connection.Open();
+            var getUsers = connection.CreateCommand();
+            getUsers.CommandText = $"EXEC GetUsersForExcelReport @customerId = '{organisationId}', @userId = '{userId}'";
+            using var reader = getUsers.ExecuteReader();
+            return ReadReportRows(reader);
+        }
+
+        private static List<ReportUserRow> ReadReportRows(DbDataReader reader)
+        {
+            List<ReportUserRow> userRows = [];
             while (reader.Read())
             {
-                ReportOrderRow row = new ReportOrderRow
+                ReportUserRow row = new()
+                {
+                    NameFirst = reader.GetString(reader.GetOrdinal("Förnamn")),
+                    NameFamily = reader.GetString(reader.GetOrdinal("Efternamn")),
+                    Email = reader.GetString(reader.GetOrdinal("E-postadress")),
+                    LastLoginAt = reader.GetString(reader.GetOrdinal("Senast inloggad")),
+                    CustomerUnitName = reader.GetString(reader.GetOrdinal("Kopplade enheter")),
+                    Status = reader.GetString(reader.GetOrdinal("Status")),
+                    InvoiceReference = reader.GetString(reader.GetOrdinal("Fakturareferens")),
+                    Roles = reader.GetString(reader.GetOrdinal("Utökad behörighet")),
+                    CreatedAt = reader.GetString(reader.GetOrdinal("Skapad")),
+                    CustomerName = reader.GetString(reader.GetOrdinal("CustomerName"))
+                };
+                userRows.Add(row);
+            }
+            return userRows;
+        }
+
+        private static List<ReportOrderRow> ReadReportRows(DbDataReader reader, bool isBroker)
+        {
+            List<ReportOrderRow> orderRows = [];
+            while (reader.Read())
+            {
+                ReportOrderRow row = new()
                 {
                     OrderNumber = reader.GetString(reader.GetOrdinal("BokningsId")),
                     ReportDate = reader.GetString(reader.GetOrdinal("Rapportdatum")),
@@ -334,11 +371,52 @@ namespace Tolk.BusinessLogic.Services
 
         #region Generate Excel
 
-        public static MemoryStream CreateExcelFile(IEnumerable<ReportRow> rows, ReportType reportType, bool useStoredProcedure)
+        public static MemoryStream CreateExcelFile(IEnumerable<ReportRow> reportRows, ReportType reportType, bool useStoredProcedure)
         {
             using var workbook = new XLWorkbook();
             var rowsWorksheet = workbook.Worksheets.Add(EnumHelper.GetDescription(reportType));
             char columnLetter = 'A';
+            switch (reportRows.FirstOrDefault())
+            {
+                case ReportUserRow:
+                    CreateColumnsForUsers(rowsWorksheet, reportRows as IEnumerable<ReportUserRow>, ref columnLetter);
+                    break;
+                default:
+                    CreateColumnsForOrderReports(rowsWorksheet, reportRows as IEnumerable<ReportBookingInfoRow>, ref columnLetter, useStoredProcedure, reportType);
+                    break;
+            }
+            rowsWorksheet.Row(1).Style.Font.Bold = true;
+            MemoryStream memoryStream = new();
+            workbook.SaveAs(memoryStream);
+            memoryStream.Flush();
+            memoryStream.Position = 0;
+            return memoryStream;
+        }
+
+        private static void CreateColumnsForUsers(IXLWorksheet rowsWorksheet, IEnumerable<ReportUserRow> rows, ref char columnLetter)
+        {
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Efternamn";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.NameFamily));
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Förnamn";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.NameFirst));
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "E-postadress";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Email));
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Fakturareferens";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.InvoiceReference));
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Kopplade enheter";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CustomerUnitName));
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Utökad behörighet";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Roles));
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Skapad";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CreatedAt));
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Status";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Status));
+            rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Senast inloggad";
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.LastLoginAt));
+        }
+
+        private static void CreateColumnsForOrderReports(IXLWorksheet rowsWorksheet, IEnumerable<ReportBookingInfoRow> rows, ref char columnLetter, bool useStoredProcedure, ReportType reportType)
+        {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "BokningsId";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.OrderNumber));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = reportType.GetCustomName();
@@ -425,13 +503,6 @@ namespace Tolk.BusinessLogic.Services
                     rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.FlexiblOrderAsString));
                     break;
             }
-
-            rowsWorksheet.Row(1).Style.Font.Bold = true;
-            MemoryStream memoryStream = new();
-            workbook.SaveAs(memoryStream);
-            memoryStream.Flush();
-            memoryStream.Position = 0;
-            return memoryStream;
         }
 
         private static void CreateColumnsForOrder(IXLWorksheet rowsWorksheet, IEnumerable<ReportOrderRow> rows, bool useStoredProcedure, ref char columnLetter)
@@ -455,7 +526,7 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Krav på kompetensnivå";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CompetenceLevelRequired1));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Ytterligare krav på kompetensnivå";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CompetenceLevelRequired2));
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CompetenceLevelRequired2));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal övriga krav";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.OrderRequirements));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Antal uppfyllda övriga krav";
@@ -466,7 +537,7 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.FulfilledOrderDesiredRequirements));
         }
 
-        private static void CreateColumnsForCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter, bool isOrder = false)
+        private static void CreateColumnsForCustomer(IXLWorksheet rowsWorksheet, IEnumerable<ReportBookingInfoRow> rows, ref char columnLetter, bool isOrder = false)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Enhet";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CustomerUnitName));
@@ -506,7 +577,7 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.ReportPersonToDisplay));
         }
 
-        private static void CreateColumnsForSystemAdministrator(IXLWorksheet rowsWorksheet, IEnumerable<ReportRow> rows, ref char columnLetter)
+        private static void CreateColumnsForSystemAdministrator(IXLWorksheet rowsWorksheet, IEnumerable<ReportBookingInfoRow> rows, ref char columnLetter)
         {
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Myndighet";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.CustomerName));
@@ -544,7 +615,7 @@ namespace Tolk.BusinessLogic.Services
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.PerDiem ?? string.Empty));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Total summa (SEK)";
             rowsWorksheet.Column(columnLetter.ToSwedishString()).Style.NumberFormat.Format = "#,##0.00";
-                rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Price));
+            rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.Price));
             rowsWorksheet.Cell(GetColumnName(columnLetter, 1)).Value = "Belopp enligt bekräftelse (SEK)";
             rowsWorksheet.Column(columnLetter.ToSwedishString()).Style.NumberFormat.Format = "#,##0.00";
             rowsWorksheet.Cell(GetColumnName(columnLetter++, 2)).InsertData(rows.Select(r => r.PreliminaryCost));
