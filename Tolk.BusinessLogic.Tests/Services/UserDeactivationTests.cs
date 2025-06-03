@@ -113,10 +113,11 @@ namespace Tolk.BusinessLogic.Tests.Services
             var clock = new StubSwedishClock(now);
             var sut = CreateUserService(dbContext, clock);            
             var daysDiff = (user.LastLoginAt.Value.AddMonths(_options.Value.UserInactivity.InactivationThresholdMonths) - clock.SwedenNow).Days;
+
             // ACT
             await sut.HandleInactiveUsers();
-            // ASSERT 
 
+            // ASSERT 
             var notifyMock = Mock.Get(_notificationService);
             notifyMock.Verify(l => l.CreateEmail(
                 It.Is<string>(s => s == user.Email),
@@ -133,7 +134,7 @@ namespace Tolk.BusinessLogic.Tests.Services
 
         [Theory]
         [InlineData(1, "2024-06-01 00:00:00 +02:00", "2025-06-01 00:00:00 +02:00")]      
-        [InlineData(1, "2022-12-01 00:00:00 +02:00", "2025-06-01 00:00:00 +02:00")]      
+        [InlineData(1, "2022-12-01 00:00:00 +01:00", "2025-06-01 00:00:00 +02:00")]      
         [InlineData(1, "2020-06-01 00:00:00 +02:00", "2025-06-01 00:00:00 +02:00")]   
         public async Task UserShouldBeDeactivatedBySystem(int userId, string lastLogin, string now)
         {
@@ -167,9 +168,9 @@ namespace Tolk.BusinessLogic.Tests.Services
         }
       
         [Theory]
-        [InlineData(1, "2026-01-01 00:00:00 +02:00")]      
+        [InlineData(1, "2026-01-01 00:00:00 +01:00")]      
         [InlineData(1, "2026-04-02 00:00:00 +02:00")]      
-        [InlineData(1, "2026-03-03 00:00:00 +02:00")]   
+        [InlineData(1, "2026-03-03 00:00:00 +01:00")]   
         public async Task UserShouldBeDeactivatedBySystemIfNeverLoggedIn(int userId, string now)
         {
             // ARRANGE
