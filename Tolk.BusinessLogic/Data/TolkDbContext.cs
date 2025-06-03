@@ -693,7 +693,7 @@ namespace Tolk.BusinessLogic.Data
         public DbSet<PeppolPayload> PeppolPayloads { get; set; }
         public DbSet<CustomerSpecificPropertyHistoryEntry> CustomerSpecificPropertyChangeHistoryEntries { get; set; }
         public DbSet<CustomerOrderAgreementSettings> CustomerOrderAgreementSettings { get; set; }
-        public DbSet<CustomerOrderAgreementSettingsHistoryEntry> CustomerOrderAgreementSettingsHistoryEntries { get; set; }
+        public DbSet<CustomerOrderAgreementSettingsHistoryEntry> CustomerOrderAgreementSettingsHistoryEntries { get; set; }       
 
         private static bool isUserStoreInitialized = false;
 

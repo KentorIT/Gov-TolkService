@@ -37,7 +37,7 @@ namespace Tolk.Web.Models
 
         public bool EnableRegisterUser { get; set; }
         public bool EnableInvoiceMock { get; set; }
-
+        public bool EnableAutomaticUserDeactivation { get; set; }
         public bool RunEntityScheduler { get; set; }
 
         public int HourToRunFrameworkAgreementValidation { get; set; }
@@ -63,10 +63,12 @@ namespace Tolk.Web.Models
         public string FlexibleOrderDisplay { get; set; }
 
         [Display(Name = "Påslagna features")]
-        public string EnabledFeatures => $"Hopp i tiden: {EnableTimeTravel.ToSwedishString()}\nSammanhållna bokningar: {EnableOrderGroups.ToSwedishString()}\nOrderuppdateringar: {EnableOrderUpdate.ToSwedishString()}\nSjälvregistrering av konto: {EnableRegisterUser.ToSwedishString()}\nApi för myndigheter: {EnableCustomerApi.ToSwedishString()}\nSätta sista svarstid (myndighet): {EnableSetLatestAnswerTimeForCustomer.ToSwedishString()}\nSeparat behandling av extra tolkar: {AllowDeclineExtraInterpreterOnRequestGroups.ToSwedishString()}\nAvrunda priser: {RoundPriceDecimals.ToSwedishString()}\nSkapa MockFaktura: {EnableInvoiceMock.ToSwedishString()}";
+        public string EnabledFeatures => $"Hopp i tiden: {EnableTimeTravel.ToSwedishString()}\nSammanhållna bokningar: {EnableOrderGroups.ToSwedishString()}\nOrderuppdateringar: {EnableOrderUpdate.ToSwedishString()}\nSjälvregistrering av konto: {EnableRegisterUser.ToSwedishString()}\nApi för myndigheter: {EnableCustomerApi.ToSwedishString()}\nSätta sista svarstid (myndighet): {EnableSetLatestAnswerTimeForCustomer.ToSwedishString()}\nSeparat behandling av extra tolkar: {AllowDeclineExtraInterpreterOnRequestGroups.ToSwedishString()}\nAvrunda priser: {RoundPriceDecimals.ToSwedishString()}\nSkapa MockFaktura: {EnableInvoiceMock.ToSwedishString()}\nAutomatisk Deaktivering av användare: {EnableAutomaticUserDeactivation.ToSwedishString()}";
 
         [Display(Name = "Entity Scheduler")]
         public string EntitySchedulerSettings => $"Kör Entity scheduler: {RunEntityScheduler.ToSwedishString()}\n\tStarttid dagliga jobb: {HourToRunDailyJobs.ToSwedishString("D2")}\n\tNär på dygnet verifieras systemets avtal: {HourToRunFrameworkAgreementValidation.ToSwedishString("D2")}\n\tAntal månader innan aut. godkännande av reklamationer: {MonthsToApproveComplaints}\n\tAntal dagar efter utfört uppdrag för skapande av ord-agreement: {WorkDaysGracePeriodBeforeOrderAgreementCreation}";
+        [Display(Name = "Automatisk inaktivering av användare")]
+        public string UserInactivitySettings{ get; set; }
 
         #region methods
 
@@ -99,7 +101,9 @@ namespace Tolk.Web.Models
                 AllowDeclineExtraInterpreterOnRequestGroups = options.AllowDeclineExtraInterpreterOnRequestGroups,
                 RoundPriceDecimals = options.RoundPriceDecimals,
                 MonthsToApproveComplaints = options.MonthsToApproveComplaints,                
-                EnableInvoiceMock = options.EnableMockInvoice
+                EnableInvoiceMock = options.EnableMockInvoice,
+                UserInactivitySettings = options.UserInactivity.Description,
+                EnableAutomaticUserDeactivation = options.UserInactivity.EnableAutomaticDeactivation
             };
         }
         #endregion

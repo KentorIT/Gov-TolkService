@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tolk.BusinessLogic.Data;
 
@@ -11,9 +12,11 @@ using Tolk.BusinessLogic.Data;
 namespace Tolk.BusinessLogic.Data.Migrations
 {
     [DbContext(typeof(TolkDbContext))]
-    partial class TolkDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250601160027_Add_ActivityStateChangedByAdmin_ToUser")]
+    partial class Add_ActivityStateChangedByAdmin_ToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -296,9 +299,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AspNetUserHistoryEntryId"));
 
-                    b.Property<int?>("CustomerOrganisationId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Email")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
@@ -328,8 +328,6 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("AspNetUserHistoryEntryId");
-
-                    b.HasIndex("CustomerOrganisationId");
 
                     b.HasIndex("UserAuditLogEntryId")
                         .IsUnique();
@@ -4006,17 +4004,11 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.AspNetUserHistoryEntry", b =>
                 {
-                    b.HasOne("Tolk.BusinessLogic.Entities.CustomerOrganisation", "CustomerOrganisation")
-                        .WithMany()
-                        .HasForeignKey("CustomerOrganisationId");
-
                     b.HasOne("Tolk.BusinessLogic.Entities.UserAuditLogEntry", "UserAuditLogEntry")
                         .WithOne("UserHistory")
                         .HasForeignKey("Tolk.BusinessLogic.Entities.AspNetUserHistoryEntry", "UserAuditLogEntryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CustomerOrganisation");
 
                     b.Navigation("UserAuditLogEntry");
                 });

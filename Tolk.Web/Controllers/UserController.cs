@@ -247,7 +247,7 @@ namespace Tolk.Web.Controllers
         [ValidateAntiForgeryToken]
         [Authorize(Policies.SystemCentralLocalAdmin)]
         public async Task<ActionResult> Edit(UserModel model)
-        {
+        {            
             if (ModelState.IsValid)
             {
                 bool serversideValid = true;
@@ -273,7 +273,12 @@ namespace Tolk.Web.Controllers
                         user.PhoneNumberCellphone = model.PhoneCellphone?.Trim();
                         if (user.IsActive && !model.IsActive)
                         {
-                            await _userManager.UpdateSecurityStampAsync(user);
+                            await _userManager.UpdateSecurityStampAsync(user);                                                        
+                        }                        
+                        if(user.IsActive != model.IsActive)
+                        {
+                            await _userService.LogOnActivityStateChange(model.Id.Value, User.GetUserId(), User.TryGetImpersonatorId());
+                            _userService.SetActivityStateChange(user, activityStateChangedByAdmin: true,model.IsActive);
                         }
                         user.IsActive = model.IsActive;
                         if (user.CustomerOrganisationId.HasValue || user.BrokerId.HasValue)

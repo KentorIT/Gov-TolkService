@@ -284,8 +284,11 @@ namespace Tolk.Web.Controllers
                     {
                         //I want this to be done in two steps, first validating the user, then if valid user but inactive log out again, with proper message.
                         await _signInManager.SignOutAsync();
-                        _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName.ToLoggableFormat());
-                        ModelState.AddModelError(nameof(model.UserName), "Ditt konto är tillfälligt inaktiverat, vänligen kontakta tolkar.avropa@kammarkollegiet.se för mer information.");
+                        _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName.ToLoggableFormat());                        
+                        var loginErrorMessage = !user.IsActive && (user.ActivityStateChangedByAdmin ?? true) ?
+                            "Ditt konto är tillfälligt inaktiverat, vänligen kontakta tolkar.avropa@kammarkollegiet.se för mer information." :
+                            "Ditt konto har inaktiverats p.g.a. inaktivitet, aktivera ditt konto igen genom att återställa ditt lösenord";
+                        ModelState.AddModelError(nameof(model.UserName), loginErrorMessage);
                         return View(model);
                     }
                     user.LastLoginAt = _clock.SwedenNow;
@@ -348,7 +351,12 @@ namespace Tolk.Web.Controllers
             _logger.LogDebug("Requesting password reset for {email}", model.Email.ToLoggableFormat());
             if (ModelState.IsValid)
             {
-                var user = await _dbContext.Users.SingleOrDefaultAsync(u => !u.IsApiUser && u.IsActive && u.NormalizedEmail == model.Email.ToUpper());
+                var user = await _dbContext.Users                    
+                    .Where(u => !u.IsApiUser)
+                    .WhereActiveOrNotDeactivatedByAdmin()
+                    .Where(u => u.NormalizedEmail == model.Email.ToUpper())
+                    .SingleOrDefaultAsync();
+
                 if (user == null)
                 {
                     _logger.LogInformation("Tried to reset password for {email}, but found no such user.", model.Email.ToLoggableFormat());
@@ -455,6 +463,7 @@ namespace Tolk.Web.Controllers
                 if (result.Succeeded)
                 {
                     await _userService.LogUpdatePasswordAsync(user.Id);
+                    await _userService.TryActivateUser(user);
                     if ((!User.Identity.IsAuthenticated && user.IsActive) ||
                         (User.Identity.IsAuthenticated && !User.HasClaim(c => c.Type == TolkClaimTypes.IsPasswordSet)))
                     {
@@ -1049,7 +1058,7 @@ Om du har begärt att lösenordet ska återställas för '{user.FullName}' klick
 
 {resetLink}
 
-{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
+{(user.IsActive || (user.ActivityStateChangedByAdmin ?? true) ? string.Empty : @"Notera att din användare är inaktiverad. 
 Du kommer fortfarande få byta lösenord, men du behöver kontakta tolkar.avropa@kammarkollegiet.se för att få mer information om aktivering av konto.")}
 Om du inte har begärt en återställning av ditt lösenord kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
@@ -1066,12 +1075,12 @@ supporten på {_options.Support.FirstLineEmail}.";
 
 <div>{resetLink}<br /><br /></div>
 
-<div>{(user.IsActive ? string.Empty : @"Notera att din användare är inaktiverad. 
+<div>{(user.IsActive || (user.ActivityStateChangedByAdmin ?? true) ? string.Empty : @"Notera att din användare är inaktiverad. 
 Du kommer fortfarande få byta lösenord, men du behöver kontakta tolkar.avropa@kammarkollegiet.se för att få mer information om aktivering av konto.")}
 Om du inte har begärt en återställning av ditt lösenord kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.Support.FirstLineEmail}.</div>";
-
+supporten på {_options.Support.FirstLineEmail}.</div>";       
+            
             _notificationService.CreateEmail(
                 user.Email,
                 $"Återställning lösenord {Constants.SystemName}",

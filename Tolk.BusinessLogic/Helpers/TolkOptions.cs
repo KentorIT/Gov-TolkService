@@ -32,6 +32,7 @@ namespace Tolk.BusinessLogic.Helpers
         public PeppolSettings Peppol { get; set; }
 
         public FlexibleOrderSettings FlexibleOrder { get; set; }
+        public UserInactivitySettings UserInactivity { get; set; }
 
         public TolkConnectionStrings ConnectionStrings { get; set; }
 

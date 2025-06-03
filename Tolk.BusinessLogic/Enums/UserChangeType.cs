@@ -12,5 +12,6 @@ namespace Tolk.BusinessLogic.Enums
         UpdatedDefaultSettings = 6,
         ChangedEmail = 7,
         ChangedOrganisation = 8,
+        ChangedActivityState = 9
     }
 }

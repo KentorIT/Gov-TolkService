@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
@@ -228,6 +229,25 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             });
             await _dbContext.SaveChangesAsync();
         }
+
+        public async Task LogOnActivityStateChange(int userId, int? updatedByUserId = null, int? impersonatingUpdatedById = null)
+        {
+            AspNetUser currentUserInformation = await _dbContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
+            var roles = _dbContext.UserRoles.GetRolesForUser(userId);
+            var claims = await _dbContext.UserClaims.GetClaimsForUser(userId);
+            var customerUnits = _dbContext.CustomerUnitUsers.GetCustomerUnitsForUser(userId);
+            await _dbContext.AddAsync(new UserAuditLogEntry
+            {
+                LoggedAt = _clock.SwedenNow,
+                UserId = userId,
+                UpdatedByUserId = updatedByUserId,
+                UpdatedByImpersonatorId = impersonatingUpdatedById,
+                UserChangeType = UserChangeType.ChangedActivityState,
+                UserHistory = new AspNetUserHistoryEntry(currentUserInformation),             
+            });
+            await _dbContext.SaveChangesAsync();
+        }
+
         public async Task LogOnMoveAccountAsync(int userId, int? updatedByUserId = null, int? impersonatingUpdatedById = null)
         {
             AspNetUser currentUserInformation = await _dbContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
@@ -373,12 +393,37 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 UserChangeType = UserChangeType.ChangedPassword
             });
             await _dbContext.SaveChangesAsync();
-        }
-
+        }                
+     
         public async Task LogLoginAsync(int userId)
         {
             await _dbContext.AddAsync(new UserLoginLogEntry { LoggedInAt = _clock.SwedenNow, UserId = userId });
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> TryActivateUser(AspNetUser user, bool initiatedByAdmin = false)
+        {
+            if (user.IsActive) 
+            { 
+                return true;
+            }
+            if (!user.IsActive && (user.ActivityStateChangedByAdmin ?? true) && !initiatedByAdmin)
+            {
+                return false;
+            }
+            await LogOnActivityStateChange(user.Id);
+            user.IsActive = true;
+            SetActivityStateChange(user, initiatedByAdmin, newActivityState: true);
+            await _dbContext.SaveChangesAsync();
+
+            return true;
+        }
+
+        public void SetActivityStateChange(AspNetUser user, bool activityStateChangedByAdmin, bool newActivityState)
+        {
+            user.ActivityStateChangedByAdmin = activityStateChangedByAdmin;            
+            var deactivationInitiatedBy = activityStateChangedByAdmin ? "by an admin" : "by the system";
+            _logger.LogInformation("User with id: {userId}, activity state changed to: {ActivityState} {initiatedBy}", user.Id, newActivityState, deactivationInitiatedBy);
         }
 
         public async Task<AspNetUser> GetUserWithDefaultSettings(int userId)
@@ -433,6 +478,123 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                      (u.TemporaryChangedEmailEntry.EmailAddress.ToUpper() == email.ToUpper() && u.TemporaryChangedEmailEntry.UserId != userId)));
             var emailIsUniqueForUnits = !_dbContext.CustomerUnits.Any(cu => cu.Email.ToUpper() == email.ToUpper() && cu.CustomerUnitId != customerUnitId);
             return emailIsUniqueForUsers && emailIsUniqueForUnits;
+        }
+
+        public async Task HandleInactiveUsers()
+        {
+            if(!_options.UserInactivity.EnableAutomaticDeactivation)
+            {
+                return;
+            }
+
+            var now = _clock.SwedenNow.Date;
+            var cutoff = now.AddMonths(-_options.UserInactivity.InactivationThresholdMonths).AddDays(_options.UserInactivity.NotifyDaysBeforeDeactivation[0]).Date.ToDateTimeOffsetSweden();
+
+            var inactiveUsers = await _dbContext.Users
+                .WhereNotLoggedInSince(cutoff)
+                .Select(u => new
+                {
+                    User = u,
+                    // Handle if deactivation wasn't done on the day so it wasn't deactivated and should be deactivated (key < 0 here)  
+                    DeactivationIn = Math.Max(0, (u.LastLoginAt.Value.AddMonths(_options.UserInactivity.InactivationThresholdMonths) - now).Days)
+                }).ToListAsync();
+
+            var inactiveUsersDictionary = inactiveUsers.GroupBy(u => u.DeactivationIn).ToDictionary(g => g.Key, g => g.Select(iu => iu.User).ToList());
+
+            await HandleDeactivationReminders(inactiveUsersDictionary);
+
+            await DeactivateUsers(now, inactiveUsersDictionary.TryGetValue(0, out var usersFromDictionary) ? usersFromDictionary : new List<AspNetUser>());
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        private async Task HandleDeactivationReminders(Dictionary<int,List<AspNetUser>> inactiveUsersDictionary)
+        {
+            foreach (var threshHoldDays in _options.UserInactivity.NotifyDaysBeforeDeactivation)
+            {
+                if (inactiveUsersDictionary.TryGetValue(threshHoldDays, out var usersToNotify))
+                {
+                    await SendInactivityMail(usersToNotify, threshHoldDays);
+                }
+            }
+        }
+
+        private async Task DeactivateUsers(DateTimeOffset now, List<AspNetUser> usersToDeactivate)
+        {                
+            // If user hasn't logged in in >=6 months, it should be deactivated
+            var cutoff = now.AddMonths(-6).Date.ToDateTimeOffsetSweden();
+
+            var neverLoggedInusers = await _dbContext.Users
+              .WhereNeverLoggedInAndCreatedPriorToDate(cutoff)
+              .ToListAsync();
+
+            usersToDeactivate.AddRange(neverLoggedInusers);
+
+            foreach (var user in usersToDeactivate)
+            {
+                await LogOnActivityStateChange(user.Id);
+                user.IsActive = false;
+                SetActivityStateChange(user, activityStateChangedByAdmin: false, newActivityState: false);
+            }
+            
+        }
+
+        private async Task SendInactivityMail(List<AspNetUser> users, int daysUntilDeactivation)
+        {
+            foreach (var user in users)
+            {
+                string subject = null;
+                string plainBody = null;
+                string htmlBody = null;
+                var userEmail = user.Email;
+                (subject, plainBody,htmlBody) = CreateInactivityEmail(daysUntilDeactivation);
+
+                _notificationService.CreateEmail(
+                  userEmail,
+                  subject,
+                  plainBody,
+                  htmlBody,
+                  NotificationType.DeactivationReminder,
+                  isBrokerMail: false,
+                  addContractInfo: false);
+                _logger.LogInformation("User inactivity reminder sent to {email} for user with id: {userId}", userEmail.ToLoggableFormat(), user.Id);
+            }
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        private (string, string, string) CreateInactivityEmail(int daysUntilDeactivation)
+        {                                    
+            var subject = $"Ditt konto hos {Constants.SystemName} kommer snart att deaktiveras";
+            var plainBody =
+$@"Hej!
+
+Du har snart inte loggat in på ditt konto för: {Constants.SystemName} på {_options.UserInactivity.InactivationThresholdMonths} månader, ditt konto
+kommer därför att inaktiveras om {daysUntilDeactivation} dagar.
+
+För att undvika att kontot inaktiveras behöver du logga in i tjänsten på länken här:
+
+{_options.PublicOrigin}/
+
+Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
+
+            var htmlBody = $@"
+<h1>Hej!</h1>
+
+Du har snart inte loggat in på ditt konto för: {Constants.SystemName} på <b>{_options.UserInactivity.InactivationThresholdMonths}</b> månader, ditt konto
+kommer därför att inaktiveras om <b>{daysUntilDeactivation}</b> dagar.
+
+För att undvika att kontot inaktiveras behöver du logga in i tjänsten på länken här:
+
+<div>{HtmlHelper.GetButtonDefaultLargeTag(_options.PublicOrigin.AsUri(), "Tolkavropstjänsten")}</div>
+
+Om det inte fungerar att klicka på länken så klistra in länken nedan i en webbläsare:
+
+{_options.PublicOrigin.AsUri()}
+
+Vid frågor, vänligen kontakta <b>{_options.Support.FirstLineEmail}</b>
+";                        
+            return (subject, plainBody, HtmlHelper.ToHtmlBreak(htmlBody));
         }
     }
 }

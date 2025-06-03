@@ -1461,5 +1461,18 @@ namespace Tolk.BusinessLogic.Utilities
                 .Include(csp => csp.CustomerOrganisation)
                     .ThenInclude(co => co.CustomerChangeLogEntries);
 
+        public static IQueryable<AspNetUser> WhereActiveOrNotDeactivatedByAdmin(this IQueryable<AspNetUser> users)
+            => users.Where(u => u.IsActive || !(u.ActivityStateChangedByAdmin ?? true));
+
+        public static IQueryable<AspNetUser> WhereNeverLoggedInAndCreatedPriorToDate(this IQueryable<AspNetUser> users, DateTimeOffset creationDate)
+          => users.Where(u => u.IsActive)
+                .Where(u => !u.IsApiUser)
+                .Where(u => u.LastLoginAt == null)
+                .Where(u => u.AuditLogEntries.Any(ale => ale.UserChangeType == UserChangeType.Created && ale.LoggedAt <= creationDate));
+
+        public static IQueryable<AspNetUser> WhereNotLoggedInSince(this IQueryable<AspNetUser> users, DateTimeOffset cutoffDate)
+          => users.Where(u => u.IsActive)
+                .Where(u => !u.IsApiUser)
+                .Where(u => u.LastLoginAt <= cutoffDate);
     }
 }

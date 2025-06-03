@@ -84,12 +84,13 @@ namespace Tolk.BusinessLogic.Entities
         public bool IsActive { get; set; }
 
         public bool IsApiUser { get; set; }
+        public bool? ActivityStateChangedByAdmin { get; set; }
 
         #region Navigation properties
 
         public List<UserNotificationSetting> NotificationSettings { get; set; }
 
-        public List<UserAuditLogEntry> AuditLogEntries { get; set; }
+        public List<UserAuditLogEntry> AuditLogEntries { get; set; }        
 
         public TemporaryChangedEmailEntry TemporaryChangedEmailEntry { get; set; }
 

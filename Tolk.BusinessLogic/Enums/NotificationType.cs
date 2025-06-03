@@ -466,5 +466,11 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         ExpiresAtChanged = 67,
+
+        [Description("Påminnelse om deaktivering av konto")]
+        [CustomName("deactivation_reminder", false)]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [NotificationConsumerType(NotificationConsumerType.User)]
+        DeactivationReminder = 68,
     }
 }
