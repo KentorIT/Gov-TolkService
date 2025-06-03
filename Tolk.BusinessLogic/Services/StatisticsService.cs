@@ -221,7 +221,7 @@ namespace Tolk.BusinessLogic.Services
 
         public int GetNoOfUsers(int organisationId, IEnumerable<int> localAdminCustomerUnits)
         {
-            return _dbContext.Users.GetUersForReport(organisationId, localAdminCustomerUnits).Count();
+            return _dbContext.Users.GetUsersForReport(organisationId, localAdminCustomerUnits).Count();
         }
 
         public ReportOrderModel GetDeliveredOrders(DateTimeOffset start, DateTimeOffset end, int? organisationId, IEnumerable<int> localAdminCustomerUnits = null)

@@ -41,10 +41,8 @@
         </div>
         @if (userType != UserTypes.Broker && userType != UserTypes.OrderCreator)
         {
-            <div class="col-md-4 pull-left" id="CustomerSelector">
-                <div class="pull-left">
-                    <form-entry asp-for="CustomerOrganisationId" type="select" asp-items="SelectListService.CustomerOrganisations" class="allow-clear" />
-                </div>
+            <div class="col-md-4" id="CustomerSelector">
+                <form-entry asp-for="CustomerOrganisationId" type="select" asp-items="SelectListService.CustomerOrganisations" class="allow-clear" />
             </div>
         }
     </div>
