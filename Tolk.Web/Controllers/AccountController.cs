@@ -284,7 +284,7 @@ namespace Tolk.Web.Controllers
                     {
                         //I want this to be done in two steps, first validating the user, then if valid user but inactive log out again, with proper message.
                         await _signInManager.SignOutAsync();
-                        _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName.ToLoggableFormat());                        
+                        _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName.ToLoggableFormat());
                         var loginErrorMessage = !user.IsActive && (user.ActivityStateChangedByAdmin ?? true) ?
                             "Ditt konto är tillfälligt inaktiverat, vänligen kontakta tolkar.avropa@kammarkollegiet.se för mer information." :
                             "Ditt konto har inaktiverats p.g.a. inaktivitet, aktivera ditt konto igen genom att återställa ditt lösenord";
@@ -351,7 +351,7 @@ namespace Tolk.Web.Controllers
             _logger.LogDebug("Requesting password reset for {email}", model.Email.ToLoggableFormat());
             if (ModelState.IsValid)
             {
-                var user = await _dbContext.Users                    
+                var user = await _dbContext.Users
                     .Where(u => !u.IsApiUser)
                     .WhereActiveOrNotDeactivatedByAdmin()
                     .Where(u => u.NormalizedEmail == model.Email.ToUpper())
@@ -852,6 +852,7 @@ namespace Tolk.Web.Controllers
             var user = await _userManager.GetUserAsync(User);
             return View(new ConfirmMovedAccountModel
             {
+                CustomerOrganisationName = (await _dbContext.CustomerOrganisations.GetCustomerById(user.CustomerOrganisationId.Value)).Name,
                 UserId = user.Id,
                 NameFirst = user.NameFirst,
                 NameFamily = user.NameFamily,
@@ -883,10 +884,7 @@ namespace Tolk.Web.Controllers
                 {
                     _logger.LogInformation("Successfully confirmed moved user: {userId}", user.Id);
                     //when user is updated refresh sign in to get possible updated claims
-                    if (!User.IsImpersonated())
-                    {
-                        await _signInManager.RefreshSignInAsync(user);
-                    }
+                    await _signInManager.RefreshSignInAsync(user);
 
                     return RedirectToAction(nameof(EditDefaultSettings), new { isFirstTimeUser = true });
                 }
@@ -1079,8 +1077,8 @@ supporten på {_options.Support.FirstLineEmail}.";
 Du kommer fortfarande få byta lösenord, men du behöver kontakta tolkar.avropa@kammarkollegiet.se för att få mer information om aktivering av konto.")}
 Om du inte har begärt en återställning av ditt lösenord kan du radera det här
 meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.Support.FirstLineEmail}.</div>";       
-            
+supporten på {_options.Support.FirstLineEmail}.</div>";
+
             _notificationService.CreateEmail(
                 user.Email,
                 $"Återställning lösenord {Constants.SystemName}",

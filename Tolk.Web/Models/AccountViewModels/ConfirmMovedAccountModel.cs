@@ -26,5 +26,8 @@ namespace Tolk.Web.Models.AccountViewModels
         [Display(Name = "Telefonnummer (mobil)")]
         [StringLength(32)]
         public string PhoneCellphone { get; set; }
+
+        [Display(Name = "Ny organisation")]
+        public string CustomerOrganisationName { get; set; }
     }
 }
