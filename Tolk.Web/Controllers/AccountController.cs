@@ -63,7 +63,7 @@ namespace Tolk.Web.Controllers
             _clock = clock;
             _identityErrorDescriber = identityErrorDescriber;
             _notificationService = notificationService;
-            _cacheService = cacheService;
+            _cacheService = cacheService;            
         }
 
         public async Task<IActionResult> Index()
@@ -248,9 +248,10 @@ namespace Tolk.Web.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(Uri returnUrl = null)
+        public async Task<IActionResult> Login(Uri returnUrl = null,string errorMessage = null)
         {
             // Clear the existing external cookie to ensure a clean login process
+            ModelState.AddModelError(nameof(LoginViewModel.UserName), errorMessage);
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ViewData["ReturnUrl"] = returnUrl;
@@ -276,7 +277,7 @@ namespace Tolk.Web.Controllers
         {
             var user = await _userManager.FindByEmailAsync(model.UserName) ?? await _userManager.FindByNameAsync(model.UserName);
             if (user != null)
-            {
+            {                
                 var result = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: true, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
@@ -289,7 +290,8 @@ namespace Tolk.Web.Controllers
                             "Ditt konto är tillfälligt inaktiverat, vänligen kontakta tolkar.avropa@kammarkollegiet.se för mer information." :
                             "Ditt konto har inaktiverats p.g.a. inaktivitet, aktivera ditt konto igen genom att återställa ditt lösenord";
                         ModelState.AddModelError(nameof(model.UserName), loginErrorMessage);
-                        return View(model);
+                        
+                        return RedirectToAction(nameof(Login),new { errorMessage = loginErrorMessage});
                     }
                     user.LastLoginAt = _clock.SwedenNow;
                     await _userManager.UpdateAsync(user);
@@ -319,7 +321,7 @@ namespace Tolk.Web.Controllers
             ModelState.AddModelError(nameof(model.UserName), "Felaktigt användarnamn eller lösenord.");
             return View(model);
         }
-
+      
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Lockout()
