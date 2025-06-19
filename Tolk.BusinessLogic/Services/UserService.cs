@@ -488,7 +488,10 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             }
 
             var now = _clock.SwedenNow.Date.ToDateTimeOffsetSweden();
-            var cutoff = now.AddMonths(-_options.UserInactivity.InactivationThresholdMonths).AddDays(_options.UserInactivity.NotifyDaysBeforeDeactivation[0]).Date.ToDateTimeOffsetSweden();
+            var cutoff = now
+                .AddMonths(-_options.UserInactivity.InactivationThresholdMonths)
+                .AddDays(_options.UserInactivity.NotifyDaysBeforeDeactivation[0])
+                .ToEndOfSwedishDayOffset();
 
             var inactiveUsers = await _dbContext.Users
                 .WhereNotLoggedInSince(cutoff)

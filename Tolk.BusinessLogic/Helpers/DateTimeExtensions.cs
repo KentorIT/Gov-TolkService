@@ -58,5 +58,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public static DateTimeOffset ClearSeconds(this DateTimeOffset baseTime)
             => baseTime.AddSeconds(-baseTime.Second);
+
+        public static DateTimeOffset ToEndOfSwedishDayOffset(this DateTimeOffset dateTimeOffset)
+            => dateTimeOffset.AddDays(1).Date.ToDateTimeOffsetSweden().AddTicks(-1);         
     }
 }

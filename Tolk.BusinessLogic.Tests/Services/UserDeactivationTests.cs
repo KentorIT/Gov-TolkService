@@ -103,6 +103,11 @@ namespace Tolk.BusinessLogic.Tests.Services
         [InlineData(3, "2024-06-11 14:00:00 +02:00", "2025-06-01 02:00:00 +02:00")]
         [InlineData(4, "2024-06-06 00:00:00 +02:00", "2025-06-01 00:00:00 +02:00")]
         [InlineData(5, "2024-06-02 00:00:00 +02:00", "2025-06-01 00:00:00 +02:00")]
+        [InlineData(1, "2024-07-01 06:00:00 +02:00", "2025-06-01 00:00:00 +02:00")]
+        [InlineData(2, "2024-07-21 06:00:00 +02:00", "2025-06-21 00:00:00 +02:00")]
+        [InlineData(3, "2024-07-11 12:00:00 +02:00", "2025-06-11 02:00:00 +02:00")]
+        [InlineData(4, "2024-07-06 10:00:00 +02:00", "2025-06-06 00:00:00 +02:00")]
+        [InlineData(5, "2024-07-02 22:30:00 +02:00", "2025-06-02 00:00:00 +02:00")]
         public async Task UserShouldGetReminderOfDeactivationPriorToDeactivation(int userId, string lastLogin, string now)
         {
             // ARRANGE
@@ -135,7 +140,10 @@ namespace Tolk.BusinessLogic.Tests.Services
         [Theory]
         [InlineData(1, "2024-06-01 00:00:00 +02:00", "2025-06-01 00:00:00 +02:00")]      
         [InlineData(1, "2022-12-01 00:00:00 +01:00", "2025-06-01 00:00:00 +02:00")]      
-        [InlineData(1, "2020-06-01 00:00:00 +02:00", "2025-06-01 00:00:00 +02:00")]   
+        [InlineData(1, "2020-06-01 00:00:00 +02:00", "2025-06-01 00:00:00 +02:00")]
+        [InlineData(1, "2024-06-01 23:59:00 +02:00", "2025-06-01 00:00:00 +02:00")]
+        [InlineData(1, "2022-12-01 14:00:00 +01:00", "2025-06-01 00:00:00 +02:00")]
+        [InlineData(1, "2020-06-01 12:35:00 +02:00", "2025-06-01 00:00:00 +02:00")]
         public async Task UserShouldBeDeactivatedBySystem(int userId, string lastLogin, string now)
         {
             // ARRANGE
