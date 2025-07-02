@@ -251,7 +251,10 @@ namespace Tolk.Web.Controllers
         public async Task<IActionResult> Login(Uri returnUrl = null,string errorMessage = null)
         {
             // Clear the existing external cookie to ensure a clean login process
-            ModelState.AddModelError(nameof(LoginViewModel.UserName), errorMessage);
+            if(errorMessage != null)
+            {
+                ModelState.AddModelError(nameof(LoginViewModel.UserName), errorMessage);
+            }
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
             ViewData["ReturnUrl"] = returnUrl;
