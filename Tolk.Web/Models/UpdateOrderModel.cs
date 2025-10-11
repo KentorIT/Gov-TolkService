@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Tolk.BusinessLogic.Entities;
@@ -8,7 +7,6 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Models
 {
-    [AutoMap(typeof(OrderModel))]
     public class UpdateOrderModel : OrderBaseModel
     {
         public int OrderId { get; set; }

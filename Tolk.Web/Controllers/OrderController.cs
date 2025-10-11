@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using DataTables.AspNet.Core;
+﻿using DataTables.AspNet.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +35,6 @@ namespace Tolk.Web.Controllers
         private readonly TolkOptions _options;
         private readonly INotificationService _notificationService;
         private readonly UserManager<AspNetUser> _userManager;
-        private readonly IMapper _mapper;
         private readonly CacheService _cacheService;
         private readonly ListToModelService _listToModelService;
         private readonly EventLogService _eventLogService;
@@ -52,7 +50,6 @@ namespace Tolk.Web.Controllers
             IOptions<TolkOptions> options,
             INotificationService notificationService,
             UserManager<AspNetUser> usermanager,
-            IMapper mapper,
             CacheService cacheService,
             ListToModelService listToModelService,
             EventLogService eventLogService,
@@ -68,7 +65,6 @@ namespace Tolk.Web.Controllers
             _options = options?.Value;
             _notificationService = notificationService;
             _userManager = usermanager;
-            _mapper = mapper;
             _cacheService = cacheService;
             _listToModelService = listToModelService;
             _eventLogService = eventLogService;

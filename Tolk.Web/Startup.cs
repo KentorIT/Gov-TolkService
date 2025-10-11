@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using DataTables.AspNet.AspNetCore;
+﻿using DataTables.AspNet.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -10,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Globalization;
-using System.Reflection;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Helpers;
@@ -99,7 +97,6 @@ namespace Tolk.Web
                 opt.ModelMetadataDetailsProviders.Add(new ValidationMetadataProvider());
             });
 
-            services.AddAutoMapper(Assembly.GetEntryAssembly());
             services.Configure<RequestLocalizationOptions>(opt =>
             {
                 var supportedCultures = new[] { new CultureInfo("sv-SE") };
