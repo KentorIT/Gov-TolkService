@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Dynamic.Core;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic;
