@@ -71,7 +71,7 @@
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.0" />
-    <PackageReference Include="Mailkit" Version="4.11.0" />
+    <PackageReference Include="Mailkit" Version="4.14.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.15" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
