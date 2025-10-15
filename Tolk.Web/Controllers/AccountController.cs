@@ -290,7 +290,7 @@ namespace Tolk.Web.Controllers
                         await _signInManager.SignOutAsync();
                         _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName.ToLoggableFormat());
                         var loginErrorMessage = !user.IsActive && (user.ActivityStateChangedByAdmin ?? true) ?
-                            "Ditt konto är tillfälligt inaktiverat, vänligen kontakta din organisations centraladmin för mer information." :
+                            $"Ditt konto är tillfälligt inaktiverat, vänligen kontakta central administratör på er organisation för mer information. OM du inte vet vem som är central administratör hos er kan du kontakta vår kundtjänst {_options.Support.FirstLineEmail}" :
                             "Ditt konto har inaktiverats p.g.a. inaktivitet, aktivera ditt konto igen genom att återställa ditt lösenord";
                         ModelState.AddModelError(nameof(model.UserName), loginErrorMessage);
                         
@@ -1059,13 +1059,7 @@ namespace Tolk.Web.Controllers
 
 Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.
 
-{resetLink}
-
-{(user.IsActive || (user.ActivityStateChangedByAdmin ?? true) ? string.Empty : @"Notera att din användare är inaktiverad. 
-Du kommer fortfarande få byta lösenord, men du behöver kontakta tolkar.avropa@kammarkollegiet.se för att få mer information om aktivering av konto.")}
-Om du inte har begärt en återställning av ditt lösenord kan du radera det här
-meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.Support.FirstLineEmail}.";
+{resetLink}";
 
             var bodyHtml =
         $@"<h2>Återställning av lösenord för {Constants.SystemName}</h2>
@@ -1076,13 +1070,7 @@ supporten på {_options.Support.FirstLineEmail}.";
 
 <div>Om det inte fungerar att klicka på länken så klistra in länken nedan i en webbläsare:<br /><br /></div>
 
-<div>{resetLink}<br /><br /></div>
-
-<div>{(user.IsActive || (user.ActivityStateChangedByAdmin ?? true) ? string.Empty : @"Notera att din användare är inaktiverad. 
-Du kommer fortfarande få byta lösenord, men du behöver kontakta tolkar.avropa@kammarkollegiet.se för att få mer information om aktivering av konto.")}
-Om du inte har begärt en återställning av ditt lösenord kan du radera det här
-meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på {_options.Support.FirstLineEmail}.</div>";
+<div>{resetLink}<br /><br /></div>";
 
             _notificationService.CreateEmail(
                 user.Email,
