@@ -60,8 +60,7 @@ namespace Tolk.BusinessLogic.Services
                         body + GoToOrderPlain(request.Order.OrderId),
                         HtmlHelper.ToHtmlBreak(body) + GoToOrderButton(request.Order.OrderId),
                         notificationType,
-                        request.Ranking.FrameworkAgreement.AgreementNumber,
-                        true);
+                        frameworkAgreementNumber: request.Ranking.FrameworkAgreement.AgreementNumber);
                 }
             }
             //broker
@@ -77,8 +76,8 @@ namespace Tolk.BusinessLogic.Services
                         body + GoToRequestPlain(request.RequestId),
                         HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
                         NotificationType.RequestCancelledByCustomerWhenApproved,
-                        request.Ranking.FrameworkAgreement.AgreementNumber,
-                        true);
+                        frameWorkAgreementNumber: request.Ranking.FrameworkAgreement.AgreementNumber,
+                        isBrokerMail: true);
                 }
                 else
                 {
@@ -89,7 +88,7 @@ namespace Tolk.BusinessLogic.Services
                         HtmlHelper.ToHtmlBreak(body) + GoToRequestButton(request.RequestId),
                         NotificationType.RequestCancelledByCustomer,
                         request.Ranking.FrameworkAgreement.AgreementNumber,
-                        true);
+                        isBrokerMail: true);
                 }
             }
             var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestCancelledByCustomer, NotificationChannel.Webhook);
@@ -1589,7 +1588,7 @@ Sammanställning:
                 $"Bytet av tolk har godkänts för tolkuppdrag med boknings-ID {orderNumber}{RequestReferenceNumberInfo(request)}. {GoToRequestButton(request.RequestId)}",
                 NotificationType.RequestReplacedInterpreterAccepted,
                 frameworkAgreementNumber,
-                true
+                isBrokerMail: true
             );
             }
             var webhook = GetOrganisationNotificationSettings(request.Ranking.BrokerId, NotificationType.RequestReplacedInterpreterAccepted, NotificationChannel.Webhook);
@@ -2032,6 +2031,13 @@ Sammanställning:
         {
             string noReply = "Detta e-postmeddelande går inte att svara på.";
             string handledBy = $"Detta ärende hanteras i {Constants.SystemName}.";
+            string concernsCustomerOrderString = "Vid frågor rörande din bokning kontakta tolkförmedlingen";
+            string plainSupportFooter = $"Vid frågor rörande avropstjänsten vänligen kontakta Service Desk: \n\nTelefon:{_tolkBaseOptions.Support.SupportPhone}\nEpost: {_tolkBaseOptions.Support.FirstLineEmail}";
+            string htmlSupportFooter = HtmlHelper.ToHtmlBreak(plainSupportFooter);
+            var concernsCustomerOrder = !isBrokerMail && 
+                                        notificationType.GetAvailableNotificationConsumerTypes().Where(n => n == NotificationConsumerType.Customer).Any() &&    
+                                        notificationType.GetNotificationInRegardsToType() == NotificationInRegardsToType.Order;
+
             if (frameworkAgreementNumber == null && addContractInfo)
             {
                 frameworkAgreementNumber = string.Empty;
@@ -2044,8 +2050,8 @@ Sammanställning:
                 _dbContext.Add(new OutboundEmail(
                     recipient,
                     _senderPrepend + subject,
-                    $"{plainBody}\n\n{noReply}" + (isBrokerMail ? $"\n\n{handledBy}" : "") + (addContractInfo ? $"\n\n{contractInfo}" : ""),
-                    $"{htmlBody}<br/><br/>{noReply}" + (isBrokerMail ? $"<br/><br/>{handledBy}" : "") + (addContractInfo ? $"<br/><br/>{contractInfo}" : ""),
+                    $"{plainBody}\n\n{noReply}" + (isBrokerMail ? $"\n\n{handledBy}" : string.Empty) + (addContractInfo ? $"\n\n{contractInfo}" : string.Empty) + (concernsCustomerOrder ? $"\n\n{concernsCustomerOrderString}" : string.Empty) + $"\n\n{plainSupportFooter}",
+                    $"{htmlBody}<br/><br/>{noReply}" + (isBrokerMail ? $"<br/><br/>{handledBy}" : string.Empty) + (addContractInfo ? $"<br/><br/>{contractInfo}" : string.Empty) + (concernsCustomerOrder ? $"<br/><br/>{concernsCustomerOrderString}" : string.Empty) + $"<br/><br/>{htmlSupportFooter}",
                     _clock.SwedenNow,
                     notificationType
                 ));

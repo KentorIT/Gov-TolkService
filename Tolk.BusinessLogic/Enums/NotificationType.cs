@@ -122,6 +122,7 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Broker)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         RequestReplacedInterpreterAccepted = 16,
 
         [Description("Sammanhållen förfrågan skapad")]
@@ -198,6 +199,7 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderAnsweredAndApproved = 26,
 
         [Description("Beställning besvarad, inväntar godkännande av beställare")]
@@ -205,6 +207,7 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderAnsweredAwaitingApproval = 27,
 
         [Description("Beställning avböjd av förmedling")]
@@ -212,6 +215,7 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderDeclined = 28,
 
         [Description("Beställning avbokad av förmedling")]
@@ -219,18 +223,21 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderCancelledByBroker = 29,
 
         [Description("Order agreement skapat i systemet")]
         [CustomName("order_agreement_created", false)]
         [AvailableNotificationChannel(NotificationChannel.Peppol)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderAgreementCreated = 30,
 
         [Description("Tidigare skapad order agreement ersatt av order response i systemet")]
         [CustomName("order_agreement_replaced", false)]
         [AvailableNotificationChannel(NotificationChannel.Peppol)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderResponseCreated = 31,
 
         [Description("Uppdrag avbokat av myndighet efter godkänd bekräftelse")]
@@ -257,102 +264,119 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("order_terminated", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderTerminated = 35,
 
         [Description("Sammanhållen bokningsförfrågan avslutad")]
         [CustomName("order_group_terminated", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderGroupTerminated = 36,
 
         [Description("Bokningsförfrågan skapad utan sista svarstid")]
         [CustomName("request_created_without_expiry", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         RequestCreatedWithoutExpiry = 37,
 
         [Description("Sammanhållen bokningsförfrågan skapad utan sista svarstid")]
         [CustomName("request_group_created_without_expiry", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         RequestgroupCreatedWithoutExpiry = 38,
 
         [Description("Sammanhållen bokningsförfrågan fullständigt besvarad")]
         [CustomName("order_group_answered_and_approved", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderGroupAnsweredAndApproved = 39,
 
         [Description("Reklamation har godtagits")]
         [CustomName("complaint_confirmed", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         ComplaintConfirmed = 40,
 
         [Description("Reklamation har bestridits")]
         [CustomName("complaint_disputed", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         ComplaintDisputed = 41,
 
         [Description("Rekvisition har skapats")]
         [CustomName("requisition_created", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         RequisitionCreated = 42,
 
         [Description("Sammanhållen bokningsförfrågan avböjd av förmedling")]
         [CustomName("order_group_declined", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderGroupDeclined = 43,
 
         [Description("Ersättningsuppdrag fullständigt besvarad")]
         [CustomName("replacement_order_accepted", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         ReplamentOrderAccepted = 44,
 
         [Description("Ersättningsuppdrag accepterat och automatiskt godkänt")]
         [CustomName("replacement_order_approved", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         ReplamentOrderApproved = 45,
 
         [Description("Ersättningsuppdrag avböjt")]
         [CustomName("replacement_order_declined", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         ReplamentOrderDeclined = 46,
 
         [Description("Tolk ersatt på uppdrag")]
         [CustomName("interpreter_changed", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         InterpreterChanged = 47,
 
         [Description("Svar på förfrågan väntar på hantering")]
         [CustomName("remind_unhandled_request", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         RemindUnhandledRequest = 48,
 
         [Description("Svar på sammanhållen bokningsförfrågan väntar på hantering")]
         [CustomName("remind_unhandled_request_group", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         RemindUnhandledRequestGroup = 49,
 
         [Description("Del av sammanhållen bokningsförfrågan besvarad")]
         [CustomName("partial_request_group_accepted", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         PartialRequestGroupAccepted = 50,
 
         [Description("Del av sammanhållen bokningsförfrågan besvarad")]
         [CustomName("partial_request_group_automatically_approved", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         PartialRequestGroupAutomaticallyApproved = 51,
 
         [Description("Inbjudan för användande av systemet")]
@@ -388,7 +412,7 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Återställande för bortglömt lösenord")]
         [CustomName("password_reset", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
-        [NotificationConsumerType(NotificationConsumerType.User)]
+        [NotificationConsumerType(NotificationConsumerType.User)]        
         PasswordReset = 56,
 
         [Description("Avslutat avrop på grund av ramavtalets slut")]
@@ -423,12 +447,14 @@ namespace Tolk.BusinessLogic.Enums
         [CustomName("order_accepted", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderAccepted = 61,
 
         [Description("Sammanhållen bokningsförfrågan bekräftad, tolk är ej tillsatt")]
         [CustomName("order_group_accepted", false)]
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderGroupAccepted = 62,
 
         [Description("Sammanhållen bokningsförfrågan besvarad, inväntar godkännande av beställare")]
@@ -436,6 +462,7 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [AvailableNotificationChannel(NotificationChannel.Webhook)]
         [NotificationConsumerType(NotificationConsumerType.Customer)]
+        [NotificationInRegardsTo(NotificationInRegardsToType.Order)]
         OrderGroupAnsweredAwaitingApproval = 63,
 
         [Description("Förlorad förfrågan då bekräftad förfrågan ej besvarats fullständigt")]

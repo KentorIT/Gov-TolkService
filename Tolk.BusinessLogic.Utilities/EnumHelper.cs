@@ -99,6 +99,11 @@ namespace Tolk.BusinessLogic.Utilities
             return GetAttributeProperties<NotificationConsumerTypeAttribute, TEnum>(value).Select(n => n.NotificationConsumerType);
         }
 
+        public static NotificationInRegardsToType GetNotificationInRegardsToType<TEnum>(this TEnum value) where TEnum : struct
+        {
+            return GetAttributeProperties<NotificationInRegardsToAttribute, TEnum>(value).Select(n => n.NotificationInRegardsToType).SingleOrDefault();
+        }
+
         /// <summary>
         /// Returns the set parent of type TEnumParent
         /// </summary>

@@ -96,9 +96,7 @@ Du har blivit inbjuden till {Constants.SystemName} som tolk av en tolkförmedlin
 För att se dina tolkuppdrag så måste du registrera ett användarkonto i systemet, vänligen klicka på
 nedanstående länk eller klistra in den i din webbläsare.
 
-{{0}}
-
-Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
+{{0}}";
 
             var subject = $"Du har blivit inbjuden som tolk till {Constants.SystemName}";
 
@@ -114,9 +112,7 @@ Välkommen till {Constants.SystemName}!
 
 {GetLinkInfo(isHtml)}
 
-Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}.
-
-Mer information om avropstjänsten hittar du på: {_options.ExternalLinks.CurrentInfo}";
+Mer information om avropstjänsten hittar du på: {_options.ExternalLinks.CurrentInfo}f";
 
             var subject = $"Aktivering av konto i {Constants.SystemName}";
 
@@ -577,9 +573,7 @@ kommer därför att inaktiveras om {daysUntilDeactivation} dagar.
 
 För att undvika att kontot inaktiveras behöver du logga in i tjänsten på länken här:
 
-{_options.PublicOrigin}/
-
-Vid frågor, vänligen kontakta {_options.Support.FirstLineEmail}";
+{_options.PublicOrigin}/";
 
             var htmlBody = $@"
 <h1>Hej!</h1>
@@ -593,10 +587,7 @@ För att undvika att kontot inaktiveras behöver du logga in i tjänsten på lä
 
 Om det inte fungerar att klicka på länken så klistra in länken nedan i en webbläsare:
 
-{_options.PublicOrigin.AsUri()}
-
-Vid frågor, vänligen kontakta <b>{_options.Support.FirstLineEmail}</b>
-";                        
+{_options.PublicOrigin.AsUri()}";                        
             return (subject, plainBody, HtmlHelper.ToHtmlBreak(htmlBody));
         }
     }
