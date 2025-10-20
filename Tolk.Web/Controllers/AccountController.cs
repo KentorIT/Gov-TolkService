@@ -1059,7 +1059,11 @@ namespace Tolk.Web.Controllers
 
 Om du har begärt att lösenordet ska återställas för '{user.FullName}' klicka eller klistra in länken nedan i webbläsaren.
 
-{resetLink}";
+{resetLink}
+
+Om du inte har begärt en återställning av ditt lösenord kan du radera det här
+meddelandet.Om du får flera meddelanden som du inte har begärt, kontakta
+supporten på { _options.Support.FirstLineEmail}.";
 
             var bodyHtml =
         $@"<h2>Återställning av lösenord för {Constants.SystemName}</h2>
@@ -1070,7 +1074,11 @@ Om du har begärt att lösenordet ska återställas för '{user.FullName}' klick
 
 <div>Om det inte fungerar att klicka på länken så klistra in länken nedan i en webbläsare:<br /><br /></div>
 
-<div>{resetLink}<br /><br /></div>";
+<div>{resetLink}<br /><br /></div>
+
+<div>Om du inte har begärt en återställning av ditt lösenord kan du radera det här
+meddelandet. Om du får flera meddelanden som du inte har begärt, kontakta
+supporten på {_options.Support.FirstLineEmail}.</div>";
 
             _notificationService.CreateEmail(
                 user.Email,
