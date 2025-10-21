@@ -290,7 +290,7 @@ namespace Tolk.Web.Controllers
                         await _signInManager.SignOutAsync();
                         _logger.LogInformation("Inactivated User {userName} tried to log in.", model.UserName.ToLoggableFormat());
                         var loginErrorMessage = !user.IsActive && (user.ActivityStateChangedByAdmin ?? true) ?
-                            $"Ditt konto är tillfälligt inaktiverat, vänligen kontakta central administratör på er organisation för mer information. OM du inte vet vem som är central administratör hos er kan du kontakta vår kundtjänst {_options.Support.FirstLineEmail}" :
+                            $"Ditt konto är tillfälligt inaktiverat, vänligen kontakta central administratör på er organisation för mer information. Om du inte vet vem som är central administratör hos er kan du kontakta vår kundtjänst {_options.Support.FirstLineEmail}" :
                             "Ditt konto har inaktiverats p.g.a. inaktivitet, aktivera ditt konto igen genom att återställa ditt lösenord";
                         ModelState.AddModelError(nameof(model.UserName), loginErrorMessage);
                         
