@@ -907,15 +907,16 @@ namespace Tolk.Web.Controllers
                 string.Empty;
         }
 
-        private string CheckOrderOccasionFarAway(DateTime orderStart, bool isOrderGroup = false)
-        {
-            return orderStart.AddYears(-2) > _clock.SwedenNow.DateTime ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle ligger långt fram i tiden (startdatum: {orderStart.ToSwedishString("yyyy-MM-dd")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-                "Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-                string.Empty;
-        }
+		private string CheckOrderOccasionFarAway(DateTime orderStart, bool isOrderGroup = false)
+		{
+			var warningSettingInMonths = _options.MonthsOrderFutureDateWarning;
+			return (warningSettingInMonths.HasValue && orderStart.AddMonths(-warningSettingInMonths.Value) > _clock.SwedenNow.DateTime) ? isOrderGroup ?
+				$"Observera att tiden för minst ett tillfälle ligger långt fram i tiden (startdatum: {orderStart.ToSwedishString("yyyy-MM-dd")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+				"Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+				string.Empty;
+		}
 
-        private string CheckOrderGroupCloseInTime(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
+		private string CheckOrderGroupCloseInTime(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
         {
             if (orderOccasionDisplayModels.Count() == 2 && orderOccasionDisplayModels.Any(o => o.ExtraInterpreter))
                 return string.Empty;
