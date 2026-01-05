@@ -14,6 +14,7 @@ using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     [Authorize(Roles = Roles.AppOrSysAdmin)]
     [Route("[controller]/[action]")]
     public class PropertyController : Controller

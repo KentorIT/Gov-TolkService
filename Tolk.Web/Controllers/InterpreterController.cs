@@ -13,7 +13,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
-
+    [Authorize]
     [Authorize(Policy = Policies.Broker)]
     [Authorize(Roles = Roles.CentralAdministrator)]
     public class InterpreterController : Controller

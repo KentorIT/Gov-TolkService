@@ -25,5 +25,7 @@
         public const string LocalAdminCustomerUnits = nameof(LocalAdminCustomerUnits);
 
         public const string ResetDefaultSettings = nameof(ResetDefaultSettings);
+
+        public const string TwoFactorState = nameof(TwoFactorState);
     }
 }

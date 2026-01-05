@@ -70,6 +70,9 @@ namespace Tolk.Web.Models
         [Display(Name = "Automatisk inaktivering av användare")]
         public string UserInactivitySettings{ get; set; }
 
+        [Display(Name = "Tvåfaktorinställningar")]
+        public string TwoFactorDisplay { get; set; }
+
         #region methods
 
         internal static AdministrationOptionsModel GetModelFromTolkOptions(TolkOptions options)
@@ -103,7 +106,8 @@ namespace Tolk.Web.Models
                 MonthsToApproveComplaints = options.MonthsToApproveComplaints,                
                 EnableInvoiceMock = options.EnableMockInvoice,
                 UserInactivitySettings = options.UserInactivity.Description,
-                EnableAutomaticUserDeactivation = options.UserInactivity.EnableAutomaticDeactivation
+                EnableAutomaticUserDeactivation = options.UserInactivity.EnableAutomaticDeactivation,
+                TwoFactorDisplay = options.TwoFactor.Description
             };
         }
         #endregion

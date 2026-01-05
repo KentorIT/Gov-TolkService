@@ -499,5 +499,11 @@ namespace Tolk.BusinessLogic.Enums
         [AvailableNotificationChannel(NotificationChannel.Email)]
         [NotificationConsumerType(NotificationConsumerType.User)]
         DeactivationReminder = 68,
+
+        [Description("Tvåfaktor-kod validering skickad")]
+        [CustomName("twofactor_code_created", false)]
+        [AvailableNotificationChannel(NotificationChannel.Email)]
+        [NotificationConsumerType(NotificationConsumerType.User)]
+        TwoFactorCreated = 69,
     }
 }

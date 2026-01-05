@@ -15,6 +15,7 @@ using Tolk.BusinessLogic.Helpers;
 namespace Tolk.Web.Controllers
 {
 
+    [Authorize]
     [Authorize(Policies.SystemCentralLocalAdmin)]
     public class StatisticsController : Controller
     {

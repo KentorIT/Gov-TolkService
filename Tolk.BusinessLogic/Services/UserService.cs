@@ -2,14 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Models.TwoFactor;
 using Tolk.BusinessLogic.Utilities;
 
 namespace Tolk.BusinessLogic.Services
@@ -239,7 +242,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 UpdatedByUserId = updatedByUserId,
                 UpdatedByImpersonatorId = impersonatingUpdatedById,
                 UserChangeType = UserChangeType.ChangedActivityState,
-                UserHistory = new AspNetUserHistoryEntry(currentUserInformation),             
+                UserHistory = new AspNetUserHistoryEntry(currentUserInformation),
             });
             await _dbContext.SaveChangesAsync();
         }
@@ -389,8 +392,8 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 UserChangeType = UserChangeType.ChangedPassword
             });
             await _dbContext.SaveChangesAsync();
-        }                
-     
+        }
+
         public async Task LogLoginAsync(int userId)
         {
             await _dbContext.AddAsync(new UserLoginLogEntry { LoggedInAt = _clock.SwedenNow, UserId = userId });
@@ -399,8 +402,8 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public async Task<bool> TryActivateUser(AspNetUser user, bool initiatedByAdmin = false)
         {
-            if (user.IsActive) 
-            { 
+            if (user.IsActive)
+            {
                 return true;
             }
             if (!user.IsActive && (user.ActivityStateChangedByAdmin ?? true) && !initiatedByAdmin)
@@ -417,7 +420,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         public void SetActivityStateChange(AspNetUser user, bool activityStateChangedByAdmin, bool newActivityState)
         {
-            user.ActivityStateChangedByAdmin = activityStateChangedByAdmin;            
+            user.ActivityStateChangedByAdmin = activityStateChangedByAdmin;
             var deactivationInitiatedBy = activityStateChangedByAdmin ? "by an admin" : "by the system";
             _logger.LogInformation("User with id: {userId}, activity state changed to: {ActivityState} {initiatedBy}", user.Id, newActivityState, deactivationInitiatedBy);
         }
@@ -476,9 +479,180 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             return emailIsUniqueForUsers && emailIsUniqueForUnits;
         }
 
+        #region two factor
+
+        public async Task<(string, TwoFactorState)> GetCurrentTwoFactorClaim(string userName, string id)
+        {
+            var user = await _dbContext.Users.GetUserByNameWithTwoFactor(userName);
+            TwoFactorState state = TwoFactorState.NeedTwoFactorEmail;
+            if (string.IsNullOrEmpty(id))
+            {
+                id = Guid.NewGuid().ToString();
+                state = TwoFactorState.NeedTwoFactorEmail;
+            }
+            else
+            {
+                var stateInformation = user.TwoFactorEntries.SingleOrDefault(e => e.DeviceId == id)?.StateInformation;
+
+                if (stateInformation != null)
+                {
+                    var claim = JsonConvert.DeserializeObject<TwoFactorDto>(stateInformation);
+                    state = claim.NeedTwoFactor(_clock.SwedenNow);
+                    if (state == TwoFactorState.NeedTwoFactorEmail)
+                    {
+                        user.TwoFactorEntries.Remove(user.TwoFactorEntries.Single(e => e.DeviceId == id));
+                        await _dbContext.SaveChangesAsync();
+                    }
+                }
+            }
+            return (id, state);
+
+        }
+
+        public async Task InitiateTwoFactorValidation(string userName, string id)
+        {
+            var user = await _dbContext.Users.GetUserByNameWithTwoFactor(userName);
+            var validationDto = GenerateTwoFactorClaimForValidation();
+            if (user.TwoFactorEntries.Any(e => e.DeviceId == id))
+            {
+                user.TwoFactorEntries.Remove(user.TwoFactorEntries.Single(e => e.DeviceId == id));
+            }
+            user.TwoFactorEntries.Add(new()
+            {
+                DeviceId = id,
+                StateInformation = JsonConvert.SerializeObject(validationDto, Formatting.Indented)
+            });
+            await SendTwoFactorMail(user, validationDto);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public string GenerateConfirmHash(string id) => HashHelper.GenerateHash(id, _options.TwoFactor.Salt);
+
+        public bool ValidateConfirmHash(string id, string hashedInput) => HashHelper.AreEqual(id, hashedInput, _options.TwoFactor.Salt);
+
+        public async Task SetConfirmedTwoFactor(string userName, string id)
+        {
+            var user = await _dbContext.Users.GetUserByNameWithTwoFactor(userName);
+
+            if (user.TwoFactorEntries.Any(e => e.DeviceId == id))
+            {
+                user.TwoFactorEntries.Remove(user.TwoFactorEntries.Single(e => e.DeviceId == id));
+            }
+            user.TwoFactorEntries.Add(new()
+            {
+                DeviceId = id,
+                StateInformation = JsonConvert.SerializeObject(GenerateConfirmedTwoFactorClaim(), Formatting.Indented)
+            });
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> AddFailedTwoFactorTry(AspNetUser user, string id)
+        {
+            var entry = user.TwoFactorEntries.SingleOrDefault(e => e.DeviceId == id);
+            if (entry != null)
+            {
+                var stateInformation = JsonConvert.DeserializeObject<TwoFactorDto>(entry.StateInformation);
+                var state = stateInformation.NeedTwoFactor(_clock.SwedenNow);
+                if (state == TwoFactorState.Awaiting)
+                {
+                    user.TwoFactorEntries.Remove(entry);
+                    stateInformation.NumberOfAttempts++;
+                    bool hasTriesLeft = stateInformation.NumberOfAttempts <= _options.TwoFactor.MaxNumberOfTries;
+                    if (hasTriesLeft)
+                    {
+                        entry.StateInformation = JsonConvert.SerializeObject(stateInformation, Formatting.Indented);
+                    }
+                    else
+                    {
+                        entry.StateInformation = JsonConvert.SerializeObject(GenerateLockedOutClaim(), Formatting.Indented);
+                    }
+                    user.TwoFactorEntries.Add(entry);
+                    await _dbContext.SaveChangesAsync();
+                    return hasTriesLeft;
+                }
+                else if (state == TwoFactorState.LockedOut)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public string GenerateValidationCode()
+        {
+            StringBuilder sb = new();
+            Random randomizer = new();
+            for (int i = 0; i < _options.TwoFactor.CodeLength; i++)
+            {
+                sb.Append(randomizer.Next(0, 9));
+            }
+            return sb.ToString();
+        }
+
+        private TwoFactorDto GenerateLockedOutClaim()
+        {
+            return new TwoFactorDto
+            {
+                LockoutExpiresAt = _clock.SwedenNow.AddMinutes(_options.TwoFactor.LockoutMinutesValidity),
+            };
+        }
+
+        private TwoFactorDto GenerateConfirmedTwoFactorClaim()
+        {
+            return new TwoFactorDto
+            {
+                TwoFactorExpiresAt = _clock.SwedenNow.AddDays(_options.TwoFactor.TwoFactorDaysValidity),
+            };
+        }
+
+        private TwoFactorDto GenerateTwoFactorClaimForValidation()
+        {
+            return new TwoFactorDto
+            {
+                ValidationCode = GenerateValidationCode(),
+                ValidationCodeExpiresAt = _clock.SwedenNow.AddMinutes(_options.TwoFactor.ValidationCodeMinutesValidity),
+                NumberOfAttempts = 0
+            };
+        }
+
+        private async Task SendTwoFactorMail(AspNetUser user, TwoFactorDto dto)
+        {
+            var plainBody = $@"Hej!
+
+Du behöver verifiera ditt konto på: {Constants.SystemName}.
+
+Använd denna kod för att låsa upp {_options.TwoFactor.TwoFactorDaysValidity} dagar framåt på den plats du försökt logga in.
+{dto.ValidationCode}
+Koden är giltig i {_options.TwoFactor.ValidationCodeMinutesValidity} minuter.";
+            var htmlBody = $@"
+<h1>Hej!</h1>
+
+Du behöver verifiera ditt konto på: {Constants.SystemName}.
+
+Använd denna kod för att låsa upp {_options.TwoFactor.TwoFactorDaysValidity} dagar framåt på den plats du försökt logga in.
+
+<div>{dto.ValidationCode}</div>
+
+Koden är giltig i {_options.TwoFactor.ValidationCodeMinutesValidity} minuter.";
+
+            _notificationService.CreateEmail(
+                  user.Email,
+                  "Ditt konto behöver två faktor valideras",
+                  plainBody,
+                  htmlBody,
+                  NotificationType.TwoFactorCreated,
+                  isBrokerMail: false,
+                  addContractInfo: false);
+            _logger.LogInformation("User two factor code sent to {email} for user with id: {userId}", user.Email.ToLoggableFormat(), user.Id);
+
+            await _dbContext.SaveChangesAsync();
+        }
+
+        #endregion 
+
         public async Task HandleInactiveUsers()
         {
-            if(!_options.UserInactivity.EnableAutomaticDeactivation)
+            if (!_options.UserInactivity.EnableAutomaticDeactivation)
             {
                 return;
             }
@@ -507,7 +681,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
             await _dbContext.SaveChangesAsync();
         }
 
-        private async Task HandleDeactivationReminders(Dictionary<int,List<AspNetUser>> inactiveUsersDictionary)
+        private async Task HandleDeactivationReminders(Dictionary<int, List<AspNetUser>> inactiveUsersDictionary)
         {
             foreach (var threshHoldDays in _options.UserInactivity.NotifyDaysBeforeDeactivation)
             {
@@ -519,7 +693,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         }
 
         private async Task DeactivateUsers(DateTimeOffset now, List<AspNetUser> usersToDeactivate)
-        {                
+        {
             // If user hasn't logged in in >=6 months, it should be deactivated
             var cutoff = now.AddMonths(-6).Date.ToDateTimeOffsetSweden();
 
@@ -535,7 +709,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 user.IsActive = false;
                 SetActivityStateChange(user, activityStateChangedByAdmin: false, newActivityState: false);
             }
-            
+
         }
 
         private async Task SendInactivityMail(List<AspNetUser> users, int daysUntilDeactivation)
@@ -546,7 +720,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
                 string plainBody = null;
                 string htmlBody = null;
                 var userEmail = user.Email;
-                (subject, plainBody,htmlBody) = CreateInactivityEmail(daysUntilDeactivation);
+                (subject, plainBody, htmlBody) = CreateInactivityEmail(daysUntilDeactivation);
 
                 _notificationService.CreateEmail(
                   userEmail,
@@ -563,7 +737,7 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         }
 
         private (string, string, string) CreateInactivityEmail(int daysUntilDeactivation)
-        {                                    
+        {
             var subject = $"Ditt konto hos {Constants.SystemName} kommer snart att deaktiveras";
             var plainBody =
 $@"Hej!
@@ -587,8 +761,9 @@ För att undvika att kontot inaktiveras behöver du logga in i tjänsten på lä
 
 Om det inte fungerar att klicka på länken så klistra in länken nedan i en webbläsare:
 
-{_options.PublicOrigin.AsUri()}";                        
+{_options.PublicOrigin.AsUri()}";
             return (subject, plainBody, HtmlHelper.ToHtmlBreak(htmlBody));
         }
+
     }
 }

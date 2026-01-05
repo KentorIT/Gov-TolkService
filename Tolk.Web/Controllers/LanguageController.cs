@@ -9,6 +9,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     public class LanguageController : Controller
     {
 

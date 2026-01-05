@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using Tolk.BusinessLogic.Models.TwoFactor;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
 
@@ -89,5 +90,12 @@ namespace Tolk.Web.Helpers
             }
             return null;
         }
+
+        public static bool HasConfirmedTwoFactorState(this ClaimsPrincipal user)
+         => user.IsImpersonated() || 
+            user.FindAll(TolkClaimTypes.TwoFactorState).FirstOrDefault()?.Value == TwoFactorState.Confirmed.ToString();
+        public static bool HasLockedOutTwoFactorState(this ClaimsPrincipal user) =>
+            !user.IsImpersonated() &&
+            user.FindAll(TolkClaimTypes.TwoFactorState).FirstOrDefault()?.Value == TwoFactorState.LockedOut.ToString();
     }
 }

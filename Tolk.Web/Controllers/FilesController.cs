@@ -19,6 +19,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     public class FilesController : Controller
     {
         private readonly TolkDbContext _dbContext;

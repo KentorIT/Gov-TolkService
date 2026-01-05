@@ -23,6 +23,7 @@ using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     [Authorize(Policy = Policies.CustomerOrAdmin)]
     public class OrderController : Controller
     {

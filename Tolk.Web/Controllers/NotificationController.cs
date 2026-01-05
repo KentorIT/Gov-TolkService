@@ -13,6 +13,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     [Authorize(Roles = Roles.ApplicationAdministrator)]
     public class NotificationController : Controller
     {

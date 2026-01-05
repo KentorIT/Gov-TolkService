@@ -21,6 +21,7 @@ using Tolk.Web.Services;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     [Authorize(Policy = Policies.Broker)]
     public class RequestController : Controller
     {

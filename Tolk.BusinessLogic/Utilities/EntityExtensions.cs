@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using Tolk.Api.Payloads.WebHookPayloads;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
+using Tolk.BusinessLogic.Models.TwoFactor;
 
 namespace Tolk.BusinessLogic.Utilities
 {
@@ -882,6 +884,20 @@ namespace Tolk.BusinessLogic.Utilities
 
         public static async Task<AspNetUser> GetUserByIdWithTemporaryEmail(this IQueryable<AspNetUser> users, int id)
             => await users.Include(u => u.TemporaryChangedEmailEntry).SingleOrDefaultAsync(u => u.Id == id);
+
+        public static async Task<AspNetUser> GetUserByNameWithTwoFactor(this IQueryable<AspNetUser> users, string userName)
+            => await users.Include(u => u.TwoFactorEntries).SingleOrDefaultAsync(u => u.UserName == userName);
+
+        public static string GetTwoFactorCode(this AspNetUser user, string id)
+        {
+            var stateInformation = user.TwoFactorEntries.SingleOrDefault(e => e.DeviceId == id)?.StateInformation;
+            if (stateInformation != null)
+            {
+                var claim = JsonConvert.DeserializeObject<TwoFactorDto>(stateInformation);
+                return claim.ValidationCode;
+            }
+            return null;
+        }
 
         public static async Task<OutboundWebHookCall> GetOutboundWebHookCall(this IQueryable<OutboundWebHookCall> outboundWebHookCalls, int id)
         => await outboundWebHookCalls.Include(c => c.RecipientUser).SingleOrDefaultAsync(c => c.OutboundWebHookCallId == id);
