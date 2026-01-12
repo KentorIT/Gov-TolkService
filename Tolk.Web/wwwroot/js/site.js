@@ -19,7 +19,7 @@ var datePickerOptions = {
     }
 };
 
-$('#impersonation-select').change(function () {
+$("body").on("change", '#impersonation-form select', function () {
     $("#impersonation-form").submit();
 });
 

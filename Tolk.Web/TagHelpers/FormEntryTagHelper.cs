@@ -32,6 +32,8 @@ namespace Tolk.Web.TagHelpers
 
         private const string ForAttributeName = "asp-for";
         private const string ItemsAttributeName = "asp-items";
+        private const string ItemsDynamicSearchUrlAttributeName = "asp-items-dynamic-search-url";
+        private const string ItemsDynamicInitialSelectionUrlAttributeName = "asp-items-dynamic-initial-selection-url";
         private const string InputTypeDate = "date";
         private const string InputTypeSelect = "select";
         private const string InputTypeDateTimeOffset = "datetime";
@@ -54,6 +56,12 @@ namespace Tolk.Web.TagHelpers
 
         [HtmlAttributeName(ItemsAttributeName)]
         public IEnumerable<SelectListItem> Items { get; set; }
+
+        [HtmlAttributeName(ItemsDynamicSearchUrlAttributeName)]
+        public string ItemsDynamicSearchUrl { get; set; }
+
+        [HtmlAttributeName(ItemsDynamicInitialSelectionUrlAttributeName)]
+        public string ItemsInitialSelectionUrl { get; set; }
 
         [HtmlAttributeName("type")]
         public string InputType { get; set; }
@@ -90,11 +98,24 @@ namespace Tolk.Web.TagHelpers
             switch (InputType)
             {
                 case InputTypeSelect:
+                    if (Items == null && string.IsNullOrEmpty(ItemsDynamicSearchUrl))
+                    {
+                        throw new ArgumentException($"{nameof(Items)} or {nameof(ItemsDynamicSearchUrl)} must be set if type is select.");
+                    }
+                    if (Items != null && !string.IsNullOrEmpty(ItemsDynamicSearchUrl))
+                    {
+                        throw new ArgumentException($"Both {nameof(Items)} and {nameof(ItemsDynamicSearchUrl)} cannot be set for type select.");
+                    }
+                    break;
                 case InputTypeRadioButtonGroup:
                 case InputTypeCheckboxGroup:
                     if (Items == null)
                     {
                         throw new ArgumentException($"{nameof(Items)} must be set if type is select, radio-group or checkbox-group.");
+                    }
+                    if (ItemsDynamicSearchUrl != null)
+                    {
+                        throw new ArgumentException($"{nameof(ItemsDynamicSearchUrl)} are only relevant if type is select.");
                     }
                     break;
                 case null:
@@ -112,7 +133,11 @@ namespace Tolk.Web.TagHelpers
                 case InputCustomerSpecificField:
                     if (Items != null)
                     {
-                        throw new ArgumentException("Items are only relevant if type is select, radio-group or checkbox-group.");
+                        throw new ArgumentException($"{nameof(Items)} are only relevant if type is select, radio-group or checkbox-group.");
+                    }
+                    if (ItemsDynamicSearchUrl != null)
+                    {
+                        throw new ArgumentException($"{nameof(ItemsDynamicSearchUrl)} is only relevant if type is select.");
                     }
                     break;
                 default:
@@ -181,7 +206,7 @@ namespace Tolk.Web.TagHelpers
                     InputType = InputTypeCheckboxGroup;
                     return;
                 }
-                if(For.ModelExplorer.ModelType == typeof(CustomerSpecificPropertyModel))
+                if (For.ModelExplorer.ModelType == typeof(CustomerSpecificPropertyModel))
                 {
                     InputType = InputCustomerSpecificField;
                     return;
@@ -300,7 +325,7 @@ namespace Tolk.Web.TagHelpers
                 tagBuilder.Attributes.Add("placeholder", property.Placeholder);
             }
             tagBuilder.Attributes.Add("data-val", "true");
-            if(property.MaxLength.HasValue)
+            if (property.MaxLength.HasValue)
             {
                 tagBuilder.Attributes.Add("data-val-length-max", property.MaxLength.ToString());
             }
@@ -683,7 +708,7 @@ namespace Tolk.Web.TagHelpers
         {
             string hourClass = hour ? "hour" : string.Empty;
             writer.WriteLine($"<div class=\"input-group time timesplit {hourClass}\">");
-            var errorMessage = hour ? $"{(useAsClock ? "Timme" : "Timmar")} måste anges" : $" {(useAsClock ? "Minut" : "Minuter" )} måste anges";
+            var errorMessage = hour ? $"{(useAsClock ? "Timme" : "Timmar")} måste anges" : $" {(useAsClock ? "Minut" : "Minuter")} måste anges";
             WriteSelect(GetSplitTimeValues(hour, useAsClock), writer, timeFieldName, timeModelExplorer, hour ? "tim" : "min", errorMessage, isRequired, true);
             writer.WriteLine("</div>");
         }
@@ -926,14 +951,21 @@ namespace Tolk.Web.TagHelpers
 
         private void WriteSelect(TextWriter writer)
         {
-            WriteSelect(Items, writer, For.Name, For.ModelExplorer);
+            if (Items != null)
+            {
+                WriteSelect(Items, writer, For.Name, For.ModelExplorer);
+            }
+            else
+            {
+                WriteDynamicSelectList(writer);
+            }
         }
 
         private void WriteSelect(IEnumerable<SelectListItem> selectList, TextWriter writer, string expression, ModelExplorer modelExplorer, string placeholder = "-- Välj --", string requiredMessage = null, bool isRequired = true, bool isPartialFromModelProperty = false)
         {
             if (selectList.FirstOrDefault() is ExtendedSelectListItem)
             {
-                GenerateExtendedSelectList(writer, selectList, placeholder, modelExplorer);
+                WriteExtendedSelectList(writer, selectList, placeholder, modelExplorer);
             }
             else
             {
@@ -1004,7 +1036,7 @@ namespace Tolk.Web.TagHelpers
             }
         }
 
-        private void GenerateExtendedSelectList(TextWriter writer, IEnumerable<SelectListItem> selectList, string placeholder, ModelExplorer modelExplorer)
+        private void WriteExtendedSelectList(TextWriter writer, IEnumerable<SelectListItem> selectList, string placeholder, ModelExplorer modelExplorer)
         {
             writer.WriteLine("<br />");
             TagBuilder tagBuilder = new TagBuilder("select");
@@ -1026,6 +1058,32 @@ namespace Tolk.Web.TagHelpers
             {
                 tagBuilder.InnerHtml.AppendHtml(ListItemToOptionForExtendedListItem(item, item.Value == modelExplorer.Model?.ToString()));
             }
+            tagBuilder.WriteTo(writer, _htmlEncoder);
+        }
+
+        private void WriteDynamicSelectList(TextWriter writer, string placeholder = "-- Välj --")
+        {
+            TagBuilder tagBuilder = new TagBuilder("select");
+            tagBuilder.Attributes.Add("data-placeholder", placeholder);
+            tagBuilder.Attributes.Add("data-search-url", ItemsDynamicSearchUrl);
+            if (!string.IsNullOrEmpty(ItemsInitialSelectionUrl))
+            {
+                tagBuilder.Attributes.Add("data-initial-selection-url", ItemsInitialSelectionUrl);
+            }
+            tagBuilder.Attributes.Add("data-ays-ignore", "true");
+            tagBuilder.AddCssClass("form-control");
+            tagBuilder.AddCssClass("dynamic-load");
+            if (For.Metadata.IsRequired)
+            {
+                tagBuilder.Attributes.Add("data-val", "true");
+                tagBuilder.Attributes.Add("data-val-required", $"{For.Metadata.DisplayName ?? "Värde"} måste anges.");
+            }
+            //check if Name contains "." (when it is a property of a property, subproperty), then the Id should be with underscore "_" instead of the name with "." 
+            tagBuilder.Attributes.Add("id", For.Name.Contains(".", StringComparison.OrdinalIgnoreCase) ? For.Name.Replace(".", "_", StringComparison.OrdinalIgnoreCase) : For.Name);
+            tagBuilder.Attributes.Add("name", For.Name);
+
+            //this is for the default option -- Välj --  
+            tagBuilder.InnerHtml.AppendHtml("<option value></option>");
             tagBuilder.WriteTo(writer, _htmlEncoder);
         }
 

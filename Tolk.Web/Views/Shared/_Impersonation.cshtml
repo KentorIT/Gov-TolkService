@@ -1,0 +1,10 @@
+﻿@using Tolk.Web.Authorization
+@model ImpersonationViewModel
+@if (User.IsInRole(Roles.Impersonator))
+{
+    <div class="col-md-6">
+        <form id="impersonation-form" asp-area="" asp-controller="Account" asp-action="Impersonate" method="post">
+            <form-entry asp-for="UserId" type="select" asp-items-dynamic-initial-selection-url="Administration/GetCurrentUser" asp-items-dynamic-search-url="Administration/ListUsersToImpersonate" />
+        </form>
+    </div>
+}

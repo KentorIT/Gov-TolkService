@@ -875,6 +875,43 @@ namespace Tolk.Web.Controllers
                 .Select(h => h.Date.ToSwedishString("yyyy-MM-dd") ));
         }
 
+
+        [Authorize(Policy = Policies.SystemOrApplicationOrCustomerCentralAdmin)]
+        [ValidateAntiForgeryToken]
+        public IActionResult ListUsersForFilter(string search, int page)
+        {
+            int pageSize = 10;
+            int skip = pageSize * (page - 1);
+            var users = _dbContext.Users
+                .Include(u => u.CustomerOrganisation)
+                .Where(u => !u.IsApiUser && u.CustomerOrganisationId.HasValue);
+            var customerOrganisationId = User.TryGetCustomerOrganisationId();
+            if (customerOrganisationId.HasValue)
+            {
+                //if searching as customer, only users from its own org should be viable for search.
+                users = users.Where(u => u.CustomerOrganisationId == customerOrganisationId);
+            }
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                users = users.Where(u => u.NameFirst.Contains(search) || u.NameFamily.Contains(search));
+            }
+            int count = users.Count() - skip;
+            return Json(new
+            {
+                results = users
+                    .OrderBy(u => u.NameFamily)
+                    .ThenBy(u => u.NameFirst)
+                    .Select(u => new AjaxSelectListItemModel
+                    {
+                        Text = !string.IsNullOrWhiteSpace(u.NameFamily) ? $"{u.NameFamily}, {u.NameFirst} {(!customerOrganisationId.HasValue ? "(" + u.CustomerOrganisation.Name + ")": "")}" : u.UserName,
+                        Id = u.Id.ToString()
+                    })
+                    .Skip(pageSize * (page - 1))
+                    .Take(pageSize),
+                pagination = new { more = count > pageSize }
+            });
+        }
+
         private bool TimeIsValidForOrderReplacement(DateTimeOffset orderStart)
         {
             var noOfDays = _dateCalculationService.GetNoOf24HsPeriodsWorkDaysBetween(_clock.SwedenNow.DateTime, orderStart.DateTime);

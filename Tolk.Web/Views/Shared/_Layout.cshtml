@@ -339,17 +339,7 @@
                             <small>(Version @GitHelper.Version)</small>
                             <input type="hidden" id="now" data-timetravel-milliseconds="@(((TimeTravelClock)Clock).TimeTravelTicks / 10000)" />
                         </div>
-                        @if (User.IsInRole(Roles.Impersonator))
-                        {
-                            <div class="col-md-6">
-                                <form id="impersonation-form" asp-area="" asp-controller="Account" asp-action="Impersonate" method="post">
-                                    <div class="form-group">
-                                        <select name="UserId" id="impersonation-select" class="form-control dynamic-load" data-initial-selection-url="Administration/GetCurrentUser" data-search-url="Administration/ListUsersToImpersonate" data-ays-ignore="true">
-                                        </select>
-                                    </div>
-                                </form>
-                            </div>
-                        }
+                        @await Html.PartialAsync("_Impersonation", new ImpersonationViewModel())
                     </div>
                     @if (Options.Value.EnableTimeTravel)
                     {
