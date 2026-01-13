@@ -24,6 +24,8 @@ namespace Tolk.BusinessLogic.Helpers
         public bool EnableRegisterUser { get; set; }
         public int HourToRunFrameworkAgreementValidation { get; set; }
         public int HourToRunDailyJobs { get; set; }
+        public int HoursOrderCloseInTime { get; set; } = 24;
+
         public bool EnableOrderUpdate { get; set; }
 
         public bool RunEntityScheduler { get; set; } = true;

@@ -26,7 +26,7 @@
         <div class="row">
             <div class="col-sm-4"></div>
             <div class="col-sm-8 important-info">
-                Tidsramar efter mottagande av bokningsförfrågan:             
+                Tidsramar efter mottagande av bokningsförfrågan:
                 @switch (CacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset)
                 {
                     case FrameworkAgreementResponseRuleset.VersionOne:
@@ -64,10 +64,27 @@
             </div>
             <br />
         }
-        @if (!string.IsNullOrEmpty(Model.WarningOrderGroupCloseInTime))
+        @if (!string.IsNullOrEmpty(Model.WarningOrderCloseOrFarAwayInTime))
         {
             <div class="row warning-info-home">
-                <div role="alert" class="col-sm-12"><span class="glyphicon glyphicon-exclamation-sign"></span> @Model.WarningOrderGroupCloseInTime</div>
+                @if (Model.SeveralOccasions)
+                {
+                    <div role="alert" class="col-sm-12"><span class="glyphicon glyphicon-exclamation-sign"></span> @Model.WarningOrderCloseOrFarAwayInTime</div>
+                }
+                else
+                {
+                    <div role="alert" class="col-sm-8"><span class="glyphicon glyphicon-exclamation-sign"></span> @Model.WarningOrderCloseOrFarAwayInTime</div>
+                    <div class="col-sm-4">
+                        @if (Model.FlexibleTimeRange != null)
+                        {
+                            <display-entry asp-for="FlexibleTimeRange" />
+                        }
+                        else
+                        {
+                            <display-entry asp-for="TimeRange" />
+                        }
+                    </div>
+                }
             </div>
             <br />
         }

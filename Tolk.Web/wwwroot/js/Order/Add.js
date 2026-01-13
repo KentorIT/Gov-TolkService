@@ -461,6 +461,16 @@ $(function () {
         }
     }
 
+    function checkOrderOccassionCloseInTime() {
+        if (!validateStartTime(true)) {
+            $("#OrderOccassionIsCloseInTime").removeClass("d-none");
+            $("#OrderOccassionIsCloseInTime").show();
+        }
+        else {
+            $("#OrderOccassionIsCloseInTime").hide();
+        }
+    }
+
     function validateAvailableRequiredCompetences() {
         var currentLanguageCompetences = $("#LanguageId option:selected").data('additional');
         var showWarning = false;
@@ -516,6 +526,11 @@ $(function () {
         if (chosenEndMinutes === "") {
             $("#SplitTimeRange_EndTimeMinutes").val(0).trigger("change").trigger("select2:select");
         }
+        checkOrderOccassionCloseInTime();
+    });
+
+    $("body").on("change", "#SplitTimeRange_StartTimeMinutes", function () {
+        checkOrderOccassionCloseInTime();
     });
 
     $("body").on("change", "#LatestAnswerBy_Hour", function () {
@@ -554,6 +569,7 @@ $(function () {
             LastAnswerByIsShowing = false;
         }
         toggleSeveralOccasions();
+        checkOrderOccassionCloseInTime();
     });
 
     $("body").on("click", ".wizard-forward-button", function () {
@@ -733,21 +749,24 @@ $(function () {
         }        
     }
 
-    var validateStartTime = function () {
+    function validateStartTime (withinUrgentHours) {
         var date = new Date($("#SplitTimeRange_StartDate").val());
         var startHour = $("#SplitTimeRange_StartTimeHour").val();
-        var startMinute = $("#SplitTimeRange_StartTimeMinutes").val();
+        var startMinute = $("#SplitTimeRange_StartTimeMinutes").val();        
         if (date !== "" && startHour !== "" && startMinute !== "") {
             var now = new Date($("#now").val());
-            if ((!date.equalsDate(now)) && date < now) {
+            var urgentHours = Number($("#HoursOrderCloseInTime").val());
+            var withinUrgentHoursDateAndTime = new Date(new Date(now).setHours(now.getHours() + urgentHours));
+            var checkDateAndTime = withinUrgentHours ? withinUrgentHoursDateAndTime : now;
+            if ((!date.equalsDate(checkDateAndTime)) && date < checkDateAndTime) {
                 return false;
             }
-            if (date.equalsDate(now)) {
-                var hours = now.getHours();
+            if (date.equalsDate(checkDateAndTime)) {
+                var hours = checkDateAndTime.getHours();
                 if (hours > Number(startHour)) {
                     return false;
                 } else if (hours === Number(startHour)) {
-                    return !(now.getMinutes() > Number(startMinute));
+                    return !(checkDateAndTime.getMinutes() > Number(startMinute));
                 }
             }
         }
@@ -833,7 +852,7 @@ $(function () {
                 }
             }
             if (!$("#SeveralOccasions").is(":checked")) {
-                if (!validateStartTime()) {
+                if (!validateStartTime(false)) {
                     validatorMessage("SplitTimeRange.EndTimeMinutes", "Uppdraget har en starttid som redan har passerats, var god ändra detta.");
                     errors++;
                 }

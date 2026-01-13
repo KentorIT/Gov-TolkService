@@ -54,6 +54,7 @@
                             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                             <input type="hidden" asp-for="LastTimeForRequiringLatestAnswerBy" />
                             <input type="hidden" asp-for="NextLastTimeForRequiringLatestAnswerBy" />
+                            <input type="hidden" asp-for="HoursOrderCloseInTime" />
                             <input type="hidden" asp-for="UserDefaultSettings.OnSiteLocationStreet" />
                             <input type="hidden" asp-for="UserDefaultSettings.OnSiteLocationCity" />
                             <input type="hidden" asp-for="UserDefaultSettings.OffSiteDesignatedLocationStreet" />
@@ -106,6 +107,11 @@
                                     <form-entry asp-for="MealBreakIncluded" help-link="@HelpLinkService.GenerateUrl("nybokning_maltidspaus")" />
                                 </div>
                                 <div id="OccasionValidator" class="col-sm-12 d-none text-danger body"></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div id="OrderOccassionIsCloseInTime" class="warning-info-yellow d-none"><span class="glyphicon message-icon glyphicon-exclamation-sign yellow-glyphicon"></span><span class="info-message-x-small" role="alert">Observera att tolkuppdraget ligger nära i tiden. Vi rekommenderar därför att ni kontaktar förmedlingen i rangordningen direkt per telefon.</span></div>
+                                </div>
                             </div>
                             @if (enableOrderGroups)
                             {

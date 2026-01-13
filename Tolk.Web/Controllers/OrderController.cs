@@ -39,7 +39,7 @@ namespace Tolk.Web.Controllers
         private readonly CacheService _cacheService;
         private readonly ListToModelService _listToModelService;
         private readonly EventLogService _eventLogService;
-        private readonly UserService _userService;        
+        private readonly UserService _userService;
 
         public OrderController(
             TolkDbContext dbContext,
@@ -54,7 +54,7 @@ namespace Tolk.Web.Controllers
             CacheService cacheService,
             ListToModelService listToModelService,
             EventLogService eventLogService,
-            UserService userService            
+            UserService userService
             )
         {
             _dbContext = dbContext;
@@ -69,7 +69,7 @@ namespace Tolk.Web.Controllers
             _cacheService = cacheService;
             _listToModelService = listToModelService;
             _eventLogService = eventLogService;
-            _userService = userService;            
+            _userService = userService;
         }
 
         public IActionResult List()
@@ -84,7 +84,7 @@ namespace Tolk.Web.Controllers
                 }
             });
         }
-        
+
         public async Task<IActionResult> View(int id, string message = null, string errorMessage = null)
         {
             var order = await _dbContext.Orders.GetFullOrderById(id);
@@ -94,7 +94,7 @@ namespace Tolk.Web.Controllers
                 var request = await _dbContext.Requests.GetActiveRequestByOrderId(id);
                 var calculatedStartAt = request?.RespondedStartAt ?? order.StartAt;
                 bool isConnectedToCurrentFrameworkAgreement = _cacheService.CurrentOrLatestFrameworkAgreement.IsCurrentAndActiveFrameworkAgreement(request?.Ranking.FrameworkAgreementId);
-                var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator), false, isConnectedToCurrentFrameworkAgreement);              
+                var model = OrderViewModel.GetModelFromOrder(order, request, User.IsInRole(Roles.ApplicationAdministrator) || User.IsInRole(Roles.SystemAdministrator), false, isConnectedToCurrentFrameworkAgreement);
                 model.UserCanEdit = (await _authorizationService.AuthorizeAsync(User, order, Policies.Edit)).Succeeded;
                 model.UserCanCancelOrder = (await _authorizationService.AuthorizeAsync(User, order, Policies.Cancel)).Succeeded;
                 model.UserCanEditContactPerson = (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded;
@@ -137,7 +137,7 @@ namespace Tolk.Web.Controllers
                 };
                 model.InfoMessage = message;
                 model.ErrorMessage = errorMessage;
-                SetCustomerSpecificProperties(model);               
+                SetCustomerSpecificProperties(model);
                 return View(model);
             }
             return Forbid();
@@ -157,7 +157,7 @@ namespace Tolk.Web.Controllers
                     TimeIsValidForOrderReplacement(request.CalculatedStartAt))
                 {
                     var replaceOrderModel = ReplaceOrderModel.GetModelFromOrder(order, request, cancelMessage, CachedUseAttachentSetting(User.GetCustomerOrganisationId()), _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementResponseRuleset);
-                    SetCustomerSpecificProperties(replaceOrderModel);           
+                    SetCustomerSpecificProperties(replaceOrderModel);
                     return View(await _listToModelService.AddInformationFromListsToModel(replaceOrderModel));
                 }
                 else
@@ -172,7 +172,7 @@ namespace Tolk.Web.Controllers
         [HttpPost]
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> Replace(ReplaceOrderModel model)
-        {            
+        {
             RevalidateCustomerSpecificProperties(model);
             if (ModelState.IsValid)
             {
@@ -322,9 +322,9 @@ namespace Tolk.Web.Controllers
                         await _dbContext.SaveChangesAsync();
                         order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
                         // Note: this discard-fetch will add request to the order entity being tracked by EF
-                        _ = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);                        
+                        _ = await _dbContext.Requests.GetActiveRequestByOrderId(order.OrderId);
                         //Note: This retrieves the locations to the order object as well...
-                        _ = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(model.OrderId).ToListAsync();                        
+                        _ = await _dbContext.OrderInterpreterLocation.GetOrderedInterpreterLocationsForOrder(model.OrderId).ToListAsync();
                         if (orderFieldsUpdated || attachmentChanged)
                         {
                             _notificationService.OrderUpdated(order, attachmentChanged, orderFieldsUpdated);
@@ -377,6 +377,7 @@ namespace Tolk.Web.Controllers
             {
                 LastTimeForRequiringLatestAnswerBy = lastTimeForRequiringLatestAnswerBy.ToSwedishString("yyyy-MM-dd"),
                 NextLastTimeForRequiringLatestAnswerBy = _orderService.GetNextLastTimeForRequiringLatestAnswerBy(lastTimeForRequiringLatestAnswerBy, now).ToSwedishString("yyyy-MM-dd"),
+                HoursOrderCloseInTime = _options.HoursOrderCloseInTime,
                 CreatedByName = user.FullName,
                 UserDefaultSettings = DefaultSettingsModel.GetModel(user, currentFrameworkAgreementResponseRuleset),
                 EnableOrderGroups = _options.EnableOrderGroups && _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == User.GetCustomerOrganisationId() && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseOrderGroups)),
@@ -385,7 +386,7 @@ namespace Tolk.Web.Controllers
                 TravelConditionHours = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionHours,
                 TravelConditionKilometers = EnumHelper.GetContractDefinition(currentFrameworkAgreementResponseRuleset).TravelConditionKilometers
             };
-            SetCustomerSpecificProperties(model);           
+            SetCustomerSpecificProperties(model);
             var activeRegionIds = await _dbContext.Rankings.GetRegionsWithActiveRankings(_clock.SwedenNow.DateTime, _cacheService.CurrentOrLatestFrameworkAgreement.FrameworkAgreementId).Select(r => r.RegionId).ToListAsync();
             var unitIds = user.CustomerUnits.Where(cu => cu.CustomerUnit.IsActive).Select(cu => cu.CustomerUnitId).ToList();
             model.UpdateModelWithDefaultSettings(unitIds, activeRegionIds);
@@ -403,9 +404,9 @@ namespace Tolk.Web.Controllers
             }
             if (model.SeveralOccasions)
             {
-                RemoveSplitTimeRangeValidation(model);               
+                RemoveSplitTimeRangeValidation(model);
             }
-            RevalidateCustomerSpecificProperties(model);                    
+            RevalidateCustomerSpecificProperties(model);
             if (ModelState.IsValid)
             {
                 using var trn = await _dbContext.Database.BeginTransactionAsync();
@@ -430,10 +431,10 @@ namespace Tolk.Web.Controllers
                     trn.Commit();
                     return RedirectToAction(nameof(Sent), new { id = order.OrderId });
                 }
-            }            
+            }
             _logger.LogError($"{nameof(Add)} - {nameof(InvalidModelStateErrors)}: {InvalidModelStateErrors}");
             return View(model);
-        }   
+        }
 
         private string InvalidModelStateErrors => string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
 
@@ -452,18 +453,24 @@ namespace Tolk.Web.Controllers
                 Order order = await CreateNewOrder();
                 PriceListType pricelistType = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == order.CustomerOrganisation.CustomerOrganisationId).PriceListType;
                 OrderViewModel updatedModel = null;
-                string warningOrderTimeInfo = string.Empty;
+                string warningOrderTimeDurationInfo = string.Empty;
+                string warningOrderFarAwayOrCloseInTimeInfo = string.Empty;
                 model.UpdateOrder(order, model.FirstOccasion, useAttachments: CachedUseAttachentSetting(User.GetCustomerOrganisationId()));
-                updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);                
+                updatedModel = OrderViewModel.GetModelFromOrderForConfirmation(order);
                 if (model.IsMultipleOrders)
                 {
                     updatedModel.OrderOccasionDisplayModels = await GetGroupOrders(model, pricelistType, currentFrameworkAgreement.BrokerFeeCalculationType);
                     updatedModel.SeveralOccasions = true;
-                    updatedModel.WarningOrderGroupCloseInTime = CheckOrderGroupCloseInTime(updatedModel.OrderOccasionDisplayModels);
-                    warningOrderTimeInfo = CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels);
-                    updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ?
+
+                    warningOrderTimeDurationInfo = CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels, false);
+                    updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeDurationInfo) ?
+                        CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels, true) :
+                        $"{warningOrderTimeDurationInfo} {CheckReasonableDurationTimeOrderGroup(updatedModel.OrderOccasionDisplayModels, true)}";
+
+                    warningOrderFarAwayOrCloseInTimeInfo = CheckOrderGroupCloseInTime(updatedModel.OrderOccasionDisplayModels);
+                    updatedModel.WarningOrderCloseOrFarAwayInTime = string.IsNullOrEmpty(warningOrderFarAwayOrCloseInTimeInfo) ?
                         CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true) :
-                        $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true)}";
+                        $"{warningOrderFarAwayOrCloseInTimeInfo} {CheckOrderOccasionFarAway(updatedModel.OrderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).Last().OccasionStartDateTime, true)}";
                 }
                 else
                 {
@@ -476,9 +483,13 @@ namespace Tolk.Web.Controllers
                         UseDisplayHideInfo = true,
                         Description = "Om inget krav eller önskemål om specifik kompetensnivå har angetts i bokningsförfrågan beräknas kostnaden enligt taxan för arvodesnivå Auktoriserad tolk. Slutlig arvodesnivå kan då avvika beroende på vilken tolk som tillsätts enligt principen för kompetensprioritering."
                     };
-                    warningOrderTimeInfo = CheckReasonableDurationTime(order.StartAt, order.Duration);
-                    updatedModel.WarningOrderTimeInfo = string.IsNullOrEmpty(warningOrderTimeInfo) ? CheckOrderOccasionFarAway(order.StartAt.DateTime) :
-                        $"{warningOrderTimeInfo} {CheckOrderOccasionFarAway(order.StartAt.DateTime)}";
+                    warningOrderTimeDurationInfo = CheckReasonableDurationTimeForOrder(order.Duration);
+                    updatedModel.WarningOrderTimeInfo = warningOrderTimeDurationInfo;
+
+                    warningOrderFarAwayOrCloseInTimeInfo = CheckOrderOccasionFarAway(order.StartAt.DateTime);
+                    updatedModel.WarningOrderCloseOrFarAwayInTime = string.IsNullOrEmpty(warningOrderFarAwayOrCloseInTimeInfo) ?
+                        CheckOrderOccasionCloseInTime(order.StartAt.DateTime) :
+                        $"{warningOrderFarAwayOrCloseInTimeInfo} {CheckOrderOccasionCloseInTime(order.StartAt.DateTime)}";
                     updatedModel.DisplayMealBreakIncludedText = order.MealBreakTextToDisplay;
                 }
                 var customerUnit = model.CustomerUnitId.HasValue && model.CustomerUnitId > 0 ? _dbContext.CustomerUnits
@@ -523,7 +534,7 @@ namespace Tolk.Web.Controllers
                 updatedModel.CustomerOrganisationNumber = user.CustomerOrganisation.OrganisationNumber;
                 updatedModel.CustomerPeppolId = user.CustomerOrganisation.PeppolId;
                 updatedModel.CompetenceIsRequired = order.SpecificCompetenceLevelRequired;
-                SetCustomerSpecificProperties(updatedModel);              
+                SetCustomerSpecificProperties(updatedModel);
                 return PartialView(nameof(Confirm), updatedModel);
             }
             catch (Exception ex)
@@ -771,7 +782,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Policy = Policies.Customer)]
         public async Task<IActionResult> ChangeContactPerson(OrderChangeContactPersonModel model)
         {
-            var order = await _dbContext.Orders.GetFullOrderById(model.OrderId);                     
+            var order = await _dbContext.Orders.GetFullOrderById(model.OrderId);
             if (order != null && (await _authorizationService.AuthorizeAsync(User, order, Policies.EditContact)).Succeeded)
             {
                 var oldContactPerson = order.ContactPersonUser;
@@ -873,7 +884,7 @@ namespace Tolk.Web.Controllers
         {
             return Json(_cacheService.Holidays
                 .Where(h => h.Date >= _clock.SwedenNow.Date && h.DateType != DateType.DayAfterBigHoliday && h.DateType != DateType.DayBeforeBigHoliday)
-                .Select(h => h.Date.ToSwedishString("yyyy-MM-dd") ));
+                .Select(h => h.Date.ToSwedishString("yyyy-MM-dd")));
         }
 
 
@@ -919,12 +930,12 @@ namespace Tolk.Web.Controllers
             return noOfDays > -1 && noOfDays < 2;
         }
 
-        private static string CheckReasonableDurationTimeOrderGroup(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
+        private static string CheckReasonableDurationTimeOrderGroup(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels, bool tooLong)
         {
             string message = string.Empty;
             foreach (OrderOccasionDisplayModel orderOccasion in orderOccasionDisplayModels)
             {
-                message = CheckReasonableDurationTime(orderOccasion.OccasionStartDateTime, orderOccasion.Duration, true);
+                message = CheckReasonableDurationTimeForOrderGroupOccasion(orderOccasion.OccasionStartDateTime, orderOccasion.Duration, tooLong);
                 if (!string.IsNullOrEmpty(message))
                 {
                     return message;
@@ -933,34 +944,48 @@ namespace Tolk.Web.Controllers
             return message;
         }
 
-        private static string CheckReasonableDurationTime(DateTimeOffset start, TimeSpan duration, bool isOrderGroup = false)
+        private static string CheckReasonableDurationTimeForOrderGroupOccasion(DateTimeOffset start, TimeSpan duration, bool tooLong = false)
         {
             int minutes = (int)duration.TotalMinutes;
-            return minutes > 600 ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle är längre än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{start.AddTicks(duration.Ticks).ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+            return (tooLong && minutes > 600) ?
+                    $"Observera att tiden för minst ett tillfälle är längre än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{start.AddTicks(duration.Ticks).ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                    (!tooLong && minutes < 60) ?
+                    $"Observera att tiden för minst ett tillfälle är kortare än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{start.AddTicks(duration.Ticks).ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                    string.Empty;
+        }
+
+        private static string CheckReasonableDurationTimeForOrder(TimeSpan duration)
+        {
+            int minutes = (int)duration.TotalMinutes;
+
+            return minutes > 600 ?
                 "Observera att tiden för tolkuppdraget är längre än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-                minutes < 60 ? isOrderGroup ?
-                $"Observera att tiden för minst ett tillfälle är kortare än normalt ({start.ToSwedishString("yyyy-MM-dd HH:mm")}-{start.AddTicks(duration.Ticks).ToSwedishString("HH:mm")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
+                minutes < 60 ?
                 "Observera att tiden för tolkuppdraget är kortare än normalt, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
                 string.Empty;
         }
 
-		private string CheckOrderOccasionFarAway(DateTime orderStart, bool isOrderGroup = false)
-		{
-			var warningSettingInMonths = _options.MonthsOrderFutureDateWarning;
-			return (warningSettingInMonths.HasValue && orderStart.AddMonths(-warningSettingInMonths.Value) > _clock.SwedenNow.DateTime) ? isOrderGroup ?
-				$"Observera att tiden för minst ett tillfälle ligger långt fram i tiden (startdatum: {orderStart.ToSwedishString("yyyy-MM-dd")}), för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-				"Observera att tiden för tolkuppdraget ligger långt fram i tiden, för att ändra tiden gå tillbaka till föregående steg, om angiven tid är korrekt kan bokningen skickas som vanligt." :
-				string.Empty;
-		}
+        private string CheckOrderOccasionFarAway(DateTime orderStart, bool isOrderGroup = false)
+        {
+            var warningSettingInMonths = _options.MonthsOrderFutureDateWarning;
+            return (warningSettingInMonths.HasValue && orderStart.AddMonths(-warningSettingInMonths.Value) > _clock.SwedenNow.DateTime) ? isOrderGroup ?
+                $"Observera att minst ett tolktillfälle ligger långt fram i tiden ({orderStart.ToSwedishString("yyyy-MM-dd")}). Om angivet datum och tid är korrekt kan bokningen skickas som vanligt, annars gå tillbaka till föregående steg och korrigera datum och tid." :
+                "Observera att tolkuppdraget ligger långt fram i tiden. Om angivet datum och tid är korrekt kan bokningen skickas som vanligt, annars gå tillbaka till föregående steg och korrigera datum och tid." :
+                string.Empty;
+        }
 
-		private string CheckOrderGroupCloseInTime(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
+        private string CheckOrderGroupCloseInTime(IEnumerable<OrderOccasionDisplayModel> orderOccasionDisplayModels)
         {
             if (orderOccasionDisplayModels.Count() == 2 && orderOccasionDisplayModels.Any(o => o.ExtraInterpreter))
-                return string.Empty;
+                return CheckOrderOccasionCloseInTime(orderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).First().OccasionStartDateTime, true);
             var firstOrderStart = orderOccasionDisplayModels.OrderBy(oo => oo.OccasionStartDateTime).First().OccasionStartDateTime;
             return firstOrderStart < _clock.SwedenNow.AddDays(7) ?
-                $"Observera att tiden för minst ett tillfälle ligger nära i tiden (startdatum: {firstOrderStart.ToSwedishString("yyyy-MM-dd")}), så det finns risk att förmedlingen inte hinner tillsätta tolk till samtliga tillfällen och då måste tacka nej till hela bokningen." : string.Empty;
+                $"Observera att minst ett tolktillfälle ligger nära i tiden ({firstOrderStart.ToSwedishString("yyyy-MM-dd")}). Det finns en risk att förmedlingen inte hinner tillsätta tolk till samtliga tillfällen och måste då tacka nej till hela bokningen. Om angivet datum och tid är korrekt kan bokningen skickas som vanligt, annars gå tillbaka till föregående steg och korrigera datum och tid." : string.Empty;
+        }
+
+        private string CheckOrderOccasionCloseInTime(DateTime orderStart, bool isOrderGroup = false)
+        {
+            return (orderStart.AddHours(-_options.HoursOrderCloseInTime) < _clock.SwedenNow.DateTime) ? isOrderGroup ? $"Observera att tolkuppdraget ligger nära i tiden ({orderStart.ToSwedishString("yyyy-MM-dd HH:mm")}). Vi rekommenderar därför att ni kontaktar förmedlingen i rangordningen direkt per telefon." : "Observera att tolkuppdraget ligger nära i tiden. Vi rekommenderar därför att ni kontaktar förmedlingen i rangordningen direkt per telefon." : string.Empty;
         }
 
         private static string CheckOrderCompetenceRequirements(Order o, Language l)
@@ -1080,7 +1105,7 @@ namespace Tolk.Web.Controllers
         }
 
         private void SetCustomerSpecificProperties(OrderBaseModel model)
-        {            
+        {
             var customerSpecificProperties = _cacheService.ActiveCustomerSpecificProperties.Where(csp => csp.CustomerOrganisationId == User.TryGetCustomerOrganisationId()).ToList();
             foreach (var property in customerSpecificProperties)
             {
@@ -1094,9 +1119,9 @@ namespace Tolk.Web.Controllers
                     default:
                         break;
                 }
-            }            
+            }
         }
-       
+
         private void RemoveSplitTimeRangeValidation(OrderModel model)
         {
             if (model.SeveralOccasions)
@@ -1107,12 +1132,13 @@ namespace Tolk.Web.Controllers
                 ModelState.Remove("SplitTimeRange.EndTimeHour");
                 ModelState.Remove("SplitTimeRange.EndTimeMinutes");
                 model.SplitTimeRange = null;
-            }            
+            }
         }
 
         private void RevalidateCustomerSpecificProperties(OrderBaseModel model)
-        {            
-            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("CustomerSpecific")).ToArray()) {
+        {
+            foreach (var key in ModelState.Keys.Where(k => k.StartsWith("CustomerSpecific")).ToArray())
+            {
                 ModelState.Remove(key);
             }
             SetCustomerSpecificProperties(model);

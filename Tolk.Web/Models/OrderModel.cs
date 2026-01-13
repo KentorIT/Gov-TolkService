@@ -34,6 +34,8 @@ namespace Tolk.Web.Models
 
         public string NextLastTimeForRequiringLatestAnswerBy { get; set; }
 
+        public int HoursOrderCloseInTime { get; set; }
+
         [Display(Name = "Län", Description = "Län för den plats där tolkbehovet finns. I det fall tolkning sker på distans anges länet där myndigheten som använder den aktuella tolktjänsten är placerad. Om tolkning ska genomföras vid en myndighets lokalkontor anges det län där lokalkontoret är placerat.")]
         [Required]
         public int? RegionId { get; set; }

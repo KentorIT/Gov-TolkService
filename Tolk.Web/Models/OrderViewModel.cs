@@ -64,7 +64,7 @@ namespace Tolk.Web.Models
 
         public string WarningOrderRequiredCompetenceInfo { get; set; } = string.Empty;
 
-        public string WarningOrderGroupCloseInTime { get; set; } = string.Empty;
+        public string WarningOrderCloseOrFarAwayInTime { get; set; } = string.Empty;
 
         public PriceInformation PriceInformation { get; set; }
 
