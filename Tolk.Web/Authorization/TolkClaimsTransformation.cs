@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System;
-using System.Linq;
-using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Tolk.BusinessLogic.Helpers;
@@ -34,7 +32,7 @@ namespace Tolk.Web.Authorization
                     return principal;
                 }
                 var userName = principal.Identity.Name;
-                var cookieName = $"TwoFactor|{userName}";
+                var cookieName = $"TwoFactor|{principal.EncodedUserName()}";
                 var confirmedCookieName = $"Confirmed_{cookieName}";
                 var twoFactorCookie = _httpContextAccessor.HttpContext.Request.Cookies[cookieName];
                 if (twoFactorCookie != null)

@@ -307,7 +307,7 @@ namespace Tolk.Web.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userManager.GetUserAsync(User);
-                var cookieName = $"TwoFactor|{User.Identity.Name}";
+                var cookieName = $"TwoFactor|{User.EncodedUserName()}";
                 var twoFactorCookie = Request.Cookies[cookieName];
                 var code = user.GetTwoFactorCode(twoFactorCookie);
                 if (code == model.Code)
@@ -341,7 +341,7 @@ namespace Tolk.Web.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user != null && !User.IsImpersonated() && !User.HasConfirmedTwoFactorState())
             {
-                var cookieName = $"TwoFactor|{User.Identity.Name}";
+                var cookieName = $"TwoFactor|{User.EncodedUserName()}";
                 var twoFactorCookie = Request.Cookies[cookieName];
 
                 await _userService.InitiateTwoFactorValidation(user.UserName, twoFactorCookie);
@@ -414,7 +414,7 @@ namespace Tolk.Web.Controllers
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User logged out.");
-            var cookieName = $"TwoFactor|{User.Identity.Name}";
+            var cookieName = $"TwoFactor|{User.EncodedUserName()}";
             var confirmedCookieName = $"Confirmed_{cookieName}";
             Response.Cookies.Delete(confirmedCookieName);
 
@@ -705,7 +705,7 @@ namespace Tolk.Web.Controllers
 
         private async Task ConfirmTwoFactor(string userName)
         {
-            var cookieName = $"TwoFactor|{userName}";
+            var cookieName = $"TwoFactor|{User.EncodedUserName()}";
             var twoFactorCookie = Request.Cookies[cookieName];
             (string id, TwoFactorState _) = await _userService.GetCurrentTwoFactorClaim(userName, twoFactorCookie);
             if (string.IsNullOrEmpty(twoFactorCookie))
