@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ using Tolk.BusinessLogic.Data;
 using Tolk.BusinessLogic.Entities;
 using Tolk.BusinessLogic.Enums;
 using Tolk.BusinessLogic.Helpers;
+using Tolk.BusinessLogic.Models.TwoFactor;
 using Tolk.BusinessLogic.Services;
 using Tolk.BusinessLogic.Utilities;
 using Tolk.Web.Authorization;
@@ -63,7 +65,7 @@ namespace Tolk.Web.Controllers
             _clock = clock;
             _identityErrorDescriber = identityErrorDescriber;
             _notificationService = notificationService;
-            _cacheService = cacheService;            
+            _cacheService = cacheService;
         }
 
         public async Task<IActionResult> Index()
@@ -248,10 +250,10 @@ namespace Tolk.Web.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(Uri returnUrl = null,string errorMessage = null)
+        public async Task<IActionResult> Login(Uri returnUrl = null, string errorMessage = null)
         {
             // Clear the existing external cookie to ensure a clean login process
-            if(errorMessage != null)
+            if (errorMessage != null)
             {
                 ModelState.AddModelError(nameof(LoginViewModel.UserName), errorMessage);
             }
@@ -276,11 +278,84 @@ namespace Tolk.Web.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> TwoFactor(Uri returnUrl = null, string message = null)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null && !User.IsImpersonated())
+            {
+                return View(new TwoFactorModel { ReturnUrl = returnUrl, Message = message });
+            }
+            return RedirectToLocal(returnUrl);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult TwoFactorLockout()
+        {
+            //Should probably redirect to "/" if this is not correct, i.e. the user is not locked out...
+            return View();
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [AllowAnonymous]
+        public async Task<IActionResult> TwoFactor(TwoFactorModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var cookieName = $"TwoFactor|{User.Identity.Name}";
+                var twoFactorCookie = Request.Cookies[cookieName];
+                var code = user.GetTwoFactorCode(twoFactorCookie);
+                if (code == model.Code)
+                {
+                    await _userService.SetConfirmedTwoFactor(user.UserName, twoFactorCookie);
+                    _logger.LogInformation("User {userName} successfully two factor validated DeviceId: {deviceId}.", User.Identity.Name, twoFactorCookie);
+                    return RedirectToLocal(model.ReturnUrl);
+                }
+                else
+                {
+                    if (await _userService.AddFailedTwoFactorTry(user, twoFactorCookie))
+                    {
+                        _logger.LogInformation("User {userName} failed two factor validation on DeviceId: {deviceId}.", User.Identity.Name, twoFactorCookie);
+                        ModelState.AddModelError(nameof(model.Code), "Felaktig kod");
+                    }
+                    else
+                    {
+                        _logger.LogInformation("User {userName} failed two factor validation on DeviceId: {deviceId} and was locked out.", User.Identity.Name, twoFactorCookie);
+                        return RedirectToAction(nameof(TwoFactorLockout));
+                    }
+                }
+            }
+            // If we got this far, something failed, redisplay form
+            return View(model);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GenerateNewValidationCode(Uri returnUrl = null)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null && !User.IsImpersonated() && !User.HasConfirmedTwoFactorState())
+            {
+                var cookieName = $"TwoFactor|{User.Identity.Name}";
+                var twoFactorCookie = Request.Cookies[cookieName];
+
+                await _userService.InitiateTwoFactorValidation(user.UserName, twoFactorCookie);
+                _logger.LogInformation("User {userName} changed two factor code for DeviceId: {deviceId}.", User.Identity.Name, twoFactorCookie);
+                return RedirectToAction(nameof(TwoFactor), new { returnUrl, message = "Ny valideringskod skickad" });
+            }
+            return RedirectToLocal(returnUrl);
+        }
+
         private async Task<IActionResult> PasswordLogin(LoginViewModel model, Uri returnUrl)
         {
             var user = await _userManager.FindByEmailAsync(model.UserName) ?? await _userManager.FindByNameAsync(model.UserName);
             if (user != null)
-            {                
+            {
                 var result = await _signInManager.PasswordSignInAsync(user, model.Password, isPersistent: true, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
@@ -293,9 +368,10 @@ namespace Tolk.Web.Controllers
                             $"Ditt konto är tillfälligt inaktiverat, vänligen kontakta central administratör på er organisation för mer information. Om du inte vet vem som är central administratör hos er kan du kontakta vår kundtjänst {_options.Support.FirstLineEmail}" :
                             "Ditt konto har inaktiverats p.g.a. inaktivitet, aktivera ditt konto igen genom att återställa ditt lösenord";
                         ModelState.AddModelError(nameof(model.UserName), loginErrorMessage);
-                        
-                        return RedirectToAction(nameof(Login),new { errorMessage = loginErrorMessage});
+
+                        return RedirectToAction(nameof(Login), new { errorMessage = loginErrorMessage });
                     }
+
                     user.LastLoginAt = _clock.SwedenNow;
                     await _userManager.UpdateAsync(user);
                     await _dbContext.SaveChangesAsync();
@@ -324,7 +400,7 @@ namespace Tolk.Web.Controllers
             ModelState.AddModelError(nameof(model.UserName), "Felaktigt användarnamn eller lösenord.");
             return View(model);
         }
-      
+
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Lockout()
@@ -338,6 +414,10 @@ namespace Tolk.Web.Controllers
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User logged out.");
+            var cookieName = $"TwoFactor|{User.Identity.Name}";
+            var confirmedCookieName = $"Confirmed_{cookieName}";
+            Response.Cookies.Delete(confirmedCookieName);
+
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
@@ -476,6 +556,7 @@ namespace Tolk.Web.Controllers
                         user.LastLoginAt = _clock.SwedenNow;
                         await _userManager.UpdateAsync(user);
                         await _userService.LogLoginAsync(user.Id);
+                        await ConfirmTwoFactor(user.UserName);
                     }
                     return RedirectToAction(nameof(ResetPasswordConfirmation));
                 }
@@ -492,8 +573,19 @@ namespace Tolk.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult AccessDenied()
+        [AllowAnonymous]
+        public IActionResult AccessDenied(string returnUrl = null)
         {
+            //Add handling of two factor lock out.
+            if (User.HasLockedOutTwoFactorState())
+            {
+                return RedirectToAction(nameof(TwoFactorLockout));
+            }
+            //Add handling of two factor lock out.
+            if (!User.HasConfirmedTwoFactorState())
+            {
+                return RedirectToAction(nameof(TwoFactor), new { returnUrl });
+            }
             return View();
         }
 
@@ -539,6 +631,7 @@ namespace Tolk.Web.Controllers
                             return RedirectToAction("Index", "Home");
                         }
                         await _userService.LogCreateAsync(user.Id);
+                        await ConfirmTwoFactor(user.UserName);
                     }
                     AddErrors(result);
                 }
@@ -599,6 +692,7 @@ namespace Tolk.Web.Controllers
                 // Resetting the security stamp invalidates the code so operation cannot be redone.
                 await _userManager.UpdateSecurityStampAsync(user);
                 await _signInManager.SignInAsync(user, true);
+                await ConfirmTwoFactor(user.UserName);
                 var pToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
                 return RedirectToAction(nameof(RegisterNewAccount), new { userId, pToken });
@@ -607,6 +701,24 @@ namespace Tolk.Web.Controllers
             var model = new ConfirmAccountModel { UserId = userId };
 
             return View("ConfirmAccountFailed", model);
+        }
+
+        private async Task ConfirmTwoFactor(string userName)
+        {
+            var cookieName = $"TwoFactor|{userName}";
+            var twoFactorCookie = Request.Cookies[cookieName];
+            (string id, TwoFactorState _) = await _userService.GetCurrentTwoFactorClaim(userName, twoFactorCookie);
+            if (string.IsNullOrEmpty(twoFactorCookie))
+            {
+                //Save a cookie with the guid that connect this device to the current user.
+                Response.Cookies.Append(cookieName, id, new CookieOptions
+                {
+                    Expires = DateTime.UtcNow.AddYears(1),
+                    IsEssential = true
+                });
+            }
+
+            await _userService.SetConfirmedTwoFactor(userName, id);
         }
 
         [AllowAnonymous]
@@ -1021,6 +1133,7 @@ namespace Tolk.Web.Controllers
                             {
                                 await _signInManager.RefreshSignInAsync(user);
                             }
+                            await ConfirmTwoFactor(user.UserName);
                             transaction.Complete();
                             return View(nameof(RegisterNewAccountConfirmation), model);
                         }
@@ -1063,7 +1176,7 @@ Om du har begärt att lösenordet ska återställas för '{user.FullName}' klick
 
 Om du inte har begärt en återställning av ditt lösenord kan du radera det här
 meddelandet.Om du får flera meddelanden som du inte har begärt, kontakta
-supporten på { _options.Support.FirstLineEmail}.";
+supporten på {_options.Support.FirstLineEmail}.";
 
             var bodyHtml =
         $@"<h2>Återställning av lösenord för {Constants.SystemName}</h2>

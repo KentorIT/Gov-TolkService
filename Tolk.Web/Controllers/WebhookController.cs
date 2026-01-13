@@ -13,6 +13,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     [Authorize(Policy = Policies.ApplicationAdminOrBrokerCA)]
     public class WebhookController : Controller
     {

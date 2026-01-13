@@ -15,6 +15,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     [Authorize(Policies.SystemCentralLocalAdmin)]
     public class UnitController : Controller
     {

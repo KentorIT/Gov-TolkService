@@ -13,6 +13,7 @@ using Tolk.Web.Helpers;
 namespace Tolk.Web.Controllers
 {
 
+    [Authorize]
     [Authorize(Policy = Policies.Customer)]
     public class ValidateController : Controller
     {                           

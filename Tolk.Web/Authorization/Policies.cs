@@ -42,6 +42,7 @@ namespace Tolk.Web.Authorization
         {
             services.AddAuthorization(opt =>
             {
+                opt.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAssertion(TwoFactorConfirmedHandler).Build();
                 opt.AddPolicy(Customer, builder => builder.RequireClaim(TolkClaimTypes.CustomerOrganisationId));
                 opt.AddPolicy(Broker, builder => builder.RequireClaim(TolkClaimTypes.BrokerId));
                 opt.AddPolicy(Interpreter, builder => builder.RequireClaim(TolkClaimTypes.InterpreterId));
@@ -83,7 +84,7 @@ namespace Tolk.Web.Authorization
 
         private static readonly Func<AuthorizationHandlerContext, bool> ViewMenuAndStartListsHandler = (context) =>
         {
-            return context.User.HasClaim(c => c.Type == TolkClaimTypes.IsPasswordSet) || context.User.IsImpersonated();
+            return context.User.HasConfirmedTwoFactorState() && (context.User.HasClaim(c => c.Type == TolkClaimTypes.IsPasswordSet) || context.User.IsImpersonated());
         };
 
         private static readonly Func<AuthorizationHandlerContext, bool> HasPasswordHandler = (context) =>
@@ -96,7 +97,6 @@ namespace Tolk.Web.Authorization
             return context.User.HasClaim(c => c.Type == TolkClaimTypes.CustomerOrganisationId) ||
                 context.User.IsInRole(Roles.SystemAdministrator);
         };
-
 
         private static readonly Func<AuthorizationHandlerContext, bool> ApplicationAdminOrBrokerCentralAdminHandler = (context) =>
         {
@@ -167,10 +167,11 @@ namespace Tolk.Web.Authorization
 
         private static readonly Func<AuthorizationHandlerContext, bool> DeleteHandler = (context) =>
         {
+            var user = context.User;
             switch (context.Resource)
             {
                 case Attachment attachment:
-                    return context.User.GetUserId() == attachment.CreatedBy;
+                    return user.GetUserId() == attachment.CreatedBy;
                 default:
                     throw new NotImplementedException();
             }
@@ -196,12 +197,13 @@ namespace Tolk.Web.Authorization
 
         private static readonly Func<AuthorizationHandlerContext, bool> EditContactHandler = (context) =>
         {
-            var userId = context.User.GetUserId();
-            var customerOrganisationId = context.User.TryGetCustomerOrganisationId();
+            var user = context.User;
+            var userId = user.GetUserId();
+            var customerOrganisationId = user.TryGetCustomerOrganisationId();
             switch (context.Resource)
             {
                 case Order order:
-                    return order.IsAuthorizedAsCreatorOrContact(context.User.TryGetAllCustomerUnits(), customerOrganisationId, userId, context.User.IsInRole(Roles.CentralOrderHandler));
+                    return order.IsAuthorizedAsCreatorOrContact(context.User.TryGetAllCustomerUnits(), customerOrganisationId, userId, user.IsInRole(Roles.CentralOrderHandler));
                 default:
                     throw new NotImplementedException();
             }
@@ -277,10 +279,11 @@ namespace Tolk.Web.Authorization
 
         private static readonly Func<AuthorizationHandlerContext, bool> CreateRequisitionHandler = (context) =>
         {
+            var user = context.User;
             switch (context.Resource)
             {
                 case Request request:
-                    return context.User.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && request.Ranking.BrokerId == context.User.GetBrokerId();
+                    return user.HasClaim(c => c.Type == TolkClaimTypes.BrokerId) && request.Ranking.BrokerId == user.GetBrokerId();
                 default:
                     throw new NotImplementedException();
             }
@@ -475,6 +478,9 @@ namespace Tolk.Web.Authorization
                     throw new NotImplementedException();
             }
         };
+
+        private static readonly Func<AuthorizationHandlerContext, bool> TwoFactorConfirmedHandler = (context) =>
+            context.User.HasConfirmedTwoFactorState();
 
         private static bool IsUserLocalAdminOfCustomerUnit(int customerUnitId, IEnumerable<int> localAdmincustomerUnits)
         {

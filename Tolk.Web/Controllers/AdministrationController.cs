@@ -14,6 +14,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     public class AdministrationController : Controller
     {
         private readonly CacheService _cacheService;

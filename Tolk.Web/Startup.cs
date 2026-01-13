@@ -1,4 +1,5 @@
 ﻿using DataTables.AspNet.AspNetCore;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -46,7 +47,6 @@ namespace Tolk.Web
             services.AddScoped<IdentityErrorDescriber, SwedishIdentityErrorDescriber>();
 
             services.AddScoped<MockTellusApiService>();
-
             services.AddScoped<ListToModelService>();
             services.AddScoped<EventLogService>();
 
@@ -84,9 +84,9 @@ namespace Tolk.Web
 
             services.AddDistributedMemoryCache();
             services.AddScoped<SelectListService>();
+            services.AddTransient<IClaimsTransformation, TolkClaimsTransformation>();
 
             services.AddTransient<HelpLinkService>();
-
             services.RegisterTolkAuthorizationPolicies();
             services.AddMvc(opt =>
             {

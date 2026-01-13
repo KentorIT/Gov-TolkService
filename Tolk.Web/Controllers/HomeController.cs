@@ -24,6 +24,7 @@ using Tolk.Web.Models;
 
 namespace Tolk.Web.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly TolkDbContext _dbContext;

@@ -31,6 +31,7 @@ namespace Tolk.BusinessLogic.Helpers
 		public bool UseStoredProceduresForReports { get; set; } = true;
 
         public PeppolSettings Peppol { get; set; }
+        public TwoFactorSettings TwoFactor { get; set; }
 
         public FlexibleOrderSettings FlexibleOrder { get; set; }
         public UserInactivitySettings UserInactivity { get; set; }
