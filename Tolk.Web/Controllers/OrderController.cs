@@ -905,7 +905,7 @@ namespace Tolk.Web.Controllers
             }
             if (!string.IsNullOrWhiteSpace(search))
             {
-                users = users.Where(u => u.NameFirst.Contains(search) || u.NameFamily.Contains(search));
+                users = users.Where(u => u.NameFirst.Contains(search) || u.NameFamily.Contains(search) || u.Email.Contains(search));
             }
             int count = users.Count() - skip;
             return Json(new

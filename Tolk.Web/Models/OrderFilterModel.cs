@@ -38,7 +38,7 @@ namespace Tolk.Web.Models
         [Display(Name = "Myndighet")]
         public int? CustomerOrganisationId { get; set; }
 
-        [Display(Name = "Skapad av")]
+        [Display(Name = "Skapad av", Description = "Sökning i denna lista jämför med förnamn, efternamn och e-post")]
         public int? CreatedBy { get; set; }
 
         public bool IsCentralAdminOrOrderHandler { get; set; }
