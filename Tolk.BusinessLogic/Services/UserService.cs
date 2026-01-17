@@ -619,25 +619,27 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
         {
             var plainBody = $@"Hej!
 
-Du behöver verifiera ditt konto på: {Constants.SystemName}.
+Du behöver verifiera ditt konto i: {Constants.SystemName}.
 
-Använd denna kod för att låsa upp {_options.TwoFactor.TwoFactorDaysValidity} dagar framåt på den plats du försökt logga in.
+Använd koden 
 {dto.ValidationCode}
+för att låsa upp tjänsten i {_options.TwoFactor.TwoFactorDaysValidity} dagar på den enhet eller plats du logga in.
+
 Koden är giltig i {_options.TwoFactor.ValidationCodeMinutesValidity} minuter.";
             var htmlBody = $@"
 <h1>Hej!</h1>
 
-Du behöver verifiera ditt konto på: {Constants.SystemName}.
+Du behöver verifiera ditt konto i: {Constants.SystemName}.
 
-Använd denna kod för att låsa upp {_options.TwoFactor.TwoFactorDaysValidity} dagar framåt på den plats du försökt logga in.
-
+Använd koden 
 <div>{dto.ValidationCode}</div>
+för att låsa upp tjänsten i {_options.TwoFactor.TwoFactorDaysValidity} dagar på den enhet eller plats du logga in.
 
 Koden är giltig i {_options.TwoFactor.ValidationCodeMinutesValidity} minuter.";
 
             _notificationService.CreateEmail(
                   user.Email,
-                  "Ditt konto behöver två faktor valideras",
+                  "Ditt konto behöver två-faktorvalideras",
                   plainBody,
                   htmlBody,
                   NotificationType.TwoFactorCreated,
