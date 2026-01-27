@@ -639,7 +639,7 @@ Koden är giltig i {_options.TwoFactor.ValidationCodeMinutesValidity} minuter.";
 
             _notificationService.CreateEmail(
                   user.Email,
-                  "Ditt konto behöver två-faktorvalideras",
+                  "Ditt konto behöver tvåfaktorvalideras",
                   plainBody,
                   htmlBody,
                   NotificationType.TwoFactorCreated,
