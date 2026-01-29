@@ -26,7 +26,7 @@ namespace Tolk.Web.Authorization
         {
             if (principal.Identity.IsAuthenticated)
             {
-                if (!_options.TwoFactor.Enabled)
+                if (!_options.TwoFactor.Enabled || principal.HasClaim(c => c.Type == TolkClaimTypes.ImpersonatingUserId))
                 {
                     AddTwoFactorStateClaim(principal, TwoFactorState.Confirmed);
                     return principal;
