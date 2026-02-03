@@ -915,7 +915,7 @@ namespace Tolk.Web.Controllers
                     .ThenBy(u => u.NameFirst)
                     .Select(u => new AjaxSelectListItemModel
                     {
-                        Text = !string.IsNullOrWhiteSpace(u.NameFamily) ? $"{u.NameFamily}, {u.NameFirst} {(!customerOrganisationId.HasValue ? "(" + u.CustomerOrganisation.Name + ")": "")}" : u.UserName,
+                        Text = !string.IsNullOrWhiteSpace(u.NameFamily) ? $"{u.NameFamily}, {u.NameFirst} ({u.Email})" : u.UserName,
                         Id = u.Id.ToString()
                     })
                     .Skip(pageSize * (page - 1))

@@ -617,24 +617,19 @@ supporten på {_options.Support.FirstLineEmail}.</div>";
 
         private async Task SendTwoFactorMail(AspNetUser user, TwoFactorDto dto)
         {
-            var plainBody = $@"Hej!
+            var plainBody = $@"
+Du behöver verifiera ditt konto i {Constants.SystemName}.
 
-Du behöver verifiera ditt konto i: {Constants.SystemName}.
-
-Använd koden 
-{dto.ValidationCode}
-för att låsa upp tjänsten i {_options.TwoFactor.TwoFactorDaysValidity} dagar på den enhet eller plats du logga in.
+Ange koden {dto.ValidationCode} för att låsa upp tjänsten i {_options.TwoFactor.TwoFactorDaysValidity} dagar på den enhet där du nu loggar in.
 
 Koden är giltig i {_options.TwoFactor.ValidationCodeMinutesValidity} minuter.";
             var htmlBody = $@"
-<h1>Hej!</h1>
-
-Du behöver verifiera ditt konto i: {Constants.SystemName}.
-
-Använd koden 
-<div>{dto.ValidationCode}</div>
-för att låsa upp tjänsten i {_options.TwoFactor.TwoFactorDaysValidity} dagar på den enhet eller plats du logga in.
-
+Du behöver verifiera ditt konto i {Constants.SystemName}.
+</br>
+</br>
+Ange koden {dto.ValidationCode} för att låsa upp tjänsten i {_options.TwoFactor.TwoFactorDaysValidity} dagar på den enhet där du nu loggar in.
+</br>
+</br>
 Koden är giltig i {_options.TwoFactor.ValidationCodeMinutesValidity} minuter.";
 
             _notificationService.CreateEmail(
