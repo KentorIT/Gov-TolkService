@@ -158,6 +158,7 @@ namespace Tolk.Web.Models
         public DateTimeOffset? ExpiresAt { get; set; }
 
         [Display(Name = "Förmedlingens bokningsnummer", Description = "Här kan ni som förmedling ange ett eget bokningsnummer att koppla till bokningen.")]
+        [StringLength(100)]
         public string BrokerReferenceNumber { get; set; }
 
         public bool AllowProcessing { get; set; } = true;

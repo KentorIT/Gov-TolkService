@@ -98,6 +98,7 @@ namespace Tolk.Web.Models
 
 
         [Display(Name = "Förmedlingens bokningsnummer", Description = "Här kan ni som förmedling ange ett eller flera egna bokningsnummer att koppla till den sammanhållna bokningen.")]
+        [StringLength(100)]
         public string BrokerReferenceNumber { get; set; }
 
         public OccasionListModel OccasionList { get; set; }
