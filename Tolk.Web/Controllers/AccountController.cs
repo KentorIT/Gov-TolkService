@@ -310,7 +310,7 @@ namespace Tolk.Web.Controllers
                 var cookieName = $"TwoFactor|{User.EncodedUserName()}";
                 var twoFactorCookie = Request.Cookies[cookieName];
                 var code = user.GetTwoFactorCode(twoFactorCookie);
-                if (code == model.Code)
+                if (code == model.Code.Trim())
                 {
                     await _userService.SetConfirmedTwoFactor(user.UserName, twoFactorCookie);
                     _logger.LogInformation("User {userName} successfully two factor validated DeviceId: {deviceId}.", User.Identity.Name, twoFactorCookie);
