@@ -373,7 +373,7 @@ namespace Tolk.Web.Services
                         }).ToList());
                     list.Add(new SerializableExtendedSelectListItem
                     {
-                        Text = "Kammarkollegiet",
+                        Text = "Förvaltningen",
                         Value = $"0_{OrganisationType.Owner}",
                         AdditionalDataAttribute = OrganisationType.Owner.ToString(),
                     });
