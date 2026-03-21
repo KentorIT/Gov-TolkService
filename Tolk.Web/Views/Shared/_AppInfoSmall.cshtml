@@ -1,9 +1,17 @@
 ﻿@using Tolk.BusinessLogic
+@using Tolk.BusinessLogic.Helpers
+@using Microsoft.Extensions.Options
+@inject IOptions<TolkOptions> options
+
 <div class="row padding-bottom-30px">
     <div class="col-xs-12">
         <h2>Om tjänsten</h2>
         <p>
             I @Constants.SystemName kan avropsberättigade myndigheter boka tolktjänster, och ramavtalsleverantörer (tolkförmedlingar) kan hantera bokningsförfrågningar.
         </p>
+        <p>
+            <a href="@options.Value.ExternalLinks.TermsOfUse" target="_blank">Användarvillkor</a>
+        </p>
+
     </div>
 </div>

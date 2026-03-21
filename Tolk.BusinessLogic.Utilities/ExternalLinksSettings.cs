@@ -12,7 +12,9 @@ namespace Tolk.BusinessLogic.Utilities
         public Uri GovernmentalCentralPurchasing { get; set; }
         public Uri RegistryOfInterpreters { get; set; }
         public Uri GitHubSourceCode { get; set; }
-        public string Description => $"Aktuell info: {CurrentInfo}\nGod tolksed: {GoodInterpreterPractice}\nAktivt avtal: {ActiveAgreementInfo}\nInaktivt avtal: {ExpiredAgreementInfo}\nInfo om inget aktivt avtal: {NoActiveAgreementInfo}\nStatens inköpssentral: {GovernmentalCentralPurchasing}\nTolkregister: {RegistryOfInterpreters}\nKällkod: {GitHubSourceCode}";
+        public Uri TermsOfUse { get; set; }
+
+        public string Description => $"Aktuell info: {CurrentInfo}\nGod tolksed: {GoodInterpreterPractice}\nAktivt avtal: {ActiveAgreementInfo}\nInaktivt avtal: {ExpiredAgreementInfo}\nInfo om inget aktivt avtal: {NoActiveAgreementInfo}\nStatens inköpssentral: {GovernmentalCentralPurchasing}\nTolkregister: {RegistryOfInterpreters}\nAnvädarvillkor: {TermsOfUse}\nKällkod: {GitHubSourceCode}";
 
     }
 }
