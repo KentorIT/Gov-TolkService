@@ -90,7 +90,7 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.ApplicationAdministrator)]
         public async Task<ActionResult> Edit(int id)
         {
-            var customer = _dbContext.CustomerOrganisations.Single(c => c.CustomerOrganisationId == id);
+            var customer = await _dbContext.CustomerOrganisations.GetCustomerById(id);
             customer.CustomerSettings = await _dbContext.CustomerSettings.GetCustomerSettingsForCustomer(id).ToListAsync();
             if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.Edit)).Succeeded)
             {
@@ -104,7 +104,8 @@ namespace Tolk.Web.Controllers
         [Authorize(Roles = Roles.ApplicationAdministrator)]
         public async Task<ActionResult> Edit(CustomerModel model)
         {
-            var customer = _dbContext.CustomerOrganisations.Include(c => c.CustomerOrderAgreementSettings).Single(c => c.CustomerOrganisationId == model.CustomerId);
+            var customer = await _dbContext.CustomerOrganisations.GetCustomerById(model.CustomerId.Value);
+            customer.CustomerOrderAgreementSettings = await _dbContext.CustomerOrderAgreementSettings.GetOrderAgreementSettingsForCustomer(model.CustomerId.Value).ToListAsync();
             customer.CustomerSettings = await _dbContext.CustomerSettings.GetCustomerSettingsForCustomer(customer.CustomerOrganisationId).ToListAsync();
             if ((await _authorizationService.AuthorizeAsync(User, customer, Policies.Edit)).Succeeded)
             {

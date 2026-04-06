@@ -15,6 +15,8 @@ namespace Tolk.BusinessLogic.Enums
         [Description("Hanterar order agreements")]
         UseOrderAgreements = 4,
         [Description("Hanterar order response")]
-        UseOrderResponses = 5
+        UseOrderResponses = 5,
+        [Description("Tillåt användare att registrera sig själva")]
+        AllowUserSelfRegistration = 6
     }
 }

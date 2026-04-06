@@ -787,11 +787,11 @@ namespace Tolk.Web.Controllers
                     var domain = model.Email.Split('@')[1];
 
                     var organisation = await _dbContext.CustomerOrganisations.GetParentOrganisationsByDomain(domain);
-
+                    
                     if (organisation != null)
                     {
                         organisation.SubCustomerOrganisations = await _dbContext.CustomerOrganisations.GetSubOrganisationsByParent(organisation.CustomerOrganisationId).ToListAsync();
-                        //if organization has SubCustomerOrganisations check that one is choosed, else display the list 
+                        //if organization has SubCustomerOrganisations check that one is choosen, else display the list 
                         if (organisation.SubCustomerOrganisations.Any() && string.IsNullOrEmpty(model.OrganisationIdentifier))
                         {
                             model.ParentOrganisationId = organisation.CustomerOrganisationId;
@@ -813,6 +813,14 @@ namespace Tolk.Web.Controllers
                                     ModelState.AddModelError(nameof(model.Email), $"Organisationen som valdes tillhörde inte domänen {domain}. Försök igen.");
                                     return View(model);
                                 }
+                            }
+
+                            //check if the organisation allows self registration
+                            if (!_cacheService.CustomerHasSetting(organisation.CustomerOrganisationId, CustomerSettingType.AllowUserSelfRegistration))
+                            {
+                                ModelState.AddModelError(nameof(model.Email), $"Organisationen tillåter inte att användare registrerar sig själva. Kontakta {_options.Support.UserAccountEmail}.");
+                                return View(model);
+
                             }
                             var user = new AspNetUser(model.Email,
                                 _userService.GenerateUserName(model.FirstName.Trim(), model.LastName.Trim(), organisation.OrganisationPrefix),

@@ -223,6 +223,9 @@ namespace Tolk.BusinessLogic.Services
             return priceListBrokerFee;
         }
 
+        public bool CustomerHasSetting(int customerId, CustomerSettingType type)
+            => CustomerSettings.Any(c => c.CustomerOrganisationId == customerId && c.UsedCustomerSettingTypes.Any(cs => cs == type));
+
         public IEnumerable<CustomerSettingsModel> CustomerSettings
         {
             get
