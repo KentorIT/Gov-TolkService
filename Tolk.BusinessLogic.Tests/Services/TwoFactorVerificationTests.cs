@@ -100,7 +100,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var dbContext = GetBaseContext();
 
             var clock = new StubSwedishClock(nowString);
-            var user = await dbContext.Users.SingleAsync(u => u.Id == 1);
+            var user = await dbContext.Users.SingleAsync(u => u.Id == 1, TestContext.Current.CancellationToken);
             if (!string.IsNullOrEmpty(cookieId) && !string.IsNullOrEmpty(claimValue))
             {
                 user.TwoFactorEntries = [new TwoFactorEntry()
@@ -114,7 +114,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             {
                 user.TwoFactorEntries = [];
             }
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
             var sut = CreateUserService(dbContext, null, clock);
             (var returnedCookieId, TwoFactorState state) = await sut.GetCurrentTwoFactorClaim(user.UserName, cookieId);
             Assert.NotNull(returnedCookieId);
@@ -135,7 +135,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var dbContext = GetBaseContext();
 
             var clock = new StubSwedishClock("2018-05-02 13:00:00 +02:00");
-            var user = await dbContext.Users.SingleAsync(u => u.Id == 1);
+            var user = await dbContext.Users.SingleAsync(u => u.Id == 1, TestContext.Current.CancellationToken);
             var sut = CreateUserService(dbContext, null, clock);
             await sut.InitiateTwoFactorValidation(user.UserName, "cookieId");
 
@@ -147,7 +147,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var dbContext = GetBaseContext();
 
             var clock = new StubSwedishClock("2018-05-02 13:00:00 +02:00");
-            var user = await dbContext.Users.SingleAsync(u => u.Id == 1);
+            var user = await dbContext.Users.SingleAsync(u => u.Id == 1, TestContext.Current.CancellationToken);
             var sut = CreateUserService(dbContext, null, clock);
             await sut.InitiateTwoFactorValidation(user.UserName, "cookieId");
             await sut.InitiateTwoFactorValidation(user.UserName, "cookieId");
@@ -161,7 +161,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var dbContext = GetBaseContext();
 
             var clock = new StubSwedishClock("2018-05-02 13:00:00 +02:00");
-            var user = await dbContext.Users.SingleAsync(u => u.Id == 1);
+            var user = await dbContext.Users.SingleAsync(u => u.Id == 1, TestContext.Current.CancellationToken);
             var sut = CreateUserService(dbContext, null, clock);
             await sut.InitiateTwoFactorValidation(user.UserName, "cookieId");
             await sut.InitiateTwoFactorValidation(user.UserName, "cookieId2");
@@ -190,7 +190,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var dbContext = GetBaseContext();
 
             var clock = new StubSwedishClock("2018-05-02 13:00:00 +02:00");
-            var user = await dbContext.Users.SingleAsync(u => u.Id == 1);
+            var user = await dbContext.Users.SingleAsync(u => u.Id == 1, TestContext.Current.CancellationToken);
             var sut = CreateUserService(dbContext, null, clock);
             await sut.SetConfirmedTwoFactor(user.UserName, "id");
             (string _, TwoFactorState state) = (await sut.GetCurrentTwoFactorClaim(user.UserName, "id"));
@@ -203,7 +203,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var dbContext = GetBaseContext();
 
             var clock = new StubSwedishClock("2018-05-02 13:00:00 +02:00");
-            var user = await dbContext.Users.SingleAsync(u => u.Id == 1);
+            var user = await dbContext.Users.SingleAsync(u => u.Id == 1, TestContext.Current.CancellationToken);
             var sut = CreateUserService(dbContext, null, clock);
             await sut.InitiateTwoFactorValidation(user.UserName, "cookieId");
             Assert.True(await sut.AddFailedTwoFactorTry(user, "cookieId"));
@@ -214,7 +214,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var dbContext = GetBaseContext();
 
             var clock = new StubSwedishClock("2018-05-02 13:00:00 +02:00");
-            var user = await dbContext.Users.SingleAsync(u => u.Id == 1);
+            var user = await dbContext.Users.SingleAsync(u => u.Id == 1, TestContext.Current.CancellationToken);
             var sut = CreateUserService(dbContext, null, clock);
             //No validation ongoing, should return true
             Assert.True(await sut.AddFailedTwoFactorTry(user, "cookieId"));
@@ -226,7 +226,7 @@ namespace Tolk.BusinessLogic.Tests.Services
             var dbContext = GetBaseContext();
 
             var clock = new StubSwedishClock("2018-05-02 13:00:00 +02:00");
-            var user = await dbContext.Users.SingleAsync(u => u.Id == 1);
+            var user = await dbContext.Users.SingleAsync(u => u.Id == 1,TestContext.Current.CancellationToken);
             var sut = CreateUserService(dbContext, null, clock);
             await sut.InitiateTwoFactorValidation(user.UserName, "cookieId");
             for (int i = 0; i < _options.Value.TwoFactor.MaxNumberOfTries; ++i)

@@ -140,8 +140,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
             requisition.CofirmNoReview(confirmTime, userId, impersonatorId);
 
             Assert.Equal(RequisitionStatus.Created, requisition.Status);
-            Assert.Equal(OrderStatus.Delivered, requisition.Request.Order.Status);
-            Assert.Single(requisition.RequisitionStatusConfirmations.Where(r => r.RequisitionStatus == RequisitionStatus.Created));
+            Assert.Equal(OrderStatus.Delivered, requisition.Request.Order.Status);            
+            Assert.Single(requisition.RequisitionStatusConfirmations, r => r.RequisitionStatus == RequisitionStatus.Created);
             Assert.Equal(requisition.RequisitionStatusConfirmations.Single(r => r.RequisitionStatus == RequisitionStatus.Created).ConfirmedBy, userId);
             Assert.Equal(requisition.RequisitionStatusConfirmations.Single(r => r.RequisitionStatus == RequisitionStatus.Created).ImpersonatingConfirmedBy, impersonatorId);
             Assert.Equal(requisition.RequisitionStatusConfirmations.Single(r => r.RequisitionStatus == RequisitionStatus.Created).ConfirmedAt, confirmTime);
@@ -169,8 +169,8 @@ namespace Tolk.BusinessLogic.Tests.Entities
             requisition.CofirmNoReview(confirmTime, userId, impersonatorId);
 
             Assert.Equal(RequisitionStatus.Created, requisition.Status);
-            Assert.Equal(OrderStatus.Delivered, requisition.Request.Order.Status);
-            Assert.Single(requisition.RequisitionStatusConfirmations.Where(r => r.RequisitionStatus == RequisitionStatus.Created));
+            Assert.Equal(OrderStatus.Delivered, requisition.Request.Order.Status);            
+            Assert.Single(requisition.RequisitionStatusConfirmations, r => r.RequisitionStatus == RequisitionStatus.Created);
             Assert.Equal(requisition.RequisitionStatusConfirmations.Single(r => r.RequisitionStatus == RequisitionStatus.Created).ConfirmedBy, userId);
             Assert.Equal(requisition.RequisitionStatusConfirmations.Single(r => r.RequisitionStatus == RequisitionStatus.Created).ImpersonatingConfirmedBy, impersonatorId);
             Assert.Equal(requisition.RequisitionStatusConfirmations.Single(r => r.RequisitionStatus == RequisitionStatus.Created).ConfirmedAt, confirmTime);

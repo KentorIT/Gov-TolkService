@@ -185,9 +185,9 @@ namespace Tolk.BusinessLogic.Tests.Services
             context.AddRange(orderAgreementSettings);
             context.SaveChanges();
             var settings = (await customerService.ToggleSpecificOrderAgreementSettings(customerOrganisationId:1, brokerId:1, userId: 1)).CustomerOrderAgreementSettings;
-            Assert.True(settings.All(s => !s.Disabled));
-            Assert.Single(settings.Where(s => s.EnabledAt == _clock.SwedenNow.DateTime));
-            Assert.Single(settings.Where(s => s.EnabledAt == enabledDate));
+            Assert.True(settings.All(s => !s.Disabled));            
+            Assert.Single(settings, s => s.EnabledAt == _clock.SwedenNow.DateTime);
+            Assert.Single(settings, s => s.EnabledAt == enabledDate);
             Assert.Equal(2,settings.Count);
         }
 
@@ -206,8 +206,8 @@ namespace Tolk.BusinessLogic.Tests.Services
             context.AddRange(orderAgreementSettings);
             context.SaveChanges();
             var settings = (await customerService.ToggleSpecificOrderAgreementSettings(customerOrganisationId: 1, brokerId: 2, userId: 1)).CustomerOrderAgreementSettings;            
-            Assert.Empty(settings.Where(s => s.EnabledAt == _clock.SwedenNow));
-            Assert.Single(settings.Where(s => s.EnabledAt == enabledDate));
+            Assert.DoesNotContain(settings, s => s.EnabledAt == _clock.SwedenNow);            
+            Assert.Single(settings, s => s.EnabledAt == enabledDate);
             Assert.Equal(2, settings.Count);
 
         }

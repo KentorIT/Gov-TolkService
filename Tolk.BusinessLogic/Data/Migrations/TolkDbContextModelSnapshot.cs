@@ -17,7 +17,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.20")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -285,7 +285,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UserAuditLogEntryId");
 
-                    b.ToTable("AspNetUserClaimHistoryEntries");
+                    b.ToTable("AspNetUserClaimHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.AspNetUserHistoryEntry", b =>
@@ -334,7 +334,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("UserAuditLogEntryId")
                         .IsUnique();
 
-                    b.ToTable("AspNetUserHistoryEntries");
+                    b.ToTable("AspNetUserHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.AspNetUserRoleHistoryEntry", b =>
@@ -357,7 +357,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UserAuditLogEntryId");
 
-                    b.ToTable("AspNetUserRoleHistoryEntries");
+                    b.ToTable("AspNetUserRoleHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Attachment", b =>
@@ -389,7 +389,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("ImpersonatingCreator");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Broker", b =>
@@ -432,7 +432,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("BrokerId");
 
-                    b.ToTable("Brokers");
+                    b.ToTable("Brokers", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.BrokerFeeByServiceTypePriceListRow", b =>
@@ -465,7 +465,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RegionId");
 
-                    b.ToTable("BrokerFeeByServiceTypePriceListRows");
+                    b.ToTable("BrokerFeeByServiceTypePriceListRows", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.BrokerStartListRow", b =>
@@ -670,7 +670,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("TerminatedBy");
 
-                    b.ToTable("Complaints");
+                    b.ToTable("Complaints", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerChangeLogEntry", b =>
@@ -699,7 +699,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("CustomerChangeLogEntries");
+                    b.ToTable("CustomerChangeLogEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrderAgreementSettings", b =>
@@ -717,7 +717,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("CustomerOrganisationId");
 
-                    b.ToTable("CustomerOrderAgreementSettings");
+                    b.ToTable("CustomerOrderAgreementSettings", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrderAgreementSettingsHistoryEntry", b =>
@@ -741,7 +741,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("CustomerChangeLogEntryId");
 
-                    b.ToTable("CustomerOrderAgreementSettingsHistoryEntries");
+                    b.ToTable("CustomerOrderAgreementSettingsHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisation", b =>
@@ -794,7 +794,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("ParentCustomerOrganisationId");
 
-                    b.ToTable("CustomerOrganisations");
+                    b.ToTable("CustomerOrganisations", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerOrganisationHistoryEntry", b =>
@@ -844,7 +844,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("CustomerChangeLogEntryId")
                         .IsUnique();
 
-                    b.ToTable("CustomerOrganisationHistoryEntry");
+                    b.ToTable("CustomerOrganisationHistoryEntry", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSetting", b =>
@@ -860,7 +860,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("CustomerOrganisationId", "CustomerSettingType");
 
-                    b.ToTable("CustomerSettings");
+                    b.ToTable("CustomerSettings", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSettingHistoryEntry", b =>
@@ -884,7 +884,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("CustomerChangeLogEntryId");
 
-                    b.ToTable("CustomerSettingHistoryEntries");
+                    b.ToTable("CustomerSettingHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSpecificProperty", b =>
@@ -927,7 +927,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("CustomerOrganisationId", "PropertyType");
 
-                    b.ToTable("CustomerSpecificProperties");
+                    b.ToTable("CustomerSpecificProperties", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerSpecificPropertyHistoryEntry", b =>
@@ -986,7 +986,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("CustomerOrganisationId");
 
-                    b.ToTable("CustomerSpecificPropertyChangeHistoryEntries");
+                    b.ToTable("CustomerSpecificPropertyChangeHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerStartListRow", b =>
@@ -1146,7 +1146,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("InactivatedBy");
 
-                    b.ToTable("CustomerUnits");
+                    b.ToTable("CustomerUnits", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnitUser", b =>
@@ -1164,7 +1164,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CustomerUnitUsers");
+                    b.ToTable("CustomerUnitUsers", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.CustomerUnitUserHistoryEntry", b =>
@@ -1188,7 +1188,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UserAuditLogEntryId");
 
-                    b.ToTable("CustomerUnitUserHistoryEntries");
+                    b.ToTable("CustomerUnitUserHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedPeppolMessage", b =>
@@ -1212,7 +1212,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("OutboundPeppolMessageId");
 
-                    b.ToTable("FailedPeppolMessages");
+                    b.ToTable("FailedPeppolMessages", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FailedWebHookCall", b =>
@@ -1236,7 +1236,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("OutboundWebHookCallId");
 
-                    b.ToTable("FailedWebHookCalls");
+                    b.ToTable("FailedWebHookCalls", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Faq", b =>
@@ -1276,7 +1276,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("LastUpdatedBy");
 
-                    b.ToTable("Faq");
+                    b.ToTable("Faq", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FaqDisplayUserRole", b =>
@@ -1289,7 +1289,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("FaqId", "DisplayUserRole");
 
-                    b.ToTable("FaqDisplayUserRole");
+                    b.ToTable("FaqDisplayUserRole", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.FrameworkAgreement", b =>
@@ -1326,7 +1326,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("FrameworkAgreementId");
 
-                    b.ToTable("FrameworkAgreements");
+                    b.ToTable("FrameworkAgreements", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Holiday", b =>
@@ -1344,7 +1344,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("Date", "DateType");
 
-                    b.ToTable("Holidays");
+                    b.ToTable("Holidays", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Interpreter", b =>
@@ -1360,7 +1360,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("InterpreterId");
 
-                    b.ToTable("Interpreters");
+                    b.ToTable("Interpreters", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.InterpreterBroker", b =>
@@ -1422,7 +1422,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("InterpreterId");
 
-                    b.ToTable("InterpreterBrokers");
+                    b.ToTable("InterpreterBrokers", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Language", b =>
@@ -1463,7 +1463,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("LanguageId");
 
-                    b.ToTable("Languages");
+                    b.ToTable("Languages", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.MealBreak", b =>
@@ -1487,7 +1487,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RequisitionId");
 
-                    b.ToTable("MealBreaks");
+                    b.ToTable("MealBreaks", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Order", b =>
@@ -1613,7 +1613,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .IsUnique()
                         .HasFilter("[ReplacingOrderId] IS NOT NULL");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachment", b =>
@@ -1628,7 +1628,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.ToTable("OrderAttachments");
+                    b.ToTable("OrderAttachments", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderAttachmentHistoryEntry", b =>
@@ -1654,7 +1654,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("OrderChangeLogEntryId");
 
-                    b.ToTable("OrderAttachmentHistoryEntries");
+                    b.ToTable("OrderAttachmentHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderChangeConfirmation", b =>
@@ -1686,7 +1686,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("OrderChangeLogEntryId")
                         .IsUnique();
 
-                    b.ToTable("OrderChangeConfirmations");
+                    b.ToTable("OrderChangeConfirmations", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderChangeLogEntry", b =>
@@ -1725,7 +1725,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("OrderChangeLogEntries");
+                    b.ToTable("OrderChangeLogEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderCompetenceRequirement", b =>
@@ -1749,7 +1749,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderCompetenceRequirements");
+                    b.ToTable("OrderCompetenceRequirements", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderContactPersonHistory", b =>
@@ -1773,7 +1773,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("PreviousContactPersonId");
 
-                    b.ToTable("OrderContactPersonHistory");
+                    b.ToTable("OrderContactPersonHistory", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroup", b =>
@@ -1851,7 +1851,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RegionId");
 
-                    b.ToTable("OrderGroups");
+                    b.ToTable("OrderGroups", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupAttachment", b =>
@@ -1866,7 +1866,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.ToTable("OrderGroupAttachments");
+                    b.ToTable("OrderGroupAttachments", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupCompetenceRequirement", b =>
@@ -1882,7 +1882,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("OrderGroupId", "CompetenceLevel");
 
-                    b.ToTable("OrderGroupCompetenceRequirements");
+                    b.ToTable("OrderGroupCompetenceRequirements", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupInterpreterLocation", b =>
@@ -1898,7 +1898,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("OrderGroupId", "InterpreterLocation");
 
-                    b.ToTable("OrderGroupInterpreterLocations");
+                    b.ToTable("OrderGroupInterpreterLocations", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupRequirement", b =>
@@ -1926,7 +1926,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("OrderGroupId");
 
-                    b.ToTable("OrderGroupRequirements");
+                    b.ToTable("OrderGroupRequirements", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderGroupStatusConfirmation", b =>
@@ -1960,7 +1960,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("OrderGroupId");
 
-                    b.ToTable("OrderGroupStatusConfirmations");
+                    b.ToTable("OrderGroupStatusConfirmations", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderHistoryEntry", b =>
@@ -1984,7 +1984,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("OrderChangeLogEntryId");
 
-                    b.ToTable("OrderHistoryEntries");
+                    b.ToTable("OrderHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderInterpreterLocation", b =>
@@ -2012,7 +2012,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("OrderId", "InterpreterLocation");
 
-                    b.ToTable("OrderInterpreterLocation");
+                    b.ToTable("OrderInterpreterLocation", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderListRow", b =>
@@ -2128,7 +2128,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("PriceListRowId");
 
-                    b.ToTable("OrderPriceRows");
+                    b.ToTable("OrderPriceRows", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderRequirement", b =>
@@ -2161,7 +2161,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderRequirements");
+                    b.ToTable("OrderRequirements", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderRequirementRequestAnswer", b =>
@@ -2183,7 +2183,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("OrderRequirementId");
 
-                    b.ToTable("OrderRequirementRequestAnswer");
+                    b.ToTable("OrderRequirementRequestAnswer", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OrderStatusConfirmation", b =>
@@ -2217,7 +2217,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderStatusConfirmation");
+                    b.ToTable("OrderStatusConfirmation", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundEmail", b =>
@@ -2270,7 +2270,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("ResentByUserId");
 
-                    b.ToTable("OutboundEmails");
+                    b.ToTable("OutboundEmails", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundPeppolMessage", b =>
@@ -2333,7 +2333,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("ResentImpersonatorUserId");
 
-                    b.ToTable("OutboundPeppolMessages");
+                    b.ToTable("OutboundPeppolMessages", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.OutboundWebHookCall", b =>
@@ -2394,7 +2394,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("ResentUserId");
 
-                    b.ToTable("OutboundWebHookCalls");
+                    b.ToTable("OutboundWebHookCalls", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.PeppolPayload", b =>
@@ -2454,7 +2454,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .IsUnique()
                         .HasFilter("[PeppolMessageType] = 1");
 
-                    b.ToTable("PeppolPayloads");
+                    b.ToTable("PeppolPayloads", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.PriceCalculationCharge", b =>
@@ -2479,16 +2479,16 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("PriceCalculationChargeId");
 
-                    b.ToTable("PriceCalculationCharges");
+                    b.ToTable("PriceCalculationCharges", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.PriceListRow", b =>
                 {
-                    b.Property<int?>("PriceListRowId")
+                    b.Property<int>("PriceListRowId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int?>("PriceListRowId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PriceListRowId"));
 
                     b.Property<int>("CompetenceLevel")
                         .HasColumnType("int");
@@ -2513,7 +2513,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("PriceListRowId");
 
-                    b.ToTable("PriceListRows");
+                    b.ToTable("PriceListRows", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Quarantine", b =>
@@ -2562,7 +2562,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("Quarantines");
+                    b.ToTable("Quarantines", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.QuarantineHistoryEntry", b =>
@@ -2598,7 +2598,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UpdatedById");
 
-                    b.ToTable("QuarantineHistoryEntries");
+                    b.ToTable("QuarantineHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Ranking", b =>
@@ -2638,7 +2638,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RegionId");
 
-                    b.ToTable("Rankings");
+                    b.ToTable("Rankings", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Region", b =>
@@ -2658,7 +2658,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RegionGroupId");
 
-                    b.ToTable("Regions");
+                    b.ToTable("Regions", (string)null);
 
                     b.HasData(
                         new
@@ -2804,7 +2804,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("RegionGroupId");
 
-                    b.ToTable("RegionGroups");
+                    b.ToTable("RegionGroups", (string)null);
 
                     b.HasData(
                         new
@@ -2990,7 +2990,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RequestGroupId");
 
-                    b.ToTable("Requests");
+                    b.ToTable("Requests", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestAttachment", b =>
@@ -3005,7 +3005,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.ToTable("RequestAttachments");
+                    b.ToTable("RequestAttachments", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroup", b =>
@@ -3142,7 +3142,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                         .IsUnique()
                         .HasFilter("[ReplacingRequestGroupId] IS NOT NULL");
 
-                    b.ToTable("RequestGroups");
+                    b.ToTable("RequestGroups", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroupAttachment", b =>
@@ -3157,7 +3157,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.ToTable("RequestGroupAttachments");
+                    b.ToTable("RequestGroupAttachments", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroupStatusConfirmation", b =>
@@ -3191,7 +3191,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RequestGroupId");
 
-                    b.ToTable("RequestGroupStatusConfirmations");
+                    b.ToTable("RequestGroupStatusConfirmations", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroupUpdateLatestAnswerTime", b =>
@@ -3214,7 +3214,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("RequestGroupUpdateLatestAnswerTime");
+                    b.ToTable("RequestGroupUpdateLatestAnswerTime", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestGroupView", b =>
@@ -3245,7 +3245,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("ViewedBy");
 
-                    b.ToTable("RequestGroupViews");
+                    b.ToTable("RequestGroupViews", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestListRow", b =>
@@ -3352,7 +3352,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("RequestPriceRows");
+                    b.ToTable("RequestPriceRows", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestStatusConfirmation", b =>
@@ -3386,7 +3386,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("RequestStatusConfirmation");
+                    b.ToTable("RequestStatusConfirmation", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestUpdateLatestAnswerTime", b =>
@@ -3409,7 +3409,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UpdatedBy");
 
-                    b.ToTable("RequestUpdateLatestAnswerTime");
+                    b.ToTable("RequestUpdateLatestAnswerTime", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequestView", b =>
@@ -3440,7 +3440,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("ViewedBy");
 
-                    b.ToTable("RequestViews");
+                    b.ToTable("RequestViews", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.Requisition", b =>
@@ -3526,7 +3526,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("Requisitions");
+                    b.ToTable("Requisitions", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionAttachment", b =>
@@ -3541,7 +3541,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.ToTable("RequisitionAttachments");
+                    b.ToTable("RequisitionAttachments", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionPriceRow", b =>
@@ -3584,7 +3584,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RequisitionId");
 
-                    b.ToTable("RequisitionPriceRows");
+                    b.ToTable("RequisitionPriceRows", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.RequisitionStatusConfirmation", b =>
@@ -3618,7 +3618,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("RequisitionId");
 
-                    b.ToTable("RequisitionStatusConfirmations");
+                    b.ToTable("RequisitionStatusConfirmations", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.SystemMessage", b =>
@@ -3677,7 +3677,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("LastUpdatedBy");
 
-                    b.ToTable("SystemMessages");
+                    b.ToTable("SystemMessages", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.TemporaryAttachmentGroup", b =>
@@ -3696,7 +3696,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
                     b.HasIndex("AttachmentId")
                         .IsUnique();
 
-                    b.ToTable("TemporaryAttachmentGroups");
+                    b.ToTable("TemporaryAttachmentGroups", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.TemporaryChangedEmailEntry", b =>
@@ -3723,7 +3723,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("TemporaryChangedEmailStoreEntries");
+                    b.ToTable("TemporaryChangedEmailStoreEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.TwoFactorEntry", b =>
@@ -3741,7 +3741,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("UserId", "DeviceId");
 
-                    b.ToTable("TwoFactorEntries");
+                    b.ToTable("TwoFactorEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserAuditLogEntry", b =>
@@ -3775,7 +3775,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserAuditLogEntries");
+                    b.ToTable("UserAuditLogEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSetting", b =>
@@ -3791,7 +3791,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("UserId", "DefaultSettingType");
 
-                    b.ToTable("UserDefaultSettings");
+                    b.ToTable("UserDefaultSettings", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSettingHistoryEntry", b =>
@@ -3815,7 +3815,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UserAuditLogEntryId");
 
-                    b.ToTable("UserDefaultSettingHistoryEntries");
+                    b.ToTable("UserDefaultSettingHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSettingOrderRequirement", b =>
@@ -3842,7 +3842,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserDefaultSettingOrderRequirements");
+                    b.ToTable("UserDefaultSettingOrderRequirements", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserDefaultSettingsOrderRequirementHistoryEntry", b =>
@@ -3869,7 +3869,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UserAuditLogEntryId");
 
-                    b.ToTable("UserDefaultSettingsOrderRequirementHistoryEntries");
+                    b.ToTable("UserDefaultSettingsOrderRequirementHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserLoginLogEntry", b =>
@@ -3890,7 +3890,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLoginLogEntries");
+                    b.ToTable("UserLoginLogEntries", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserNotificationSetting", b =>
@@ -3909,7 +3909,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasKey("UserId", "NotificationChannel", "NotificationType");
 
-                    b.ToTable("UserNotificationSettings");
+                    b.ToTable("UserNotificationSettings", (string)null);
                 });
 
             modelBuilder.Entity("Tolk.BusinessLogic.Entities.UserNotificationSettingHistoryEntry", b =>
@@ -3936,7 +3936,7 @@ namespace Tolk.BusinessLogic.Data.Migrations
 
                     b.HasIndex("UserAuditLogEntryId");
 
-                    b.ToTable("UserNotificationSettingHistoryEntries");
+                    b.ToTable("UserNotificationSettingHistoryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
