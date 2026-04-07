@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
+    <!--<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />-->
     <PackageReference Include="DataTables.AspNet.AspNetCore" Version="2.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.4" />
@@ -30,10 +30,10 @@
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.7.1" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.3" />
 	<DotNetCliToolReference Include="BuildBundlerMinifier" Version="3.*" />
-  </ItemGroup>	
+  </ItemGroup>-->	
 
   <ItemGroup>
     <ProjectReference Include="..\Tolk.BusinessLogic\Tolk.BusinessLogic.csproj" />
