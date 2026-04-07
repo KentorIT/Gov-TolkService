@@ -5,6 +5,7 @@ on:
     branches: 
       - dev
       - deploy
+      - KT-1706
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,7 +16,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 10.0.x
+        dotnet-version: 10.0.x  
     - name: Restore dependencies
       run: dotnet restore    
     - name: Get commit hash
@@ -37,9 +38,17 @@ jobs:
     - name: Read Version number
       run: |
         echo "Full version number saved: ${{ env.full_version_number }}"
-        echo "Build Version number saved: ${{ env.build_version_number }}"
+        echo "Build Version number saved: ${{ env.build_version_number }}"   
     - name: Build    
       run: dotnet build -c Release --no-restore --no-incremental -p:VersionPrefix=${{ env.build_version_number }} --version-suffix=${{ steps.vars.outputs.sha_short }}
+    - name: Setup Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: 22
+    - name: Install Node denpendencies
+      run: npm install
+    - name: Minify Assets
+      run:  npm run minifyweb:js
     - name: Test
       run: dotnet test -c Release --no-build --verbosity normal
     - name: Create artifacts folder
