@@ -39,16 +39,16 @@ jobs:
       run: |
         echo "Full version number saved: ${{ env.full_version_number }}"
         echo "Build Version number saved: ${{ env.build_version_number }}"   
-    - name: Build    
-      run: dotnet build -c Release --no-restore --no-incremental -p:VersionPrefix=${{ env.build_version_number }} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Setup Node
       uses: actions/setup-node@v6
       with:
         node-version: 22
-    - name: Install Node denpendencies
+    - name: Install Node dependencies
       run: npm install
     - name: Minify Assets
       run:  npm run minifyweb:js
+    - name: Build    
+      run: dotnet build -c Release --no-restore --no-incremental -p:VersionPrefix=${{ env.build_version_number }} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Test
       run: dotnet test -c Release --no-build --verbosity normal
     - name: Create artifacts folder
