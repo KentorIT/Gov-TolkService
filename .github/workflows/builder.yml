@@ -4,17 +4,16 @@ on:
   push:
     branches: 
       - dev
-      - deploy
-      - KT-1706
+      - deploy      
 jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
       full_version_number: ${{ steps.create_version_number.outputs.full_version_number }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
     - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 10.0.x  
     - name: Restore dependencies
@@ -63,7 +62,7 @@ jobs:
       run: dotnet publish ./Tolk.Web.Api/Tolk.Web.Api.csproj -c Release --no-build -o "${{ github.workspace }}/artifacts/Tolk.Web.Api"
     - name: Create migration artifact
       run: |
-        dotnet tool install --global dotnet-ef --version 10.0.4
+        dotnet tool install --global dotnet-ef --version 10.0.4        
         dotnet ef migrations script -o "${{ github.workspace }}/artifacts/Tolk.Migration/TolkMigrate.sql" --startup-project "./Tolk.Web/Tolk.Web.csproj" -p "./Tolk.BusinessLogic/Tolk.BusinessLogic.csproj" -i
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
