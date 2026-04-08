@@ -1,13 +1,21 @@
-﻿@model RegisterViewModel
-@inject SelectListService SelectListService
+﻿@using Microsoft.Extensions.Options
+@using Tolk.BusinessLogic.Helpers
 @using Tolk.Web.Services
+@inject SelectListService SelectListService
+@inject IOptions<TolkOptions> options
+@model RegisterViewModel
 @{
     ViewData["Title"] = "Registrera användarkonto";
 }
 <div class="row">
     <div class="col-xs-12">
         <h1>@ViewData["Title"]</h1>
-        <p>Fyll i uppgifterna för att få tillgång till tjänsten och en aktiveringslänk skickad. Ange alltid en personlig e-postadress när ni registrerar konto i tjänsten. Ni kan sedan styra om er e-post till en funktionsbrevlåda via en särskild inställning.</p>
+        <p>
+            Fyll i dina uppgifter för att få tillgång till tjänsten. När registreringen är klar skickas en aktiveringslänk till din e‑postadress.<br />
+            <b>Observera</b> att du kan bara skapa ett konto om din organisation har tillåtit att användare registrerar sig själva. Om detta inte är möjligt behöver du kontakta din centrala administratör på din organisation. Om du inte vet vem det är, kan du kontakta <a href="mailto:@options.Value.Support.FirstLineEmail">@options.Value.Support.FirstLineEmail</a> för att få hjälp.
+
+            Använd alltid en personlig e‑postadress när du skapar ett konto.
+        </p>
         <form method="post" asp-action="Register" asp-controller="Account" class="do-not-check-dirty">
             <div class="row padding-bottom-30px">
                 <div class="col-xs-12">
