@@ -1,0 +1,7 @@
+{
+    "devDependencies": {
+        "esbuild": "^0.28.0"        
+    },
+    "scripts": {
+        "minifyweb:js": "find Tolk.Web/wwwroot/js -name '*.min.js' -delete && esbuild 'Tolk.Web/wwwroot/js/**/*.js' --minify-syntax --minify-whitespace --minify-identifiers --outbase=Tolk.Web/wwwroot/js --outdir=Tolk.Web/wwwroot/js --entry-names=[dir]/[name].min --allow-overwrite"}
+}

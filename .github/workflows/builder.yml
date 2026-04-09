@@ -4,18 +4,18 @@ on:
   push:
     branches: 
       - dev
-      - deploy
+      - deploy      
 jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
       full_version_number: ${{ steps.create_version_number.outputs.full_version_number }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
     - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x  
     - name: Restore dependencies
       run: dotnet restore    
     - name: Get commit hash
@@ -37,7 +37,15 @@ jobs:
     - name: Read Version number
       run: |
         echo "Full version number saved: ${{ env.full_version_number }}"
-        echo "Build Version number saved: ${{ env.build_version_number }}"
+        echo "Build Version number saved: ${{ env.build_version_number }}"   
+    - name: Setup Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: 22
+    - name: Install Node dependencies
+      run: npm install
+    - name: Minify Assets
+      run:  npm run minifyweb:js
     - name: Build    
       run: dotnet build -c Release --no-restore --no-incremental -p:VersionPrefix=${{ env.build_version_number }} --version-suffix=${{ steps.vars.outputs.sha_short }}
     - name: Test
@@ -54,7 +62,7 @@ jobs:
       run: dotnet publish ./Tolk.Web.Api/Tolk.Web.Api.csproj -c Release --no-build -o "${{ github.workspace }}/artifacts/Tolk.Web.Api"
     - name: Create migration artifact
       run: |
-        dotnet tool install --global dotnet-ef --version 8.0.15
+        dotnet tool install --global dotnet-ef --version 10.0.4        
         dotnet ef migrations script -o "${{ github.workspace }}/artifacts/Tolk.Migration/TolkMigrate.sql" --startup-project "./Tolk.Web/Tolk.Web.csproj" -p "./Tolk.BusinessLogic/Tolk.BusinessLogic.csproj" -i
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -19,8 +18,7 @@ namespace Tolk.BusinessLogic.Tests.Services
 {
     public class UserDeactivationTests
     {
-        private readonly ILogger<UserService> _logger;
-        private readonly UserManager<AspNetUser> _userManager;
+        private readonly ILogger<UserService> _logger;        
         private readonly INotificationService _notificationService;
         private readonly IOptions<TolkOptions> _options;
         private int[] thresholdDays = { 1, 5, 10, 20, 30 };
