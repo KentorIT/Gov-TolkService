@@ -4,6 +4,7 @@
 }
 <secton aria-label="@ViewData["Title"]">
     <h1>@ViewData["Title"]</h1>
+    <br />
     <div class="row">
         <div class="col-sm-4">
             <display-entry asp-for="SmtpDisplay" display-raw="true" />
@@ -28,41 +29,44 @@
     </div>
     <div class="row">
         <div class="col-sm-4">
+            <display-entry asp-for="OrderDisplay" display-raw="true" />
+        </div>
+        <div class="col-sm-4">
             <display-entry asp-for="FlexibleOrderDisplay" display-raw="true" />
         </div>
         <div class="col-sm-4">
             <display-entry asp-for="PeppolDisplay" display-raw="true" />
         </div>
+    </div>
+    <div class="row">
         <div class="col-sm-4">
             <display-entry asp-for="EnabledFeatures" display-raw="true" />
         </div>
-    </div>
-    <div class="row">
         <div class="col-sm-4">
             <display-entry asp-for="EntitySchedulerSettings" display-raw="true" />
         </div>
         <div class="col-sm-4">
-            <display-entry asp-for="CombinedMaxSizeAttachments"/>
+            <display-entry asp-for="CombinedMaxSizeAttachments" />
         </div>
+    </div>
+    <div class="row">
         <div class="col-sm-4">
             <display-entry asp-for="AllowedFileExtensions" display-raw="true" />
         </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="UseStoredProceduresForReports" />
+        </div>
+        <div class="col-sm-4">
+            <display-entry asp-for="PublicOrigin" />
+        </div>
     </div>
     <div class="row">
-        <div class="col-sm-4">
-            <display-entry asp-for="UseStoredProceduresForReports"/>
-        </div>
-        <div class="col-sm-4">
-            <display-entry asp-for="PublicOrigin"/>
-        </div>
         <div class="col-sm-4">
             <display-entry asp-for="ExcludedNotificationTypesForCustomer" display-raw="true" />
         </div>
-    </div>
-    <div class="row">
         <div class="col-sm-4">
             <display-entry asp-for="UserInactivitySettings" display-raw="true" />
-        </div>      
+        </div>
         <div class="col-sm-4">
             <display-entry asp-for="TwoFactorDisplay" display-raw="true" />
         </div>

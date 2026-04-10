@@ -163,6 +163,8 @@ namespace Tolk.Web.Models
 
         public bool AllowProcessing { get; set; } = true;
 
+        public bool AllowFileAttachments { get; set; } = false;
+
         public bool AllowAccept { get; set; } = true;
 
         public TimeSpan? EarliestStartAt => OrderViewModel?.FlexibleTimeRange.EarliestStartAt;

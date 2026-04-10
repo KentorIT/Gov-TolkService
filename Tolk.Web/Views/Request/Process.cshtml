@@ -208,10 +208,13 @@
                             }
                         </div>
                         <div class="col-sm-4">
-                            <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
-                            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
-                            <br />
-                            <br />
+                            @if (Model.AllowFileAttachments)
+                            {
+                                <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
+                                @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
+                                <br />
+                                <br />
+                            }
                         </div>
                     </div>
                     <div class="row">
@@ -253,7 +256,10 @@
         </div>
         @if (Model.AllowProcessing)
         {
-            @await Html.PartialAsync("_UploadFileDialog")
+            if (Model.AllowFileAttachments)
+            {
+                @await Html.PartialAsync("_UploadFileDialog")
+            }
             <div id="denyMessageDialog" class="modal fade" role="dialog">
                 <div class="modal-dialog">
                     <!-- Modal content-->

@@ -88,6 +88,8 @@ namespace Tolk.Web.Models
 
         public bool OrderHasAllowExceedingTravelCost { get; set; }
 
+        public bool AllowFileAttachments { get; set; } = false;
+
         [Display(Name = "Accepterar restid eller resväg som överskrider gränsvärden")]
         public RadioButtonGroup AllowExceedingTravelCost { get; set; }
 

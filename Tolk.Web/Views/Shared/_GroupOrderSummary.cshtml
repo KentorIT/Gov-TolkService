@@ -73,29 +73,31 @@ else
                         <tbody>
                             @foreach (var occasion in Model.OrderOccasionDisplayModels.OrderBy(o => o.OccasionStartDateTime))
                             {
-                            <tr class="table-row">
-                                <td>
-                                    @occasion.Information
-                                    @if (!string.IsNullOrEmpty(occasion.MealBreakTextToDisplay))
-                                    {
-                                        <br /><span class="small"> @(occasion.MealBreakTextToDisplay)</span>
-                                    }
-                                </td>
-                                <td>
-                                    @(occasion.ExtraInterpreter ? "Extra tolk" : "")
-                                </td>
-                                <td class="currency">
-                                    @occasion.PriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")
-                                </td>
-                                <td>
-                                    <a class="table-price-toggle-price-info" href="#more-info">Visa</a>
-                                </td>
-                            </tr>
-                            <tr class="table-price-row">
-                                <td colspan="4">
-                                    @await Html.PartialAsync("_PriceTable", occasion.PriceInformationModel)
-                                </td>
-                            </tr>
+                                <tr class="table-row">
+                                    <td>
+                                        @occasion.Information
+                                        @if (!string.IsNullOrEmpty(occasion.MealBreakTextToDisplay))
+                                        {
+                                            <br />
+                                    
+                                            <span class="small"> @(occasion.MealBreakTextToDisplay)</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @(occasion.ExtraInterpreter ? "Extra tolk" : "")
+                                    </td>
+                                    <td class="currency">
+                                        @occasion.PriceInformationModel.TotalPriceToDisplay.ToString("#,0.00 SEK")
+                                    </td>
+                                    <td>
+                                        <a class="table-price-toggle-price-info" href="#more-info">Visa</a>
+                                    </td>
+                                </tr>
+                                <tr class="table-price-row">
+                                    <td colspan="4">
+                                        @await Html.PartialAsync("_PriceTable", occasion.PriceInformationModel)
+                                    </td>
+                                </tr>
                             }
                         </tbody>
                         <tfoot>
@@ -274,17 +276,9 @@ else
                 <display-entry asp-for="Description" />
             </div>
             <div class="col-sm-4">
-                @if (Model.UseAttachments)
+                @if (Model.UseAttachments && Model.AttachmentListModel?.DisplayFiles?.Count > 0)
                 {
-                    @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
-                    {
-                        @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
-                    }
-                    else
-                    {
-                        <label>Bifogade filer</label>
-                        <div class="no-value-info">Inga filer har bifogats</div>
-                    }
+                    @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
                 }
             </div>
         }

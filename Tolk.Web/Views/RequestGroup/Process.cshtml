@@ -90,23 +90,26 @@
                                 <div class="no-value-info">Ej angivet</div>
                             }
                         </div>
-                    </div>                 
+                    </div>
                     @if (Model.IsOnSiteOrOffSiteDesignatedLocationSelected && Model.AllowExceedingTravelCost != null && Model.AllowExceedingTravelCost.SelectedItem != null)
                     {
                         <div class="row">
+                            <div class="col-sm-8">
+                                <display-entry asp-for="AllowExceedingTravelCost" />
+                            </div>
                             <div class="col-sm-4">
                                 @if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
                                 {
                                     @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
                                 }
-                                else
-                                {
-                                    <label>Bifogade filer</label>
-                                    <div class="no-value-info">Inga filer har bifogats</div>
-                                }
                             </div>
-                            <div class="col-sm-8">
-                                <display-entry asp-for="AllowExceedingTravelCost" />
+                        </div>
+                    }
+                    else if (Model.AttachmentListModel?.DisplayFiles?.Count > 0)
+                    {
+                        <div class="row">
+                            <div class="col-sm-12">
+                                @await Html.PartialAsync("_FileList", Model.AttachmentListModel)
                             </div>
                         </div>
                     }
@@ -215,7 +218,7 @@
                             <display-entry asp-for="ExpiresAt" />
                         </div>
                     </div>
-                </div>                
+                </div>
                 <div class="row">
                     @if (Model.InterpreterLocation.HasValue)
                     {
@@ -268,10 +271,13 @@
                         <form-entry asp-for="BrokerReferenceNumber" />
                     </div>
                     <div class="col-sm-4">
-                        <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
-                        @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
-                        <br />
-                        <br />
+                        @if (Model.AllowFileAttachments)
+                        {
+                            <input asp-for="CombinedMaxSizeAttachments" type="hidden" />
+                            @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för myndigheten", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
+                            <br />
+                            <br />
+                        }
                     </div>
                 </div>
                 @if (Model.AllowAccept)
@@ -402,7 +408,7 @@
                                             <span class="glyphicon message-icon glyphicon-ok"></span>
                                             <span class="info-message"></span>
                                             <span title="" class="form-entry-information glyphicon glyphicon-info-sign d-none"
-                                              data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
+                                                  data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
                                         </div>
                                     </div>
                                     <div class="col-sm-6">
@@ -505,7 +511,7 @@
                                                         <span class="glyphicon message-icon glyphicon-ok"></span>
                                                         <span class="info-message"></span>
                                                         <span title="" class="form-entry-information glyphicon glyphicon-info-sign d-none"
-                                                      data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
+                                                              data-original-title="Efter kontroll mot Kammarkollegiets publicerade tolkregister att tilldelad tolk uppfyller kravställd kompetensnivå har ingen verifiering kunnat ske. Det kan bero på att tolkens auktorisation inte längre är giltig eller ännu inte publicerats. Det kan också bero på att tolken valt att inte synas i det officiellt publicerade tolkregistret."></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -627,8 +633,10 @@
                 <input asp-for="Files[0].Id" type="hidden" />
             </span>
         </div>
-
-        @await Html.PartialAsync("_UploadFileDialog")
+        @if (Model.AllowFileAttachments)
+        {
+            @await Html.PartialAsync("_UploadFileDialog")
+        }
         <div id="denyMessageDialog" class="modal fade" role="dialog">
             <div class="modal-dialog">
                 <!-- Modal content-->

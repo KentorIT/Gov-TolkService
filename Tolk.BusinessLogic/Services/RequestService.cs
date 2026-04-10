@@ -449,7 +449,7 @@ namespace Tolk.BusinessLogic.Services
             InterpreterBroker interpreter,
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
-            IEnumerable<RequestAttachment> attachedFiles,
+            List<RequestAttachment> attachedFiles,
             decimal? expectedTravelCosts,
             string expectedTravelCostInfo,
             DateTimeOffset? latestAnswerTimeForCustomer,

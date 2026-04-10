@@ -131,6 +131,7 @@ namespace Tolk.Web.Controllers
                 model.CustomerInformationModel.IsCustomer = false;
                 model.CustomerInformationModel.UseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == requestGroup.OrderGroup.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
                 model.BrokerReferenceNumber = requestGroup.BrokerReferenceNumber;
+                model.AllowFileAttachments = _options.EnableBrokerFileAttachments;
                 //if not first broker in rank (requests are not answered and have no pricerows) we need to get a calculated price with correct broker fee 
                 if (requestGroup.Ranking.Rank != 1)
                 {
@@ -188,7 +189,7 @@ namespace Tolk.Web.Controllers
                             model.InterpreterLocation,
                             interpreterModel,
                             extrainterpreterModel,
-                            model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList(),
+                            _options.EnableBrokerFileAttachments ? model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList() : null,
                             (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
                             model.BrokerReferenceNumber
                         );
@@ -231,7 +232,7 @@ namespace Tolk.Web.Controllers
                             model.InterpreterLocationOnAccept,
                             model.InterpreterAcceptModel?.AcceptDto,
                             model.ExtraInterpreterAcceptModel?.AcceptDto,
-                            model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList(),
+                            _options.EnableBrokerFileAttachments ? model.Files?.Select(f => new RequestGroupAttachment { AttachmentId = f.Id }).ToList() : null,
                             model.BrokerReferenceNumber
                         );
                         await _dbContext.SaveChangesAsync();

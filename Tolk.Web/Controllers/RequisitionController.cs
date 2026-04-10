@@ -165,6 +165,7 @@ namespace Tolk.Web.Controllers
                     await _listToModelService.AddInformationFromListsToModel(model);
                     model.FileGroupKey = groupKey;
                     model.CombinedMaxSizeAttachments = _options.CombinedMaxSizeAttachments;
+                    model.AllowFileAttachments = _options.EnableBrokerFileAttachments;
                     return View(model);
                 }
                 catch (InvalidOperationException)
@@ -199,9 +200,20 @@ namespace Tolk.Web.Controllers
 
                     try
                     {
-                        requisition = await _requisitionService.Create(request, User.GetUserId(), User.TryGetImpersonatorId(), model.Message, model.Outlay,
-                            model.SessionStartedAt, model.SessionEndedAt, model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
-                            model.TimeWasteIWHTime, model.InterpreterTaxCard.Value, model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList(), model.FileGroupKey.Value, mealbreaks, model.CarCompensation, model.PerDiem);
+                        requisition = await _requisitionService.Create(
+                            request, User.GetUserId(), 
+                            User.TryGetImpersonatorId(), 
+                            model.Message, 
+                            model.Outlay,
+                            model.SessionStartedAt, 
+                            model.SessionEndedAt, 
+                            model.TimeWasteTotalTime.HasValue ? (model.TimeWasteTotalTime ?? 0) - (model.TimeWasteIWHTime ?? 0) : model.TimeWasteTotalTime,
+                            model.TimeWasteIWHTime, model.InterpreterTaxCard.Value,
+                            _options.EnableBrokerFileAttachments ? model.Files?.Select(f => new RequisitionAttachment { AttachmentId = f.Id }).ToList() : null,
+                            model.FileGroupKey.Value,
+                            mealbreaks, 
+                            model.CarCompensation, 
+                            model.PerDiem);
                     }
                     catch (InvalidOperationException ex)
                     {

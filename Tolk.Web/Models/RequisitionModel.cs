@@ -14,6 +14,8 @@ namespace Tolk.Web.Models
 
         public int OrderId { get; set; }
 
+        public bool AllowFileAttachments { get; set; } = false;
+
         [Display(Name = "BokningsID")]
         public string OrderNumber { get; set; }
 

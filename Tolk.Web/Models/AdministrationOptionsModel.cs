@@ -35,9 +35,16 @@ namespace Tolk.Web.Models
 
         public bool EnableOrderUpdate { get; set; }
 
+        public int? MonthsOrderFutureDateWarning { get; set; }
+
+        public int? HoursOrderCloseInTime { get; set; }
+
         public bool EnableRegisterUser { get; set; }
         public bool EnableInvoiceMock { get; set; }
         public bool EnableAutomaticUserDeactivation { get; set; }
+
+        public bool EnableBrokerFileAttachments { get; set; }
+
         public bool RunEntityScheduler { get; set; }
 
         public int HourToRunFrameworkAgreementValidation { get; set; }
@@ -59,11 +66,14 @@ namespace Tolk.Web.Models
         [Display(Name = "Peppolinställningar")]
         public string PeppolDisplay { get; set; }
 
-        [Display(Name = "Flexibel order inställningar")]
+        [Display(Name = "Inställningar flexibel bokning")]
         public string FlexibleOrderDisplay { get; set; }
 
+        [Display(Name = "Bokningsinställningar")]
+        public string OrderDisplay => $"Sammanhållna bokningar påslaget: {EnableOrderGroups.ToSwedishString()}\nVarning för nära i tiden: {HoursOrderCloseInTime?.ToString() + "h"}\nVarning för långt fram i tiden: {MonthsOrderFutureDateWarning?.ToString() + "mån"}\nUppdatera bokning påslaget: {EnableOrderUpdate.ToSwedishString()}\nSätta sista svarstid (myndighet): {EnableSetLatestAnswerTimeForCustomer.ToSwedishString()}";
+
         [Display(Name = "Påslagna features")]
-        public string EnabledFeatures => $"Hopp i tiden: {EnableTimeTravel.ToSwedishString()}\nSammanhållna bokningar: {EnableOrderGroups.ToSwedishString()}\nOrderuppdateringar: {EnableOrderUpdate.ToSwedishString()}\nSjälvregistrering av konto: {EnableRegisterUser.ToSwedishString()}\nApi för myndigheter: {EnableCustomerApi.ToSwedishString()}\nSätta sista svarstid (myndighet): {EnableSetLatestAnswerTimeForCustomer.ToSwedishString()}\nSeparat behandling av extra tolkar: {AllowDeclineExtraInterpreterOnRequestGroups.ToSwedishString()}\nAvrunda priser: {RoundPriceDecimals.ToSwedishString()}\nSkapa MockFaktura: {EnableInvoiceMock.ToSwedishString()}\nAutomatisk Deaktivering av användare: {EnableAutomaticUserDeactivation.ToSwedishString()}";
+        public string EnabledFeatures => $"Hopp i tiden: {EnableTimeTravel.ToSwedishString()}\nBifoga filer förmedling: {EnableBrokerFileAttachments.ToSwedishString()}\nSjälvregistrering av konto: {EnableRegisterUser.ToSwedishString()}\nApi för myndigheter: {EnableCustomerApi.ToSwedishString()}\nSeparat behandling av extra tolkar: {AllowDeclineExtraInterpreterOnRequestGroups.ToSwedishString()}\nAvrunda priser: {RoundPriceDecimals.ToSwedishString()}\nSkapa MockFaktura: {EnableInvoiceMock.ToSwedishString()}\nAutomatisk Deaktivering av användare: {EnableAutomaticUserDeactivation.ToSwedishString()}";
 
         [Display(Name = "Entity Scheduler")]
         public string EntitySchedulerSettings => $"Kör Entity scheduler: {RunEntityScheduler.ToSwedishString()}\n\tStarttid dagliga jobb: {HourToRunDailyJobs.ToSwedishString("D2")}\n\tNär på dygnet verifieras systemets avtal: {HourToRunFrameworkAgreementValidation.ToSwedishString("D2")}\n\tAntal månader innan aut. godkännande av reklamationer: {MonthsToApproveComplaints}\n\tAntal dagar efter utfört uppdrag för skapande av ord-agreement: {WorkDaysGracePeriodBeforeOrderAgreementCreation}";
@@ -79,6 +89,7 @@ namespace Tolk.Web.Models
         {
             return new AdministrationOptionsModel
             {
+                EnableBrokerFileAttachments = options.EnableBrokerFileAttachments,
                 EnableOrderUpdate = options.EnableOrderUpdate,
                 EnableOrderGroups = options.EnableOrderGroups,
                 EnableTimeTravel = options.EnableTimeTravel,
@@ -87,6 +98,8 @@ namespace Tolk.Web.Models
                 CombinedMaxSizeAttachments = options.CombinedMaxSizeAttachments,
                 AllowedFileExtensions = options.AllowedFileExtensions,
                 UseStoredProceduresForReports = options.UseStoredProceduresForReports,
+                MonthsOrderFutureDateWarning = options.MonthsOrderFutureDateWarning,
+                HoursOrderCloseInTime = options.HoursOrderCloseInTime,
                 HourToRunDailyJobs = options.HourToRunDailyJobs,
                 HourToRunFrameworkAgreementValidation = options.HourToRunFrameworkAgreementValidation,
                 PublicOrigin = options.PublicOrigin,

@@ -660,7 +660,7 @@ namespace Tolk.BusinessLogic.Entities
             InterpreterBroker interperter,
             CompetenceAndSpecialistLevel competenceLevel,
             List<OrderRequirementRequestAnswer> requirementAnswers,
-            IEnumerable<RequestAttachment> attachments,
+            List<RequestAttachment> attachments,
             PriceInformation priceInformation,
             bool isAutoAccepted,
             Request oldRequest,
@@ -698,7 +698,7 @@ namespace Tolk.BusinessLogic.Entities
             ReplacingRequestId = oldRequest.RequestId;
             PriceRows = new List<RequestPriceRow>();
             RequirementAnswers = requirementAnswers;
-            Attachments = attachments.ToList();
+            Attachments = attachments;
             PriceRows = priceInformation.PriceRows.Select(row => DerivedClassConstructor.Construct<PriceRowBase, RequestPriceRow>(row)).ToList();
             ExpectedTravelCostInfo = expectedTravelCostInfo;
             InterpreterCompetenceVerificationResultOnAssign = verificationResult;

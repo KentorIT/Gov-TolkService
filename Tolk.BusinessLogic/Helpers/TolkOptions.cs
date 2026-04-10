@@ -14,6 +14,8 @@ namespace Tolk.BusinessLogic.Helpers
 
         public string AllowedFileExtensions { get; set; }
 
+        public bool EnableBrokerFileAttachments { get; set; } = false;
+
         public bool EnableTimeTravel { get; set; }
 
         public bool EnableOrderGroups { get; set; }

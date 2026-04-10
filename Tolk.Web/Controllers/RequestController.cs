@@ -245,7 +245,7 @@ namespace Tolk.Web.Controllers
                                 interpreter,
                                 model.InterpreterCompetenceLevel.Value,
                                 requirementAnswers,
-                                model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }) ?? Enumerable.Empty<RequestAttachment>(),
+                                _options.EnableBrokerFileAttachments ? model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList() : null,
                                 model.ExpectedTravelCosts,
                                 model.ExpectedTravelCostInfo,
                                 (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
@@ -393,7 +393,7 @@ namespace Tolk.Web.Controllers
                             model.InterpreterLocation.Value,
                             model.InterpreterCompetenceLevel.Value,
                             requirementAnswers,
-                            model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
+                            _options.EnableBrokerFileAttachments ? model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList() : null,
                             model.ExpectedTravelCosts,
                             model.ExpectedTravelCostInfo,
                             (model.SetLatestAnswerTimeForCustomer != null && EnumHelper.Parse<TrueFalse>(model.SetLatestAnswerTimeForCustomer.SelectedItem.Value) == TrueFalse.Yes) ? model.LatestAnswerTimeForCustomer : null,
@@ -468,7 +468,7 @@ namespace Tolk.Web.Controllers
                             model.InterpreterLocationOnAccept,
                             model.InterpreterCompetenceLevelOnAccept,
                             requirementAnswers,
-                            model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList(),
+                            _options.EnableBrokerFileAttachments ? model.Files?.Select(f => new RequestAttachment { AttachmentId = f.Id }).ToList() : null,
                             model.BrokerReferenceNumber,
                             request.Order.IsFlexible ? request.Order.StartAt.Date.Add(model.RespondedStartAt.Value).ToDateTimeOffsetSweden() : null
                         );
@@ -732,6 +732,7 @@ namespace Tolk.Web.Controllers
             model.AttachmentListModel = model.OrderViewModel.RequestAttachmentListModel;
             model.OrderViewModel.CustomerUseSelfInvoicingInterpreter = _cacheService.CustomerSettings.Any(c => c.CustomerOrganisationId == request.Order.CustomerOrganisationId && c.UsedCustomerSettingTypes.Any(cs => cs == CustomerSettingType.UseSelfInvoicingInterpreter));
             model.BrokerReferenceNumber = request.BrokerReferenceNumber;
+            model.AllowFileAttachments = _options.EnableBrokerFileAttachments;
             return model;
         }
 

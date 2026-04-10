@@ -1,5 +1,4 @@
-﻿ 
-@model Tolk.Web.Models.RequisitionModel
+﻿@model Tolk.Web.Models.RequisitionModel
 @inject HelpLinkService HelpLinkService
 @using Tolk.Web.Services
 @using Tolk.BusinessLogic.Entities;
@@ -10,7 +9,8 @@
 }
 @if (!string.IsNullOrEmpty(Model.ViewedByUser))
 {
-    <span class="glyphicon glyphicon-user color-red" title="@Model.ViewedByUser"> </span><span class="normal-weight redcolor"> @Model.ViewedByUser</span>
+    <span class="glyphicon glyphicon-user color-red" title="@Model.ViewedByUser"> </span>
+    <span class="normal-weight redcolor"> @Model.ViewedByUser</span>
     <br />
 }
 <section aria-label="@ViewData["Title"]">
@@ -76,7 +76,9 @@
                     <div class="col-sm-12">
                         @if (Model.PreviousRequisition != null)
                         {
-                            <a href="@Url.Action("View", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a><br /><br />
+                            <a href="@Url.Action("View", new { id = Model.PreviousRequisition.RequisitionId })">Se tidigare rekvisition</a>
+                            <br />
+                            <br />
                         }
                     </div>
                 </div>
@@ -139,7 +141,7 @@
                 </div>
                 <div class="row">
                     <div class="col-sm-4">
-                        <a href="#" class="add-mealbreak-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addMealBreak"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till måltidspaus</a> 
+                        <a href="#" class="add-mealbreak-button font-size-14" data-toggle="modal" data-backdrop="static" data-target="#addMealBreak"><span class="glyphicon glyphicon-plus-sign"></span> Lägg till måltidspaus</a>
                         <br /><br />
                         <div class="@tableClassName mealbreak-list no-padding">
                             <label>Angivna måltidspauser</label><br />
@@ -153,176 +155,183 @@
                                             <tr>
                                                 <td class="table-start-column">
                                                     <input asp-for="MealBreaks[i].StartAtTemp" type="hidden">
-                                                    <input asp-for="MealBreaks[i].EndAtTemp" type="hidden">
-                                                    @Model.MealBreaks[i].StartAt.ToString("HH:mm")-@Model.MealBreaks[i].EndAt.ToString("HH:mm")
-                                                </td>
-                                                <td class="table-remove-column"><span class="remove-mealbreak-row bold">&times;</span></td>
-                                            </tr>
-                                        }
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="col-sm-6">
-                        @if (Model.MealBreakIncluded ?? false)
-                        {
-                            <div class="warning-info-yellow"><span class="glyphicon message-icon glyphicon-exclamation-sign yellow-glyphicon"></span><span class="info-message-small" role="alert"> Myndighet har angett att måltidspaus beräknades ingå i uppdraget</span></div>
-                        }
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-12">
-                        <h2 class="no-padding-margin">Resekostnader <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska utlägg, traktamente och bilersättning anges."></span> @HelpLinkService.Anchor("resekostnad")</h2>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-4">
-                        @if (Model.ExpectedTravelCosts > 0)
-                        {
-                            <display-entry asp-for="ExpectedTravelCosts" />}
-                        else
-                        {
-                            <label>Förväntad resekostnad (exkl. moms) i SEK</label>
-                            <div class="no-value-info">Inget angivet</div>
-                        }
-                    </div>
-                    <div class="col-sm-4">
-                    </div>
-                    <div class="col-sm-4">
-                        <display-entry asp-for="InterpreterLocation" />
-                    </div>
-                </div>
-                @if (Model.PreviousRequisition != null)
-                {
-                    <div class="row">
-                        <div class="col-sm-4">
-                            @if (Model.PreviousRequisition.Outlay != null)
-                            {
-                                <display-entry asp-for="PreviousRequisition.Outlay" />
-                            }
-                            else
-                            {
-                                <label>Tidigare angivet utlägg</label>
-                                <div class="no-value-info">Inget angivet</div>
-                            }
-                        </div>
-                        <div class="col-sm-4">
-                            @if (Model.PreviousRequisition.CarCompensation != null)
-                            {
-                                <display-entry asp-for="PreviousRequisition.CarCompensation" />
-                            }
-                            else
-                            {
-                                <label>Tidigare angiven bilersättning</label>
-                                <div class="no-value-info">Inget angivet</div>
-                            }
-                        </div>
-                        <div class="col-sm-4">
-                            @if (!string.IsNullOrWhiteSpace(Model.PreviousRequisition.PerDiem))
-                            {
-                                <display-entry asp-for="PreviousRequisition.PerDiem" />
-                            }
-                            else
-                            {
-                                <label>Tidigare angivet traktamente</label>
-                                <div class="no-value-info">Inget angivet</div>
-                            }
-                        </div>
-                    </div>
-                }
-                <div class="row">
-                    <div class="col-sm-4">
-                        <form-entry asp-for="Outlay" />
-                        <br />
-                    </div>
-                    <div class="col-sm-4">
-                        <form-entry asp-for="CarCompensation" />
-                        <div id="carCompensationValidator" class="d-none text-danger body"></div>
-                        <br />
-                    </div>
-                    <div class="col-sm-4">
-                        <form-entry asp-for="PerDiem" />
-                        <br />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-8">
-                        <form-entry asp-for="Message" help-link="@HelpLinkService.GenerateUrl("specifikation")" />
-                        @if (Model.PreviousRequisition != null)
-                        {
-                            <display-entry asp-for="PreviousRequisition.Message" />
-                        }
-                    </div>
-                    <div class="col-sm-4">
-                        @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för rekvisitionen", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-6">
-                        <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Request" asp-action="View" asp-route-Id="@Model.RequestId">Avbryt <span class="btn-remove-times">&times;</span></a>
-                    </div>
-                    <div class="col-sm-6">
-                        <button id="create" type="submit" class="disable-on-click btn btn-large btn-default pull-right">Registrera rekvisition</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <span id="baseMealBreaks" class="d-none">
-            <input asp-for="MealBreaks[0].StartAtTemp" type="hidden" />
-            <input asp-for="MealBreaks[0].EndAtTemp" type="hidden" />
-        </span>
-        <span id="basefile" class="d-none">
-            <input asp-for="Files[0].Id" type="hidden" />
-        </span>
-    </div>
-    @await Html.PartialAsync("_UploadFileDialog")
-    <div id="addMealBreak" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h2 class="modal-title">Lägg till måltidspaus</h2>
-                </div>
-                <div class="modal-body" id="req">
-                    <form method="post" asp-action="" class="do-not-check-dirty">
-                        <div class="row">
-                            <div class="col-sm-10">
-                                <form-entry asp-for="MealBreakStartAt" id="MealBreakStartedAt" />
-                                <div id="mealBreakStartedAtAtValidator" class="d-none text-danger body"></div>
-                                <br /><br />
+                                                        <input asp-for="MealBreaks[i].EndAtTemp" type="hidden">
+                                                            @Model.MealBreaks[i].StartAt.ToString("HH:mm")-@Model.MealBreaks[i].EndAt.ToString("HH:mm")
+                                                        </td>
+                                                        <td class="table-remove-column"><span class="remove-mealbreak-row bold">&times;</span></td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                @if (Model.MealBreakIncluded ?? false)
+                                {
+                                    <div class="warning-info-yellow"><span class="glyphicon message-icon glyphicon-exclamation-sign yellow-glyphicon"></span><span class="info-message-small" role="alert"> Myndighet har angett att måltidspaus beräknades ingå i uppdraget</span></div>
+                                }
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-sm-10">
-                                <form-entry asp-for="MealBreakEndAt" id="MealBreakEndedAt" />
-                                <div id="mealBreakEndedAtAtValidator" class="d-none text-danger body"></div>
-                                <br /><br />
+                            <div class="col-sm-12">
+                                <h2 class="no-padding-margin">Resekostnader <span class="form-entry-information glyphicon glyphicon-info-sign" title="Här ska utlägg, traktamente och bilersättning anges."></span> @HelpLinkService.Anchor("resekostnad")</h2>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                @if (Model.ExpectedTravelCosts > 0)
+                                {
+                                    <display-entry asp-for="ExpectedTravelCosts" />
+                                }
+                                else
+                                {
+                                    <label>Förväntad resekostnad (exkl. moms) i SEK</label>
+                                    <div class="no-value-info">Inget angivet</div>
+                                }
+                            </div>
+                            <div class="col-sm-4">
+                            </div>
+                            <div class="col-sm-4">
+                                <display-entry asp-for="InterpreterLocation" />
+                            </div>
+                        </div>
+                        @if (Model.PreviousRequisition != null)
+                        {
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    @if (Model.PreviousRequisition.Outlay != null)
+                                    {
+                                        <display-entry asp-for="PreviousRequisition.Outlay" />
+                                    }
+                                    else
+                                    {
+                                        <label>Tidigare angivet utlägg</label>
+                                        <div class="no-value-info">Inget angivet</div>
+                                    }
+                                </div>
+                                <div class="col-sm-4">
+                                    @if (Model.PreviousRequisition.CarCompensation != null)
+                                    {
+                                        <display-entry asp-for="PreviousRequisition.CarCompensation" />
+                                    }
+                                    else
+                                    {
+                                        <label>Tidigare angiven bilersättning</label>
+                                        <div class="no-value-info">Inget angivet</div>
+                                    }
+                                </div>
+                                <div class="col-sm-4">
+                                    @if (!string.IsNullOrWhiteSpace(Model.PreviousRequisition.PerDiem))
+                                    {
+                                        <display-entry asp-for="PreviousRequisition.PerDiem" />
+                                    }
+                                    else
+                                    {
+                                        <label>Tidigare angivet traktamente</label>
+                                        <div class="no-value-info">Inget angivet</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <form-entry asp-for="Outlay" />
+                                <br />
+                            </div>
+                            <div class="col-sm-4">
+                                <form-entry asp-for="CarCompensation" />
+                                <div id="carCompensationValidator" class="d-none text-danger body"></div>
+                                <br />
+                            </div>
+                            <div class="col-sm-4">
+                                <form-entry asp-for="PerDiem" />
+                                <br />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <form-entry asp-for="Message" help-link="@HelpLinkService.GenerateUrl("specifikation")" />
+                                @if (Model.PreviousRequisition != null)
+                                {
+                                    <display-entry asp-for="PreviousRequisition.Message" />
+                                }
+                            </div>
+                            <div class="col-sm-4">
+                                @if (Model.AllowFileAttachments)
+                                {
+                                    @await Html.PartialAsync("_FileList", new AttachmentListModel { AllowDelete = true, AllowDownload = true, AllowUpload = true, Files = Model.Files, Description = "Möjlighet att bifoga filer som kan vara relevanta för rekvisitionen", Title = string.Empty }, new ViewDataDictionary(ViewData) { { "helplink", HelpLinkService.PageName } })
+                                }
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <a class="btn btn-large btn-warning pull-left do-not-check-dirty" asp-controller="Request" asp-action="View" asp-route-Id="@Model.RequestId">Avbryt <span class="btn-remove-times">&times;</span></a>
+                            </div>
+                            <div class="col-sm-6">
+                                <button id="create" type="submit" class="disable-on-click btn btn-large btn-default pull-right">Registrera rekvisition</button>
                             </div>
                         </div>
                     </form>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
-                        <button type="button" class="btn btn-default right-md-button save-mealbreak">Spara måltidspaus</button>
-                        <br /><br />
+                </div>
+                <span id="baseMealBreaks" class="d-none">
+                    <input asp-for="MealBreaks[0].StartAtTemp" type="hidden" />
+                    <input asp-for="MealBreaks[0].EndAtTemp" type="hidden" />
+                </span>
+                <span id="basefile" class="d-none">
+                    <input asp-for="Files[0].Id" type="hidden" />
+                </span>
+            </div>
+            @if (Model.AllowFileAttachments)
+            {
+                @await Html.PartialAsync("_UploadFileDialog")
+            }
+            <div id="addMealBreak" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h2 class="modal-title">Lägg till måltidspaus</h2>
+                        </div>
+                        <div class="modal-body" id="req">
+                            <form method="post" asp-action="" class="do-not-check-dirty">
+                                <div class="row">
+                                    <div class="col-sm-10">
+                                        <form-entry asp-for="MealBreakStartAt" id="MealBreakStartedAt" />
+                                        <div id="mealBreakStartedAtAtValidator" class="d-none text-danger body"></div>
+                                        <br /><br />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-10">
+                                        <form-entry asp-for="MealBreakEndAt" id="MealBreakEndedAt" />
+                                        <div id="mealBreakEndedAtAtValidator" class="d-none text-danger body"></div>
+                                        <br /><br />
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-warning left-md-button do-not-check-dirty" data-dismiss="modal">Avbryt</button>
+                                <button type="button" class="btn btn-default right-md-button save-mealbreak">Spara måltidspaus</button>
+                                <br /><br />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
+        </section>
 
-@section Scripts {
-    <environment include="Development">
-        <script src="~/js/Files.js" asp-append-version="true"></script>
-        <script src="~/js/Requisition/Create.js" asp-append-version="true"></script>
-        <script src="~/js/RequestView.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/Files.min.js" asp-append-version="true"></script>
-        <script src="~/js/Requisition/Create.min.js" asp-append-version="true"></script>
-        <script src="~/js/RequestView.min.js" asp-append-version="true"></script>
-    </environment>
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-}
+        @section Scripts {
+            <environment include="Development">
+                <script src="~/js/Files.js" asp-append-version="true"></script>
+                <script src="~/js/Requisition/Create.js" asp-append-version="true"></script>
+                <script src="~/js/RequestView.js" asp-append-version="true"></script>
+            </environment>
+            <environment exclude="Development">
+                <script src="~/js/Files.min.js" asp-append-version="true"></script>
+                <script src="~/js/Requisition/Create.min.js" asp-append-version="true"></script>
+                <script src="~/js/RequestView.min.js" asp-append-version="true"></script>
+            </environment>
+            @await Html.PartialAsync("_ValidationScriptsPartial")
+        }
