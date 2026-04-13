@@ -1045,7 +1045,7 @@ namespace Tolk.Web.Controllers
 
                     using var transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
 
-                    await _userService.LogOnMoveAccountAsync(user.Id, impersonatingUpdatedById: User.TryGetImpersonatorId());
+                    await _userService.LogOnMoveAccountAsync(user.Id, User.GetUserId(), User.TryGetImpersonatorId());
 
                     // Remove the user from any units 
                     _dbContext.CustomerUnitUsers.RemoveRange(user.CustomerUnits);
