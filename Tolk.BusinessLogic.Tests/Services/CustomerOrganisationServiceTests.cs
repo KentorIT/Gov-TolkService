@@ -21,10 +21,10 @@ namespace Tolk.BusinessLogic.Tests.Services
              _clock = new StubSwedishClock("2024-02-08 00:00:00 +01:00");
             _brokers = new List<Broker>
             {
-                new Broker{BrokerId=1,Name="FirstBroker"},
-                new Broker{BrokerId=2,Name="SecondBroker"},
-                new Broker{BrokerId=3,Name="ThirdBroker"},
-                new Broker{BrokerId=4,Name="FourthBroker"},
+                new Broker{BrokerId=1,Name="FirstBroker",PeppolId="1"},
+                new Broker{BrokerId=2,Name="SecondBroker",PeppolId="2"},
+                new Broker{BrokerId=3,Name="ThirdBroker",PeppolId="3"},
+                new Broker{BrokerId=4,Name="FourthBroker",PeppolId="4"},
 
             };
         }
