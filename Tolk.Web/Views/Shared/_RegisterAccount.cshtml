@@ -11,27 +11,27 @@
     <div class="col-xs-12">
         <h1>@ViewData["Title"]</h1>
         <p>
-            Fyll i dina uppgifter för att få tillgång till tjänsten. När registreringen är klar skickas en aktiveringslänk till din e‑postadress.<br />
-            <b>Observera</b> att du kan bara skapa ett konto om din organisation har tillåtit att användare registrerar sig själva. Om detta inte är möjligt behöver du kontakta din centrala administratör på din organisation. Om du inte vet vem det är, kan du kontakta <a href="mailto:@options.Value.Support.FirstLineEmail">@options.Value.Support.FirstLineEmail</a> för att få hjälp.
-
-            Använd alltid en personlig e‑postadress när du skapar ett konto.
+            För att få tillgång till tjänsten, fyll i uppgifterna nedan. En aktiveringslänk kommer därefter skickas till den e-postadress du angett. <br /><br /><b>Observera: </b>Du kan endast skapa ett användarkonto om din organisation tillåtit att användare själva registrerar sina konton. Annars behöver du kontakta din centrala administratör på din organisation. Om du inte vet vem det är, kan du kontakta <a href="mailto:@options.Value.Support.FirstLineEmail">@options.Value.Support.FirstLineEmail</a> för att få hjälp.<br /><br />Ange alltid en personlig e-postadress när ni registrerar konto i tjänsten. Om ni vill kan ni sedan styra om er e-post till en funktionsbrevlåda via en särskild inställning.
         </p>
         <form method="post" asp-action="Register" asp-controller="Account" class="do-not-check-dirty">
             <div class="row padding-bottom-30px">
                 <div class="col-xs-12">
                     <form-entry asp-for="Email" />
+                    @if (Model != null && Model.DisplayRegisterInfoToCustomer)
+                    {
+                        <a title="Formulär för att registrera myndighet" target="_blank" href="@options.Value.ExternalLinks.RegisterCustomerInfo">Formulär för att registrera myndighet</a>
+                        <br />
+                        <br />
+                    }
+                    @if (Model != null && Model.ParentOrganisationId > 0)
+                    {
+                        <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.SubOrganisations(Model.ParentOrganisationId)" class="allow-clear" />
+                    }
                     <form-entry asp-for="FirstName" />
                     <form-entry asp-for="LastName" />
                 </div>
             </div>
-            @if (Model != null && Model.ParentOrganisationId > 0)
-            {
-                <div class="row padding-bottom-30px">
-                    <div class="col-xs-12">
-                        <form-entry asp-for="OrganisationIdentifier" type="select" asp-items="SelectListService.SubOrganisations(Model.ParentOrganisationId)" class="allow-clear" />
-                    </div>
-                </div>
-            }
+           
             <div class="row">
                 <div class="col-xs-12 text-align-center">
                     <button type="submit" class="btn btn-success btn-large disable-on-click">Skicka</button>

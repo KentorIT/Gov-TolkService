@@ -795,7 +795,8 @@ namespace Tolk.Web.Controllers
                         if (organisation.SubCustomerOrganisations.Any() && string.IsNullOrEmpty(model.OrganisationIdentifier))
                         {
                             model.ParentOrganisationId = organisation.CustomerOrganisationId;
-                            ModelState.AddModelError(nameof(model.Email), $"E-postdomänen {domain} har flera organisationer kopplade till sig. Välj vilken organisation du tillhör i listan nedan. Hittar du inte din organisation så kontakta {_options.Support.UserAccountEmail}.");
+                            model.DisplayRegisterInfoToCustomer = true;
+                            ModelState.AddModelError(nameof(model.Email), $"E-postdomänen {domain} har flera organisationer kopplade till sig. Välj vilken organisation du tillhör i listan nedan. Hittar du inte din organisation kan du registrera den via formuläret nedan:");
                             return View(model);
                         }
                         else
@@ -818,9 +819,8 @@ namespace Tolk.Web.Controllers
                             //check if the organisation allows self registration
                             if (!_cacheService.CustomerHasSetting(organisation.CustomerOrganisationId, CustomerSettingType.AllowUserSelfRegistration))
                             {
-                                ModelState.AddModelError(nameof(model.Email), $"Organisationen tillåter inte att användare registrerar sig själva. Kontakta {_options.Support.UserAccountEmail}.");
+                                ModelState.AddModelError(nameof(model.Email), $"{organisation?.Name} tillåter inte att användare registrerar sig själva. Kontakta din centrala administratör på din organisation. Om du inte vet vem det är, kontakta {_options.Support.FirstLineEmail}.");
                                 return View(model);
-
                             }
                             var user = new AspNetUser(model.Email,
                                 _userService.GenerateUserName(model.FirstName.Trim(), model.LastName.Trim(), organisation.OrganisationPrefix),
@@ -865,8 +865,9 @@ namespace Tolk.Web.Controllers
                         AddErrors(result);
                         return View(model);
                     }
+                    model.DisplayRegisterInfoToCustomer = true;
                     ModelState.AddModelError(nameof(model.Email),
-                        $"Myndighet med e-postdomänen {domain} finns ännu inte registrerad i tjänsten. Kontakta {_options.Support.UserAccountEmail}.");
+                        $"Myndighet med e-postdomänen {domain} finns ännu inte registrerad i tjänsten. För att registrera myndigheten fyll i formuläret nedan:");
                 }
             }
 

@@ -13,10 +13,10 @@
 <br />
 <h2>Om tjänsten</h2>
 <p>
-    I @Constants.SystemName kan avropsberättigade myndigheter boka tolktjänster, och ramavtalsleverantörer (tolkförmedlingar) kan hantera bokningsförfrågningar.
+    I @Constants.SystemName kan avropsberättigade myndigheter boka tolktjänster och ramavtalsleverantörer (tolkförmedlingar) kan hantera bokningsförfrågningar.
 </p>
 <p>
-    <a href="@options.Value.ExternalLinks.TermsOfUse" target="_blank">Användarvillkor</a>
+    Läs våra <a href="@options.Value.ExternalLinks.TermsOfUse" target="_blank">användarvillkor</a> innan du börjar använda tjänsten.  
 </p>
 
 <h2>Registrera användarkonto</h2>
@@ -24,9 +24,7 @@
 @if (options.Value.EnableRegisterUser)
 {
     <p>
-        Du kan skapa ett eget användarkonto om din organisation har tillåtit egen registrering.
-        Om du inte kan registrera ett konto själv behöver du kontakta din centrala administratör på din organisation. Om du inte vet vem det är, kan du kontakta <a href="mailto:@options.Value.Support.FirstLineEmail">@options.Value.Support.FirstLineEmail</a> för att få hjälp.
-        Vid andra frågor är du också välkommen att kontakta <a href="mailto:@options.Value.Support.FirstLineEmail">@options.Value.Support.FirstLineEmail</a>
+        Om du arbetar hos en avropsberättigad myndighet eller tolkförmedling kan du själv registrera ett användarkonto, förutsatt att din organisation tillåter det. Annars behöver du kontakta er centrala administratör som registrerar ditt användarkonto åt dig. Har du frågor, kontakta <a href="mailto:@options.Value.Support.FirstLineEmail">@options.Value.Support.FirstLineEmail</a>.
     </p>
 }
 else

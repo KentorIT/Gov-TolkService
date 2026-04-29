@@ -25,5 +25,8 @@ namespace Tolk.Web.Models.AccountViewModels
         public string LastName { get; set; }
 
         public int ParentOrganisationId { get; set; }
+
+        public bool DisplayRegisterInfoToCustomer { get; set; }
+
     }
 }
