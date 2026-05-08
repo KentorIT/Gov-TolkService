@@ -801,7 +801,7 @@ namespace Tolk.BusinessLogic.Services
                 };
                 request.Order.Requests.Add(newRequest);
 
-                newRequest.AnswerAcceptedRequest(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, request, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult);
+                newRequest.AnswerAcceptedRequest(acceptTime, userId, impersonatorId, interpreter, interpreterLocation, competenceLevel, requirementAnswers, attachedFiles, prices, request, expectedTravelCostInfo, latestAnswerTimeForCustomer, brokerReferenceNumber, verificationResult, overrideRequireAccept);
                 request.Status = RequestStatus.ReplacedAtAnswerAfterAccept;
                 return newRequest;
             }
