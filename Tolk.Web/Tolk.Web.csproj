@@ -13,6 +13,17 @@
 
   <ItemGroup>
     <Content Remove="compilerconfig.json" />
+    <Content Remove="wwwroot\docs\appadmin_anvandarmanual.docx" />
+    <Content Remove="wwwroot\docs\formedling_anvandarmanual.docx" />
+    <Content Remove="wwwroot\docs\myndighet_anvandarmanual.docx" />
+    <Content Remove="wwwroot\docs\systemadmin_anvandarmanual.docx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\docs\appadmin_anvandarmanual.docx" />
+    <None Include="wwwroot\docs\formedling_anvandarmanual.docx" />
+    <None Include="wwwroot\docs\myndighet_anvandarmanual.docx" />
+    <None Include="wwwroot\docs\systemadmin_anvandarmanual.docx" />
   </ItemGroup>
 
   <ItemGroup>    

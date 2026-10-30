@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System;
 using Tolk.BusinessLogic.Utilities;
+using Tolk.Web.Authorization;
+using Tolk.Web.Helpers;
 
 namespace Tolk.Web.Services
 {
@@ -11,40 +14,61 @@ namespace Tolk.Web.Services
 
         public string PageName { get; set; }
 
-        public HelpLinkService(IConfiguration configuration)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public HelpLinkService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
-            BaseAddress = configuration != null ? configuration["UserDocumentation:BaseUrl"] : string.Empty;
+            _httpContextAccessor = httpContextAccessor;
+            BaseAddress = configuration != null ? configuration["PublicOrigin"] + "/docs/" : string.Empty;
         }
+
 
         public Uri GenerateUrl(string anchorpoint)
         {
-            string link = BaseAddress;
-            link += PageName;
-            if (!string.IsNullOrEmpty(anchorpoint))
-            {
-                link += "#" + anchorpoint;
-            }
-
-            return link.AsUri();
+            return ManualForUserGroup.AsUri();
         }
 
-        public HtmlString Anchor(string anchorpoint) => new HtmlString($"<a href=\"{GenerateUrl(anchorpoint)}\" aria-label=\"Hjälp från manual\" target=\"_blank\"><span class=\"form-entry-help glyphicon glyphicon-question-sign\"></span></a>");
-
-        public HtmlString HeaderAnchor(string anchorpoint = null) => new HtmlString($"<a href=\"{GenerateUrl(anchorpoint)}\" aria-label=\"Hjälp från manual\" target=\"_blank\" class=\"pull-right\"><span class=\"glyphicon glyphicon-question-sign\"></span></a>");
-
-        public HtmlString ButtonHelpIcon(string pageName)
+        private string ManualForUserGroup
         {
-            PageName = pageName;
-            return new HtmlString($"<a href=\"{GenerateUrl(null)}\" aria-label=\"Hjälp från manual\" target=\"_blank\"><span class=\"glyphicon glyphicon-question-sign help-sign-medium\"></span></a>");
+            get
+            {
+                var currentUser = _httpContextAccessor.HttpContext.User;
+                var customerId = currentUser.TryGetCustomerOrganisationId();
+                var brokerId = currentUser.TryGetBrokerId();
+
+                if (currentUser.IsInRole(Roles.ApplicationAdministrator))
+                {
+                    return ApplicationAdminManual;
+                }
+                else if (currentUser.IsInRole(Roles.SystemAdministrator))
+                {
+                    return SystemAdminManual;
+                }
+                else if (brokerId.HasValue)
+                {
+                    return BrokerManual;
+                }
+                else if (customerId.HasValue)
+                    return CustomerManual;
+                else
+                    return BaseAddress;
+            }
         }
 
-        public string BrokerManual => $"{BaseAddress}formedling-anvandarmanual/";
+        public static HtmlString Anchor(string anchorpoint) => new(string.Empty);
 
-        public string CustomerManual => $"{BaseAddress}myndighet-anvandarmanual/";
+        public HtmlString HeaderAnchor(string anchorpoint = null) => new($"<a href=\"{GenerateUrl(anchorpoint)}\" aria-label=\"Hjälp från manual\" target=\"_blank\" class=\"pull-right\"><span class=\"glyphicon glyphicon-question-sign\"></span></a>");
 
-        public string SystemAdminManual => $"{BaseAddress}systemadmin-anvandarmanual/";
+        public static HtmlString ButtonHelpIcon(string pageName) => new(string.Empty);
+  
 
-        public string ApplicationAdminManual => $"{BaseAddress}appadmin-anvandarmanual/";
+        public string BrokerManual => $"{BaseAddress}Formedling_anvandarmanual_8294712.pdf";
+
+        public string CustomerManual => $"{BaseAddress}Myndighet_anvandarmanual_8237894.pdf";
+
+        public string SystemAdminManual => $"{BaseAddress}Systemadmin_anvandarmanual_8625683.pdf";
+
+        public string ApplicationAdminManual => $"{BaseAddress}Appadmin_anvandarmanual_83767231.pdf";
     }
 }
 

@@ -361,7 +361,7 @@ namespace Tolk.Web.TagHelpers
         }
         private const string RequiredStarSpan = "<span class=\"required-star\">*</span>";
         private const string InformationSpan = " <span class=\"form-entry-information glyphicon glyphicon-info-sign\" title=\"{0}\"></span>";
-        private const string HelpAnchor = " <a href=\"{0}\" aria-label=\"Hjälp från manual\" target=\"_blank\"><span class=\"form-entry-help glyphicon glyphicon-question-sign\"></span></a>";
+        //private const string HelpAnchor = " <a href=\"{0}\" aria-label=\"Hjälp från manual\" target=\"_blank\"><span class=\"form-entry-help glyphicon glyphicon-question-sign\"></span></a>";
 
         private void WritePrefix(TextWriter writer, PrefixAttribute.Position condition)
         {
@@ -403,7 +403,7 @@ namespace Tolk.Web.TagHelpers
                 tagBuilder.WriteTo(writer, _htmlEncoder);
 
                 WriteInfoIfDescription(writer);
-                WriteHelpIfHelpLink(writer);
+                //WriteHelpIfHelpLink(writer);
             }
         }
 
@@ -415,13 +415,13 @@ namespace Tolk.Web.TagHelpers
             }
         }
 
-        private void WriteHelpIfHelpLink(TextWriter writer)
-        {
-            if (!string.IsNullOrEmpty(HelpLink))
-            {
-                writer.WriteLine(HelpAnchor.FormatSwedish(HelpLink));
-            }
-        }
+        //private void WriteHelpIfHelpLink(TextWriter writer)
+        //{
+        //    if (!string.IsNullOrEmpty(HelpLink))
+        //    {
+        //        writer.WriteLine(HelpAnchor.FormatSwedish(HelpLink));
+        //    }
+        //}
 
         private TagBuilder GenerateLabel(bool isSubItem = false)
         {
@@ -520,10 +520,10 @@ namespace Tolk.Web.TagHelpers
             {
                 htmlBuilder.AppendHtml(InformationSpan.FormatSwedish(DescriptionOverride ?? For.Metadata.Description));
             }
-            if (!string.IsNullOrEmpty(HelpLink))
-            {
-                htmlBuilder.AppendHtml(HelpAnchor.FormatSwedish(HelpLink));
-            }
+            //if (!string.IsNullOrEmpty(HelpLink))
+            //{
+            //    htmlBuilder.AppendHtml(HelpAnchor.FormatSwedish(HelpLink));
+            //}
             htmlBuilder.AppendHtml(labelBuilder.RenderEndTag());
             WritePrefix(writer, PrefixAttribute.Position.Value);
             htmlBuilder.WriteTo(writer, _htmlEncoder);
@@ -739,7 +739,7 @@ namespace Tolk.Web.TagHelpers
         {
             WriteLabelWithoutFor(For.ModelExplorer, writer, writeId);
             WriteInfoIfDescription(writer);
-            WriteHelpIfHelpLink(writer);
+            //WriteHelpIfHelpLink(writer);
         }
 
         private void WriteLabelWithoutFor(ModelExplorer modelExplorer, TextWriter writer, bool writeId = false)
@@ -915,7 +915,7 @@ namespace Tolk.Web.TagHelpers
             writer.WriteLine("<div class=\"date-part\">");
             WriteLabelWithoutFor(dateModelExplorer, writer, true);
             WriteInfoIfDescription(writer);
-            WriteHelpIfHelpLink(writer);
+            //WriteHelpIfHelpLink(writer);
             WriteDatePickerInput(dateModelExplorer, dateFieldName, dateValue, writer);
             WriteValidation(writer, dateModelExplorer, dateFieldName);
             //General validation holder
@@ -1127,10 +1127,10 @@ namespace Tolk.Web.TagHelpers
                     writer.WriteLine(RequiredStarSpan);
                 }
                 writer.WriteLine(InformationSpan.FormatSwedish(DescriptionOverride ?? For.ModelExplorer.Metadata.Description));
-                if (!string.IsNullOrEmpty(HelpLink))
-                {
-                    writer.WriteLine(HelpAnchor.FormatSwedish(HelpLink));
-                }
+                //if (!string.IsNullOrEmpty(HelpLink))
+                //{
+                //    writer.WriteLine(HelpAnchor.FormatSwedish(HelpLink));
+                //}
                 writer.WriteLine("</legend>");
             }
             bool isRow = LayoutOption == "row";
@@ -1187,10 +1187,10 @@ namespace Tolk.Web.TagHelpers
                 htmlBuilder.AppendHtml(RequiredStarSpan);
             }
             htmlBuilder.AppendHtml(InformationSpan.FormatSwedish(For.ModelExplorer.Metadata.Description));
-            if (!string.IsNullOrEmpty(HelpLink))
-            {
-                htmlBuilder.AppendHtml(HelpAnchor.FormatSwedish(HelpLink));
-            }
+            //if (!string.IsNullOrEmpty(HelpLink))
+            //{
+            //    htmlBuilder.AppendHtml(HelpAnchor.FormatSwedish(HelpLink));
+            //}
             htmlBuilder.AppendHtml("</legend>");
 
             var itemsArr = Items.ToArray();
